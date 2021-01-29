@@ -5,16 +5,22 @@
 #' @param object An RMASCA object to be sanitized
 #' @return An RMASCA object
 getLMECoefficients <- function(object){
-  cat("Calculating LMM coefficients...\n")
+  if(!object$minimizeObject){
+    cat("Calculating LMM coefficients...\n")
+  }
   lmer.model <- list()
   cc <- 1
   for(i in unique(df$variable)){
-    cat("- ",i,"\n")
+    if(!object$minimizeObject){
+      cat("- ",i,"\n")
+    }
     lmer.model[[cc]] <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
     cc <- cc + 1
   }
-  object$lmer.models <- lmer.model
-  cat("Finished calculating LMM coefficients!\n")
+  if(!object$minimizeObject){
+    object$lmer.models <- lmer.model
+    cat("Finished calculating LMM coefficients!\n")
+  }
 
   fdf <- data.frame()
   cyts <- unique(object$df$variable)
@@ -68,48 +74,39 @@ separateLMECoefficients <- function(object){
 }
 
 getEffectMatrix <- function(object){
-  cat("Calculating effect matrix (may take some time...)\n")
-  temp_var <- object$df$variable[1]
-  parts <- subset(object$df, variable == temp_var)
+  if(!object$minimizeObject){
+    cat("Calculating effect matrix (may take some time...)\n")
+  }
+  parts <- subset(object$df, variable == object$df$variable[1]) # just to get time and group for each participant
 
   covars <- unique(object$LMM.coefficients$covar)
   refTime <- levels(object$df$time)[1]
   refGroup <- levels(object$df$group)[1]
   fdf_pred <- data.frame()
 
+  # if time and group effects are separated, we need to do that here:
   if(object$separateTimeAndGroup){
     fdf_time_pred <- data.frame()
-    for(comp in unique(object$LMM.coefficients$comp)){
+    fdf_group_pred <- data.frame()
+
+    for(j in 1:length(covars)){
       for(i in 1:nrow(parts)){
-        for(j in 1:length(covars)){
-
-          fdf_time_pred[i,j] <- object$LMM.coefficients$estimate[object$LMM.coefficients$covar == covars[j] & object$LMM.coefficients$variable == "(Intercept)" & object$LMM.coefficients$comp == "TIME"]
-          if(parts$time[i] != refTime){
-            fdf_time_pred[i,j] <- fdf_time_pred[i,j] + object$LMM.coefficients$estimate[object$LMM.coefficients$covar == covars[j] & substr(object$LMM.coefficients$variable,5,5) == parts$time[i] & object$LMM.coefficients$comp == "TIME"]
+        fdf_time_pred[i,j] <- object$LMM.coefficients$estimate[object$LMM.coefficients$covar == covars[j] & object$LMM.coefficients$variable == "(Intercept)"]
+        if(parts$time[i] != refTime){
+          fdf_time_pred[i,j] <- fdf_time_pred[i,j] +object$LMM.coefficients$estimate[object$LMM.coefficients$covar == covars[j] & object$LMM.coefficients$variable == paste0("time",parts$time[i])]
+        }
+        fdf_group_pred[i,j] <- 0
+        if(parts$group[i] != refGroup){
+          if(object$hasGroupTerm){
+            fdf_group_pred[i,j] <- object$LMM.coefficients$estimate[object$LMM.coefficients$covar == covars[j] & object$LMM.coefficients$variable == paste0("group",parts$group[i])]
           }
-
+          if(parts$time[i] != refTime & object$hasInteractionTerm){
+            fdf_group_pred[i,j] <- fdf_group_pred[i,j] + object$LMM.coefficients$estimate[object$LMM.coefficients$covar == covars[j] & object$LMM.coefficients$variable == paste0("time",parts$time[i],":group",parts$group[i])]
+          }
         }
       }
     }
     fdf_time_pred$comp <- "TIME"
-
-    fdf_group_pred <- data.frame()
-
-    for(i in 1:nrow(parts)){
-      for(j in 1:length(covars)){
-        if(parts$group[i] != refGroup){
-
-          fdf_group_pred[i,j] <- object$LMM.coefficients$estimate[object$LMM.coefficients$covar == covars[j] & object$LMM.coefficients$variable == paste0("group",parts$group[i]) & object$LMM.coefficients$comp == "GROUP"]
-          if(parts$time[i] != refTime & object$hasInteraction){
-            fdf_group_pred[i,j] <- fdf_group_pred[i,j] + object$LMM.coefficients$estimate[object$LMM.coefficients$covar == covars[j] & object$LMM.coefficients$variable == paste0("time",parts$time[i],":group",parts$group[i]) & object$LMM.coefficients$comp == "GROUP"]
-          }
-
-        }else{
-          fdf_group_pred[i,j] <- 0
-        }
-
-      }
-    }
     fdf_group_pred$comp <- "GROUP"
     fdf_pred <- rbind(fdf_time_pred, fdf_group_pred)
   }else{
@@ -120,10 +117,11 @@ getEffectMatrix <- function(object){
         if(parts$time[i] != refTime){
           fdf_pred[i,j] <- fdf_pred[i,j] + object$LMM.coefficients$estimate[object$LMM.coefficients$covar == covars[j] & object$LMM.coefficients$variable == paste0("time",parts$time[i])]
         }
-
         if(parts$group[i] != refGroup){
-          fdf_pred[i,j] <- fdf_pred[i,j] + object$LMM.coefficients$estimate[object$LMM.coefficients$covar == covars[j] & object$LMM.coefficients$variable == paste0("group",parts$group[i])]
-          if(parts$time[i] != refTime & object$hasInteraction){
+          if(object$hasGroupTerm){
+            fdf_pred[i,j] <- fdf_pred[i,j] + object$LMM.coefficients$estimate[object$LMM.coefficients$covar == covars[j] & object$LMM.coefficients$variable == paste0("group",parts$group[i])]
+          }
+          if(parts$time[i] != refTime & object$hasInteractionTerm){
             fdf_pred[i,j] <- fdf_pred[i,j] + object$LMM.coefficients$estimate[object$LMM.coefficients$covar == covars[j] & object$LMM.coefficients$variable == paste0("time",parts$time[i],":group",parts$group[i])]
           }
         }
@@ -136,6 +134,8 @@ getEffectMatrix <- function(object){
   object$effect.matrix <- fdf_pred
   object$parts$time <- parts$time
   object$parts$group <- parts$group
-  cat("Finished calculating effect matrix!\n")
+  if(object$minimizeObject){
+    cat("Finished calculating effect matrix!\n")
+  }
   return(object)
 }

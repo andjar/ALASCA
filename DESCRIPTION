@@ -17,4 +17,9 @@ Imports:
 	ggplot2,
 	ggpubr,
 	lme4,
-	lmerTest
+	lmerTest,
+	GPArotation
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

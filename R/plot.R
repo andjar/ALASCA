@@ -17,6 +17,9 @@ plot.RMASCA <- function(object, component = "PC1", effect = "both", decreasingLo
   if(!(effect %in% c("both","time","group"))){
     stop("`effect` has to be `both`, `time` or `group`")
   }
+  if(!object$separateTimeAndGroup){
+    effect = "time"
+  }
   if(only == "score"){
     if(effect == "both"){
       g_score_time <- getScorePlot(object, component = component, effect = "time")
@@ -50,11 +53,45 @@ plot.RMASCA <- function(object, component = "PC1", effect = "both", decreasingLo
       if(enlist){
         g <- list(g_score, g_loading)
       }else{
-        g <- ggpubr::ggarrange(g_loading, g_score, nrow = 1, ncol = 2, align = "hv", common.legend = TRUE, legend = "bottom")
+        g <- ggpubr::ggarrange(g_score, g_loading, nrow = 1, ncol = 2, align = "hv", common.legend = TRUE, legend = "bottom")
       }
     }
   }
   return(g)
+}
+
+#' Get screeplot
+#'
+#' This function loads a file as a matrix. It assumes that the first column
+#' contains the rownames and the subsequent columns are the sample identifiers.
+#' Any rows with duplicated row names will be dropped with the first one being
+#' kepted.
+#'
+#' @param object An RMASCA object
+#' @param effect String stating which effect to return; `time`, `group`, `both` (default)
+#' @return An ggplot2 object (or a list og ggplot objects)
+#' @export
+screeplot.RMASCA <- function(object, effect = "both"){
+  explained <- as.data.frame(getScores(object)$explained)
+  explained$component <- 1:nrow(explained)
+  g <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = time, group = NA)) +
+    ggplot2::geom_point() +
+    ggplot2::geom_line() +
+    ggplot2::labs(x = "Principal Component", y = "Relative Expl. of Time Var.")
+  if(length(object$RMASCA$loading) == 3){
+    gg <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = group, group = NA)) +
+      ggplot2::geom_point() +
+      ggplot2::geom_line() +
+      ggplot2::labs(x = "Principal Component", y = "Relative Expl. of Group Var.")
+    if(effect == "both"){
+      g <- ggpubr::ggarrange(g, gg)
+    }
+  }
+  if(effect == "group"){
+    return(gg)
+  }else{
+    return(g)
+  }
 }
 
 #' Get loadings
@@ -96,16 +133,33 @@ getScores <- function(object){
 getLoadingPlot <- function(object, component = "PC1", effect = "time", decreasingLoadings = TRUE){
   if(effect == "time"){
     loadings <- getLoadings(object)$time
+    PC <- which(colnames(loadings) == component)
+    loadings <- loadings[,colnames(loadings) %in% c(component,"covars")]
+    colnames(loadings) <- c("loading", "covars")
+    if(object$validate){
+      loadings_unc <- object$validation$time$loading[object$validation$time$loading$PC == PC,]
+      loadings <- merge(loadings, loadings_unc, by = "covars")
+    }
   }else{
     loadings <- getLoadings(object)$group
+    PC <- which(colnames(loadings) == component)
+    loadings <- loadings[,colnames(loadings) %in% c(component,"covars")]
+    colnames(loadings) <- c("loading", "covars")
+    if(object$validate){
+      loadings_unc <- object$validation$group$loading[object$validation$group$loading$PC == PC,]
+      loadings <- merge(loadings, loadings_unc, by = "covars")
+    }
   }
-  PC <- which(colnames(loadings) == component)
-  loadings <- loadings[,colnames(loadings) %in% c(component,"covars")]
-  colnames(loadings) <- c("loading", "covars")
   loadings$covars = factor(loadings$covars, levels = unique(loadings$covars[order(loadings$loading, decreasing = decreasingLoadings)]))
-  g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading)) +
-    ggplot2::geom_point() +
-    ggplot2::labs(x = "Variable", y = paste0(component, " (",round(100*object$RMASCA$loading$explained$time[PC],2),"%)"))
+  if(object$validate){
+    g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high)) + ggplot2::geom_pointrange()
+  }else{
+    g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading)) + ggplot2::geom_point()
+  }
+
+  g <- g +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust=1)) +
+    ggplot2::labs(x = "Variable", y = paste0(component, " (", round(100*ifelse(effect == "time", object$RMASCA$loading$explained$time[PC],object$RMASCA$loading$explained$group[PC]),2),"%)"))
   return(g)
 }
 
@@ -118,10 +172,14 @@ getScorePlot <- function(object, component = "PC1", effect = "time"){
                           time = object$parts$time
                           )
       score <- score[!duplicated(score),]
-      g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = NA)) +
-              ggplot2::geom_point() +
-              ggplot2::geom_line() +
-              ggplot2::labs(x = "Time", y = paste0(component, " (",round(100*object$RMASCA$score$explained$time[PC],2),"%)"))
+      if(object$validate){
+        score_unc <- object$validation$time$score[object$validation$time$score$PC == PC,]
+        score <- merge(score, score_unc, by = "time")
+        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = NA, ymin = low, ymax = high)) +
+          ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) + ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+      }else{
+        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = NA)) + ggplot2::geom_point() + ggplot2::geom_line()
+      }
     }else{
       score <- data.frame(
         score = object$RMASCA$score$time[,PC],
@@ -129,22 +187,37 @@ getScorePlot <- function(object, component = "PC1", effect = "time"){
         group = object$parts$group
       )
       score <- score[!duplicated(score),]
-      g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group)) +
-        ggplot2::geom_point() +
-        ggplot2::geom_line() +
-        ggplot2::labs(x = "Time", y = paste0(component, " (",round(100*object$RMASCA$score$explained$time[PC],2),"%)"))
+      if(object$validate){
+        score_unc <- object$validation$time$score[object$validation$time$score$PC == PC,]
+        score <- merge(score, score_unc, by = c("time", "group"))
+        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
+          ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) + ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+      }else{
+        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group)) + ggplot2::geom_point() + ggplot2::geom_line()
+      }
     }
+    g <- g +
+      ggplot2::theme(legend.position = "bottom") +
+      ggplot2::labs(x = "Time", y = paste0(component, " (",round(100*object$RMASCA$score$explained$time[PC],2),"%)"))
   }else{
     score <- data.frame(
       score = object$RMASCA$score$group[,PC],
       time = object$parts$time,
       group = object$parts$group
     )
-    score <- score[!duplicated(score),]
-    g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group)) +
-      ggplot2::geom_point() +
-      ggplot2::geom_line() +
-      ggplot2::labs(x = "Time", y = paste0(component, " (",round(100*object$RMASCA$score$explained$time[PC],2),"%)"))
+    if(object$validate){
+      score_unc <- object$validation$group$score[object$validation$group$score$PC == PC,]
+      score <- merge(score, score_unc, by = c("time", "group"))
+      score <- score[!duplicated(score),]
+      g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
+        ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) + ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+    }else{
+      g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group)) +
+        ggplot2::geom_point() + ggplot2::geom_line()
+    }
+    g <- g +
+      ggplot2::theme(legend.position = "bottom") +
+      ggplot2::labs(x = "Time", y = paste0(component, " (",round(100*object$RMASCA$score$explained$group[PC],2),"%)"))
   }
   return(g)
 }

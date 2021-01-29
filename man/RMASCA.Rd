@@ -4,7 +4,20 @@
 \alias{RMASCA}
 \title{Get an RMASCA object}
 \usage{
-RMASCA(df, formula, separateTimeAndGroup = TRUE, pAdjustMethod = "BH")
+RMASCA(
+  df,
+  formula,
+  separateTimeAndGroup = TRUE,
+  pAdjustMethod = "BH",
+  participantColumn = NA,
+  validate = FALSE,
+  minimizeObject = FALSE,
+  nValFold = 7,
+  nValRuns = 50,
+  validationMethod = "loo",
+  validationObject = NA,
+  validationParticipants = NA
+)
 }
 \arguments{
 \item{df}{Data Frame to be analyzed}
@@ -14,6 +27,22 @@ RMASCA(df, formula, separateTimeAndGroup = TRUE, pAdjustMethod = "BH")
 \item{separateTimeAndGroup}{Logical: should time and group effect be separated?}
 
 \item{pAdjustMethod}{Method for correcting p values for multiple testing}
+
+\item{participantColumn}{String. Name of the column containing participant identification}
+
+\item{validate}{Logical. If \code{TRUE}, give estimates for robustness}
+
+\item{minimizeObject}{Logical. If \code{TRUE}, remove unnecessary clutter, optimize for validation}
+
+\item{nValFold}{Partitions when validating}
+
+\item{nValRuns}{number of validation runs}
+
+\item{validationMethod}{among  \code{loo} (leave-one-out, default)}
+
+\item{validationObject}{Don't worry about me:)}
+
+\item{validationParticipants}{Don't worry about me:)}
 }
 \value{
 An RMASCA object

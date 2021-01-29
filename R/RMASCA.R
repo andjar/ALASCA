@@ -9,40 +9,74 @@
 #' @param formula Regression model
 #' @param separateTimeAndGroup Logical: should time and group effect be separated?
 #' @param pAdjustMethod Method for correcting p values for multiple testing
+#' @param validate Logical. If `TRUE`, give estimates for robustness
+#' @param participantColumn String. Name of the column containing participant identification
+#' @param minimizeObject Logical. If `TRUE`, remove unnecessary clutter, optimize for validation
+#' @param nValFold Partitions when validating
+#' @param nValRuns number of validation runs
+#' @param validationMethod among  `loo` (leave-one-out, default)
+#' @param validationObject Don't worry about me:)
+#' @param validationParticipants Don't worry about me:)
 #' @return An RMASCA object
 #' @export
-RMASCA <- function(df, formula, separateTimeAndGroup = TRUE, pAdjustMethod = "BH"){
-  object <- list(df = df, formula = formula, separateTimeAndGroup = separateTimeAndGroup, pAdjustMethod = pAdjustMethod)
-  class(object) <- "RMASCA"
+RMASCA <- function(df,
+                   formula,
+                   separateTimeAndGroup = TRUE,
+                   pAdjustMethod = "BH",
+                   participantColumn = FALSE,
+                   validate = FALSE,
+                   minimizeObject = FALSE,
+                   nValFold = 7,
+                   nValRuns = 50,
+                   validationMethod = "loo",
+                   validationObject = NA,
+                   validationParticipants = NA){
+  if(!is.na(validationObject[1])){
+    object <- list(df = validationObject$df, #inherit
+                formula = validationObject$formula, #inherit
+                separateTimeAndGroup = validationObject$separateTimeAndGroup, #inherit
+                pAdjustMethod = validationObject$pAdjustMethod, #inherit
+                participantColumn = validationObject$participantColumn, #inherit
+                validate = validate, #overwrite
+                minimizeObject = minimizeObject, #overwrite
+                nValFold = validationObject$nValFold, #inherit
+                nValRuns = validationObject$nValRuns, #inherit
+                validationMethod = validationObject$validationMethod, #inherit
+                validationObject = validationObject, #overwrite
+                validationParticipants = validationParticipants #overwrite
+    )
+  }else{
+    object <- list(df = df,
+                   formula = formula,
+                   separateTimeAndGroup = separateTimeAndGroup,
+                   pAdjustMethod = pAdjustMethod,
+                   participantColumn = participantColumn,
+                   validate = validate,
+                   minimizeObject = minimizeObject,
+                   nValFold = nValFold,
+                   nValRuns = nValRuns,
+                   validationMethod = validationMethod,
+                   validationObject = validationObject,
+                   validationParticipants = validationParticipants
+    )
+    class(object) <- "RMASCA"
+  }
 
   object <- sanitizeObject(object)
   object <- getLMECoefficients(object)
   object <- removeCovars(object)
   object <- separateLMECoefficients(object)
   object <- getEffectMatrix(object)
+  if(object$minimizeObject){
+    # To save space, we remove unnecessary embedded data
+    object <- removeEmbedded(object)
+  }
   object <- doPCA(object)
   object <- cleanPCA(object)
+  if(object$validate){
+    object <- validate(object)
+  }
 
-  # gt_2 <- getLoadingsPlot(scores = score_time, comp = "PC1", pca = pca_time)
-  # gt_4 <- getLoadingsPlot(score_time, comp = "PC2", pca = pca_time)
-  # gt_1 <- getScorePlot(PC_time, comp = "PC1", pca = pca_time, separateTimeAndGroup = separateTimeAndGroup)
-  # gt_3 <- getScorePlot(PC_time, comp = "PC2", pca = pca_time, separateTimeAndGroup = separateTimeAndGroup)
-  # g_time <- ggarrange(gt_1, gt_2, gt_3, gt_4)
-  #
-  # if(separateTimeAndGroup){
-  #   gg_2 <- getLoadingsPlot(score_group, comp = "PC1", pca = pca_group)
-  #   gg_4 <- getLoadingsPlot(score_group, comp = "PC2", pca = pca_group)
-  #   gg_1 <- getScorePlot(PC_group, comp = "PC1", pca = pca_group, separateTimeAndGroup = separateTimeAndGroup)
-  #   gg_3 <- getScorePlot(PC_group, comp = "PC2", pca = pca_group, separateTimeAndGroup = separateTimeAndGroup)
-  #   g_group <- ggarrange(gg_1, gg_2, gg_3, gg_4)
-  # }
-  #
-  # if(separateTimeAndGroup){
-  #   ggg <- ggarrange(g_time, g_group)
-  #   return(ggg)
-  # }else{
-  #   return(g_time)
-  # }
   return(object)
 }
 
@@ -69,13 +103,33 @@ sanitizeObject <- function(object){
     stop("The model must contain at least one random effect")
   }
 
+  if(object$minimizeObject){
+    object$df <- object$df[object$validationParticipants,]
+    partColumn <- which(colnames(object$df) == object$participantColumn)
+    object$df[,partColumn] <- factor(object$df[,partColumn])
+  }
   object$df$time <- factor(object$df$time)
   object$df$group <- factor(object$df$group)
   object$df$variable <- factor(object$df$variable)
 
   object$hasGroupTerm <- ifelse(any(formulaTerms == "group"), TRUE, FALSE)
+  # if(!object$hasGroupTerm){
+  #   object$separateTimeAndGroup <- FALSE
+  # }
   object$hasInteractionTerm <- ifelse(any(formulaTerms == "group:time" | formulaTerms == "time:group"), TRUE, FALSE)
   object$covars <- formulaTerms[!(formulaTerms %in% c("time","group","group:time","time:group"))]
 
+  return(object)
+}
+
+#' Remove df from objectt
+#'
+#' This function checks that the input to an RMASCA object is as expected
+#'
+#' @param object An RMASCA object
+#' @return An RMASCA object
+removeEmbedded <- function(object){
+  object$df <- NULL
+  object$validationObject <- NULL
   return(object)
 }
