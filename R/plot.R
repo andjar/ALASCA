@@ -131,7 +131,7 @@ getScores <- function(object){
 }
 
 getLoadingPlot <- function(object, component = "PC1", effect = "time", decreasingLoadings = TRUE){
-  pointSize <- 0.2
+  pointSize <- 0.4
   if(effect == "time"){
     loadings <- getLoadings(object)$time
     PC <- which(colnames(loadings) == component)
@@ -166,7 +166,7 @@ getLoadingPlot <- function(object, component = "PC1", effect = "time", decreasin
 }
 
 getScorePlot <- function(object, component = "PC1", effect = "time"){
-  pointSize <- 0.2
+  pointSize <- 0.4
   PC <- which(colnames(object$RMASCA$score$time) == component)
   if(effect == "time"){
     if(object$separateTimeAndGroup){
