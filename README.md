@@ -1,16 +1,17 @@
-# Installation
+# Repeated Measures Extended ANOVA Simultaneous Component Analysis (RM-ASCA+)
+## Installation
 
 ```{r}
 devtools::install_github("andjar/RMASCA",ref="main")
 ```
 
-# Notice
+## Notice
 
-This is work in practice. The validation is not fully working yet.
+This is work in process. The validation is not fully working yet.
 
-# Usage
+## Usage
 
-For a workng example, see the introductory vignette.
+For a working example, see the [introductory vignette](/articles/introduction.html).
 
 RMASCA expects a data frame, eg. `df`, with at least the following columns (with these exact names)
 
@@ -23,3 +24,6 @@ In addition you need to define your model, including at least one random effect 
 ```{r}
 mod.RMASCA <- RMASCA(df = df, formula = mod, participantColumn = "partid", validate = TRUE)
 ```
+
+## Background
+This implementation of RM-ASCA+ is based on the MATLAB version presented in [Repeated measures ASCA+ for analysis of longitudinal intervention studies with multivariate outcome data](https://www.medrxiv.org/content/10.1101/2020.12.03.20243097v1) by Torfinn S. Madssen, Guro F. Giskeødegård, Age K. Smilde and Johan A. Westerhuis. They are, however, not involved in the development of this R package.
