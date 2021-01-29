@@ -130,6 +130,18 @@ getScores <- function(object){
   return(object$RMASCA$score)
 }
 
+#' Get loading plot
+#'
+#' This function loads a file as a matrix. It assumes that the first column
+#' contains the rownames and the subsequent columns are the sample identifiers.
+#' Any rows with duplicated row names will be dropped with the first one being
+#' kepted.
+#'
+#' @param object An RMASCA object
+#' @param component Which component to plot?
+#' @param effect Plot time or group
+#' @param decreasingLoadings Logical. Should loading sbe sorted in decreasing order?
+#' @return A ggplot object
 getLoadingPlot <- function(object, component = "PC1", effect = "time", decreasingLoadings = TRUE){
   pointSize <- 0.4
   if(effect == "time"){
@@ -165,6 +177,17 @@ getLoadingPlot <- function(object, component = "PC1", effect = "time", decreasin
   return(g)
 }
 
+#' Get score plot
+#'
+#' This function loads a file as a matrix. It assumes that the first column
+#' contains the rownames and the subsequent columns are the sample identifiers.
+#' Any rows with duplicated row names will be dropped with the first one being
+#' kepted.
+#'
+#' @param object An RMASCA object
+#' @param component Which component to plot?
+#' @param effect Plot time or group
+#' @return A ggplot object
 getScorePlot <- function(object, component = "PC1", effect = "time"){
   pointSize <- 0.4
   PC <- which(colnames(object$RMASCA$score$time) == component)
