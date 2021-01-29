@@ -54,6 +54,13 @@ rotateMatrix <- function(object, target){
   c <- GPArotation::targetT(L = as.matrix(a$time[,1:2]), Target = as.matrix(b$time[,1:2]))
   object$RMASCA$loading$time[,1:2] <- c$loadings
   object$RMASCA$score$time[,1:2] <- object$RMASCA$score$time[,1:2]*solve(c$Th)
+  if(object$separateTimeAndGroup){
+    a <- object$RMASCA$loading
+    b <- target$RMASCA$loading
+    c <- GPArotation::targetT(L = as.matrix(a$group[,1:2]), Target = as.matrix(b$group[,1:2]))
+    object$RMASCA$loading$group[,1:2] <- c$loadings
+    object$RMASCA$score$group[,1:2] <- object$RMASCA$score$group[,1:2]*solve(c$Th)
+  }
   return(object)
 }
 
