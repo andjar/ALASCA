@@ -131,6 +131,7 @@ getScores <- function(object){
 }
 
 getLoadingPlot <- function(object, component = "PC1", effect = "time", decreasingLoadings = TRUE){
+  pointSize <- 0.2
   if(effect == "time"){
     loadings <- getLoadings(object)$time
     PC <- which(colnames(loadings) == component)
@@ -152,18 +153,20 @@ getLoadingPlot <- function(object, component = "PC1", effect = "time", decreasin
   }
   loadings$covars = factor(loadings$covars, levels = unique(loadings$covars[order(loadings$loading, decreasing = decreasingLoadings)]))
   if(object$validate){
-    g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high)) + ggplot2::geom_pointrange()
+    g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high)) + ggplot2::geom_pointrange(size = pointSize)
   }else{
     g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading)) + ggplot2::geom_point()
   }
 
   g <- g +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust=1)) +
-    ggplot2::labs(x = "Variable", y = paste0(component, " (", round(100*ifelse(effect == "time", object$RMASCA$loading$explained$time[PC],object$RMASCA$loading$explained$group[PC]),2),"%)"))
+    ggplot2::labs(x = "Variable",
+                  y = paste0(component, " (", round(100*ifelse(effect == "time", object$RMASCA$loading$explained$time[PC],object$RMASCA$loading$explained$group[PC]),2),"%)"))
   return(g)
 }
 
 getScorePlot <- function(object, component = "PC1", effect = "time"){
+  pointSize <- 0.2
   PC <- which(colnames(object$RMASCA$score$time) == component)
   if(effect == "time"){
     if(object$separateTimeAndGroup){
@@ -176,7 +179,8 @@ getScorePlot <- function(object, component = "PC1", effect = "time"){
         score_unc <- object$validation$time$score[object$validation$time$score$PC == PC,]
         score <- merge(score, score_unc, by = "time")
         g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = NA, ymin = low, ymax = high)) +
-          ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) + ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+          ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35), size = pointSize) +
+          ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
       }else{
         g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = NA)) + ggplot2::geom_point() + ggplot2::geom_line()
       }
@@ -191,9 +195,11 @@ getScorePlot <- function(object, component = "PC1", effect = "time"){
         score_unc <- object$validation$time$score[object$validation$time$score$PC == PC,]
         score <- merge(score, score_unc, by = c("time", "group"))
         g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
-          ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) + ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+          ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35), size = pointSize) +
+          ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
       }else{
-        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group)) + ggplot2::geom_point() + ggplot2::geom_line()
+        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group)) +
+          ggplot2::geom_point() + ggplot2::geom_line()
       }
     }
     g <- g +
@@ -210,7 +216,8 @@ getScorePlot <- function(object, component = "PC1", effect = "time"){
       score <- merge(score, score_unc, by = c("time", "group"))
       score <- score[!duplicated(score),]
       g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
-        ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) + ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+        ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35), size = pointSize) +
+        ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
     }else{
       g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group)) +
         ggplot2::geom_point() + ggplot2::geom_line()

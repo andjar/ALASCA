@@ -134,7 +134,7 @@ getEffectMatrix <- function(object){
   object$effect.matrix <- fdf_pred
   object$parts$time <- parts$time
   object$parts$group <- parts$group
-  if(object$minimizeObject){
+  if(!object$minimizeObject){
     cat("Finished calculating effect matrix!\n")
   }
   return(object)

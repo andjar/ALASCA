@@ -53,13 +53,11 @@ rotateMatrix <- function(object, target){
   b <- target$RMASCA$loading
   c <- GPArotation::targetT(L = as.matrix(a$time[,1:2]), Target = as.matrix(b$time[,1:2]))
   object$RMASCA$loading$time[,1:2] <- c$loadings
-  object$RMASCA$score$time[,1:2] <- object$RMASCA$score$time[,1:2]*solve(c$Th)
+  object$RMASCA$score$time[,1:2] <- as.matrix(object$RMASCA$score$time[,1:2]) %*% solve(t(c$Th))
   if(object$separateTimeAndGroup){
-    a <- object$RMASCA$loading
-    b <- target$RMASCA$loading
     c <- GPArotation::targetT(L = as.matrix(a$group[,1:2]), Target = as.matrix(b$group[,1:2]))
     object$RMASCA$loading$group[,1:2] <- c$loadings
-    object$RMASCA$score$group[,1:2] <- object$RMASCA$score$group[,1:2]*solve(c$Th)
+    object$RMASCA$score$group[,1:2] <- as.matrix(object$RMASCA$score$group[,1:2]) %*% solve(t(c$Th))
   }
   return(object)
 }
@@ -78,16 +76,16 @@ getValidationPercentiles <- function(object, objectlist){
   df_score_group <- data.frame()
   if(object$separateTimeAndGroup){
     for(i in 1:length(objectlist)){
-      df_loading_time_temp <- objectlist[[i]]$RMASCA$loading$time
+      df_loading_time_temp <- getLoadings(objectlist[[i]])$time
       df_loading_time <- rbind(df_loading_time, df_loading_time_temp)
 
-      df_score_time_temp <- objectlist[[i]]$RMASCA$score$time
+      df_score_time_temp <- getScores(objectlist[[i]])$time
       df_score_time <- rbind(df_score_time, df_score_time_temp)
 
-      df_loading_group_temp <- objectlist[[i]]$RMASCA$loading$group
+      df_loading_group_temp <- getLoadings(objectlist[[i]])$group
       df_loading_group <- rbind(df_loading_group, df_loading_group_temp)
 
-      df_score_group_temp <- objectlist[[i]]$RMASCA$score$group
+      df_score_group_temp <- getScores(objectlist[[i]])$group
       df_score_group <- rbind(df_score_group, df_score_group_temp)
     }
     perc_loading_time <- data.frame()
@@ -144,6 +142,28 @@ getValidationPercentiles <- function(object, objectlist){
     colnames(perc_score_group) <- c("low", "high", "time","group","PC")
     rownames(perc_score_group) <- NULL
 
+    # Check if we need to switch sign
+    loadings <- getLoadings(object)$time
+    for(comp in 1:2){
+      temp_limits <- perc_loading_time[perc_loading_time$PC == comp,]
+      temp_limits <- merge(temp_limits, loadings[,c(comp, ncol(loadings))], by = "covars")
+      if( temp_limits$low > temp_limits[,3] | temp_limits[,3] > temp_limits$high ){
+        perc_loading_time[perc_loading_time$PC == comp,] <- perc_loading_time[perc_loading_time$PC == comp,]*-1
+        perc_score_time[perc_score_time$PC == comp,] <- perc_score_time[perc_score_time$PC == comp,]*-1
+      }
+    }
+
+    # Check if we need to switch sign
+    loadings <- getLoadings(object)$group
+    for(comp in 1:2){
+      temp_limits <- perc_loading_group[perc_loading_group$PC == comp,]
+      temp_limits <- merge(temp_limits, loadings[,c(comp, ncol(loadings))], by = "covars")
+      if( temp_limits$low > temp_limits[,3] | temp_limits[,3] > temp_limits$high ){
+        perc_loading_group[perc_loading_group$PC == comp,] <- perc_loading_group[perc_loading_group$PC == comp,]*-1
+        perc_score_group[perc_score_group$PC == comp,] <- perc_score_group[perc_score_group$PC == comp,]*-1
+      }
+    }
+
     object$validation$time$loading  <- perc_loading_time
     object$validation$time$score  <- perc_score_time
     object$validation$group$loading  <- perc_loading_group
@@ -186,6 +206,17 @@ getValidationPercentiles <- function(object, objectlist){
     rownames(perc_loading_time) <- NULL
     colnames(perc_score_time) <- c("low", "high", "time","group","PC")
     rownames(perc_score_time) <- NULL
+
+    # Check if we need to switch sign
+    loadings <- getLoadings(object)$time
+    for(comp in 1:2){
+      temp_limits <- perc_loading_time[perc_loading_time$PC == comp,]
+      temp_limits <- merge(temp_limits, loadings[,c(comp, ncol(loadings))], by = "covars")
+      if( temp_limits$low > temp_limits[,3] | temp_limits[,3] > temp_limits$high ){
+        perc_loading_time[perc_loading_time$PC == comp,] <- perc_loading_time[perc_loading_time$PC == comp,]*-1
+        perc_score_time[perc_score_time$PC == comp,] <- perc_score_time[perc_score_time$PC == comp,]*-1
+      }
+    }
 
     object$validation$time$loading  <- perc_loading_time
     object$validation$time$score  <- perc_score_time

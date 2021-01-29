@@ -9,8 +9,9 @@ RMASCA(
   formula,
   separateTimeAndGroup = TRUE,
   pAdjustMethod = "BH",
-  participantColumn = NA,
+  participantColumn = FALSE,
   validate = FALSE,
+  scale = TRUE,
   minimizeObject = FALSE,
   nValFold = 7,
   nValRuns = 50,
@@ -31,6 +32,8 @@ RMASCA(
 \item{participantColumn}{String. Name of the column containing participant identification}
 
 \item{validate}{Logical. If \code{TRUE}, give estimates for robustness}
+
+\item{scale}{If \code{TRUE} (default), each variable is scaled to unit SD and zero mean}
 
 \item{minimizeObject}{Logical. If \code{TRUE}, remove unnecessary clutter, optimize for validation}
 

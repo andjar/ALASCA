@@ -4,7 +4,7 @@
 \alias{validate}
 \title{Validate the RMASCA model LMM}
 \usage{
-validate(object)
+validate(object, participantColumn = FALSE)
 }
 \arguments{
 \item{object}{An RMASCA object}

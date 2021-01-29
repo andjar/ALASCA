@@ -12,6 +12,7 @@
 #' @param validate Logical. If `TRUE`, give estimates for robustness
 #' @param participantColumn String. Name of the column containing participant identification
 #' @param minimizeObject Logical. If `TRUE`, remove unnecessary clutter, optimize for validation
+#' @param scale If `TRUE` (default), each variable is scaled to unit SD and zero mean
 #' @param nValFold Partitions when validating
 #' @param nValRuns number of validation runs
 #' @param validationMethod among  `loo` (leave-one-out, default)
@@ -25,12 +26,14 @@ RMASCA <- function(df,
                    pAdjustMethod = "BH",
                    participantColumn = FALSE,
                    validate = FALSE,
+                   scale = TRUE,
                    minimizeObject = FALSE,
                    nValFold = 7,
                    nValRuns = 50,
                    validationMethod = "loo",
                    validationObject = NA,
                    validationParticipants = NA){
+
   if(!is.na(validationObject[1])){
     object <- list(df = validationObject$df, #inherit
                 formula = validationObject$formula, #inherit
@@ -38,6 +41,7 @@ RMASCA <- function(df,
                 pAdjustMethod = validationObject$pAdjustMethod, #inherit
                 participantColumn = validationObject$participantColumn, #inherit
                 validate = validate, #overwrite
+                scale = validationObject$scale, #inherit
                 minimizeObject = minimizeObject, #overwrite
                 nValFold = validationObject$nValFold, #inherit
                 nValRuns = validationObject$nValRuns, #inherit
@@ -52,6 +56,7 @@ RMASCA <- function(df,
                    pAdjustMethod = pAdjustMethod,
                    participantColumn = participantColumn,
                    validate = validate,
+                   scale = scale,
                    minimizeObject = minimizeObject,
                    nValFold = nValFold,
                    nValRuns = nValRuns,
@@ -67,12 +72,12 @@ RMASCA <- function(df,
   object <- removeCovars(object)
   object <- separateLMECoefficients(object)
   object <- getEffectMatrix(object)
+  object <- doPCA(object)
+  object <- cleanPCA(object)
   if(object$minimizeObject){
     # To save space, we remove unnecessary embedded data
     object <- removeEmbedded(object)
   }
-  object <- doPCA(object)
-  object <- cleanPCA(object)
   if(object$validate){
     object <- validate(object)
   }
@@ -112,6 +117,18 @@ sanitizeObject <- function(object){
   object$df$group <- factor(object$df$group)
   object$df$variable <- factor(object$df$variable)
 
+  if(any(is.na(object$df$time) | is.na(object$df$group))){
+    cat("\n\n!!! -> Oh dear, at least on of your rows is missing either time or group. I have removed it/them for now, but you should check if this is a problem...\n\n")
+    object$df <- object$df[!is.na(object$df$time) & !is.na(object$df$group),]
+  }
+  if(!object$minimizeObject & object$scale){
+    cat("Scaling data...\n")
+    for(i in unique(object$df$variable)){
+      valColumn <- which(as.character(object$formula)[2] == colnames(object$df))
+      object$df[object$df$variable == i,valColumn] <- (object$df[object$df$variable == i,valColumn] - mean(object$df[object$df$variable == i,valColumn]))/sd(object$df[object$df$variable == i,valColumn])
+    }
+  }
+
   object$hasGroupTerm <- ifelse(any(formulaTerms == "group"), TRUE, FALSE)
   # if(!object$hasGroupTerm){
   #   object$separateTimeAndGroup <- FALSE
@@ -131,5 +148,7 @@ sanitizeObject <- function(object){
 removeEmbedded <- function(object){
   object$df <- NULL
   object$validationObject <- NULL
+  object$LMM.coefficients <- NULL
+  object$effect.matrix <- NULL
   return(object)
 }

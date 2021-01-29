@@ -5,9 +5,9 @@
 #' @param object An RMASCA object to be sanitized
 #' @return An RMASCA object
 doPCA <- function(object){
-  object$pca$time <- prcomp(object$effect.matrix[object$effect.matrix$comp == "TIME",1:(ncol(object$effect.matrix)-1)])
+  object$pca$time <- prcomp(object$effect.matrix[object$effect.matrix$comp == "TIME",1:(ncol(object$effect.matrix)-1)], scale = FALSE, center = TRUE)
   if(object$separateTimeAndGroup){
-    object$pca$group <- prcomp(object$effect.matrix[object$effect.matrix$comp == "GROUP",1:(ncol(object$effect.matrix)-1)])
+    object$pca$group <- prcomp(object$effect.matrix[object$effect.matrix$comp == "GROUP",1:(ncol(object$effect.matrix)-1)], scale = FALSE, center = TRUE)
   }
   return(object)
 }
