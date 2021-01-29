@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
 library(RMASCA)
 
 ## ----dummy_data_configuration-------------------------------------------------
-nPart <- 300
+nPart <- 600
 nGroups <- c("Controls", "Chocolate", "Salad")
 nTime <- c(1, 2, 3, 4)
 variables <- c("BMI", "Glucose", "VLDL", "LDL", "HDL", "ferritin", "CRP", "Happiness", "Anger", "Age")
@@ -56,6 +56,11 @@ df$HDL <- df$HDL*df$time
 df$group <- factor(df$group)
 df$group <- relevel(df$group, ref = "Controls")
 df <- reshape2::melt(df, id.vars = c("partid", "group", "time"))
+for(i in unique(df$variables)){
+  for(j in unique(df$partid)){
+    df$value[df$variables == i & df$partid == j] <- df$value[df$variables == i & df$partid == j] + sample(0:5,1)
+  }
+}
 
 ## ----data_dummy_plot----------------------------------------------------------
 ggplot2::ggplot(data = df,
@@ -64,6 +69,14 @@ ggplot2::ggplot(data = df,
   ggplot2::facet_wrap(~variable, scales = "free_y") +
   ggplot2::theme(legend.position = "bottom") +
   ggplot2::labs(x = "Time", y = "Value", color = "Group")
+
+## ----data_dummy_plot_2--------------------------------------------------------
+ggplot2::ggplot(data = subset(df, partid %in% sample(unique(partid), 5)),
+     ggplot2::aes(x = factor(time), y = value, group = partid, color = group)) +
+     ggplot2::geom_point() + ggplot2::geom_line() +
+     ggplot2::facet_wrap(~variable, scales = "free_y") +
+     ggplot2::theme(legend.position = "bottom") +
+     ggplot2::labs(x = "Time", y = "Value", color = "Group")
 
 ## ----RMASCA_simple_model------------------------------------------------------
 model.formula <- value ~ time*group + (1|partid)
@@ -137,6 +150,8 @@ ggpubr::ggarrange(
 )
 
 ## ----robustness---------------------------------------------------------------
+res.simple$nValRuns <- 50 # the more, the better
+
 res.simple <- validate(res.simple, participantColumn = "partid")
 
 plot(res.simple)

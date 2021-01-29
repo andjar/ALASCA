@@ -26,10 +26,10 @@ library(RMASCA)
 
 ## Creating a dummy data set
 
-Let us start out by creating some dummy data for us to work with. In this example we have 300 participants measured four different times. The participants belonged to three different groups -- for example control group, chocolate diet and salad diet -- and we measured ten variables each time.
+Let us start out by creating some dummy data for us to work with. In this example we have 600 participants measured four different times. The participants belonged to three different groups -- for example control group, chocolate diet and salad diet -- and we measured ten variables each time.
 
 ```{r dummy_data_configuration}
-nPart <- 300
+nPart <- 600
 nGroups <- c("Controls", "Chocolate", "Salad")
 nTime <- c(1, 2, 3, 4)
 variables <- c("BMI", "Glucose", "VLDL", "LDL", "HDL", "ferritin", "CRP", "Happiness", "Anger", "Age")
@@ -86,12 +86,17 @@ df$Age <- df$Age*df$time
 df$HDL <- df$HDL*df$time
 ```
 
-And we need to define the control group and transform it to the long format:
+And we need to define the control group and transform it to the long format. And since they are "real" people, we will give them individual baselines so that we need to use linear mixed models with participant as random intercepts.
 
 ```{r data_dummy_melt}
 df$group <- factor(df$group)
 df$group <- relevel(df$group, ref = "Controls")
 df <- reshape2::melt(df, id.vars = c("partid", "group", "time"))
+for(i in unique(df$variables)){
+  for(j in unique(df$partid)){
+    df$value[df$variables == i & df$partid == j] <- df$value[df$variables == i & df$partid == j] + sample(0:5,1)
+  }
+}
 ```
 
 Let us see how it looks
@@ -103,6 +108,17 @@ ggplot2::ggplot(data = df,
   ggplot2::facet_wrap(~variable, scales = "free_y") +
   ggplot2::theme(legend.position = "bottom") +
   ggplot2::labs(x = "Time", y = "Value", color = "Group")
+```
+
+And we can have a look at some random participants to see typical trajectories
+
+```{r data_dummy_plot_2}
+ggplot2::ggplot(data = subset(df, partid %in% sample(unique(partid), 5)),
+     ggplot2::aes(x = factor(time), y = value, group = partid, color = group)) +
+     ggplot2::geom_point() + ggplot2::geom_line() +
+     ggplot2::facet_wrap(~variable, scales = "free_y") +
+     ggplot2::theme(legend.position = "bottom") +
+     ggplot2::labs(x = "Time", y = "Value", color = "Group")
 ```
 
 ## Using RM-ASCA+
@@ -211,6 +227,8 @@ ggpubr::ggarrange(
 We often need to now how robust our results are. In this package, we use leave-one-out jack-knifing where we divide our participants into `nValFold` groups and leave out one of the groups. Note that the group proportions are kept relatively stable. We repeat this process `nValRuns` times and use the 2.5 and 97.5 percentiles as our uncertainty estimate. If you know that you are going to do this, you can set `validate = TRUE` when you run the RMASCA model the first time. This usually takes some time. Also note that we need to specify which column that contains participant id with the argument `partid`. We can also call validation after having initialized the RMASCA object:
 
 ```{r robustness}
+res.simple$nValRuns <- 50 # the more, the better
+
 res.simple <- validate(res.simple, participantColumn = "partid")
 
 plot(res.simple)
