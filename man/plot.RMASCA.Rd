@@ -10,7 +10,8 @@
   effect = "both",
   decreasingLoadings = TRUE,
   only = "both",
-  enlist = FALSE
+  enlist = FALSE,
+  tooDense = NA
 )
 }
 \arguments{
@@ -25,6 +26,8 @@
 \item{only}{String stating which plot to return; \code{both} (default), \code{score} or \code{loading}}
 
 \item{enlist}{Logical. If TRUE, the plots are returned as a list and not as a composed figure (default)}
+
+\item{tooDense}{Numerical. If > 0, only name this number of covariables}
 }
 \value{
 An ggplot2 object (or a list og ggplot objects)
