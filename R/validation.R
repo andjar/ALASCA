@@ -9,6 +9,7 @@
 #' @export
 validate <- function(object, participantColumn = FALSE){
   object$validate <- TRUE
+
   if(participantColumn == FALSE){
     if(object$participantColumn == FALSE){
       stop("You need to specify the column containing participant id in `participantColumn`")
@@ -41,8 +42,26 @@ validate <- function(object, participantColumn = FALSE){
     time_mean[ii] <- end.time - start.time
     cat("--- Used ",round(time_mean[ii],2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*mean(time_mean),2)," seconds \n")
   }
-  object <- getValidationPercentiles(object, objectlist = temp_object)
   
+  # Tried parallelization, but it didn't improve performance significantly
+  # doMC::registerDoMC(cores=parallel::detectCores()-1)
+  # temp_object <- foreach::"%dopar%"(foreach::foreach(1:object$nValRuns, .inorder = FALSE, .packages=c("RMASCA","foreach")),{
+  #   selectedParts <- c()
+  #   for(gr in unique(object$df$group)){
+  #     selectedParts_temp_all <- unique(object$df[object$df$group == gr,partColumn])
+  #     selectedParts_temp_ticket <- sample(1:object$nValFold, length(selectedParts_temp_all), replace = TRUE)
+  #     selectedParts_temp <- selectedParts_temp_all[selectedParts_temp_ticket != 1]
+  #     selectedParts <- c(selectedParts, selectedParts_temp)
+  #   }
+  #   temp_object <- RMASCA(df = NA,
+  #                               validate = FALSE, # to avoid recursion
+  #                               minimizeObject = TRUE,
+  #                               validationObject = object,
+  #                               validationParticipants = object$df[,partColumn] %in% selectedParts)
+  #   temp_object <- rotateMatrix(object = temp_object, target = object)
+  # })
+  object <- getValidationPercentiles(object, objectlist = temp_object)
+
   return(object)
 }
 

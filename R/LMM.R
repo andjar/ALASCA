@@ -13,20 +13,36 @@ getLMECoefficients <- function(object){
   cyts <- unique(object$df$variable)
   cc <- 1
   ccc <- 1
-  for(i in unique(df$variable)){
-    if(!object$minimizeObject){
-      cat("- ",i,"\n")
+  #start.time <- Sys.time()
+  object$lmer.models <- lapply(unique(object$df$variable), function(i){
+      lmer.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
+      attr(lmer.model, "name") <- i
+      lmer.model
     }
-    lmer.model[[cc]] <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
-    tmp_ef <- lme4::fixef(lmer.model[[cc]])
-    a <- as.data.frame(summary(lmer.model[[cc]])[["coefficients"]][,c(1,5)])
-    a$covar <- i
+  )
+  #end.time <- Sys.time()
+  #cat("Time 1: ", end.time - start.time, "\n")
+  names(object$lmer.models) <- unique(object$df$variable)
+  #start.time <- Sys.time()
+  fdf <- Reduce(rbind,lapply(object$lmer.models, function(y){
+    tmp_ef <- lme4::fixef(y)
+    a <- as.data.frame(summary(y)[["coefficients"]][,c(1,5)])
+    a$covar <- attr(y, "name")
     a$variable <- rownames(a)
     rownames(a) <- NULL
-    fdf <- rbind(fdf, a)
-    cc <- cc + 1
-  }
-  object$lmer.models <- lmer.model
+    a
+  }))
+  # fdf <- Reduce(rbind,lapply(seq_along(object$lmer.models), function(y, n, i){
+  #       tmp_ef <- lme4::fixef(y[[i]])
+  #       a <- as.data.frame(summary(y[[i]])[["coefficients"]][,c(1,5)])
+  #       a$covar <- n[[i]]
+  #       a$variable <- rownames(a)
+  #       rownames(a) <- NULL
+  #       a
+  #     }, y = object$lmer.models, n = names(object$lmer.models)
+  #   ))
+  #end.time <- Sys.time()
+  #cat("Time 2: ", end.time - start.time, "\n")
   if(!object$minimizeObject){
     cat("Finished calculating LMM coefficients!\n")
   }
