@@ -1,5 +1,6 @@
 ---
 title: "Early Preeclampsia"
+bibliography: rmasca.bib
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Early Preeclampsia}
@@ -24,7 +25,7 @@ somaids <- read.csv(file = "somaids.csv", header = TRUE, sep = ";")
 library(RMASCA)
 ```
 
-In this example we will look at data from https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0217273. This is mostly a demonstration of the `RMASCA` package, and not a stringent scientific analysis.
+In this example we will look at data from @tarcaPredictionEarlyPreeclampsia2019. This is mostly a demonstration of the `RMASCA` package, and not a stringent scientific analysis.
 
 The data looks like this
 
@@ -100,20 +101,20 @@ In the paper, they identified the following important proteins (I'd to look up t
 * Activin-A (couldn't find ID)
 * Leukocyte cell adhesion molecule (ALCAM): SL003166
 
-So to speed things up, we select these in addition to 30 randomly selected proteins.
+In addition, I am interested in inflammatory proteins, so let us add interleukins and interferons.
 
 ```{r}
-selectedVariables <- c("SL000525", "SL002640", "SL005217", "SL003166")
-selectedVariables <- c(selectedVariables, as.character(unique(df$variable)[sample(1:length(unique(df$variable)),30)]))
-df <- subset(df, variable %in% selectedVariables)
-df$variable <- factor(df$variable)
-df <- merge(df, somaids, by.x = "variable", by.y = "SomaId")
+df <- merge(df, somaids, by.x = "variable", by.y = "SomaId") # add protein names
+selectedVariables <- c(which(df$variable %in% c("SL000525", "SL002640", "SL005217", "SL003166")),
+                       which(substr(df$Target,1,3) == "IL-"),
+                       which(substr(df$Target,1,4) == "IFN-"))
+df <- df[selectedVariables,]
 df$variable <- factor(df$Target)
 ```
 
 And then we are ready to try `RMASCA`,
 
-```{r, echo = FALSE}
+```{r}
 PE.mod <- RMASCA(df, model.formula)
 ```
 
@@ -123,21 +124,26 @@ With a screeplot we can say something about how many components we need,
 screeplot(PE.mod)
 ```
 
-It seems like three components for time and three is probably enough for group effect also, but let us use five for now.
+It seems like three components should be enough.
 
 ```{r}
 plot(PE.mod)
-plot(PE.mod, component = "PC2")
-plot(PE.mod, component = "PC3")
-plot(PE.mod, component = "PC4", effect = "group")
-plot(PE.mod, component = "PC5", effect = "group")
+```
+
+It's a bit crowded on the x-axis of the loadings, so we will only name the five with highest/lowest loading,
+
+```{r}
+plot(PE.mod, tooDense = 5)
+plot(PE.mod, component = "PC2", tooDense = 5)
+plot(PE.mod, component = "PC3", tooDense = 5)
+plot(PE.mod, component = "PC4", effect = "group", tooDense = 5) # just to demonstrate how to extract only the group effect plot
 ```
 
 Let us add some uncertainty estimates to our model. This may take some time.
 
-```{r, echo=FALSE, message=FALSE, results='hide'}
+```{r}
 PE.mod <- validate(PE.mod, participantColumn = "ID")
-plot(PE.mod)
-plot(PE.mod, component = "PC2")
-#plot(PE.mod, component = "PC3") # At the moment, we are only calculating uncertainty for coponent 1 and 2
+plot(PE.mod, tooDense = 5)
+plot(PE.mod, component = "PC2", tooDense = 5)
+#plot(PE.mod, component = "PC3") # At the moment, we are only calculating uncertainty for component 1 and 2
 ```
