@@ -85,8 +85,14 @@
 
     
     
+<div id="getting-started" class="section level1">
+<h1 class="hasAnchor">
+<a href="#getting-started" class="anchor"></a>Getting started</h1>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">RMASCA</span><span class="op">)</span></code></pre></div>
+<div id="preparing-the-data" class="section level2">
+<h2 class="hasAnchor">
+<a href="#preparing-the-data" class="anchor"></a>Preparing the data</h2>
 <p>In this example we will look at data from <span class="citation">Tarca et al. (2019)</span>. This is mostly a demonstration of the <code>RMASCA</code> package, and not a stringent scientific analysis.</p>
 <p>The data looks like this</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -158,9 +164,6 @@
               <span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">GADiagnosis</span><span class="op">)</span>, <span class="st">"Normal"</span>,
               <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">EarlyPE_MVU</span> <span class="op">==</span> <span class="fl">1</span>, <span class="st">"PEV"</span>, <span class="st">"PE"</span><span class="op">)</span>
             <span class="op">)</span></code></pre></div>
-<p>Now we can set up our model. Since it’s an observational study, we can start with</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">model.formula</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">ID</span><span class="op">)</span></code></pre></div>
 <p>In the paper, they identified the following important proteins (I’d to look up the somaIDs myself, so errors may have occurred)</p>
 <ul>
 <li>Matrix metalloproteinase-7 (also known as Matrilysin): SL000525</li>
@@ -171,82 +174,31 @@
 <li>Activin-A (couldn’t find ID)</li>
 <li>Leukocyte cell adhesion molecule (ALCAM): SL003166</li>
 </ul>
-<p>In addition, I am interested in inflammatory proteins, so let us add interleukins and interferons.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<p>In addition, I am interested in inflammatory proteins, so let us add interleukins and interferons, and eotaxin.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html">merge</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">somaids</span>, by.x <span class="op">=</span> <span class="st">"variable"</span>, by.y <span class="op">=</span> <span class="st">"SomaId"</span><span class="op">)</span> <span class="co"># add protein names</span>
-<span class="va">selectedVariables</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">variable</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"SL000525"</span>, <span class="st">"SL002640"</span>, <span class="st">"SL005217"</span>, <span class="st">"SL003166"</span><span class="op">)</span><span class="op">)</span>,
+<span class="va">selectedVariables</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">variable</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"SL000525"</span>, <span class="st">"SL002640"</span>, <span class="st">"SL005217"</span>, <span class="st">"SL003166"</span>, <span class="st">"SL003104"</span>,<span class="st">"SL000406"</span><span class="op">)</span><span class="op">)</span>,
                        <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substr.html">substr</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">Target</span>,<span class="fl">1</span>,<span class="fl">3</span><span class="op">)</span> <span class="op">==</span> <span class="st">"IL-"</span><span class="op">)</span>,
                        <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substr.html">substr</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">Target</span>,<span class="fl">1</span>,<span class="fl">4</span><span class="op">)</span> <span class="op">==</span> <span class="st">"IFN-"</span><span class="op">)</span><span class="op">)</span>
 <span class="va">df</span> <span class="op">&lt;-</span> <span class="va">df</span><span class="op">[</span><span class="va">selectedVariables</span>,<span class="op">]</span>
 <span class="va">df</span><span class="op">$</span><span class="va">variable</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">Target</span><span class="op">)</span></code></pre></div>
-<p>And then we are ready to try <code>RMASCA</code>,</p>
+</div>
+<div id="preparing-the-model" class="section level2">
+<h2 class="hasAnchor">
+<a href="#preparing-the-model" class="anchor"></a>Preparing the model</h2>
+<p>Now we can set up our model. Since it’s an observational study, we can start with</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">model.formula</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">ID</span><span class="op">)</span></code></pre></div>
+</div>
+</div>
+<div id="running-rmasca" class="section level1">
+<h1 class="hasAnchor">
+<a href="#running-rmasca" class="anchor"></a>Running RMASCA</h1>
+<p>We are now ready to try <code>RMASCA</code>,</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">PE.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RMASCA.html">RMASCA</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">model.formula</span><span class="op">)</span>
 <span class="co">#&gt; Scaling data...</span>
 <span class="co">#&gt; Calculating LMM coefficients...</span>
-<span class="co">#&gt; -  MMP-7 </span>
-<span class="co">#&gt; -  PlGF </span>
-<span class="co">#&gt; -  ALCAM </span>
-<span class="co">#&gt; -  Siglec-6 </span>
-<span class="co">#&gt; -  IL-8 </span>
-<span class="co">#&gt; -  IL-6 </span>
-<span class="co">#&gt; -  IL-1a </span>
-<span class="co">#&gt; -  IL-11 </span>
-<span class="co">#&gt; -  IL-16 </span>
-<span class="co">#&gt; -  IL-2 </span>
-<span class="co">#&gt; -  IL-3 </span>
-<span class="co">#&gt; -  IL-4 </span>
-<span class="co">#&gt; -  IL-5 </span>
-<span class="co">#&gt; -  IL-7 </span>
-<span class="co">#&gt; -  IL-17 </span>
-<span class="co">#&gt; -  IL-12 </span>
-<span class="co">#&gt; -  IL-10 </span>
-<span class="co">#&gt; -  IL-13 </span>
-<span class="co">#&gt; -  IL-1b </span>
-<span class="co">#&gt; -  IL-6 sRa </span>
-<span class="co">#&gt; -  IL-1 sRI </span>
-<span class="co">#&gt; -  IL-18 BPa </span>
-<span class="co">#&gt; -  IL-2 sRa </span>
-<span class="co">#&gt; -  IL-2 sRg </span>
-<span class="co">#&gt; -  IL-4 sR </span>
-<span class="co">#&gt; -  IL-1 R4 </span>
-<span class="co">#&gt; -  IL-10 Rb </span>
-<span class="co">#&gt; -  IL-12 Rb1 </span>
-<span class="co">#&gt; -  IL-13 Ra1 </span>
-<span class="co">#&gt; -  IL-15 Ra </span>
-<span class="co">#&gt; -  IL-18 Ra </span>
-<span class="co">#&gt; -  IL-20 </span>
-<span class="co">#&gt; -  IL-22 </span>
-<span class="co">#&gt; -  IL-17B </span>
-<span class="co">#&gt; -  IL-17E </span>
-<span class="co">#&gt; -  IL-17F </span>
-<span class="co">#&gt; -  IL-17D </span>
-<span class="co">#&gt; -  IL-19 </span>
-<span class="co">#&gt; -  IL-1 R AcP </span>
-<span class="co">#&gt; -  IL-1 sR9 </span>
-<span class="co">#&gt; -  IL-17 sR </span>
-<span class="co">#&gt; -  IL-18 Rb </span>
-<span class="co">#&gt; -  IL-1Rrp2 </span>
-<span class="co">#&gt; -  IL-17B R </span>
-<span class="co">#&gt; -  IL-1F7 </span>
-<span class="co">#&gt; -  IL-20 Ra </span>
-<span class="co">#&gt; -  IL-22BP </span>
-<span class="co">#&gt; -  IL-23 </span>
-<span class="co">#&gt; -  IL-23 R </span>
-<span class="co">#&gt; -  IL-3 Ra </span>
-<span class="co">#&gt; -  IL-5 Ra </span>
-<span class="co">#&gt; -  IL-7 Ra </span>
-<span class="co">#&gt; -  IL-27 </span>
-<span class="co">#&gt; -  IL-11 RA </span>
-<span class="co">#&gt; -  IL-12 RB2 </span>
-<span class="co">#&gt; -  IL-17 RD </span>
-<span class="co">#&gt; -  IL-17 RC </span>
-<span class="co">#&gt; -  IL-34 </span>
-<span class="co">#&gt; -  IFN-g R1 </span>
-<span class="co">#&gt; -  IFN-g </span>
-<span class="co">#&gt; -  IFN-aA </span>
-<span class="co">#&gt; -  IFN-lambda 1 </span>
-<span class="co">#&gt; -  IFN-lambda 2 </span>
 <span class="co">#&gt; Finished calculating LMM coefficients!</span>
 <span class="co">#&gt; Calculating effect matrix (may take some time...)</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span></code></pre></div>
@@ -277,110 +229,114 @@
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="st">"PC4"</span>, effect <span class="op">=</span> <span class="st">"group"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="co"># just to demonstrate how to extract only the group effect plot</span></code></pre></div>
 <p><img src="pregnancy_files/figure-html/unnamed-chunk-12-4.png" width="100%" style="display: block; margin: auto;"></p>
-<p>Let us add some uncertainty estimates to our model. This may take some time.</p>
+<p>We can also look up specific variables,</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, highlight <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"PlGF"</span>, <span class="st">"IL-6"</span>, <span class="st">"IL-1b"</span>, <span class="st">"IFN-g"</span>, <span class="st">"Eotaxin-2"</span>, <span class="st">"Eotaxin"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="pregnancy_files/figure-html/unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;"></p>
+<p>Let us add some uncertainty estimates to our model. This may take some time.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">PE.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">PE.mod</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span><span class="op">)</span>
 <span class="co">#&gt; Running validation...</span>
 <span class="co">#&gt; - Run  1  of  50 </span>
-<span class="co">#&gt; --- Used  31.7  seconds. Est. time remaining:  1553.12  seconds </span>
+<span class="co">#&gt; --- Used  35.94  seconds. Est. time remaining:  1761.29  seconds </span>
 <span class="co">#&gt; - Run  2  of  50 </span>
-<span class="co">#&gt; --- Used  34.81  seconds. Est. time remaining:  1596.1  seconds </span>
+<span class="co">#&gt; --- Used  35.78  seconds. Est. time remaining:  1721.51  seconds </span>
 <span class="co">#&gt; - Run  3  of  50 </span>
-<span class="co">#&gt; --- Used  34.14  seconds. Est. time remaining:  1576.81  seconds </span>
+<span class="co">#&gt; --- Used  34.73  seconds. Est. time remaining:  1667.82  seconds </span>
 <span class="co">#&gt; - Run  4  of  50 </span>
-<span class="co">#&gt; --- Used  33.4  seconds. Est. time remaining:  1541.58  seconds </span>
+<span class="co">#&gt; --- Used  36.69  seconds. Est. time remaining:  1646.23  seconds </span>
 <span class="co">#&gt; - Run  5  of  50 </span>
-<span class="co">#&gt; --- Used  32.96  seconds. Est. time remaining:  1503.13  seconds </span>
+<span class="co">#&gt; --- Used  35.92  seconds. Est. time remaining:  1611.68  seconds </span>
 <span class="co">#&gt; - Run  6  of  50 </span>
-<span class="co">#&gt; --- Used  31.52  seconds. Est. time remaining:  1455.9  seconds </span>
+<span class="co">#&gt; --- Used  36.7  seconds. Est. time remaining:  1582.37  seconds </span>
 <span class="co">#&gt; - Run  7  of  50 </span>
-<span class="co">#&gt; --- Used  33.19  seconds. Est. time remaining:  1423.46  seconds </span>
+<span class="co">#&gt; --- Used  28.99  seconds. Est. time remaining:  1503.59  seconds </span>
 <span class="co">#&gt; - Run  8  of  50 </span>
-<span class="co">#&gt; --- Used  33.65  seconds. Est. time remaining:  1393.21  seconds </span>
+<span class="co">#&gt; --- Used  28.09  seconds. Est. time remaining:  1432.52  seconds </span>
 <span class="co">#&gt; - Run  9  of  50 </span>
-<span class="co">#&gt; --- Used  33.37  seconds. Est. time remaining:  1360.93  seconds </span>
+<span class="co">#&gt; --- Used  29.39  seconds. Est. time remaining:  1376.94  seconds </span>
 <span class="co">#&gt; - Run  10  of  50 </span>
-<span class="co">#&gt; --- Used  31.24  seconds. Est. time remaining:  1319.93  seconds </span>
+<span class="co">#&gt; --- Used  29.77  seconds. Est. time remaining:  1328.11  seconds </span>
 <span class="co">#&gt; - Run  11  of  50 </span>
-<span class="co">#&gt; --- Used  26.04  seconds. Est. time remaining:  1262.26  seconds </span>
+<span class="co">#&gt; --- Used  30.5  seconds. Est. time remaining:  1285.32  seconds </span>
 <span class="co">#&gt; - Run  12  of  50 </span>
-<span class="co">#&gt; --- Used  26.25  seconds. Est. time remaining:  1210.53  seconds </span>
+<span class="co">#&gt; --- Used  29.98  seconds. Est. time remaining:  1242.95  seconds </span>
 <span class="co">#&gt; - Run  13  of  50 </span>
-<span class="co">#&gt; --- Used  25.73  seconds. Est. time remaining:  1161.24  seconds </span>
+<span class="co">#&gt; --- Used  30.53  seconds. Est. time remaining:  1204.04  seconds </span>
 <span class="co">#&gt; - Run  14  of  50 </span>
-<span class="co">#&gt; --- Used  25.81  seconds. Est. time remaining:  1115.53  seconds </span>
+<span class="co">#&gt; --- Used  30.33  seconds. Est. time remaining:  1165.81  seconds </span>
 <span class="co">#&gt; - Run  15  of  50 </span>
-<span class="co">#&gt; --- Used  26.23  seconds. Est. time remaining:  1073.46  seconds </span>
+<span class="co">#&gt; --- Used  30.12  seconds. Est. time remaining:  1128.16  seconds </span>
 <span class="co">#&gt; - Run  16  of  50 </span>
-<span class="co">#&gt; --- Used  26.25  seconds. Est. time remaining:  1033.4  seconds </span>
+<span class="co">#&gt; --- Used  30.83  seconds. Est. time remaining:  1092.94  seconds </span>
 <span class="co">#&gt; - Run  17  of  50 </span>
-<span class="co">#&gt; --- Used  27.09  seconds. Est. time remaining:  996.59  seconds </span>
+<span class="co">#&gt; --- Used  30.47  seconds. Est. time remaining:  1057.54  seconds </span>
 <span class="co">#&gt; - Run  18  of  50 </span>
-<span class="co">#&gt; --- Used  27.94  seconds. Est. time remaining:  962.37  seconds </span>
+<span class="co">#&gt; --- Used  31.2  seconds. Est. time remaining:  1023.98  seconds </span>
 <span class="co">#&gt; - Run  19  of  50 </span>
-<span class="co">#&gt; --- Used  27.73  seconds. Est. time remaining:  928.46  seconds </span>
+<span class="co">#&gt; --- Used  32.16  seconds. Est. time remaining:  992.24  seconds </span>
 <span class="co">#&gt; - Run  20  of  50 </span>
-<span class="co">#&gt; --- Used  28.21  seconds. Est. time remaining:  895.91  seconds </span>
+<span class="co">#&gt; --- Used  30.42  seconds. Est. time remaining:  957.85  seconds </span>
 <span class="co">#&gt; - Run  21  of  50 </span>
-<span class="co">#&gt; --- Used  28.1  seconds. Est. time remaining:  863.61  seconds </span>
+<span class="co">#&gt; --- Used  31.06  seconds. Est. time remaining:  924.72  seconds </span>
 <span class="co">#&gt; - Run  22  of  50 </span>
-<span class="co">#&gt; --- Used  27.75  seconds. Est. time remaining:  831.24  seconds </span>
+<span class="co">#&gt; --- Used  30.41  seconds. Est. time remaining:  890.96  seconds </span>
 <span class="co">#&gt; - Run  23  of  50 </span>
-<span class="co">#&gt; --- Used  28  seconds. Est. time remaining:  799.57  seconds </span>
+<span class="co">#&gt; --- Used  31.37  seconds. Est. time remaining:  858.61  seconds </span>
 <span class="co">#&gt; - Run  24  of  50 </span>
-<span class="co">#&gt; --- Used  29.27  seconds. Est. time remaining:  769.59  seconds </span>
+<span class="co">#&gt; --- Used  31.59  seconds. Est. time remaining:  826.59  seconds </span>
 <span class="co">#&gt; - Run  25  of  50 </span>
-<span class="co">#&gt; --- Used  28.35  seconds. Est. time remaining:  738.74  seconds </span>
+<span class="co">#&gt; --- Used  32.33  seconds. Est. time remaining:  795.33  seconds </span>
 <span class="co">#&gt; - Run  26  of  50 </span>
-<span class="co">#&gt; --- Used  29.14  seconds. Est. time remaining:  708.8  seconds </span>
+<span class="co">#&gt; --- Used  32.22  seconds. Est. time remaining:  763.9  seconds </span>
 <span class="co">#&gt; - Run  27  of  50 </span>
-<span class="co">#&gt; --- Used  28.96  seconds. Est. time remaining:  678.78  seconds </span>
+<span class="co">#&gt; --- Used  33.63  seconds. Est. time remaining:  733.61  seconds </span>
 <span class="co">#&gt; - Run  28  of  50 </span>
-<span class="co">#&gt; --- Used  29.36  seconds. Est. time remaining:  649.15  seconds </span>
+<span class="co">#&gt; --- Used  24.8  seconds. Est. time remaining:  696.13  seconds </span>
 <span class="co">#&gt; - Run  29  of  50 </span>
-<span class="co">#&gt; --- Used  31.24  seconds. Est. time remaining:  620.9  seconds </span>
+<span class="co">#&gt; --- Used  24.43  seconds. Est. time remaining:  659.27  seconds </span>
 <span class="co">#&gt; - Run  30  of  50 </span>
-<span class="co">#&gt; --- Used  29.66  seconds. Est. time remaining:  591.39  seconds </span>
+<span class="co">#&gt; --- Used  26.35  seconds. Est. time remaining:  624.51  seconds </span>
 <span class="co">#&gt; - Run  31  of  50 </span>
-<span class="co">#&gt; --- Used  30.79  seconds. Est. time remaining:  562.57  seconds </span>
+<span class="co">#&gt; --- Used  27.17  seconds. Est. time remaining:  590.8  seconds </span>
 <span class="co">#&gt; - Run  32  of  50 </span>
-<span class="co">#&gt; --- Used  30.68  seconds. Est. time remaining:  533.57  seconds </span>
+<span class="co">#&gt; --- Used  28.57  seconds. Est. time remaining:  558.29  seconds </span>
 <span class="co">#&gt; - Run  33  of  50 </span>
-<span class="co">#&gt; --- Used  30.06  seconds. Est. time remaining:  504.14  seconds </span>
+<span class="co">#&gt; --- Used  27.43  seconds. Est. time remaining:  525.42  seconds </span>
 <span class="co">#&gt; - Run  34  of  50 </span>
-<span class="co">#&gt; --- Used  22.5  seconds. Est. time remaining:  471.12  seconds </span>
+<span class="co">#&gt; --- Used  29.18  seconds. Est. time remaining:  493.7  seconds </span>
 <span class="co">#&gt; - Run  35  of  50 </span>
-<span class="co">#&gt; --- Used  22.04  seconds. Est. time remaining:  438.5  seconds </span>
+<span class="co">#&gt; --- Used  29.9  seconds. Est. time remaining:  462.43  seconds </span>
 <span class="co">#&gt; - Run  36  of  50 </span>
-<span class="co">#&gt; --- Used  22.69  seconds. Est. time remaining:  406.72  seconds </span>
+<span class="co">#&gt; --- Used  28.18  seconds. Est. time remaining:  430.57  seconds </span>
 <span class="co">#&gt; - Run  37  of  50 </span>
-<span class="co">#&gt; --- Used  23.54  seconds. Est. time remaining:  375.73  seconds </span>
+<span class="co">#&gt; --- Used  29  seconds. Est. time remaining:  399.2  seconds </span>
 <span class="co">#&gt; - Run  38  of  50 </span>
-<span class="co">#&gt; --- Used  24.3  seconds. Est. time remaining:  345.38  seconds </span>
+<span class="co">#&gt; --- Used  30.67  seconds. Est. time remaining:  368.48  seconds </span>
 <span class="co">#&gt; - Run  39  of  50 </span>
-<span class="co">#&gt; --- Used  24.03  seconds. Est. time remaining:  315.25  seconds </span>
+<span class="co">#&gt; --- Used  31.8  seconds. Est. time remaining:  338.08  seconds </span>
 <span class="co">#&gt; - Run  40  of  50 </span>
-<span class="co">#&gt; --- Used  23.34  seconds. Est. time remaining:  285.27  seconds </span>
+<span class="co">#&gt; --- Used  30.05  seconds. Est. time remaining:  307.18  seconds </span>
 <span class="co">#&gt; - Run  41  of  50 </span>
-<span class="co">#&gt; --- Used  23.73  seconds. Est. time remaining:  255.69  seconds </span>
+<span class="co">#&gt; --- Used  31.2  seconds. Est. time remaining:  276.57  seconds </span>
 <span class="co">#&gt; - Run  42  of  50 </span>
-<span class="co">#&gt; --- Used  23.98  seconds. Est. time remaining:  226.43  seconds </span>
+<span class="co">#&gt; --- Used  30.03  seconds. Est. time remaining:  245.71  seconds </span>
 <span class="co">#&gt; - Run  43  of  50 </span>
-<span class="co">#&gt; --- Used  24.2  seconds. Est. time remaining:  197.46  seconds </span>
+<span class="co">#&gt; --- Used  30.26  seconds. Est. time remaining:  214.92  seconds </span>
 <span class="co">#&gt; - Run  44  of  50 </span>
-<span class="co">#&gt; --- Used  24.99  seconds. Est. time remaining:  168.81  seconds </span>
+<span class="co">#&gt; --- Used  35.83  seconds. Est. time remaining:  184.91  seconds </span>
 <span class="co">#&gt; - Run  45  of  50 </span>
-<span class="co">#&gt; --- Used  25.9  seconds. Est. time remaining:  140.43  seconds </span>
+<span class="co">#&gt; --- Used  39.93  seconds. Est. time remaining:  155.11  seconds </span>
 <span class="co">#&gt; - Run  46  of  50 </span>
-<span class="co">#&gt; --- Used  25.97  seconds. Est. time remaining:  112.16  seconds </span>
+<span class="co">#&gt; --- Used  33.92  seconds. Est. time remaining:  124.34  seconds </span>
 <span class="co">#&gt; - Run  47  of  50 </span>
-<span class="co">#&gt; --- Used  26.75  seconds. Est. time remaining:  84.04  seconds </span>
+<span class="co">#&gt; --- Used  34.25  seconds. Est. time remaining:  93.46  seconds </span>
 <span class="co">#&gt; - Run  48  of  50 </span>
-<span class="co">#&gt; --- Used  25.92  seconds. Est. time remaining:  55.94  seconds </span>
+<span class="co">#&gt; --- Used  33.91  seconds. Est. time remaining:  62.42  seconds </span>
 <span class="co">#&gt; - Run  49  of  50 </span>
-<span class="co">#&gt; --- Used  26.4  seconds. Est. time remaining:  27.94  seconds </span>
+<span class="co">#&gt; --- Used  34.14  seconds. Est. time remaining:  31.27  seconds </span>
 <span class="co">#&gt; - Run  50  of  50 </span>
-<span class="co">#&gt; --- Used  25.85  seconds. Est. time remaining:  0  seconds</span>
+<span class="co">#&gt; --- Used  38.47  seconds. Est. time remaining:  0  seconds</span>
 <span class="co">#&gt; Warning in if (temp_limits$low &gt; temp_limits[, 3] | temp_limits[, 3] &gt;</span>
 <span class="co">#&gt; temp_limits$high) {: the condition has length &gt; 1 and only the first element</span>
 <span class="co">#&gt; will be used</span>
@@ -396,22 +352,29 @@
 <span class="co">#&gt; temp_limits$high) {: the condition has length &gt; 1 and only the first element</span>
 <span class="co">#&gt; will be used</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
-<p><img src="pregnancy_files/figure-html/unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="st">"PC2"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
-<p><img src="pregnancy_files/figure-html/unnamed-chunk-13-2.png" width="100%" style="display: block; margin: auto;"></p>
+<p><img src="pregnancy_files/figure-html/unnamed-chunk-14-1.png" width="100%" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="st">"PC2"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
+<p><img src="pregnancy_files/figure-html/unnamed-chunk-14-2.png" width="100%" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">#plot(PE.mod, component = "PC3") # At the moment, we are only calculating uncertainty for component 1 and 2</span></code></pre></div>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1 class="hasAnchor">
+<a href="#references" class="anchor"></a>References</h1>
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-tarcaPredictionEarlyPreeclampsia2019" class="csl-entry">
 Tarca, Adi L., Roberto Romero, Neta Benshalom-Tirosh, Nandor Gabor Than, Dereje W. Gudicha, Bogdan Done, Percy Pacora, et al. 2019. <span>“The Prediction of Early Preeclampsia: <span>Results</span> from a Longitudinal Proteomics Study.”</span> <em>PLOS ONE</em> 14 (6): e0217273. <a href="https://doi.org/10.1371/journal.pone.0217273">https://doi.org/10.1371/journal.pone.0217273</a>.
+</div>
 </div>
 </div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 

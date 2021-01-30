@@ -21,9 +21,13 @@ df <- read.csv(file = "PE.csv", header = TRUE, sep = ";")
 somaids <- read.csv(file = "somaids.csv", header = TRUE, sep = ";")
 ```
 
+# Getting started
+
 ```{r setup}
 library(RMASCA)
 ```
+
+## Preparing the data
 
 In this example we will look at data from @tarcaPredictionEarlyPreeclampsia2019. This is mostly a demonstration of the `RMASCA` package, and not a stringent scientific analysis.
 
@@ -85,12 +89,6 @@ df$group <- ifelse(
             )
 ```
 
-Now we can set up our model. Since it's an observational study, we can start with
-
-```{r}
-model.formula <- value ~ time*group + (1|ID)
-```
-
 In the paper, they identified the following important proteins (I'd to look up the somaIDs myself, so errors may have occurred)
 
 * Matrix metalloproteinase-7 (also known as Matrilysin): SL000525
@@ -101,18 +99,28 @@ In the paper, they identified the following important proteins (I'd to look up t
 * Activin-A (couldn't find ID)
 * Leukocyte cell adhesion molecule (ALCAM): SL003166
 
-In addition, I am interested in inflammatory proteins, so let us add interleukins and interferons.
+In addition, I am interested in inflammatory proteins, so let us add interleukins and interferons, and eotaxin.
 
 ```{r}
 df <- merge(df, somaids, by.x = "variable", by.y = "SomaId") # add protein names
-selectedVariables <- c(which(df$variable %in% c("SL000525", "SL002640", "SL005217", "SL003166")),
+selectedVariables <- c(which(df$variable %in% c("SL000525", "SL002640", "SL005217", "SL003166", "SL003104","SL000406")),
                        which(substr(df$Target,1,3) == "IL-"),
                        which(substr(df$Target,1,4) == "IFN-"))
 df <- df[selectedVariables,]
 df$variable <- factor(df$Target)
 ```
 
-And then we are ready to try `RMASCA`,
+## Preparing the model
+
+Now we can set up our model. Since it's an observational study, we can start with
+
+```{r}
+model.formula <- value ~ time*group + (1|ID)
+```
+
+# Running RMASCA
+
+We are now ready to try `RMASCA`,
 
 ```{r}
 PE.mod <- RMASCA(df, model.formula)
@@ -139,6 +147,12 @@ plot(PE.mod, component = "PC3", tooDense = 5)
 plot(PE.mod, component = "PC4", effect = "group", tooDense = 5) # just to demonstrate how to extract only the group effect plot
 ```
 
+We can also look up specific variables,
+
+```{r}
+plot(PE.mod, highlight = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotaxin"))
+```
+
 Let us add some uncertainty estimates to our model. This may take some time.
 
 ```{r}
@@ -147,3 +161,5 @@ plot(PE.mod, tooDense = 5)
 plot(PE.mod, component = "PC2", tooDense = 5)
 #plot(PE.mod, component = "PC3") # At the moment, we are only calculating uncertainty for component 1 and 2
 ```
+
+# References
