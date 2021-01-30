@@ -15,7 +15,8 @@ getLMECoefficients <- function(object){
   ccc <- 1
   #start.time <- Sys.time()
   object$lmer.models <- lapply(unique(object$df$variable), function(i){
-      lmer.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
+      lmer.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i), 
+                                   control = lme4::lmerControl(calc.derivs = FALSE))
       attr(lmer.model, "name") <- i
       lmer.model
     }

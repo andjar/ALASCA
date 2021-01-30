@@ -26,12 +26,12 @@ validate <- function(object, participantColumn = FALSE){
     cat("- Run ",ii," of ",object$nValRuns,"\n")
     start.time <- Sys.time()
     selectedParts <- c()
-    for(gr in unique(object$df$group)){
+    selectedParts <- Reduce(c,lapply(unique(object$df$group), function(gr){
       selectedParts_temp_all <- unique(object$df[object$df$group == gr,partColumn])
       selectedParts_temp_ticket <- sample(1:object$nValFold, length(selectedParts_temp_all), replace = TRUE)
       selectedParts_temp <- selectedParts_temp_all[selectedParts_temp_ticket != 1]
-      selectedParts <- c(selectedParts, selectedParts_temp)
-    }
+      selectedParts_temp
+    }))
     temp_object[[ii]] <- RMASCA(df = NA,
                                 validate = FALSE, # to avoid recursion
                                 minimizeObject = TRUE,
@@ -99,19 +99,12 @@ getValidationPercentiles <- function(object, objectlist){
   df_loading_group <- data.frame()
   df_score_group <- data.frame()
   if(object$separateTimeAndGroup){
-    for(i in 1:length(objectlist)){
-      df_loading_time_temp <- getLoadings(objectlist[[i]])$time
-      df_loading_time <- rbind(df_loading_time, df_loading_time_temp)
-
-      df_score_time_temp <- getScores(objectlist[[i]])$time
-      df_score_time <- rbind(df_score_time, df_score_time_temp)
-
-      df_loading_group_temp <- getLoadings(objectlist[[i]])$group
-      df_loading_group <- rbind(df_loading_group, df_loading_group_temp)
-
-      df_score_group_temp <- getScores(objectlist[[i]])$group
-      df_score_group <- rbind(df_score_group, df_score_group_temp)
-    }
+    df_loading_time <- Reduce(rbind,lapply(objectlist, function(x) getLoadings(x)$time))
+    df_score_time <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$time))
+    
+    df_loading_group <- Reduce(rbind,lapply(objectlist, function(x) getLoadings(x)$group))
+    df_score_group <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$group))
+      
     perc_loading_time <- data.frame()
     perc_score_time <- data.frame()
     perc_loading_group <- data.frame()
@@ -171,7 +164,7 @@ getValidationPercentiles <- function(object, objectlist){
     for(comp in 1:2){
       temp_limits <- perc_loading_time[perc_loading_time$PC == comp,]
       temp_limits <- merge(temp_limits, loadings[,c(comp, ncol(loadings))], by = "covars")
-      if( temp_limits$low > temp_limits[,3] | temp_limits[,3] > temp_limits$high ){
+      if( any(temp_limits$low > temp_limits[,3]) | any(temp_limits[,3] > temp_limits$high) ){
         perc_loading_time[perc_loading_time$PC == comp,] <- perc_loading_time[perc_loading_time$PC == comp,]*-1
         perc_score_time[perc_score_time$PC == comp,] <- perc_score_time[perc_score_time$PC == comp,]*-1
       }
@@ -182,7 +175,7 @@ getValidationPercentiles <- function(object, objectlist){
     for(comp in 1:2){
       temp_limits <- perc_loading_group[perc_loading_group$PC == comp,]
       temp_limits <- merge(temp_limits, loadings[,c(comp, ncol(loadings))], by = "covars")
-      if( temp_limits$low > temp_limits[,3] | temp_limits[,3] > temp_limits$high ){
+      if( any(temp_limits$low > temp_limits[,3]) | any(temp_limits[,3] > temp_limits$high) ){
         perc_loading_group[perc_loading_group$PC == comp,] <- perc_loading_group[perc_loading_group$PC == comp,]*-1
         perc_score_group[perc_score_group$PC == comp,] <- perc_score_group[perc_score_group$PC == comp,]*-1
       }
@@ -236,7 +229,7 @@ getValidationPercentiles <- function(object, objectlist){
     for(comp in 1:2){
       temp_limits <- perc_loading_time[perc_loading_time$PC == comp,]
       temp_limits <- merge(temp_limits, loadings[,c(comp, ncol(loadings))], by = "covars")
-      if( temp_limits$low > temp_limits[,3] | temp_limits[,3] > temp_limits$high ){
+      if( any(temp_limits$low > temp_limits[,3]) | any(temp_limits[,3] > temp_limits$high) ){
         perc_loading_time[perc_loading_time$PC == comp,] <- perc_loading_time[perc_loading_time$PC == comp,]*-1
         perc_score_time[perc_score_time$PC == comp,] <- perc_score_time[perc_score_time$PC == comp,]*-1
       }
