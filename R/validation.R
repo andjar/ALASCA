@@ -19,9 +19,11 @@ validate <- function(object, participantColumn = FALSE){
   cat("Running validation...\n")
   partColumn <- which(colnames(object$df) == object$participantColumn)
   temp_object <- list()
+  time_mean <- c()
 
   for(ii in 1:object$nValRuns){
     cat("- Run ",ii," of ",object$nValRuns,"\n")
+    start.time <- Sys.time()
     selectedParts <- c()
     for(gr in unique(object$df$group)){
       selectedParts_temp_all <- unique(object$df[object$df$group == gr,partColumn])
@@ -35,9 +37,12 @@ validate <- function(object, participantColumn = FALSE){
                                 validationObject = object,
                                 validationParticipants = object$df[,partColumn] %in% selectedParts)
     temp_object[[ii]] <- rotateMatrix(object = temp_object[[ii]], target = object)
+    end.time <- Sys.time()
+    time_mean[ii] <- end.time - start.time
+    cat("--- Used ",round(time_mean[ii],2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*mean(time_mean),2)," seconds \n")
   }
   object <- getValidationPercentiles(object, objectlist = temp_object)
-
+  
   return(object)
 }
 
