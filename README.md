@@ -13,7 +13,7 @@ devtools::install_github("andjar/RMASCA",ref="main")
 
 ## Usage
 
-For a working example, see the [introductory vignette](../docs/articles/RMASCA.html).
+For a working example, see [Get Started](articles/RMASCA.html).
 
 RMASCA expects a data frame, eg. `df`, with at least the following columns (with these exact names)
 
