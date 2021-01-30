@@ -17,12 +17,12 @@ getLMECoefficients <- function(object){
     lmer.model[[cc]] <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
     cc <- cc + 1
   }
-  if(!object$minimizeObject){
-    object$lmer.models <- lmer.model
-    cat("Finished calculating LMM coefficients!\n")
-  }
-
+  object$lmer.models <- lmer.model
+  cat("Finished calculating LMM coefficients!\n")
+  cat("Extracting LMM coefficients...\n")
+  start.time <- Sys.time()
   fdf <- data.frame()
+  
   cyts <- unique(object$df$variable)
   cc <- 1
   for(i in 1:length(lmer.model)){
@@ -37,10 +37,17 @@ getLMECoefficients <- function(object){
   }
 
   colnames(fdf) <- c("covar", "estimate", "pvalue", "variable")
-  if(!is.na(object$pAdjustMethod)){
-    object$LMM.coefficients$pvalue_adj <- p.adjust(object$LMM.coefficients$pvalue, method = object$pAdjustMethod)
-  }
+  
+  
+  #if(!is.na(object$pAdjustMethod)){
+    #object$LMM.coefficients$pvalue_adj <- p.adjust(object$LMM.coefficients$pvalue, method = object$pAdjustMethod)
+  cat("P value correction deactivated for now...\n")
+  #}
   object$LMM.coefficients <- fdf
+  end.time <- Sys.time()
+  cat("- Time: ", end.time - start.time, "\n")
+  
+  cat("Finished extracting LMM coefficients!\n")
   return(object)
 }
 
@@ -73,7 +80,7 @@ separateLMECoefficients <- function(object){
   return(object)
 }
 
-getEffectMatrix <- function(object){
+getEffectMatrix2 <- function(object){
   if(!object$minimizeObject){
     cat("Calculating effect matrix (may take some time...)\n")
   }
@@ -132,6 +139,67 @@ getEffectMatrix <- function(object){
   }
   colnames(fdf_pred) <- c(as.character(covars),"comp")
   object$effect.matrix <- fdf_pred
+  object$parts$time <- parts$time
+  object$parts$group <- parts$group
+  if(!object$minimizeObject){
+    cat("Finished calculating effect matrix!\n")
+  }
+  return(object)
+}
+
+getEffectMatrix <- function(object){
+  if(!object$minimizeObject){
+    cat("Calculating effect matrix (may take some time...)\n")
+  }
+  parts <- subset(object$df, variable == object$df$variable[1])
+  Dmatrix <- lme4::getME(object$lmer.model[[1]],"X")
+  if(object$separateTimeAndGroup){
+    BmatrixTime <- object$LMM.coefficients[object$LMM.coefficients$comp == "TIME",c("covar","estimate","variable")]
+    BmatrixTime <- reshape2::dcast(BmatrixTime, formula = variable~covar, value.var = "estimate")
+    selectDColumnsTime <- colnames(Dmatrix) %in% BmatrixTime$variable
+    rowOrder <- c()
+    for(i in 1:nrow(BmatrixTime)){
+      rowOrder[i] <- which(BmatrixTime$variable == colnames(Dmatrix[,selectDColumnsTime])[i])
+    }
+    BmatrixTime <- BmatrixTime[rowOrder,]
+    if(any(colnames(Dmatrix[,selectDColumnsTime]) != BmatrixTime$variable)){
+      stop("Column mismatch for time in getEffectMatrix")
+    }
+    AmatrixTime <- as.data.frame(as.matrix(Dmatrix[,selectDColumnsTime])%*%as.matrix(BmatrixTime[,2:ncol(BmatrixTime)]))
+    AmatrixTime$comp <- "TIME"
+    
+    BmatrixGroup <- object$LMM.coefficients[object$LMM.coefficients$comp == "GROUP",c("covar","estimate","variable")]
+    BmatrixGroup <- reshape2::dcast(BmatrixGroup, formula = variable~covar, value.var = "estimate")
+    selectDColumnsGroup <- colnames(Dmatrix) %in% BmatrixGroup$variable
+    rowOrder <- c()
+    for(i in 1:nrow(BmatrixGroup)){
+      rowOrder[i] <- which(BmatrixGroup$variable == colnames(Dmatrix[,selectDColumnsGroup])[i])
+    }
+    BmatrixGroup <- BmatrixGroup[rowOrder,]
+    if(any(colnames(Dmatrix[,selectDColumnsGroup]) != BmatrixGroup$variable)){
+      stop("Column mismatch for group in getEffectMatrix")
+    }
+    AmatrixGroup <- as.data.frame(as.matrix(Dmatrix[,selectDColumnsGroup])%*%as.matrix(BmatrixGroup[,2:ncol(BmatrixGroup)]))
+    AmatrixGroup$comp <- "GROUP"
+    object$effect.matrix <- rbind(AmatrixTime, AmatrixGroup)
+    
+  }else{
+    BmatrixTime <- object$LMM.coefficients[object$LMM.coefficients$comp == "TIME",c("covar","estimate","variable")]
+    BmatrixTime <- reshape2::dcast(BmatrixTime, formula = variable~covar, value.var = "estimate")
+    selectDColumnsTime <- colnames(Dmatrix) %in% BmatrixTime$variable
+    rowOrder <- c()
+    for(i in 1:nrow(BmatrixTime)){
+      rowOrder[i] <- which(BmatrixTime$variable == colnames(Dmatrix[,selectDColumnsTime])[i])
+    }
+    BmatrixTime <- BmatrixTime[rowOrder,]
+    if(any(colnames(Dmatrix[,selectDColumnsTime]) != BmatrixTime$variable)){
+      stop("Column mismatch for time in getEffectMatrix")
+    }
+    AmatrixTime <- as.data.frame(as.matrix(Dmatrix[,selectDColumnsTime])%*%as.matrix(BmatrixTime[,2:ncol(BmatrixTime)]))
+    AmatrixTime$comp <- "TIME"
+    object$effect.matrix <- AmatrixTime
+  }
+  
   object$parts$time <- parts$time
   object$parts$group <- parts$group
   if(!object$minimizeObject){
