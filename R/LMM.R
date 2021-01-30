@@ -12,26 +12,24 @@ getLMECoefficients <- function(object){
   fdf <- data.frame()
   cyts <- unique(object$df$variable)
   cc <- 1
+  ccc <- 1
   for(i in unique(df$variable)){
     if(!object$minimizeObject){
       cat("- ",i,"\n")
     }
     lmer.model[[cc]] <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
-    tmp_ef <- lme4::fixef(lmer.model[[i]])
-    for(j in 1:length(tmp_ef)){
-      fdf[cc,1] <- cyts[i]
-      fdf[cc,2] <- summary(lmer.model[[i]])[["coefficients"]][j,1]
-      fdf[cc,3] <- summary(lmer.model[[i]])[["coefficients"]][j,5]
-      fdf[cc,4] <- names(tmp_ef)[j]
-      cc <- cc + 1
-    }
+    tmp_ef <- lme4::fixef(lmer.model[[cc]])
+    a <- as.data.frame(summary(lmer.model[[cc]])[["coefficients"]][,c(1,5)])
+    a$covar <- i
+    a$variable <- rownames(a)
+    rownames(a) <- NULL
+    fdf <- rbind(fdf, a)
     cc <- cc + 1
   }
   object$lmer.models <- lmer.model
   cat("Finished calculating LMM coefficients!\n")
   
-  colnames(fdf) <- c("covar", "estimate", "pvalue", "variable")
-  
+  colnames(fdf) <- c("estimate", "pvalue", "covar", "variable")
   
   if(!is.na(object$pAdjustMethod)){
     cat("Adjusting p values...\n")
