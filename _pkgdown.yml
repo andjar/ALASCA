@@ -6,5 +6,5 @@ development:
   version_label: danger
   version_tooltip: "Under development"
 home:
-  title: An R package for RM-ASCA+
-  description: Multivariate analysis of repeated measures data
+  title: "An R package for RM-ASCA+"
+  description: "Multivariate analysis of repeated measures data"
