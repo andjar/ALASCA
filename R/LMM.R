@@ -27,7 +27,9 @@ getLMECoefficients <- function(object){
     cc <- cc + 1
   }
   object$lmer.models <- lmer.model
-  cat("Finished calculating LMM coefficients!\n")
+  if(!object$minimizeObject){
+    cat("Finished calculating LMM coefficients!\n")
+  }
   
   colnames(fdf) <- c("estimate", "pvalue", "covar", "variable")
   
