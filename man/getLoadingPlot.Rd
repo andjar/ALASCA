@@ -9,7 +9,8 @@ getLoadingPlot(
   component = "PC1",
   effect = "time",
   decreasingLoadings = TRUE,
-  tooDense = NA
+  tooDense = NA,
+  highlight = NA
 )
 }
 \arguments{

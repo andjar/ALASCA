@@ -11,7 +11,8 @@
   decreasingLoadings = TRUE,
   only = "both",
   enlist = FALSE,
-  tooDense = NA
+  tooDense = NA,
+  highlight = NA
 )
 }
 \arguments{
@@ -28,6 +29,8 @@
 \item{enlist}{Logical. If TRUE, the plots are returned as a list and not as a composed figure (default)}
 
 \item{tooDense}{Numerical. If > 0, only name this number of covariables}
+
+\item{highlight}{Vector of strings with variables to highlight in the loadings plot}
 }
 \value{
 An ggplot2 object (or a list og ggplot objects)
