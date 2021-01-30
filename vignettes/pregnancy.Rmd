@@ -1,0 +1,143 @@
+---
+title: "Early Preeclampsia"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Early Preeclampsia}
+%\VignetteEngine{knitr::rmarkdown}
+%\VignetteEncoding{UTF-8}
+---
+  
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  out.width = "100%", 
+  fig.asp = 0.7,
+  fig.width = 12,
+  fig.align = "center"
+)
+df <- read.csv(file = "PE.csv", header = TRUE, sep = ";")
+somaids <- read.csv(file = "somaids.csv", header = TRUE, sep = ";")
+```
+
+```{r setup}
+library(RMASCA)
+```
+
+In this example we will look at data from https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0217273. This is mostly a demonstration of the `RMASCA` package, and not a stringent scientific analysis.
+
+The data looks like this
+
+```{r}
+head(df)
+```
+
+So the columns from 11 and beyond are protein levels. We convert it to long format,
+
+```{r}
+df <- reshape2::melt(df, id.vars = colnames(df)[1:10])
+```
+
+RMASCA expects a data frame with at least the following columns (with these exact names)
+
+* `time` Either factor, string or integer. Defines when a sample is taken.
+* `variable` Either a factor or a string. The measured variable.
+* `group` Either a factor, string or integer. Defines the group of a participant
+
+The variable column is already okay. Let us define the time points;
+
+```{r}
+plot(df$GA[df$variable == "SL000318"])
+```
+
+All patients got their diagnosis before week 33.4, so let us limit ourselves to samples from before that and bulk the samples into
+
+* Time 1: Before week 15
+* Time 2: Week 15-22.5
+* Time 3: Week 22.5-27.5
+* Time 4: Week 27.5-33.4
+
+```{r}
+df <- subset(df, GA <= 33.4)
+df$time <- ifelse(
+              df$GA <= 15, 1,
+              ifelse(
+                df$GA <= 22.5, 2,
+                ifelse(
+                df$GA <= 27.5, 3,
+                  4
+                )
+              )
+            )
+```
+
+As for grouping, I decided to use
+
+* Normal pregnancies (Normal)
+* Early preeclampsia with maternal vascular malperfusion (PEV)
+* Early preeclampsia withou maternal vascular malperfusion (PE)
+
+```{r}
+df$group <- ifelse(
+              is.na(df$GADiagnosis), "Normal",
+              ifelse(df$EarlyPE_MVU == 1, "PEV", "PE")
+            )
+```
+
+Now we can set up our model. Since it's an observational study, we can start with
+
+```{r}
+model.formula <- value ~ time*group + (1|ID)
+```
+
+In the paper, they identified the following important proteins (I'd to look up the somaIDs myself, so errors may have occurred)
+
+* Matrix metalloproteinase-7 (also known as Matrilysin): SL000525
+* Glycoprotein IIbIIIa complex (couldn't find ID)
+* Placental growth factor (PlGF): SL002640
+* Vascular endothelial growth factor A, isoform 121 (VEGF-121) (couldn't find ID)
+* Sialic acid binding immunoglobulin-like lectin 6 (siglec-6): SL005217
+* Activin-A (couldn't find ID)
+* Leukocyte cell adhesion molecule (ALCAM): SL003166
+
+So to speed things up, we select these in addition to 30 randomly selected proteins.
+
+```{r}
+selectedVariables <- c("SL000525", "SL002640", "SL005217", "SL003166")
+selectedVariables <- c(selectedVariables, as.character(unique(df$variable)[sample(1:length(unique(df$variable)),30)]))
+df <- subset(df, variable %in% selectedVariables)
+df$variable <- factor(df$variable)
+df <- merge(df, somaids, by.x = "variable", by.y = "SomaId")
+df$variable <- factor(df$Target)
+```
+
+And then we are ready to try `RMASCA`,
+
+```{r, echo = FALSE}
+PE.mod <- RMASCA(df, model.formula)
+```
+
+With a screeplot we can say something about how many components we need,
+
+```{r}
+screeplot(PE.mod)
+```
+
+It seems like three components for time and three is probably enough for group effect also, but let us use five for now.
+
+```{r}
+plot(PE.mod)
+plot(PE.mod, component = "PC2")
+plot(PE.mod, component = "PC3")
+plot(PE.mod, component = "PC4", effect = "group")
+plot(PE.mod, component = "PC5", effect = "group")
+```
+
+Let us add some uncertainty estimates to our model. This may take some time.
+
+```{r}
+PE.mod <- validate(PE.mod, participantColumn = "ID")
+plot(PE.mod)
+plot(PE.mod, component = "PC2")
+#plot(PE.mod, component = "PC3") # At the moment, we are only calculating uncertainty for coponent 1 and 2
+```

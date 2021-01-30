@@ -8,7 +8,7 @@ RMASCA(
   df,
   formula,
   separateTimeAndGroup = TRUE,
-  pAdjustMethod = "BH",
+  pAdjustMethod = NA,
   participantColumn = FALSE,
   validate = FALSE,
   scale = TRUE,
@@ -27,7 +27,7 @@ RMASCA(
 
 \item{separateTimeAndGroup}{Logical: should time and group effect be separated?}
 
-\item{pAdjustMethod}{Method for correcting p values for multiple testing}
+\item{pAdjustMethod}{Method for correcting p values for multiple testing, see p.adjust.methods}
 
 \item{participantColumn}{String. Name of the column containing participant identification}
 

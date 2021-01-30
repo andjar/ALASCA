@@ -7,11 +7,13 @@ devtools::install_github("andjar/RMASCA",ref="main")
 
 ## Notice
 
-This is work in process. The validation is not fully working yet.
+<div class="alert alert-danger" role="alert">
+  This is work in process and should not be relied upon at the moment. The validation is not fully working yet.
+</div>
 
 ## Usage
 
-For a working example, see the [introductory vignette](/articles/introduction.html).
+For a working example, see the [introductory vignette](../docs/articles/RMASCA.html).
 
 RMASCA expects a data frame, eg. `df`, with at least the following columns (with these exact names)
 

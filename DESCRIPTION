@@ -1,6 +1,6 @@
 Package: RMASCA
 Title: Repeated Measures extended ASCA
-Version: 0.0.0.1000
+Version: 0.0.0.9
 Authors@R: 
     person(given = "Anders H.",
            family = "Jarmund",
@@ -8,7 +8,7 @@ Authors@R:
            email = "anders.h.jarmund@ntnu.no",
            comment = c(ORCID = "0000-0002-3923-1637"))
 Description: Perform Repeated Measures extended ANOVA Simultaneous Component Analysis (RM-ASCA+) on multivariate, longitudinal data with repeated measures
-License: use_gpl3_license()
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)

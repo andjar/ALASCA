@@ -8,7 +8,7 @@
 #' @param df Data Frame to be analyzed
 #' @param formula Regression model
 #' @param separateTimeAndGroup Logical: should time and group effect be separated?
-#' @param pAdjustMethod Method for correcting p values for multiple testing
+#' @param pAdjustMethod Method for correcting p values for multiple testing, see p.adjust.methods
 #' @param validate Logical. If `TRUE`, give estimates for robustness
 #' @param participantColumn String. Name of the column containing participant identification
 #' @param minimizeObject Logical. If `TRUE`, remove unnecessary clutter, optimize for validation
@@ -23,7 +23,7 @@
 RMASCA <- function(df,
                    formula,
                    separateTimeAndGroup = TRUE,
-                   pAdjustMethod = "BH",
+                   pAdjustMethod = NA,
                    participantColumn = FALSE,
                    validate = FALSE,
                    scale = TRUE,
@@ -67,13 +67,34 @@ RMASCA <- function(df,
     class(object) <- "RMASCA"
   }
 
+  start.time <- Sys.time()
   object <- sanitizeObject(object)
+  end.time <- Sys.time()
+  cat("Time 1: ", end.time - start.time, "\n")
+  start.time <- Sys.time()
   object <- getLMECoefficients(object)
+  end.time <- Sys.time()
+  cat("Time 2: ", end.time - start.time, "\n")
+  start.time <- Sys.time()
   object <- removeCovars(object)
+  end.time <- Sys.time()
+  cat("Time 3: ", end.time - start.time, "\n")
+  start.time <- Sys.time()
   object <- separateLMECoefficients(object)
+  end.time <- Sys.time()
+  cat("Time 4: ", end.time - start.time, "\n")
+  start.time <- Sys.time()
   object <- getEffectMatrix(object)
+  end.time <- Sys.time()
+  cat("Time 5: ", end.time - start.time, "\n")
+  start.time <- Sys.time()
   object <- doPCA(object)
+  end.time <- Sys.time()
+  cat("Time 6: ", end.time - start.time, "\n")
+  start.time <- Sys.time()
   object <- cleanPCA(object)
+  end.time <- Sys.time()
+  cat("Time 7: ", end.time - start.time, "\n")
   if(object$minimizeObject){
     # To save space, we remove unnecessary embedded data
     object <- removeEmbedded(object)
@@ -148,6 +169,7 @@ sanitizeObject <- function(object){
 removeEmbedded <- function(object){
   object$df <- NULL
   object$validationObject <- NULL
+  object$lmer.models <- NULL
   object$LMM.coefficients <- NULL
   object$effect.matrix <- NULL
   return(object)
