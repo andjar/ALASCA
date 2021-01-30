@@ -3,10 +3,10 @@ title: "Early Preeclampsia"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Early Preeclampsia}
-%\VignetteEngine{knitr::rmarkdown}
-%\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
-  
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -29,7 +29,7 @@ In this example we will look at data from https://journals.plos.org/plosone/arti
 The data looks like this
 
 ```{r}
-head(df)
+head(df[,1:20])
 ```
 
 So the columns from 11 and beyond are protein levels. We convert it to long format,
@@ -135,7 +135,7 @@ plot(PE.mod, component = "PC5", effect = "group")
 
 Let us add some uncertainty estimates to our model. This may take some time.
 
-```{r}
+```{r, echo=FALSE, message=FALSE, results='hide'}
 PE.mod <- validate(PE.mod, participantColumn = "ID")
 plot(PE.mod)
 plot(PE.mod, component = "PC2")
