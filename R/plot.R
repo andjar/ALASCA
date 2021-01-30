@@ -11,9 +11,10 @@
 #' @param decreasingLoadings Sort the loadings in dedreasing (default) or increasing order
 #' @param only String stating which plot to return; `both` (default), `score` or `loading`
 #' @param enlist Logical. If TRUE, the plots are returned as a list and not as a composed figure (default)
+#' @param tooDense Numerical. If > 0, only name this number of covariables 
 #' @return An ggplot2 object (or a list og ggplot objects)
 #' @export
-plot.RMASCA <- function(object, component = "PC1", effect = "both", decreasingLoadings = TRUE, only = "both", enlist = FALSE){
+plot.RMASCA <- function(object, component = "PC1", effect = "both", decreasingLoadings = TRUE, only = "both", enlist = FALSE, tooDense = NA){
   if(!(effect %in% c("both","time","group"))){
     stop("`effect` has to be `both`, `time` or `group`")
   }
@@ -30,30 +31,30 @@ plot.RMASCA <- function(object, component = "PC1", effect = "both", decreasingLo
     }
   }else if(only == "loading"){
     if(effect == "both"){
-      g_loading_time <- getLoadingPlot(object, component = component, effect = "time", decreasingLoadings = decreasingLoadings)
-      g_loading_group <- getLoadingPlot(object, component = component, effect = "group", decreasingLoadings = decreasingLoadings)
+      g_loading_time <- getLoadingPlot(object, component = component, effect = "time", decreasingLoadings = decreasingLoadings, tooDense = tooDense)
+      g_loading_group <- getLoadingPlot(object, component = component, effect = "group", decreasingLoadings = decreasingLoadings, tooDense = tooDense)
       g <- list(g_loading_time, g_loading_group)
     }else{
-      g <- getLoadingPlot(object, component = component, effect = effect, decreasingLoadings = decreasingLoadings)
+      g <- getLoadingPlot(object, component = component, effect = effect, decreasingLoadings = decreasingLoadings, tooDense = tooDense)
     }
   }else{
     if(effect == "both"){
-      g_loading_time <- getLoadingPlot(object, component = component, effect = "time", decreasingLoadings = decreasingLoadings)
-      g_loading_group <- getLoadingPlot(object, component = component, effect = "group", decreasingLoadings = decreasingLoadings)
+      g_loading_time <- getLoadingPlot(object, component = component, effect = "time", decreasingLoadings = decreasingLoadings, tooDense = tooDense)
+      g_loading_group <- getLoadingPlot(object, component = component, effect = "group", decreasingLoadings = decreasingLoadings, tooDense = tooDense)
       g_score_time <- getScorePlot(object, component = component, effect = "time")
       g_score_group <- getScorePlot(object, component = component, effect = "group")
       if(enlist){
         g <- list(g_score_time, g_loading_time, g_score_group, g_loading_group)
       }else{
-        g <- ggpubr::ggarrange(g_score_time, g_loading_time, g_score_group, g_loading_group, nrow = 2, ncol = 2, align = "hv", common.legend = TRUE, legend = "bottom")
+        g <- ggpubr::ggarrange(g_score_time, g_loading_time, g_score_group, g_loading_group, nrow = 2, ncol = 2, widths = c(1,2,1,2), align = "hv", common.legend = TRUE, legend = "bottom")
       }
     }else{
-      g_loading <- getLoadingPlot(object, component = component, effect = effect, decreasingLoadings = decreasingLoadings)
+      g_loading <- getLoadingPlot(object, component = component, effect = effect, decreasingLoadings = decreasingLoadings, tooDense = tooDense)
       g_score <- getScorePlot(object, component = component, effect = effect)
       if(enlist){
         g <- list(g_score, g_loading)
       }else{
-        g <- ggpubr::ggarrange(g_score, g_loading, nrow = 1, ncol = 2, align = "hv", common.legend = TRUE, legend = "bottom")
+        g <- ggpubr::ggarrange(g_score, g_loading, nrow = 1, ncol = 2, widths = c(1,2,1,2), align = "hv", common.legend = TRUE, legend = "bottom")
       }
     }
   }
@@ -142,7 +143,7 @@ getScores <- function(object){
 #' @param effect Plot time or group
 #' @param decreasingLoadings Logical. Should loading sbe sorted in decreasing order?
 #' @return A ggplot object
-getLoadingPlot <- function(object, component = "PC1", effect = "time", decreasingLoadings = TRUE){
+getLoadingPlot <- function(object, component = "PC1", effect = "time", decreasingLoadings = TRUE, tooDense = NA){
   pointSize <- 0.4
   if(effect == "time"){
     loadings <- getLoadings(object)$time
@@ -169,11 +170,21 @@ getLoadingPlot <- function(object, component = "PC1", effect = "time", decreasin
   }else{
     g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading)) + ggplot2::geom_point()
   }
-
+  
   g <- g +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust=1)) +
     ggplot2::labs(x = "Variable",
                   y = paste0(component, " (", round(100*ifelse(effect == "time", object$RMASCA$loading$explained$time[PC],object$RMASCA$loading$explained$group[PC]),2),"%)"))
+  if(!is.na(tooDense) & tooDense > 0){
+    limUpper <- unique(loadings$loading[order(loadings$loading, decreasing = TRUE)[tooDense]])
+    limLower <- unique(loadings$loading[order(loadings$loading, decreasing = FALSE)[tooDense]])
+    g <- g + ggplot2::geom_point(color = ifelse(loadings$loading <= limLower | loadings$loading >= limUpper, "red", "grey")) +
+      ggrepel::geom_text_repel(data = subset(loadings, loading <= limLower | loading >= limUpper), ggplot2::aes(label=covars), max.iter	= 5000) +
+      ggplot2::theme(axis.title.x=ggplot2::element_blank(),
+                     axis.text.x=ggplot2::element_blank(),
+                     axis.ticks.x=ggplot2::element_blank(),
+                     legend.position = "none")
+  }
   return(g)
 }
 

@@ -18,7 +18,9 @@ Imports:
 	ggpubr,
 	lme4,
 	lmerTest,
-	GPArotation
+	GPArotation,
+	reshape2,
+	ggrepel
 Suggests: 
     knitr,
     rmarkdown
