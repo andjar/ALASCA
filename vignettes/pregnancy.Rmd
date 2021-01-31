@@ -15,7 +15,8 @@ knitr::opts_chunk$set(
   out.width = "100%", 
   fig.asp = 0.7,
   fig.width = 12,
-  fig.align = "center"
+  fig.align = "center",
+  cache = FALSE
 )
 df <- read.csv(file = "PE.csv", header = TRUE, sep = ";")
 somaids <- read.csv(file = "somaids.csv", header = TRUE, sep = ";")
@@ -153,7 +154,7 @@ We can also look up specific variables,
 plot(PE.mod, highlight = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotaxin"))
 ```
 
-Let us add some uncertainty estimates to our model. This may take some time.
+Let us add some uncertainty estimates to our model. This may take some time, but it is extra slow when compiling this documentation; usually this model needs about 5 seconds per run.
 
 ```{r}
 PE.mod <- validate(PE.mod, participantColumn = "ID")
