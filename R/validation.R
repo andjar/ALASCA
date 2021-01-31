@@ -7,7 +7,9 @@
 #' @return An RMASCA object
 #' 
 #' @examples
-#' validate(model, participantColumn = "ID")
+#' load("PE.Rdata")
+#' model$nValRuns <- 10
+#' model.val <- validate(model, participantColumn = "ID")
 #' 
 #' @export
 validate <- function(object, participantColumn = FALSE){
@@ -78,13 +80,18 @@ validate <- function(object, participantColumn = FALSE){
 rotateMatrix <- function(object, target){
   a <- object$RMASCA$loading
   b <- target$RMASCA$loading
-  c <- GPArotation::targetT(L = as.matrix(a$time[,1:2]), Target = as.matrix(b$time[,1:2]))
-  object$RMASCA$loading$time[,1:2] <- c$loadings
-  object$RMASCA$score$time[,1:2] <- as.matrix(object$RMASCA$score$time[,1:2]) %*% solve(t(c$Th))
+  
+  # We are only looking at components explaining more than 5% of variation
+  PCloading <- object$RMASCA$loading$explained$time > 0.05
+  
+  c <- GPArotation::targetT(L = as.matrix(a$time[,which(PCloading)]), Target = as.matrix(b$time[,which(PCloading)]))
+  object$RMASCA$loading$time[,which(PCloading)] <- c$loadings
+  object$RMASCA$score$time[,which(PCloading)] <- as.matrix(object$RMASCA$score$time[,which(PCloading)]) %*% solve(t(c$Th))
   if(object$separateTimeAndGroup){
-    c <- GPArotation::targetT(L = as.matrix(a$group[,1:2]), Target = as.matrix(b$group[,1:2]))
-    object$RMASCA$loading$group[,1:2] <- c$loadings
-    object$RMASCA$score$group[,1:2] <- as.matrix(object$RMASCA$score$group[,1:2]) %*% solve(t(c$Th))
+    PCloading <- object$RMASCA$loading$explained$group > 0.05
+    c <- GPArotation::targetT(L = as.matrix(a$group[,which(PCloading)]), Target = as.matrix(b$group[,which(PCloading)]))
+    object$RMASCA$loading$group[,which(PCloading)] <- c$loadings
+    object$RMASCA$score$group[,which(PCloading)] <- as.matrix(object$RMASCA$score$group[,which(PCloading)]) %*% solve(t(c$Th))
   }
   return(object)
 }
@@ -112,7 +119,7 @@ getValidationPercentiles <- function(object, objectlist){
     perc_score_time <- data.frame()
     perc_loading_group <- data.frame()
     perc_score_group <- data.frame()
-    for(p in 1:2){
+    for(p in which(object$RMASCA$loading$explained$time > 0.05)){
       for(t in unique(df_loading_time$covars)){
         perc_loading_time_temp <- data.frame(
           a = quantile(df_loading_time[df_loading_time$covars == t,p], probs = c(0.025)),
@@ -164,7 +171,7 @@ getValidationPercentiles <- function(object, objectlist){
 
     # Check if we need to switch sign
     loadings <- getLoadings(object)$time
-    for(comp in 1:2){
+    for(comp in which(object$RMASCA$loading$explained$time > 0.05)){
       temp_limits <- perc_loading_time[perc_loading_time$PC == comp,]
       temp_limits <- merge(temp_limits, loadings[,c(comp, ncol(loadings))], by = "covars")
       if( any(temp_limits$low > temp_limits[,3]) | any(temp_limits[,3] > temp_limits$high) ){
@@ -175,7 +182,7 @@ getValidationPercentiles <- function(object, objectlist){
 
     # Check if we need to switch sign
     loadings <- getLoadings(object)$group
-    for(comp in 1:2){
+    for(comp in which(object$RMASCA$loading$explained$group > 0.05)){
       temp_limits <- perc_loading_group[perc_loading_group$PC == comp,]
       temp_limits <- merge(temp_limits, loadings[,c(comp, ncol(loadings))], by = "covars")
       if( any(temp_limits$low > temp_limits[,3]) | any(temp_limits[,3] > temp_limits$high) ){
@@ -199,7 +206,7 @@ getValidationPercentiles <- function(object, objectlist){
     }
     perc_loading_time <- data.frame()
     perc_score_time <- data.frame()
-    for(p in 1:2){
+    for(p in which(object$RMASCA$loading$explained$time > 0.05)){
       for(t in unique(df_loading_time$covars)){
         perc_loading_time_temp <- data.frame(
           a = quantile(df_loading_time[df_loading_time$covars == t,p], probs = c(0.025)),
@@ -229,7 +236,7 @@ getValidationPercentiles <- function(object, objectlist){
 
     # Check if we need to switch sign
     loadings <- getLoadings(object)$time
-    for(comp in 1:2){
+    for(comp in which(object$RMASCA$loading$explained$time > 0.05)){
       temp_limits <- perc_loading_time[perc_loading_time$PC == comp,]
       temp_limits <- merge(temp_limits, loadings[,c(comp, ncol(loadings))], by = "covars")
       if( any(temp_limits$low > temp_limits[,3]) | any(temp_limits[,3] > temp_limits$high) ){
@@ -241,7 +248,5 @@ getValidationPercentiles <- function(object, objectlist){
     object$validation$time$loading  <- perc_loading_time
     object$validation$time$score  <- perc_score_time
   }
-
-
   return(object)
 }

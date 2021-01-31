@@ -1,11 +1,10 @@
 #' Get an RMASCA object
+#' 
+#' `RMASCA` initializes an RMASCA model and returns an RMASCA object
 #'
-#' This function loads a file as a matrix. It assumes that the first column
-#' contains the rownames and the subsequent columns are the sample identifiers.
-#' Any rows with duplicated row names will be dropped with the first one being
-#' kepted.
+#' This function builds your RMASCA model. It needs a data frame containing at least a column identifying participants, a column called `time` contining time information, a column `group` containing group information, a column `variable` containing variable names, and a value column. In addition you need to specify the model you want, and whether you want to separate group and time effects (defaults to `TRUE`).
 #'
-#' @param df Data Frame to be analyzed
+#' @param df Data frame to be analyzed
 #' @param formula Regression model
 #' @param separateTimeAndGroup Logical: should time and group effect be separated?
 #' @param pAdjustMethod Method for correcting p values for multiple testing, see p.adjust.methods
@@ -21,8 +20,8 @@
 #' @return An RMASCA object
 #' 
 #' @examples
-#' RMASCA(df = df, formula = value~time*group + (1|ID))
-#' RMASCA(df = df, formula = value~time*group + (1|ID), participantColumn = "ID", validate = TRUE)
+#' load("PE.Rdata")
+#' model <- RMASCA(df = df, formula = value~time*group + (1|ID))
 #' 
 #' @export
 RMASCA <- function(df,

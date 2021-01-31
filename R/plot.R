@@ -2,7 +2,7 @@
 #'
 #' This function plots your RMASCA model
 #'
-#' @param object An RMASCA object
+#' @param object An [RMASCA()] object
 #' @param component String stating which component to return ("PC1" is default)
 #' @param effect String stating which effect to return; `time`, `group`, `both` (default)
 #' @param decreasingLoadings Sort the loadings in decreasing (default) or increasing order
@@ -13,11 +13,12 @@
 #' @return An ggplot2 object (or a list og ggplot objects)
 #' 
 #' @examples
-#' plot(model)
+#' load("PE.Rdata")
+#' plot(model.val)
 #' plot(model, component = "PC2")
 #' plot(model, only = "score", effect = "time")
 #' plot(model, tooDense = 5)
-#' plot(model, highlight = c("CRP", "IL-1b", "IL-6"))
+#' plot(model, highlight = c("PlGF", "IL-1b", "IL-6"))
 #' 
 #' @export
 plot.RMASCA <- function(object, component = "PC1", effect = "both", decreasingLoadings = TRUE, only = "both", enlist = FALSE, tooDense = NA, highlight = NA){
@@ -76,6 +77,7 @@ plot.RMASCA <- function(object, component = "PC1", effect = "both", decreasingLo
 #' @return An ggplot2 object (or a list og ggplot objects)
 #' 
 #' @examples
+#' load("PE.Rdata")
 #' screeplot(model)
 #' 
 #' @export
@@ -280,13 +282,19 @@ getScorePlot <- function(object, component = "PC1", effect = "time"){
 #' @param participantColumn Specify the column with participant identifier. Not necessary if you have already provided it to the RMASCA object
 #' @param valueColumn Specify column with values (y axis). Not necessary to provide if you are plotting an RMASCA object.
 #' @param timeColumn Specify column with times (x axis). Defaults to `time`.
-#' @param addSmooth. Specify which geom_smooth model you want to apply, eg. "`lm`", "`glm`", "`gam`", "`loess`" (default). Set to `NA` to remove.
+#' @param addSmooth. Specify which geom_smooth model you want to apply, eg. `lm`, `glm`, `gam`, `loess` (default). Set to `NA` to remove.
 #' @return A list with ggplot2 objects.
 #' 
 #' @examples
-#' plotParts(df, variable = "CRP", participantColumn = "ID", valueColumn = "value")
-#' plotParts(model, variable = c("CRP", "IL-6"), participantColumn = "ID")
-#' plotParts(model, variable = "CRP", participantColumn = "ID", timeColumn = "GA")[[1]] + ggplot2::labs(x = "GA")
+#' load("PE.Rdata")
+#' plotParts(df, variable = "IL-6", participantColumn = "ID", valueColumn = "value")
+#' do.call(
+#'     ggpubr::ggarrange,
+#'     c(plotParts(df, participantColumn = "ID", timeColumn = "GA", valueColumn = "value", addSmooth = NA, 
+#'     variable = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotaxin")), 
+#'       common.legend = TRUE, legend = "bottom")
+#'   )
+#' plotParts(model, variable = "IL-6", participantColumn = "ID", timeColumn = "GA")[[1]] + ggplot2::labs(x = "GA")
 #' 
 #' @export
 plotParts <- function(object, variable = NA, participantColumn = FALSE, valueColumn = FALSE, timeColumn = "time", addSmooth = "loess"){
@@ -316,7 +324,7 @@ plotParts <- function(object, variable = NA, participantColumn = FALSE, valueCol
       ggplot2::geom_point(alpha = 0.7) + ggplot2::geom_line(alpha = 0.3) +
       ggplot2::theme(legend.position = "bottom") + ggplot2::labs(x = "Time", y = xi)
     if(!any(is.na(addSmooth))){
-      g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group), se = FALSE)
+      g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group), se = TRUE)
     }
     return(g)
   }
@@ -332,7 +340,7 @@ plotParts <- function(object, variable = NA, participantColumn = FALSE, valueCol
   return(g)
 }
 
-#' Plot participants
+#' Plot model predictions
 #'
 #' This function returns the scores for an RMASCA model
 #'
@@ -341,8 +349,13 @@ plotParts <- function(object, variable = NA, participantColumn = FALSE, valueCol
 #' @return A list with ggplot2 objects.
 #' 
 #' @examples
-#' 
-#' 
+#' load("PE.Rdata")
+#' plotPred(model, variable = "IL-6")[[1]] + ggplot2::theme_bw()
+#' do.call(
+#'   ggpubr::ggarrange,
+#'   c(plotPred(model, variable = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotaxin")), 
+#'     common.legend = TRUE, legend = "bottom")
+#' )
 #' @export
 plotPred <- function(object, variable = NA){
   if(any(is.na(variable))){
