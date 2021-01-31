@@ -40,10 +40,7 @@
 
 
 <meta property="og:title" content="Get an RMASCA object — plot.RMASCA" />
-<meta property="og:description" content="This function loads a file as a matrix. It assumes that the first column
-contains the rownames and the subsequent columns are the sample identifiers.
-Any rows with duplicated row names will be dropped with the first one being
-kepted." />
+<meta property="og:description" content="This function plots your RMASCA model" />
 
 
 
@@ -127,10 +124,7 @@ kepted." />
     </div>
 
     <div class="ref-description">
-    <p>This function loads a file as a matrix. It assumes that the first column
-contains the rownames and the subsequent columns are the sample identifiers.
-Any rows with duplicated row names will be dropped with the first one being
-kepted.</p>
+    <p>This function plots your RMASCA model</p>
     </div>
 
     <pre class="usage"><span class='co'># S3 method for RMASCA</span>
@@ -154,7 +148,7 @@ kepted.</p>
     </tr>
     <tr>
       <th>component</th>
-      <td><p>String stating which component to return (PC1 is default)</p></td>
+      <td><p>String stating which component to return ("PC1" is default)</p></td>
     </tr>
     <tr>
       <th>effect</th>
@@ -162,7 +156,7 @@ kepted.</p>
     </tr>
     <tr>
       <th>decreasingLoadings</th>
-      <td><p>Sort the loadings in dedreasing (default) or increasing order</p></td>
+      <td><p>Sort the loadings in decreasing (default) or increasing order</p></td>
     </tr>
     <tr>
       <th>only</th>
@@ -174,7 +168,7 @@ kepted.</p>
     </tr>
     <tr>
       <th>tooDense</th>
-      <td><p>Numerical. If &gt; 0, only name this number of covariables</p></td>
+      <td><p>Integer, If &gt; 0, only name this number of covariables</p></td>
     </tr>
     <tr>
       <th>highlight</th>
@@ -186,6 +180,14 @@ kepted.</p>
 
     <p>An ggplot2 object (or a list og ggplot objects)</p>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>model</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in plot(model): object 'model' not found</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>model</span>, component <span class='op'>=</span> <span class='st'>"PC2"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in plot(model, component = "PC2"): object 'model' not found</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>model</span>, only <span class='op'>=</span> <span class='st'>"score"</span>, effect <span class='op'>=</span> <span class='st'>"time"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in plot(model, only = "score", effect = "time"): object 'model' not found</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>model</span>, tooDense <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in plot(model, tooDense = 5): object 'model' not found</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>model</span>, highlight <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"CRP"</span>, <span class='st'>"IL-1b"</span>, <span class='st'>"IL-6"</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in plot(model, highlight = c("CRP", "IL-1b", "IL-6")): object 'model' not found</span></div><div class='input'>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

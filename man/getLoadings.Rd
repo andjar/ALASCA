@@ -13,8 +13,5 @@ getLoadings(object)
 A list with loadings for time (and group), and the exploratory power for each component
 }
 \description{
-This function loads a file as a matrix. It assumes that the first column
-contains the rownames and the subsequent columns are the sample identifiers.
-Any rows with duplicated row names will be dropped with the first one being
-kepted.
+This function  returns the loadings for an RMASCA model
 }

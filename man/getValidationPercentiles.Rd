@@ -15,5 +15,5 @@ getValidationPercentiles(object, objectlist)
 An RMASCA object
 }
 \description{
-This function calculates the LMM coefficients for the RMASCA-model
+This function extract percentiles during validation
 }

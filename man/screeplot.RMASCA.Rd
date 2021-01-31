@@ -15,8 +15,9 @@
 An ggplot2 object (or a list og ggplot objects)
 }
 \description{
-This function loads a file as a matrix. It assumes that the first column
-contains the rownames and the subsequent columns are the sample identifiers.
-Any rows with duplicated row names will be dropped with the first one being
-kepted.
+This function returns a screeplot for an RMASCA model showing what proportion of the variance each component of the model explains
+}
+\examples{
+screeplot(model)
+
 }

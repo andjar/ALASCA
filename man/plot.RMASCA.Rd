@@ -18,17 +18,17 @@
 \arguments{
 \item{object}{An RMASCA object}
 
-\item{component}{String stating which component to return (PC1 is default)}
+\item{component}{String stating which component to return ("PC1" is default)}
 
 \item{effect}{String stating which effect to return; \code{time}, \code{group}, \code{both} (default)}
 
-\item{decreasingLoadings}{Sort the loadings in dedreasing (default) or increasing order}
+\item{decreasingLoadings}{Sort the loadings in decreasing (default) or increasing order}
 
 \item{only}{String stating which plot to return; \code{both} (default), \code{score} or \code{loading}}
 
 \item{enlist}{Logical. If TRUE, the plots are returned as a list and not as a composed figure (default)}
 
-\item{tooDense}{Numerical. If > 0, only name this number of covariables}
+\item{tooDense}{Integer, If > 0, only name this number of covariables}
 
 \item{highlight}{Vector of strings with variables to highlight in the loadings plot}
 }
@@ -36,8 +36,13 @@
 An ggplot2 object (or a list og ggplot objects)
 }
 \description{
-This function loads a file as a matrix. It assumes that the first column
-contains the rownames and the subsequent columns are the sample identifiers.
-Any rows with duplicated row names will be dropped with the first one being
-kepted.
+This function plots your RMASCA model
+}
+\examples{
+plot(model)
+plot(model, component = "PC2")
+plot(model, only = "score", effect = "time")
+plot(model, tooDense = 5)
+plot(model, highlight = c("CRP", "IL-1b", "IL-6"))
+
 }

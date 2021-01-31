@@ -8,3 +8,16 @@ development:
 home:
   title: "An R package for RM-ASCA+"
   description: "Multivariate analysis of repeated measures data"
+reference:
+- title: "Running RMASCA"
+  desc: "Functions for performing analysis and work with the results"
+- contents: 
+  - RMASCA
+  - validate
+  - getScores
+  - getLoadings
+- title: "Plotting"
+  desc: "Functions for visualizing results"
+- contents: 
+  - plot.RMASCA
+  - screeplot.RMASCA

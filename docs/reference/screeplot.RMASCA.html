@@ -40,10 +40,7 @@
 
 
 <meta property="og:title" content="Get screeplot — screeplot.RMASCA" />
-<meta property="og:description" content="This function loads a file as a matrix. It assumes that the first column
-contains the rownames and the subsequent columns are the sample identifiers.
-Any rows with duplicated row names will be dropped with the first one being
-kepted." />
+<meta property="og:description" content="This function returns a screeplot for an RMASCA model showing what proportion of the variance each component of the model explains" />
 
 
 
@@ -127,10 +124,7 @@ kepted." />
     </div>
 
     <div class="ref-description">
-    <p>This function loads a file as a matrix. It assumes that the first column
-contains the rownames and the subsequent columns are the sample identifiers.
-Any rows with duplicated row names will be dropped with the first one being
-kepted.</p>
+    <p>This function returns a screeplot for an RMASCA model showing what proportion of the variance each component of the model explains</p>
     </div>
 
     <pre class="usage"><span class='co'># S3 method for RMASCA</span>
@@ -153,6 +147,10 @@ kepted.</p>
 
     <p>An ggplot2 object (or a list og ggplot objects)</p>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/stats/screeplot.html'>screeplot</a></span><span class='op'>(</span><span class='va'>model</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in screeplot(model): object 'model' not found</span></div><div class='input'>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

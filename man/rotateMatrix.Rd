@@ -15,5 +15,5 @@ rotateMatrix(object, target)
 An RMASCA object
 }
 \description{
-This function calculates the LMM coefficients for the RMASCA-model
+This function rotates loadings and scores during validation
 }

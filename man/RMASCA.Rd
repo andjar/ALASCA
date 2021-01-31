@@ -56,3 +56,8 @@ contains the rownames and the subsequent columns are the sample identifiers.
 Any rows with duplicated row names will be dropped with the first one being
 kepted.
 }
+\examples{
+RMASCA(df = df, formula = value~time*group + (1|ID))
+RMASCA(df = df, formula = value~time*group + (1|ID), participantColumn = "ID", validate = TRUE)
+
+}

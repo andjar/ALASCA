@@ -86,7 +86,8 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">RMASCA</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">RMASCA</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></code></pre></div>
 <div id="introduction-to-rm-asca" class="section level1">
 <h1 class="hasAnchor">
 <a href="#introduction-to-rm-asca" class="anchor"></a>Introduction to RM-ASCA+</h1>
@@ -162,21 +163,21 @@
 <span class="op">}</span></code></pre></div>
 <p>Let us see how it looks</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">df</span>,
-                <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">time</span><span class="op">)</span>, y <span class="op">=</span> <span class="va">value</span>, color <span class="op">=</span> <span class="va">group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html">geom_boxplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">variable</span>, scales <span class="op">=</span> <span class="st">"free_y"</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time"</span>, y <span class="op">=</span> <span class="st">"Value"</span>, color <span class="op">=</span> <span class="st">"Group"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">df</span>,
+                <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">time</span><span class="op">)</span>, y <span class="op">=</span> <span class="va">value</span>, color <span class="op">=</span> <span class="va">group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html">geom_boxplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">variable</span>, scales <span class="op">=</span> <span class="st">"free_y"</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time"</span>, y <span class="op">=</span> <span class="st">"Value"</span>, color <span class="op">=</span> <span class="st">"Group"</span><span class="op">)</span></code></pre></div>
 <p><img src="RMASCA_files/figure-html/data_dummy_plot-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>And we can have a look at some random participants to see typical trajectories</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">partid</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">partid</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span><span class="op">)</span>,
-     <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">time</span><span class="op">)</span>, y <span class="op">=</span> <span class="va">value</span>, group <span class="op">=</span> <span class="va">partid</span>, color <span class="op">=</span> <span class="va">group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-     <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-     <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">variable</span>, scales <span class="op">=</span> <span class="st">"free_y"</span><span class="op">)</span> <span class="op">+</span>
-     <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span> <span class="op">+</span>
-     <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time"</span>, y <span class="op">=</span> <span class="st">"Value"</span>, color <span class="op">=</span> <span class="st">"Group"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">partid</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">partid</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span><span class="op">)</span>,
+     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">time</span><span class="op">)</span>, y <span class="op">=</span> <span class="va">value</span>, group <span class="op">=</span> <span class="va">partid</span>, color <span class="op">=</span> <span class="va">group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">variable</span>, scales <span class="op">=</span> <span class="st">"free_y"</span><span class="op">)</span> <span class="op">+</span>
+     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span> <span class="op">+</span>
+     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time"</span>, y <span class="op">=</span> <span class="st">"Value"</span>, color <span class="op">=</span> <span class="st">"Group"</span><span class="op">)</span></code></pre></div>
 <p><img src="RMASCA_files/figure-html/data_dummy_plot_2-1.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div id="using-rm-asca" class="section level2">
@@ -188,7 +189,6 @@
 <span class="va">res.simple</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RMASCA.html">RMASCA</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">df</span>, formula <span class="op">=</span> <span class="va">model.formula</span><span class="op">)</span>
 <span class="co">#&gt; Scaling data...</span>
 <span class="co">#&gt; Calculating LMM coefficients...</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; Finished calculating LMM coefficients!</span>
 <span class="co">#&gt; Calculating effect matrix (may take some time...)</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span></code></pre></div>
@@ -229,54 +229,57 @@
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">scores</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getScores.html">getScores</a></span><span class="op">(</span><span class="va">res.simple</span><span class="op">)</span>
 <span class="va">loadings</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getLoadings.html">getLoadings</a></span><span class="op">(</span><span class="va">res.simple</span><span class="op">)</span>
+<span class="va">tplot_score</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">df</span>, <span class="va">x</span>, <span class="va">y</span>, <span class="va">group</span>, <span class="va">color</span> <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span><span class="op">{</span>
+  <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">color</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
+    <span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span>, group <span class="op">=</span> <span class="va">group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
+      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
+      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>
+  <span class="op">}</span><span class="kw">else</span><span class="op">{</span>
+    <span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span>, group <span class="op">=</span> <span class="va">group</span>, color <span class="op">=</span> <span class="va">color</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
+      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
+      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>
+  <span class="op">}</span>
+  
+  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span>
+<span class="op">}</span>
 
-<span class="va">gst_1</span> <span class="op">&lt;-</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">scores</span><span class="op">$</span><span class="va">time</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">PC1</span>, group <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr Comp. 1 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">scores</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">time</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span>
+<span class="va">tplot_loading</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">df</span>, <span class="va">x</span>, <span class="va">y</span><span class="op">)</span><span class="op">{</span>
+  <span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">90</span>, vjust <span class="op">=</span> <span class="fl">0.4</span>, hjust<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>
+  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span>
+<span class="op">}</span>
 
-<span class="va">gst_2</span> <span class="op">&lt;-</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">scores</span><span class="op">$</span><span class="va">time</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">PC2</span>, group <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr Comp. 2 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">scores</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">time</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span>
+<span class="va">gst_1</span> <span class="op">&lt;-</span> <span class="fu">tplot_score</span><span class="op">(</span>df <span class="op">=</span> <span class="va">scores</span><span class="op">$</span><span class="va">time</span>, x <span class="op">=</span> <span class="va">scores</span><span class="op">$</span><span class="va">time</span><span class="op">$</span><span class="va">time</span>, y <span class="op">=</span> <span class="va">scores</span><span class="op">$</span><span class="va">time</span><span class="op">$</span><span class="va">PC1</span>, group <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr Comp. 1 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">scores</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">time</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span>
+  
+<span class="va">gst_2</span> <span class="op">&lt;-</span> <span class="fu">tplot_score</span><span class="op">(</span><span class="va">scores</span><span class="op">$</span><span class="va">time</span>, <span class="va">scores</span><span class="op">$</span><span class="va">time</span><span class="op">$</span><span class="va">time</span>, <span class="va">scores</span><span class="op">$</span><span class="va">time</span><span class="op">$</span><span class="va">PC2</span>, group <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr Comp. 2 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">scores</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">time</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span>
 
-<span class="va">gsg_1</span> <span class="op">&lt;-</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">scores</span><span class="op">$</span><span class="va">group</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">PC1</span>, group <span class="op">=</span> <span class="va">group</span>, color <span class="op">=</span> <span class="va">group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr Comp. 1 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">scores</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">group</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span>
+<span class="va">gsg_1</span> <span class="op">&lt;-</span> <span class="fu">tplot_score</span><span class="op">(</span><span class="va">scores</span><span class="op">$</span><span class="va">group</span>, x <span class="op">=</span> <span class="va">scores</span><span class="op">$</span><span class="va">group</span><span class="op">$</span><span class="va">time</span>, y <span class="op">=</span> <span class="va">scores</span><span class="op">$</span><span class="va">group</span><span class="op">$</span><span class="va">PC1</span>, group <span class="op">=</span> <span class="va">scores</span><span class="op">$</span><span class="va">group</span><span class="op">$</span><span class="va">group</span>, color <span class="op">=</span> <span class="va">scores</span><span class="op">$</span><span class="va">group</span><span class="op">$</span><span class="va">group</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr Comp. 1 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">scores</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">group</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; Warning in if (is.na(color)) {: the condition has length &gt; 1 and only the first</span>
+<span class="co">#&gt; element will be used</span>
 
-<span class="va">gsg_2</span> <span class="op">&lt;-</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">scores</span><span class="op">$</span><span class="va">group</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">PC2</span>, group <span class="op">=</span> <span class="va">group</span>, color <span class="op">=</span> <span class="va">group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr Comp. 2 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">scores</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">group</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span>
+<span class="va">gsg_2</span> <span class="op">&lt;-</span> <span class="fu">tplot_score</span><span class="op">(</span><span class="va">scores</span><span class="op">$</span><span class="va">group</span>, x <span class="op">=</span> <span class="va">scores</span><span class="op">$</span><span class="va">group</span><span class="op">$</span><span class="va">time</span>, y <span class="op">=</span> <span class="va">scores</span><span class="op">$</span><span class="va">group</span><span class="op">$</span><span class="va">PC2</span>, group <span class="op">=</span> <span class="va">scores</span><span class="op">$</span><span class="va">group</span><span class="op">$</span><span class="va">group</span>, color <span class="op">=</span> <span class="va">scores</span><span class="op">$</span><span class="va">group</span><span class="op">$</span><span class="va">group</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr Comp. 2 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">scores</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">group</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; Warning in if (is.na(color)) {: the condition has length &gt; 1 and only the first</span>
+<span class="co">#&gt; element will be used</span>
 
-<span class="va">glt_1</span> <span class="op">&lt;-</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">loadings</span><span class="op">$</span><span class="va">time</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">covars</span>, y <span class="op">=</span> <span class="va">PC1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Variable"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr Comp. 1 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">loadings</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">time</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">90</span>, vjust <span class="op">=</span> <span class="fl">0.4</span>, hjust<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>
+<span class="va">glt_1</span> <span class="op">&lt;-</span> <span class="fu">tplot_loading</span><span class="op">(</span><span class="va">loadings</span><span class="op">$</span><span class="va">time</span>, x <span class="op">=</span> <span class="va">loadings</span><span class="op">$</span><span class="va">time</span><span class="op">$</span><span class="va">covars</span>, y <span class="op">=</span> <span class="va">loadings</span><span class="op">$</span><span class="va">time</span><span class="op">$</span><span class="va">PC1</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Variable"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr Comp. 1 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">loadings</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">time</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span>
 
-<span class="va">glt_2</span> <span class="op">&lt;-</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">loadings</span><span class="op">$</span><span class="va">time</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">covars</span>, y <span class="op">=</span> <span class="va">PC2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Variable"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr Comp. 2 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">loadings</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">time</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">90</span>, vjust <span class="op">=</span> <span class="fl">0.4</span>, hjust<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>
+<span class="va">glt_2</span> <span class="op">&lt;-</span> <span class="fu">tplot_loading</span><span class="op">(</span><span class="va">loadings</span><span class="op">$</span><span class="va">time</span>, x <span class="op">=</span> <span class="va">loadings</span><span class="op">$</span><span class="va">time</span><span class="op">$</span><span class="va">covars</span>, y <span class="op">=</span> <span class="va">loadings</span><span class="op">$</span><span class="va">time</span><span class="op">$</span><span class="va">PC2</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Variable"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr Comp. 2 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">loadings</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">time</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span>
 
-<span class="va">glg_1</span> <span class="op">&lt;-</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">loadings</span><span class="op">$</span><span class="va">group</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">covars</span>, y <span class="op">=</span> <span class="va">PC1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Variable"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr Comp. 1 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">loadings</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">group</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">90</span>, vjust <span class="op">=</span> <span class="fl">0.4</span>, hjust<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>
+<span class="va">glg_1</span> <span class="op">&lt;-</span> <span class="fu">tplot_loading</span><span class="op">(</span><span class="va">loadings</span><span class="op">$</span><span class="va">group</span>, x <span class="op">=</span> <span class="va">loadings</span><span class="op">$</span><span class="va">group</span><span class="op">$</span><span class="va">covars</span>, y <span class="op">=</span> <span class="va">loadings</span><span class="op">$</span><span class="va">group</span><span class="op">$</span><span class="va">PC1</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Variable"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr Comp. 1 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">loadings</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">group</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span>
 
-<span class="va">glg_2</span> <span class="op">&lt;-</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">loadings</span><span class="op">$</span><span class="va">group</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">covars</span>, y <span class="op">=</span> <span class="va">PC2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Variable"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr. Comp. 2 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">loadings</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">group</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">90</span>, vjust <span class="op">=</span> <span class="fl">0.4</span>, hjust<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>
+<span class="va">glg_2</span> <span class="op">&lt;-</span> <span class="fu">tplot_loading</span><span class="op">(</span><span class="va">loadings</span><span class="op">$</span><span class="va">group</span>, x <span class="op">=</span> <span class="va">loadings</span><span class="op">$</span><span class="va">group</span><span class="op">$</span><span class="va">covars</span>, y <span class="op">=</span> <span class="va">loadings</span><span class="op">$</span><span class="va">group</span><span class="op">$</span><span class="va">PC2</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Variable"</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Pr. Comp. 2 ("</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">loadings</span><span class="op">$</span><span class="va">explained</span><span class="op">$</span><span class="va">group</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,<span class="st">"%)"</span><span class="op">)</span><span class="op">)</span>
 
 <span class="fu">ggpubr</span><span class="fu">::</span><span class="fu"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span><span class="op">(</span>
   <span class="fu">ggpubr</span><span class="fu">::</span><span class="fu"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span><span class="op">(</span><span class="va">gst_1</span>, <span class="va">glt_1</span>, <span class="va">gsg_1</span>, <span class="va">glg_1</span>, nrow <span class="op">=</span> <span class="fl">1</span>, widths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>, common.legend <span class="op">=</span> <span class="cn">TRUE</span>, legend <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span>,
@@ -284,26 +287,81 @@
   nrow <span class="op">=</span> <span class="fl">2</span>
 <span class="op">)</span></code></pre></div>
 <p><img src="RMASCA_files/figure-html/RMASCA_custom_plot-1.png" width="100%" style="display: block; margin: auto;"></p>
+<p>Note that we can also call the various parts of the plot directly, and apply styles as we wish, for example</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">ggpubr</span><span class="fu">::</span><span class="fu"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span><span class="op">(</span>
+  <span class="fu">ggpubr</span><span class="fu">::</span><span class="fu"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"time"</span>, only <span class="op">=</span> <span class="st">"score"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
+                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"time"</span>, only <span class="op">=</span> <span class="st">"loading"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
+                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"group"</span>, only <span class="op">=</span> <span class="st">"score"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
+                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"group"</span>, only <span class="op">=</span> <span class="st">"loading"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
+                    nrow <span class="op">=</span> <span class="fl">1</span>, widths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>, 
+                    common.legend <span class="op">=</span> <span class="cn">TRUE</span>, legend <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span>,
+  <span class="fu">ggpubr</span><span class="fu">::</span><span class="fu"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"time"</span>, only <span class="op">=</span> <span class="st">"score"</span>, component <span class="op">=</span> <span class="st">"PC2"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
+                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"time"</span>, only <span class="op">=</span> <span class="st">"loading"</span>, component <span class="op">=</span> <span class="st">"PC2"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
+                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"group"</span>, only <span class="op">=</span> <span class="st">"score"</span>, component <span class="op">=</span> <span class="st">"PC2"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
+                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"group"</span>, only <span class="op">=</span> <span class="st">"loading"</span>, component <span class="op">=</span> <span class="st">"PC2"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
+                    nrow <span class="op">=</span> <span class="fl">1</span>, widths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>, 
+                    common.legend <span class="op">=</span> <span class="cn">TRUE</span>, legend <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>,
+  nrow <span class="op">=</span> <span class="fl">2</span>
+<span class="op">)</span></code></pre></div>
+<p><img src="RMASCA_files/figure-html/RMASCA_custom_plot_2-1.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div id="robustness-testing" class="section level3">
 <h3 class="hasAnchor">
 <a href="#robustness-testing" class="anchor"></a>Robustness testing</h3>
-<p>We often need to now how robust our results are. In this package, we use leave-one-out jack-knifing where we divide our participants into <code>nValFold</code> groups and leave out one of the groups. Note that the group proportions are kept relatively stable. We repeat this process <code>nValRuns</code> times and use the 2.5 and 97.5 percentiles as our uncertainty estimate. If you know that you are going to do this, you can set <code>validate = TRUE</code> when you run the RMASCA model the first time. This usually takes some time. Also note that we need to specify which column that contains participant id with the argument <code>partid</code>. We can also call validation after having initialized the RMASCA object:</p>
-<pre><code>#&gt; Warning in if (temp_limits$low &gt; temp_limits[, 3] | temp_limits[, 3] &gt;
-#&gt; temp_limits$high) {: the condition has length &gt; 1 and only the first element
-#&gt; will be used
+<p>We often need to now how robust our results are. In this package, we use leave-one-out jack-knifing where we divide our participants into <code>nValFold</code> groups and leave out one of the groups. Note that the group proportions are kept relatively stable. We repeat this process <code>nValRuns</code> times and use the 2.5 and 97.5 percentiles as our uncertainty estimate. If you know that you are going to do this, you can set <code>validate = TRUE</code> when you run the RMASCA model the first time. This usually takes some time (but it is extra slow in rmarkdown, so don’t be scares). Also note that we need to specify which column that contains participant id with the argument <code>partid</code>. We can also call validation after having initialized the RMASCA object:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">res.simple</span><span class="op">$</span><span class="va">nValRuns</span> <span class="op">&lt;-</span> <span class="fl">20</span> <span class="co"># you should use more, but this is simply an example</span>
 
-#&gt; Warning in if (temp_limits$low &gt; temp_limits[, 3] | temp_limits[, 3] &gt;
-#&gt; temp_limits$high) {: the condition has length &gt; 1 and only the first element
-#&gt; will be used
-#&gt; Warning in if (temp_limits$low &gt; temp_limits[, 3] | temp_limits[, 3] &gt;
-#&gt; temp_limits$high) {: the condition has length &gt; 1 and only the first element
-#&gt; will be used
+<span class="va">res.simple</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">res.simple</span>, participantColumn <span class="op">=</span> <span class="st">"partid"</span><span class="op">)</span>
+<span class="co">#&gt; Running validation...</span>
+<span class="co">#&gt; - Run  1  of  20 </span>
+<span class="co">#&gt; --- Used  3.08  seconds. Est. time remaining:  58.44  seconds </span>
+<span class="co">#&gt; - Run  2  of  20 </span>
+<span class="co">#&gt; --- Used  2.45  seconds. Est. time remaining:  49.75  seconds </span>
+<span class="co">#&gt; - Run  3  of  20 </span>
+<span class="co">#&gt; --- Used  2.38  seconds. Est. time remaining:  44.83  seconds </span>
+<span class="co">#&gt; - Run  4  of  20 </span>
+<span class="co">#&gt; --- Used  2.43  seconds. Est. time remaining:  41.36  seconds </span>
+<span class="co">#&gt; - Run  5  of  20 </span>
+<span class="co">#&gt; --- Used  2.53  seconds. Est. time remaining:  38.6  seconds </span>
+<span class="co">#&gt; - Run  6  of  20 </span>
+<span class="co">#&gt; --- Used  2.5  seconds. Est. time remaining:  35.86  seconds </span>
+<span class="co">#&gt; - Run  7  of  20 </span>
+<span class="co">#&gt; --- Used  2.5  seconds. Est. time remaining:  33.18  seconds </span>
+<span class="co">#&gt; - Run  8  of  20 </span>
+<span class="co">#&gt; --- Used  2.54  seconds. Est. time remaining:  30.61  seconds </span>
+<span class="co">#&gt; - Run  9  of  20 </span>
+<span class="co">#&gt; --- Used  2.48  seconds. Est. time remaining:  27.98  seconds </span>
+<span class="co">#&gt; - Run  10  of  20 </span>
+<span class="co">#&gt; --- Used  2.33  seconds. Est. time remaining:  25.22  seconds </span>
+<span class="co">#&gt; - Run  11  of  20 </span>
+<span class="co">#&gt; --- Used  2.41  seconds. Est. time remaining:  22.61  seconds </span>
+<span class="co">#&gt; - Run  12  of  20 </span>
+<span class="co">#&gt; --- Used  2.48  seconds. Est. time remaining:  20.08  seconds </span>
+<span class="co">#&gt; - Run  13  of  20 </span>
+<span class="co">#&gt; --- Used  3.24  seconds. Est. time remaining:  17.96  seconds </span>
+<span class="co">#&gt; - Run  14  of  20 </span>
+<span class="co">#&gt; --- Used  2.8  seconds. Est. time remaining:  15.49  seconds </span>
+<span class="co">#&gt; - Run  15  of  20 </span>
+<span class="co">#&gt; --- Used  2.7  seconds. Est. time remaining:  12.95  seconds </span>
+<span class="co">#&gt; - Run  16  of  20 </span>
+<span class="co">#&gt; --- Used  2.25  seconds. Est. time remaining:  10.28  seconds </span>
+<span class="co">#&gt; - Run  17  of  20 </span>
+<span class="co">#&gt; --- Used  2.62  seconds. Est. time remaining:  7.72  seconds </span>
+<span class="co">#&gt; - Run  18  of  20 </span>
+<span class="co">#&gt; --- Used  2.49  seconds. Est. time remaining:  5.13  seconds </span>
+<span class="co">#&gt; - Run  19  of  20 </span>
+<span class="co">#&gt; --- Used  2.31  seconds. Est. time remaining:  2.55  seconds </span>
+<span class="co">#&gt; - Run  20  of  20 </span>
+<span class="co">#&gt; --- Used  2.61  seconds. Est. time remaining:  0  seconds</span>
 
-#&gt; Warning in if (temp_limits$low &gt; temp_limits[, 3] | temp_limits[, 3] &gt;
-#&gt; temp_limits$high) {: the condition has length &gt; 1 and only the first element
-#&gt; will be used</code></pre>
-<p><img src="RMASCA_files/figure-html/robustness-1.png" width="100%" style="display: block; margin: auto;"><img src="RMASCA_files/figure-html/robustness-2.png" width="100%" style="display: block; margin: auto;"></p>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span><span class="op">)</span></code></pre></div>
+<p><img src="RMASCA_files/figure-html/robustness-1.png" width="100%" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, component <span class="op">=</span> <span class="st">"PC2"</span><span class="op">)</span></code></pre></div>
+<p><img src="RMASCA_files/figure-html/robustness-2.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div id="alternative-models" class="section level3">
 <h3 class="hasAnchor">
@@ -312,18 +370,17 @@
 <h4 class="hasAnchor">
 <a href="#interaction-only" class="anchor"></a>Interaction only</h4>
 <p>If our experiment was an intervention, then we can assume that the groups were equal at baseline (time 1). Then we can skip the main group effect and only use time and interaction, like this:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">model.formula</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">partid</span><span class="op">)</span>
 <span class="va">res.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RMASCA.html">RMASCA</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">df</span>, formula <span class="op">=</span> <span class="va">model.formula</span><span class="op">)</span>
 <span class="co">#&gt; Scaling data...</span>
 <span class="co">#&gt; Calculating LMM coefficients...</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; Finished calculating LMM coefficients!</span>
 <span class="co">#&gt; Calculating effect matrix (may take some time...)</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod2</span><span class="op">)</span></code></pre></div>
 <p><img src="RMASCA_files/figure-html/RMASCA_model_2-1.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod2</span>, component <span class="op">=</span> <span class="st">"PC2"</span><span class="op">)</span></code></pre></div>
 <p><img src="RMASCA_files/figure-html/RMASCA_model_2-2.png" width="100%" style="display: block; margin: auto;"></p>
 <p>As you can see, it is quite similar to the previous model, but all the groups have the same value for time 1.</p>
@@ -332,18 +389,17 @@
 <h4 class="hasAnchor">
 <a href="#interaction-only-with-combined-time-and-group-effect" class="anchor"></a>Interaction only with combined time and group effect</h4>
 <p>Sometimes it doesn’t make sense to use a reference group – for example if we didn’t have any controls and the first group had a salt-free diet. We can then use a single PCA instead of separating time and group effects:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">model.formula</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">partid</span><span class="op">)</span>
 <span class="va">res.mod3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RMASCA.html">RMASCA</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">df</span>, formula <span class="op">=</span> <span class="va">model.formula</span>, separateTimeAndGroup <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 <span class="co">#&gt; Scaling data...</span>
 <span class="co">#&gt; Calculating LMM coefficients...</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; Finished calculating LMM coefficients!</span>
 <span class="co">#&gt; Calculating effect matrix (may take some time...)</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod3</span><span class="op">)</span></code></pre></div>
 <p><img src="RMASCA_files/figure-html/RMASCA_model_3-1.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod3</span>, component <span class="op">=</span> <span class="st">"PC2"</span><span class="op">)</span></code></pre></div>
 <p><img src="RMASCA_files/figure-html/RMASCA_model_3-2.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
@@ -351,7 +407,7 @@
 <h4 class="hasAnchor">
 <a href="#covariates" class="anchor"></a>Covariates</h4>
 <p>This time we want to adjust for age and not include it in the ASCA itself;</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">age</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">variable</span> <span class="op">==</span> <span class="st">"Age"</span><span class="op">)</span><span class="op">$</span><span class="va">value</span>
 <span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">variable</span> <span class="op">!=</span> <span class="st">"Age"</span><span class="op">)</span>
 <span class="va">df</span><span class="op">$</span><span class="va">age</span> <span class="op">&lt;-</span> <span class="va">age</span>
@@ -359,13 +415,12 @@
 <span class="va">res.mod4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RMASCA.html">RMASCA</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">df</span>, formula <span class="op">=</span> <span class="va">model.formula</span><span class="op">)</span>
 <span class="co">#&gt; Scaling data...</span>
 <span class="co">#&gt; Calculating LMM coefficients...</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; Finished calculating LMM coefficients!</span>
 <span class="co">#&gt; Calculating effect matrix (may take some time...)</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod4</span><span class="op">)</span></code></pre></div>
 <p><img src="RMASCA_files/figure-html/RMASCA_model_4-1.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod4</span>, component <span class="op">=</span> <span class="st">"PC2"</span><span class="op">)</span></code></pre></div>
 <p><img src="RMASCA_files/figure-html/RMASCA_model_4-2.png" width="100%" style="display: block; margin: auto;"></p>
 <p>We can see that the linear increase in age is no longer part of the output.</p>
@@ -379,55 +434,56 @@
 <h3 class="hasAnchor">
 <a href="#normal-distribution-of-residuals" class="anchor"></a>Normal distribution of residuals</h3>
 <p>RM-ASCA+ is built on Linear Mixed Models, and one should check that the residuals approach normal distribution. With <code>RMASCA</code>, the LMM objects can be found as</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">res.simple</span><span class="op">$</span><span class="va">lmer.models</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
 <span class="co">#&gt; Linear mixed model fit by REML. t-tests use Satterthwaite's method [</span>
 <span class="co">#&gt; lmerModLmerTest]</span>
 <span class="co">#&gt; Formula: object$formula</span>
 <span class="co">#&gt;    Data: subset(object$df, variable == i)</span>
+<span class="co">#&gt; Control: lme4::lmerControl(calc.derivs = FALSE)</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; REML criterion at convergence: 3023.3</span>
+<span class="co">#&gt; REML criterion at convergence: 2904.1</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Scaled residuals: </span>
 <span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
-<span class="co">#&gt; -6.8820 -0.3737 -0.0095  0.3505  6.0734 </span>
+<span class="co">#&gt; -6.2183 -0.3361 -0.0042  0.3423  5.8509 </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random effects:</span>
-<span class="co">#&gt;  Groups   Name        Variance  Std.Dev.</span>
-<span class="co">#&gt;  partid   (Intercept) 0.0005899 0.02429 </span>
-<span class="co">#&gt;  Residual             0.2016251 0.44903 </span>
+<span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span>
+<span class="co">#&gt;  partid   (Intercept) 0.0000   0.0000  </span>
+<span class="co">#&gt;  Residual             0.1924   0.4386  </span>
 <span class="co">#&gt; Number of obs: 2400, groups:  partid, 600</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Fixed effects:</span>
 <span class="co">#&gt;                        Estimate Std. Error         df t value Pr(&gt;|t|)    </span>
-<span class="co">#&gt; (Intercept)          -3.125e-01  3.088e-02  2.388e+03 -10.119  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time2                 1.713e-02  4.361e-02  1.791e+03   0.393    0.694    </span>
-<span class="co">#&gt; time3                -9.264e-03  4.361e-02  1.791e+03  -0.212    0.832    </span>
-<span class="co">#&gt; time4                -3.053e-02  4.361e-02  1.791e+03  -0.700    0.484    </span>
-<span class="co">#&gt; groupChocolate        2.885e-02  4.383e-02  2.388e+03   0.658    0.511    </span>
-<span class="co">#&gt; groupSalad            1.066e-02  4.565e-02  2.388e+03   0.234    0.815    </span>
-<span class="co">#&gt; time2:groupChocolate  7.838e-01  6.190e-02  1.791e+03  12.662  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time3:groupChocolate  1.602e+00  6.190e-02  1.791e+03  25.880  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time4:groupChocolate  2.495e+00  6.190e-02  1.791e+03  40.314  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time2:groupSalad     -4.486e-01  6.446e-02  1.791e+03  -6.960 4.75e-12 ***</span>
-<span class="co">#&gt; time3:groupSalad     -5.523e-01  6.446e-02  1.791e+03  -8.568  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time4:groupSalad     -6.094e-01  6.446e-02  1.791e+03  -9.455  &lt; 2e-16 ***</span>
+<span class="co">#&gt; (Intercept)            -0.24268    0.03117 2388.00000  -7.786 1.02e-14 ***</span>
+<span class="co">#&gt; time2                  -0.01620    0.04408 2388.00000  -0.367    0.713    </span>
+<span class="co">#&gt; time3                  -0.02400    0.04408 2388.00000  -0.545    0.586    </span>
+<span class="co">#&gt; time4                  -0.03918    0.04408 2388.00000  -0.889    0.374    </span>
+<span class="co">#&gt; groupChocolate         -0.01851    0.04460 2388.00000  -0.415    0.678    </span>
+<span class="co">#&gt; groupSalad              0.02544    0.04330 2388.00000   0.588    0.557    </span>
+<span class="co">#&gt; time2:groupChocolate    0.81902    0.06308 2388.00000  12.985  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time3:groupChocolate    1.75452    0.06308 2388.00000  27.816  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time4:groupChocolate    2.58679    0.06308 2388.00000  41.011  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time2:groupSalad       -0.43498    0.06123 2388.00000  -7.104 1.59e-12 ***</span>
+<span class="co">#&gt; time3:groupSalad       -0.58998    0.06123 2388.00000  -9.635  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time4:groupSalad       -0.63198    0.06123 2388.00000 -10.321  &lt; 2e-16 ***</span>
 <span class="co">#&gt; ---</span>
 <span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Correlation of Fixed Effects:</span>
 <span class="co">#&gt;             (Intr) time2  time3  time4  grpChc grpSld tm2:gC tm3:gC tm4:gC</span>
-<span class="co">#&gt; time2       -0.706                                                        </span>
-<span class="co">#&gt; time3       -0.706  0.500                                                 </span>
-<span class="co">#&gt; time4       -0.706  0.500  0.500                                          </span>
-<span class="co">#&gt; groupChoclt -0.705  0.497  0.497  0.497                                   </span>
-<span class="co">#&gt; groupSalad  -0.677  0.478  0.478  0.478  0.477                            </span>
-<span class="co">#&gt; tm2:grpChcl  0.497 -0.705 -0.352 -0.352 -0.706 -0.337                     </span>
-<span class="co">#&gt; tm3:grpChcl  0.497 -0.352 -0.705 -0.352 -0.706 -0.337  0.500              </span>
-<span class="co">#&gt; tm4:grpChcl  0.497 -0.352 -0.352 -0.705 -0.706 -0.337  0.500  0.500       </span>
-<span class="co">#&gt; tim2:grpSld  0.478 -0.677 -0.338 -0.338 -0.337 -0.706  0.477  0.238  0.238</span>
-<span class="co">#&gt; tim3:grpSld  0.478 -0.338 -0.677 -0.338 -0.337 -0.706  0.238  0.477  0.238</span>
-<span class="co">#&gt; tim4:grpSld  0.478 -0.338 -0.338 -0.677 -0.337 -0.706  0.238  0.238  0.477</span>
+<span class="co">#&gt; time2       -0.707                                                        </span>
+<span class="co">#&gt; time3       -0.707  0.500                                                 </span>
+<span class="co">#&gt; time4       -0.707  0.500  0.500                                          </span>
+<span class="co">#&gt; groupChoclt -0.699  0.494  0.494  0.494                                   </span>
+<span class="co">#&gt; groupSalad  -0.720  0.509  0.509  0.509  0.503                            </span>
+<span class="co">#&gt; tm2:grpChcl  0.494 -0.699 -0.349 -0.349 -0.707 -0.356                     </span>
+<span class="co">#&gt; tm3:grpChcl  0.494 -0.349 -0.699 -0.349 -0.707 -0.356  0.500              </span>
+<span class="co">#&gt; tm4:grpChcl  0.494 -0.349 -0.349 -0.699 -0.707 -0.356  0.500  0.500       </span>
+<span class="co">#&gt; tim2:grpSld  0.509 -0.720 -0.360 -0.360 -0.356 -0.707  0.503  0.252  0.252</span>
+<span class="co">#&gt; tim3:grpSld  0.509 -0.360 -0.720 -0.360 -0.356 -0.707  0.252  0.503  0.252</span>
+<span class="co">#&gt; tim4:grpSld  0.509 -0.360 -0.360 -0.720 -0.356 -0.707  0.252  0.252  0.503</span>
 <span class="co">#&gt;             tm2:gS tm3:gS</span>
 <span class="co">#&gt; time2                    </span>
 <span class="co">#&gt; time3                    </span>
@@ -441,10 +497,10 @@
 <span class="co">#&gt; tim3:grpSld  0.500       </span>
 <span class="co">#&gt; tim4:grpSld  0.500  0.500</span></code></pre></div>
 <p>We can also assess the residuals,</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html">density</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">res.simple</span><span class="op">$</span><span class="va">lmer.models</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>, main <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">variable</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <p><img src="RMASCA_files/figure-html/lmm_residuals-1.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="fu"><a href="https://rdrr.io/r/stats/qqnorm.html">qqnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">res.simple</span><span class="op">$</span><span class="va">lmer.models</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, main <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">variable</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> 
 <span class="fu"><a href="https://rdrr.io/r/stats/qqnorm.html">qqline</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">res.simple</span><span class="op">$</span><span class="va">lmer.models</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></code></pre></div>
@@ -454,15 +510,15 @@
 <h3 class="hasAnchor">
 <a href="#p-values" class="anchor"></a>P values</h3>
 <p>As you saw above, we can use the <code>summary</code> function to view the p values from your LMMs, but a shortcut is</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">res.simple</span><span class="op">$</span><span class="va">LMM.coefficient</span><span class="op">)</span>
-<span class="co">#&gt;       estimate       pvalue covar       variable  comp</span>
-<span class="co">#&gt; 1 -0.312521385 1.349865e-23   BMI    (Intercept)  TIME</span>
-<span class="co">#&gt; 2  0.017132274 6.944978e-01   BMI          time2  TIME</span>
-<span class="co">#&gt; 3 -0.009264392 8.318027e-01   BMI          time3  TIME</span>
-<span class="co">#&gt; 4 -0.030528230 4.840341e-01   BMI          time4  TIME</span>
-<span class="co">#&gt; 5  0.028848663 5.105109e-01   BMI groupChocolate GROUP</span>
-<span class="co">#&gt; 6  0.010665087 8.152776e-01   BMI     groupSalad GROUP</span></code></pre></div>
+<span class="co">#&gt;      estimate       pvalue covar       variable  comp</span>
+<span class="co">#&gt; 1 -0.24267714 1.023957e-14   BMI    (Intercept)  TIME</span>
+<span class="co">#&gt; 2 -0.01619511 7.133508e-01   BMI          time2  TIME</span>
+<span class="co">#&gt; 3 -0.02400394 5.861105e-01   BMI          time3  TIME</span>
+<span class="co">#&gt; 4 -0.03918475 3.741207e-01   BMI          time4  TIME</span>
+<span class="co">#&gt; 5 -0.01851355 6.781154e-01   BMI groupChocolate GROUP</span>
+<span class="co">#&gt; 6  0.02544252 5.568370e-01   BMI     groupSalad GROUP</span></code></pre></div>
 </div>
 </div>
 </div>
