@@ -18,6 +18,8 @@ An RMASCA object
 This function performs leave-one-out robustness testing of your RMASCA model. If you didn't specify the number of runs \code{nValRuns} when initializing the model (see \code{\link{RMASCA}}), you can do it by running for example \code{model$nValRuns <- 100} prior to calling \code{validate}. Your dataset is divided into \code{nValFold} partitions, keeping group proportions, and one of these are left out. \code{nValFold} is set the same way as  \code{nValRuns}.
 }
 \examples{
-validate(model, participantColumn = "ID")
+load("PE.Rdata")
+model$nValRuns <- 10
+model.val <- validate(model, participantColumn = "ID")
 
 }

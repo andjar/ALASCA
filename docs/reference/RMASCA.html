@@ -40,10 +40,7 @@
 
 
 <meta property="og:title" content="Get an RMASCA object — RMASCA" />
-<meta property="og:description" content="This function loads a file as a matrix. It assumes that the first column
-contains the rownames and the subsequent columns are the sample identifiers.
-Any rows with duplicated row names will be dropped with the first one being
-kepted." />
+<meta property="og:description" content="RMASCA initializes an RMASCA model and returns an RMASCA object" />
 
 
 
@@ -127,10 +124,7 @@ kepted." />
     </div>
 
     <div class="ref-description">
-    <p>This function loads a file as a matrix. It assumes that the first column
-contains the rownames and the subsequent columns are the sample identifiers.
-Any rows with duplicated row names will be dropped with the first one being
-kepted.</p>
+    <p><code>RMASCA</code> initializes an RMASCA model and returns an RMASCA object</p>
     </div>
 
     <pre class="usage"><span class='fu'>RMASCA</span><span class='op'>(</span>
@@ -154,7 +148,7 @@ kepted.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>df</th>
-      <td><p>Data Frame to be analyzed</p></td>
+      <td><p>Data frame to be analyzed</p></td>
     </tr>
     <tr>
       <th>formula</th>
@@ -209,11 +203,18 @@ kepted.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>An RMASCA object</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>This function builds your RMASCA model. It needs a data frame containing at least a column identifying participants, a column called <code>time</code> contining time information, a column <code>group</code> containing group information, a column <code>variable</code> containing variable names, and a value column. In addition you need to specify the model you want, and whether you want to separate group and time effects (defaults to <code>TRUE</code>).</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>RMASCA</span><span class='op'>(</span>df <span class='op'>=</span> <span class='va'>df</span>, formula <span class='op'>=</span> <span class='va'>value</span><span class='op'>~</span><span class='va'>time</span><span class='op'>*</span><span class='va'>group</span> <span class='op'>+</span> <span class='op'>(</span><span class='fl'>1</span><span class='op'>|</span><span class='va'>ID</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in sanitizeObject(object): The dataframe must contain a column names 'time'</span></div><div class='input'><span class='fu'>RMASCA</span><span class='op'>(</span>df <span class='op'>=</span> <span class='va'>df</span>, formula <span class='op'>=</span> <span class='va'>value</span><span class='op'>~</span><span class='va'>time</span><span class='op'>*</span><span class='va'>group</span> <span class='op'>+</span> <span class='op'>(</span><span class='fl'>1</span><span class='op'>|</span><span class='va'>ID</span><span class='op'>)</span>, participantColumn <span class='op'>=</span> <span class='st'>"ID"</span>, validate <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in sanitizeObject(object): The dataframe must contain a column names 'time'</span></div><div class='input'>
+    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/load.html'>load</a></span><span class='op'>(</span><span class='st'>"PE.Rdata"</span><span class='op'>)</span>
+<span class='va'>model</span> <span class='op'>&lt;-</span> <span class='fu'>RMASCA</span><span class='op'>(</span>df <span class='op'>=</span> <span class='va'>df</span>, formula <span class='op'>=</span> <span class='va'>value</span><span class='op'>~</span><span class='va'>time</span><span class='op'>*</span><span class='va'>group</span> <span class='op'>+</span> <span class='op'>(</span><span class='fl'>1</span><span class='op'>|</span><span class='va'>ID</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; Scaling data...
+#&gt; Calculating LMM coefficients...
+#&gt; Finished calculating LMM coefficients!
+#&gt; Calculating effect matrix (may take some time...)
+#&gt; Finished calculating effect matrix!</div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

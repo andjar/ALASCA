@@ -182,12 +182,27 @@
                        <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substr.html">substr</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">Target</span>,<span class="fl">1</span>,<span class="fl">4</span><span class="op">)</span> <span class="op">==</span> <span class="st">"IFN-"</span><span class="op">)</span><span class="op">)</span>
 <span class="va">df</span> <span class="op">&lt;-</span> <span class="va">df</span><span class="op">[</span><span class="va">selectedVariables</span>,<span class="op">]</span>
 <span class="va">df</span><span class="op">$</span><span class="va">variable</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">Target</span><span class="op">)</span></code></pre></div>
+<p>We can have a quick look at the data,</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span>
+  <span class="fu">ggpubr</span><span class="fu">::</span><span class="va"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span>,
+  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="../reference/plotParts.html">plotParts</a></span><span class="op">(</span><span class="va">df</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span>, timeColumn <span class="op">=</span> <span class="st">"GA"</span>, valueColumn <span class="op">=</span> <span class="st">"value"</span>, addSmooth <span class="op">=</span> <span class="st">"loess"</span>, variable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"PlGF"</span>, <span class="st">"IL-6"</span>, <span class="st">"IL-1b"</span>, <span class="st">"IFN-g"</span>, <span class="st">"Eotaxin-2"</span>, <span class="st">"Eotaxin"</span><span class="op">)</span><span class="op">)</span>, 
+                      common.legend <span class="op">=</span> <span class="cn">TRUE</span>, legend <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
+  <span class="op">)</span>
+<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span>
+<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span>
+<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span>
+<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span>
+<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span>
+<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span>
+<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></code></pre></div>
+<p><img src="pregnancy_files/figure-html/unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div id="preparing-the-model" class="section level2">
 <h2 class="hasAnchor">
 <a href="#preparing-the-model" class="anchor"></a>Preparing the model</h2>
 <p>Now we can set up our model. Since it’s an observational study, we can start with</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">model.formula</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">ID</span><span class="op">)</span></code></pre></div>
 </div>
 </div>
@@ -195,154 +210,162 @@
 <h1 class="hasAnchor">
 <a href="#running-rmasca" class="anchor"></a>Running RMASCA</h1>
 <p>We are now ready to try <code>RMASCA</code>,</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">PE.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RMASCA.html">RMASCA</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">model.formula</span><span class="op">)</span>
 <span class="co">#&gt; Scaling data...</span>
 <span class="co">#&gt; Calculating LMM coefficients...</span>
+<span class="co">#&gt; Registered S3 methods overwritten by 'lme4':</span>
+<span class="co">#&gt;   method                          from</span>
+<span class="co">#&gt;   cooks.distance.influence.merMod car </span>
+<span class="co">#&gt;   influence.merMod                car </span>
+<span class="co">#&gt;   dfbeta.influence.merMod         car </span>
+<span class="co">#&gt;   dfbetas.influence.merMod        car</span>
 <span class="co">#&gt; Finished calculating LMM coefficients!</span>
 <span class="co">#&gt; Calculating effect matrix (may take some time...)</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span></code></pre></div>
 <p>With a screeplot we can say something about how many components we need,</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/stats/screeplot.html">screeplot</a></span><span class="op">(</span><span class="va">PE.mod</span><span class="op">)</span>
-<span class="co">#&gt; Registered S3 methods overwritten by 'car':</span>
-<span class="co">#&gt;   method                          from</span>
-<span class="co">#&gt;   influence.merMod                lme4</span>
-<span class="co">#&gt;   cooks.distance.influence.merMod lme4</span>
-<span class="co">#&gt;   dfbeta.influence.merMod         lme4</span>
-<span class="co">#&gt;   dfbetas.influence.merMod        lme4</span></code></pre></div>
-<p><img src="pregnancy_files/figure-html/unnamed-chunk-10-1.png" width="100%" style="display: block; margin: auto;"></p>
-<p>It seems like three components should be enough.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/stats/screeplot.html">screeplot</a></span><span class="op">(</span><span class="va">PE.mod</span><span class="op">)</span></code></pre></div>
 <p><img src="pregnancy_files/figure-html/unnamed-chunk-11-1.png" width="100%" style="display: block; margin: auto;"></p>
-<p>It’s a bit crowded on the x-axis of the loadings, so we will only name the five with highest/lowest loading,</p>
+<p>It seems like three components should be enough.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span><span class="op">)</span></code></pre></div>
 <p><img src="pregnancy_files/figure-html/unnamed-chunk-12-1.png" width="100%" style="display: block; margin: auto;"></p>
+<p>It’s a bit crowded on the x-axis of the loadings, so we will only name the five with highest/lowest loading,</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="st">"PC2"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
-<p><img src="pregnancy_files/figure-html/unnamed-chunk-12-2.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="st">"PC3"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
-<p><img src="pregnancy_files/figure-html/unnamed-chunk-12-3.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="st">"PC4"</span>, effect <span class="op">=</span> <span class="st">"group"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="co"># just to demonstrate how to extract only the group effect plot</span></code></pre></div>
-<p><img src="pregnancy_files/figure-html/unnamed-chunk-12-4.png" width="100%" style="display: block; margin: auto;"></p>
-<p>We can also look up specific variables,</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, highlight <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"PlGF"</span>, <span class="st">"IL-6"</span>, <span class="st">"IL-1b"</span>, <span class="st">"IFN-g"</span>, <span class="st">"Eotaxin-2"</span>, <span class="st">"Eotaxin"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
 <p><img src="pregnancy_files/figure-html/unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;"></p>
-<p>Let us add some uncertainty estimates to our model. This may take some time, but it is extra slow when compiling this documentation; usually this model needs about 5 seconds per run.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="st">"PC2"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
+<p><img src="pregnancy_files/figure-html/unnamed-chunk-13-2.png" width="100%" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="st">"PC3"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
+<p><img src="pregnancy_files/figure-html/unnamed-chunk-13-3.png" width="100%" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="st">"PC4"</span>, effect <span class="op">=</span> <span class="st">"group"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="co"># just to demonstrate how to extract only the group effect plot</span></code></pre></div>
+<p><img src="pregnancy_files/figure-html/unnamed-chunk-13-4.png" width="100%" style="display: block; margin: auto;"></p>
+<p>We can also look up specific variables,</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, highlight <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"PlGF"</span>, <span class="st">"IL-6"</span>, <span class="st">"IL-1b"</span>, <span class="st">"IFN-g"</span>, <span class="st">"Eotaxin-2"</span>, <span class="st">"Eotaxin"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="pregnancy_files/figure-html/unnamed-chunk-14-1.png" width="100%" style="display: block; margin: auto;"></p>
+<p>and also have a look at the underlying model predictions</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span>
+  <span class="fu">ggpubr</span><span class="fu">::</span><span class="va"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span>,
+  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="../reference/plotPred.html">plotPred</a></span><span class="op">(</span><span class="va">PE.mod</span>, variable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"PlGF"</span>, <span class="st">"IL-6"</span>, <span class="st">"IL-1b"</span>, <span class="st">"IFN-g"</span>, <span class="st">"Eotaxin-2"</span>, <span class="st">"Eotaxin"</span><span class="op">)</span><span class="op">)</span>, 
+                      common.legend <span class="op">=</span> <span class="cn">TRUE</span>, legend <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
+  <span class="op">)</span></code></pre></div>
+<p><img src="pregnancy_files/figure-html/unnamed-chunk-15-1.png" width="100%" style="display: block; margin: auto;"></p>
+<p>Let us add some uncertainty estimates to our model. This may take some time, but it is extra slow when compiling this documentation; usually this model needs about 5 seconds per run.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">PE.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">PE.mod</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span><span class="op">)</span>
 <span class="co">#&gt; Running validation...</span>
 <span class="co">#&gt; - Run  1  of  50 </span>
-<span class="co">#&gt; --- Used  36.74  seconds. Est. time remaining:  1800.15  seconds </span>
+<span class="co">#&gt; --- Used  36.56  seconds. Est. time remaining:  1791.62  seconds </span>
 <span class="co">#&gt; - Run  2  of  50 </span>
-<span class="co">#&gt; --- Used  35.42  seconds. Est. time remaining:  1731.83  seconds </span>
+<span class="co">#&gt; --- Used  36.96  seconds. Est. time remaining:  1764.55  seconds </span>
 <span class="co">#&gt; - Run  3  of  50 </span>
-<span class="co">#&gt; --- Used  36.07  seconds. Est. time remaining:  1695.57  seconds </span>
+<span class="co">#&gt; --- Used  36.94  seconds. Est. time remaining:  1730.61  seconds </span>
 <span class="co">#&gt; - Run  4  of  50 </span>
-<span class="co">#&gt; --- Used  35.39  seconds. Est. time remaining:  1651.6  seconds </span>
+<span class="co">#&gt; --- Used  36.69  seconds. Est. time remaining:  1692.26  seconds </span>
 <span class="co">#&gt; - Run  5  of  50 </span>
-<span class="co">#&gt; --- Used  34.9  seconds. Est. time remaining:  1606.68  seconds </span>
+<span class="co">#&gt; --- Used  35.96  seconds. Est. time remaining:  1648  seconds </span>
 <span class="co">#&gt; - Run  6  of  50 </span>
-<span class="co">#&gt; --- Used  28.92  seconds. Est. time remaining:  1521.22  seconds </span>
+<span class="co">#&gt; --- Used  28.89  seconds. Est. time remaining:  1554.7  seconds </span>
 <span class="co">#&gt; - Run  7  of  50 </span>
-<span class="co">#&gt; --- Used  29.28  seconds. Est. time remaining:  1454.1  seconds </span>
+<span class="co">#&gt; --- Used  29.7  seconds. Est. time remaining:  1484.75  seconds </span>
 <span class="co">#&gt; - Run  8  of  50 </span>
-<span class="co">#&gt; --- Used  30.91  seconds. Est. time remaining:  1405.04  seconds </span>
+<span class="co">#&gt; --- Used  30.86  seconds. Est. time remaining:  1430.97  seconds </span>
 <span class="co">#&gt; - Run  9  of  50 </span>
-<span class="co">#&gt; --- Used  31.39  seconds. Est. time remaining:  1362.2  seconds </span>
+<span class="co">#&gt; --- Used  30.39  seconds. Est. time remaining:  1380.11  seconds </span>
 <span class="co">#&gt; - Run  10  of  50 </span>
-<span class="co">#&gt; --- Used  29.26  seconds. Est. time remaining:  1313.12  seconds </span>
+<span class="co">#&gt; --- Used  31.04  seconds. Est. time remaining:  1335.97  seconds </span>
 <span class="co">#&gt; - Run  11  of  50 </span>
-<span class="co">#&gt; --- Used  30.52  seconds. Est. time remaining:  1272.11  seconds </span>
+<span class="co">#&gt; --- Used  31.66  seconds. Est. time remaining:  1296.4  seconds </span>
 <span class="co">#&gt; - Run  12  of  50 </span>
-<span class="co">#&gt; --- Used  29.62  seconds. Est. time remaining:  1230  seconds </span>
+<span class="co">#&gt; --- Used  35.53  seconds. Est. time remaining:  1270.39  seconds </span>
 <span class="co">#&gt; - Run  13  of  50 </span>
-<span class="co">#&gt; --- Used  29.7  seconds. Est. time remaining:  1190.03  seconds </span>
+<span class="co">#&gt; --- Used  33.82  seconds. Est. time remaining:  1238.08  seconds </span>
 <span class="co">#&gt; - Run  14  of  50 </span>
-<span class="co">#&gt; --- Used  30.28  seconds. Est. time remaining:  1153.03  seconds </span>
+<span class="co">#&gt; --- Used  31.03  seconds. Est. time remaining:  1198.36  seconds </span>
 <span class="co">#&gt; - Run  15  of  50 </span>
-<span class="co">#&gt; --- Used  30.86  seconds. Est. time remaining:  1118.27  seconds </span>
+<span class="co">#&gt; --- Used  31.22  seconds. Est. time remaining:  1160.25  seconds </span>
 <span class="co">#&gt; - Run  16  of  50 </span>
-<span class="co">#&gt; --- Used  30.45  seconds. Est. time remaining:  1083.14  seconds </span>
+<span class="co">#&gt; --- Used  31.07  seconds. Est. time remaining:  1122.67  seconds </span>
 <span class="co">#&gt; - Run  17  of  50 </span>
-<span class="co">#&gt; --- Used  31.73  seconds. Est. time remaining:  1051.04  seconds </span>
+<span class="co">#&gt; --- Used  31.86  seconds. Est. time remaining:  1087.39  seconds </span>
 <span class="co">#&gt; - Run  18  of  50 </span>
-<span class="co">#&gt; --- Used  30.48  seconds. Est. time remaining:  1016.75  seconds </span>
+<span class="co">#&gt; --- Used  31.45  seconds. Est. time remaining:  1051.77  seconds </span>
 <span class="co">#&gt; - Run  19  of  50 </span>
-<span class="co">#&gt; --- Used  30.96  seconds. Est. time remaining:  983.65  seconds </span>
+<span class="co">#&gt; --- Used  32.01  seconds. Est. time remaining:  1017.5  seconds </span>
 <span class="co">#&gt; - Run  20  of  50 </span>
-<span class="co">#&gt; --- Used  31.43  seconds. Est. time remaining:  951.46  seconds </span>
+<span class="co">#&gt; --- Used  30.57  seconds. Est. time remaining:  981.3  seconds </span>
 <span class="co">#&gt; - Run  21  of  50 </span>
-<span class="co">#&gt; --- Used  31.52  seconds. Est. time remaining:  919.48  seconds </span>
+<span class="co">#&gt; --- Used  30.16  seconds. Est. time remaining:  945.07  seconds </span>
 <span class="co">#&gt; - Run  22  of  50 </span>
-<span class="co">#&gt; --- Used  34.54  seconds. Est. time remaining:  891.38  seconds </span>
+<span class="co">#&gt; --- Used  30.88  seconds. Est. time remaining:  910.31  seconds </span>
 <span class="co">#&gt; - Run  23  of  50 </span>
-<span class="co">#&gt; --- Used  34.03  seconds. Est. time remaining:  862.12  seconds </span>
+<span class="co">#&gt; --- Used  32.62  seconds. Est. time remaining:  877.92  seconds </span>
 <span class="co">#&gt; - Run  24  of  50 </span>
-<span class="co">#&gt; --- Used  33.62  seconds. Est. time remaining:  832.02  seconds </span>
+<span class="co">#&gt; --- Used  31.49  seconds. Est. time remaining:  844.3  seconds </span>
 <span class="co">#&gt; - Run  25  of  50 </span>
-<span class="co">#&gt; --- Used  34.66  seconds. Est. time remaining:  802.68  seconds </span>
+<span class="co">#&gt; --- Used  33.63  seconds. Est. time remaining:  812.98  seconds </span>
 <span class="co">#&gt; - Run  26  of  50 </span>
-<span class="co">#&gt; --- Used  35.98  seconds. Est. time remaining:  774.15  seconds </span>
+<span class="co">#&gt; --- Used  24.22  seconds. Est. time remaining:  772.8  seconds </span>
 <span class="co">#&gt; - Run  27  of  50 </span>
-<span class="co">#&gt; --- Used  35.49  seconds. Est. time remaining:  744.65  seconds </span>
+<span class="co">#&gt; --- Used  24.31  seconds. Est. time remaining:  733.88  seconds </span>
 <span class="co">#&gt; - Run  28  of  50 </span>
-<span class="co">#&gt; --- Used  35.36  seconds. Est. time remaining:  714.61  seconds </span>
+<span class="co">#&gt; --- Used  24.95  seconds. Est. time remaining:  696.5  seconds </span>
 <span class="co">#&gt; - Run  29  of  50 </span>
-<span class="co">#&gt; --- Used  26.08  seconds. Est. time remaining:  677.5  seconds </span>
+<span class="co">#&gt; --- Used  24.78  seconds. Est. time remaining:  659.86  seconds </span>
 <span class="co">#&gt; - Run  30  of  50 </span>
-<span class="co">#&gt; --- Used  26.18  seconds. Est. time remaining:  641.18  seconds </span>
+<span class="co">#&gt; --- Used  26.59  seconds. Est. time remaining:  625.22  seconds </span>
 <span class="co">#&gt; - Run  31  of  50 </span>
-<span class="co">#&gt; --- Used  27.42  seconds. Est. time remaining:  606.28  seconds </span>
+<span class="co">#&gt; --- Used  25.13  seconds. Est. time remaining:  590.2  seconds </span>
 <span class="co">#&gt; - Run  32  of  50 </span>
-<span class="co">#&gt; --- Used  29.24  seconds. Est. time remaining:  572.86  seconds </span>
+<span class="co">#&gt; --- Used  24.95  seconds. Est. time remaining:  555.7  seconds </span>
 <span class="co">#&gt; - Run  33  of  50 </span>
-<span class="co">#&gt; --- Used  28  seconds. Est. time remaining:  539.06  seconds </span>
+<span class="co">#&gt; --- Used  25.93  seconds. Est. time remaining:  522.29  seconds </span>
 <span class="co">#&gt; - Run  34  of  50 </span>
-<span class="co">#&gt; --- Used  28.46  seconds. Est. time remaining:  505.82  seconds </span>
+<span class="co">#&gt; --- Used  31.36  seconds. Est. time remaining:  491.86  seconds </span>
 <span class="co">#&gt; - Run  35  of  50 </span>
-<span class="co">#&gt; --- Used  29.21  seconds. Est. time remaining:  473.18  seconds </span>
+<span class="co">#&gt; --- Used  59.21  seconds. Est. time remaining:  473.32  seconds </span>
 <span class="co">#&gt; - Run  36  of  50 </span>
-<span class="co">#&gt; --- Used  29.47  seconds. Est. time remaining:  440.83  seconds </span>
+<span class="co">#&gt; --- Used  1.12  seconds. Est. time remaining:  429.93  seconds </span>
 <span class="co">#&gt; - Run  37  of  50 </span>
-<span class="co">#&gt; --- Used  30.55  seconds. Est. time remaining:  409.01  seconds </span>
+<span class="co">#&gt; --- Used  1.17  seconds. Est. time remaining:  388.85  seconds </span>
 <span class="co">#&gt; - Run  38  of  50 </span>
-<span class="co">#&gt; --- Used  30.19  seconds. Est. time remaining:  377.15  seconds </span>
+<span class="co">#&gt; --- Used  1.3  seconds. Est. time remaining:  349.9  seconds </span>
 <span class="co">#&gt; - Run  39  of  50 </span>
-<span class="co">#&gt; --- Used  28.98  seconds. Est. time remaining:  345.03  seconds </span>
+<span class="co">#&gt; --- Used  1.22  seconds. Est. time remaining:  312.86  seconds </span>
 <span class="co">#&gt; - Run  40  of  50 </span>
-<span class="co">#&gt; --- Used  29.93  seconds. Est. time remaining:  313.3  seconds </span>
+<span class="co">#&gt; --- Used  1.06  seconds. Est. time remaining:  277.57  seconds </span>
 <span class="co">#&gt; - Run  41  of  50 </span>
-<span class="co">#&gt; --- Used  30.96  seconds. Est. time remaining:  281.89  seconds </span>
+<span class="co">#&gt; --- Used  1.03  seconds. Est. time remaining:  243.95  seconds </span>
 <span class="co">#&gt; - Run  42  of  50 </span>
-<span class="co">#&gt; --- Used  30.56  seconds. Est. time remaining:  250.43  seconds </span>
+<span class="co">#&gt; --- Used  59.9  seconds. Est. time remaining:  223.09  seconds </span>
 <span class="co">#&gt; - Run  43  of  50 </span>
-<span class="co">#&gt; --- Used  30.59  seconds. Est. time remaining:  219.01  seconds </span>
+<span class="co">#&gt; --- Used  57.73  seconds. Est. time remaining:  200.06  seconds </span>
 <span class="co">#&gt; - Run  44  of  50 </span>
-<span class="co">#&gt; --- Used  30.43  seconds. Est. time remaining:  187.6  seconds </span>
+<span class="co">#&gt; --- Used  59.3  seconds. Est. time remaining:  175.67  seconds </span>
 <span class="co">#&gt; - Run  45  of  50 </span>
-<span class="co">#&gt; --- Used  30.52  seconds. Est. time remaining:  156.25  seconds </span>
+<span class="co">#&gt; --- Used  57.86  seconds. Est. time remaining:  149.57  seconds </span>
 <span class="co">#&gt; - Run  46  of  50 </span>
-<span class="co">#&gt; --- Used  30.99  seconds. Est. time remaining:  124.98  seconds </span>
+<span class="co">#&gt; --- Used  1.01  seconds. Est. time remaining:  117.14  seconds </span>
 <span class="co">#&gt; - Run  47  of  50 </span>
-<span class="co">#&gt; --- Used  30.69  seconds. Est. time remaining:  93.7  seconds </span>
+<span class="co">#&gt; --- Used  59.94  seconds. Est. time remaining:  89.81  seconds </span>
 <span class="co">#&gt; - Run  48  of  50 </span>
-<span class="co">#&gt; --- Used  29.68  seconds. Est. time remaining:  62.4  seconds </span>
+<span class="co">#&gt; --- Used  59.42  seconds. Est. time remaining:  61.1  seconds </span>
 <span class="co">#&gt; - Run  49  of  50 </span>
-<span class="co">#&gt; --- Used  31.61  seconds. Est. time remaining:  31.21  seconds </span>
+<span class="co">#&gt; --- Used  54.14  seconds. Est. time remaining:  31.03  seconds </span>
 <span class="co">#&gt; - Run  50  of  50 </span>
-<span class="co">#&gt; --- Used  31.8  seconds. Est. time remaining:  0  seconds</span>
+<span class="co">#&gt; --- Used  51.75  seconds. Est. time remaining:  0  seconds</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
-<p><img src="pregnancy_files/figure-html/unnamed-chunk-14-1.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<p><img src="pregnancy_files/figure-html/unnamed-chunk-16-1.png" width="100%" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="st">"PC2"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
-<p><img src="pregnancy_files/figure-html/unnamed-chunk-14-2.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<p><img src="pregnancy_files/figure-html/unnamed-chunk-16-2.png" width="100%" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">#plot(PE.mod, component = "PC3") # At the moment, we are only calculating uncertainty for component 1 and 2</span></code></pre></div>
 </div>
 <div id="references" class="section level1 unnumbered">

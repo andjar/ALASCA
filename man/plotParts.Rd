@@ -24,7 +24,7 @@ plotParts(
 
 \item{timeColumn}{Specify column with times (x axis). Defaults to \code{time}.}
 
-\item{addSmooth.}{Specify which geom_smooth model you want to apply, eg. "\code{lm}", "\code{glm}", "\code{gam}", "\code{loess}" (default). Set to \code{NA} to remove.}
+\item{addSmooth.}{Specify which geom_smooth model you want to apply, eg. \code{lm}, \code{glm}, \code{gam}, \code{loess} (default). Set to \code{NA} to remove.}
 }
 \value{
 A list with ggplot2 objects.
@@ -33,8 +33,14 @@ A list with ggplot2 objects.
 This function returns the scores for an RMASCA model
 }
 \examples{
-plotParts(df, variable = "CRP", participantColumn = "ID", valueColumn = "value")
-plotParts(model, variable = c("CRP", "IL-6"), participantColumn = "ID")
-plotParts(model, variable = "CRP", participantColumn = "ID", timeColumn = "GA")[[1]] + ggplot2::labs(x = "GA")
+load("PE.Rdata")
+plotParts(df, variable = "IL-6", participantColumn = "ID", valueColumn = "value")
+do.call(
+    ggpubr::ggarrange,
+    c(plotParts(df, participantColumn = "ID", timeColumn = "GA", valueColumn = "value", addSmooth = NA, 
+    variable = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotaxin")), 
+      common.legend = TRUE, legend = "bottom")
+  )
+plotParts(model, variable = "IL-6", participantColumn = "ID", timeColumn = "GA")[[1]] + ggplot2::labs(x = "GA")
 
 }

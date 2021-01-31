@@ -21,3 +21,9 @@ reference:
 - contents: 
   - plot.RMASCA
   - screeplot.RMASCA
+  - plotParts
+  - plotPred
+- title: "Diagnostics"
+  desc: "Functions for checking statistical validity"
+- contents: 
+  - residuals.RMASCA

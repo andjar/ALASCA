@@ -18,6 +18,7 @@ An ggplot2 object (or a list og ggplot objects)
 This function returns a screeplot for an RMASCA model showing what proportion of the variance each component of the model explains
 }
 \examples{
+load("PE.Rdata")
 screeplot(model)
 
 }

@@ -16,7 +16,7 @@
 )
 }
 \arguments{
-\item{object}{An RMASCA object}
+\item{object}{An \code{\link[=RMASCA]{RMASCA()}} object}
 
 \item{component}{String stating which component to return ("PC1" is default)}
 
@@ -39,10 +39,11 @@ An ggplot2 object (or a list og ggplot objects)
 This function plots your RMASCA model
 }
 \examples{
-plot(model)
+load("PE.Rdata")
+plot(model.val)
 plot(model, component = "PC2")
 plot(model, only = "score", effect = "time")
 plot(model, tooDense = 5)
-plot(model, highlight = c("CRP", "IL-1b", "IL-6"))
+plot(model, highlight = c("PlGF", "IL-1b", "IL-6"))
 
 }

@@ -21,7 +21,7 @@ RMASCA(
 )
 }
 \arguments{
-\item{df}{Data Frame to be analyzed}
+\item{df}{Data frame to be analyzed}
 
 \item{formula}{Regression model}
 
@@ -51,13 +51,13 @@ RMASCA(
 An RMASCA object
 }
 \description{
-This function loads a file as a matrix. It assumes that the first column
-contains the rownames and the subsequent columns are the sample identifiers.
-Any rows with duplicated row names will be dropped with the first one being
-kepted.
+\code{RMASCA} initializes an RMASCA model and returns an RMASCA object
+}
+\details{
+This function builds your RMASCA model. It needs a data frame containing at least a column identifying participants, a column called \code{time} contining time information, a column \code{group} containing group information, a column \code{variable} containing variable names, and a value column. In addition you need to specify the model you want, and whether you want to separate group and time effects (defaults to \code{TRUE}).
 }
 \examples{
-RMASCA(df = df, formula = value~time*group + (1|ID))
-RMASCA(df = df, formula = value~time*group + (1|ID), participantColumn = "ID", validate = TRUE)
+load("PE.Rdata")
+model <- RMASCA(df = df, formula = value~time*group + (1|ID))
 
 }

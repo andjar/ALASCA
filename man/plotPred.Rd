@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{plotPred}
 \alias{plotPred}
-\title{Plot participants}
+\title{Plot model predictions}
 \usage{
 plotPred(object, variable = NA)
 }
@@ -18,6 +18,11 @@ A list with ggplot2 objects.
 This function returns the scores for an RMASCA model
 }
 \examples{
-
-
+load("PE.Rdata")
+plotPred(model, variable = "IL-6")[[1]] + ggplot2::theme_bw()
+do.call(
+  ggpubr::ggarrange,
+  c(plotPred(model, variable = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotaxin")), 
+    common.legend = TRUE, legend = "bottom")
+)
 }
