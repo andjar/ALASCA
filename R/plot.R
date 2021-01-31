@@ -1,19 +1,24 @@
 #' Get an RMASCA object
 #'
-#' This function loads a file as a matrix. It assumes that the first column
-#' contains the rownames and the subsequent columns are the sample identifiers.
-#' Any rows with duplicated row names will be dropped with the first one being
-#' kepted.
+#' This function plots your RMASCA model
 #'
 #' @param object An RMASCA object
-#' @param component String stating which component to return (PC1 is default)
+#' @param component String stating which component to return ("PC1" is default)
 #' @param effect String stating which effect to return; `time`, `group`, `both` (default)
-#' @param decreasingLoadings Sort the loadings in dedreasing (default) or increasing order
+#' @param decreasingLoadings Sort the loadings in decreasing (default) or increasing order
 #' @param only String stating which plot to return; `both` (default), `score` or `loading`
 #' @param enlist Logical. If TRUE, the plots are returned as a list and not as a composed figure (default)
-#' @param tooDense Numerical. If > 0, only name this number of covariables
+#' @param tooDense Integer, If > 0, only name this number of covariables
 #' @param highlight Vector of strings with variables to highlight in the loadings plot
 #' @return An ggplot2 object (or a list og ggplot objects)
+#' 
+#' @examples
+#' plot(model)
+#' plot(model, component = "PC2")
+#' plot(model, only = "score", effect = "time")
+#' plot(model, tooDense = 5)
+#' plot(model, highlight = c("CRP", "IL-1b", "IL-6"))
+#' 
 #' @export
 plot.RMASCA <- function(object, component = "PC1", effect = "both", decreasingLoadings = TRUE, only = "both", enlist = FALSE, tooDense = NA, highlight = NA){
   if(!(effect %in% c("both","time","group"))){
@@ -64,14 +69,15 @@ plot.RMASCA <- function(object, component = "PC1", effect = "both", decreasingLo
 
 #' Get screeplot
 #'
-#' This function loads a file as a matrix. It assumes that the first column
-#' contains the rownames and the subsequent columns are the sample identifiers.
-#' Any rows with duplicated row names will be dropped with the first one being
-#' kepted.
+#' This function returns a screeplot for an RMASCA model showing what proportion of the variance each component of the model explains
 #'
 #' @param object An RMASCA object
 #' @param effect String stating which effect to return; `time`, `group`, `both` (default)
 #' @return An ggplot2 object (or a list og ggplot objects)
+#' 
+#' @examples
+#' screeplot(model)
+#' 
 #' @export
 screeplot.RMASCA <- function(object, effect = "both"){
   explained <- as.data.frame(getScores(object)$explained)
@@ -98,10 +104,7 @@ screeplot.RMASCA <- function(object, effect = "both"){
 
 #' Get loadings
 #'
-#' This function loads a file as a matrix. It assumes that the first column
-#' contains the rownames and the subsequent columns are the sample identifiers.
-#' Any rows with duplicated row names will be dropped with the first one being
-#' kepted.
+#' This function  returns the loadings for an RMASCA model
 #'
 #' @param object An RMASCA object
 #' @return A list with loadings for time (and group), and the exploratory power for each component
@@ -116,10 +119,7 @@ getLoadings <- function(object){
 
 #' Get scores
 #'
-#' This function loads a file as a matrix. It assumes that the first column
-#' contains the rownames and the subsequent columns are the sample identifiers.
-#' Any rows with duplicated row names will be dropped with the first one being
-#' kepted.
+#' This function returns the scores for an RMASCA model
 #'
 #' @param object An RMASCA object
 #' @return A list with scores for time (and group), and the exploratory power for each component

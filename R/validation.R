@@ -1,11 +1,14 @@
-
-
 #' Validate the RMASCA model LMM
 #'
-#' This function calculates the LMM coefficients for the RMASCA-model
+#' This function performs leave-one-out robustness testing of your RMASCA model. If you didn't specify the number of runs `nValRuns` when initializing the model (see \code{\link{RMASCA}}), you can do it by running for example `model$nValRuns <- 100` prior to calling `validate`. Your dataset is divided into `nValFold` partitions, keeping group proportions, and one of these are left out. `nValFold` is set the same way as  `nValRuns`.
 #'
 #' @param object An RMASCA object
+#' @param participantColumn The name of the column containing participant identifier. Needed if not set during initialization of the model.
 #' @return An RMASCA object
+#' 
+#' @examples
+#' validate(model, participantColumn = "ID")
+#' 
 #' @export
 validate <- function(object, participantColumn = FALSE){
   object$validate <- TRUE
@@ -67,7 +70,7 @@ validate <- function(object, participantColumn = FALSE){
 
 #' Rotate PCA
 #'
-#' This function calculates the LMM coefficients for the RMASCA-model
+#' This function rotates loadings and scores during validation
 #'
 #' @param object RMASCA object to be rotated (and returned)
 #' @param target RMASCA object acting as target
@@ -88,7 +91,7 @@ rotateMatrix <- function(object, target){
 
 #' Extract percentiles
 #'
-#' This function calculates the LMM coefficients for the RMASCA-model
+#' This function extract percentiles during validation
 #'
 #' @param object RMASCA object
 #' @param objectlist List of RMASCA objects

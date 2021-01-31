@@ -19,6 +19,11 @@
 #' @param validationObject Don't worry about me:)
 #' @param validationParticipants Don't worry about me:)
 #' @return An RMASCA object
+#' 
+#' @examples
+#' RMASCA(df = df, formula = value~time*group + (1|ID))
+#' RMASCA(df = df, formula = value~time*group + (1|ID), participantColumn = "ID", validate = TRUE)
+#' 
 #' @export
 RMASCA <- function(df,
                    formula,
