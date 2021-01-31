@@ -83,12 +83,14 @@ rotateMatrix <- function(object, target){
   
   # We are only looking at components explaining more than 5% of variation
   PCloading <- object$RMASCA$loading$explained$time > 0.05
+  PCloading[1:2] <- TRUE
   
   c <- GPArotation::targetT(L = as.matrix(a$time[,which(PCloading)]), Target = as.matrix(b$time[,which(PCloading)]))
   object$RMASCA$loading$time[,which(PCloading)] <- c$loadings
   object$RMASCA$score$time[,which(PCloading)] <- as.matrix(object$RMASCA$score$time[,which(PCloading)]) %*% solve(t(c$Th))
   if(object$separateTimeAndGroup){
     PCloading <- object$RMASCA$loading$explained$group > 0.05
+    PCloading[1:2] <- TRUE
     c <- GPArotation::targetT(L = as.matrix(a$group[,which(PCloading)]), Target = as.matrix(b$group[,which(PCloading)]))
     object$RMASCA$loading$group[,which(PCloading)] <- c$loadings
     object$RMASCA$score$group[,which(PCloading)] <- as.matrix(object$RMASCA$score$group[,which(PCloading)]) %*% solve(t(c$Th))
@@ -104,149 +106,92 @@ rotateMatrix <- function(object, target){
 #' @param objectlist List of RMASCA objects
 #' @return An RMASCA object
 getValidationPercentiles <- function(object, objectlist){
-  df_loading_time <- data.frame()
-  df_score_time <- data.frame()
-  df_loading_group <- data.frame()
-  df_score_group <- data.frame()
-  if(object$separateTimeAndGroup){
-    df_loading_time <- Reduce(rbind,lapply(objectlist, function(x) getLoadings(x)$time))
-    df_score_time <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$time))
+  
+  getValidationPercentilesLoading <- function(object, objectlist){
+    df_time <- Reduce(rbind,lapply(objectlist, function(x) getLoadings(x)$time))
+    PC_time <- getRelevantPCs(object$RMASCA$loading$explained$time)
+    perc_time <- aggregate(data = df_time, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+    perc_time <- Reduce(rbind,lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
+                                                                               high = perc_time[[x]][,2],
+                                                                               PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
+                                                                               covars = perc_time$covars)))
     
-    df_loading_group <- Reduce(rbind,lapply(objectlist, function(x) getLoadings(x)$group))
-    df_score_group <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$group))
+    perc_time <- switchSign(reshape2::melt(getLoadings(object)$time, id.vars = "covars"), perc_time)
+    object$validation$time$loading <- subset(perc_time, PC %in% PC_time)
+    
+    if(object$separateTimeAndGroup){
+      df_group <- Reduce(rbind,lapply(objectlist, function(x) getLoadings(x)$group))
+      PC_group <- getRelevantPCs(object$RMASCA$loading$explained$group)
+      perc_group <- aggregate(data = df_group, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+      perc_group <- Reduce(rbind,lapply(2:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
+                                                                                 high = perc_group[[x]][,2],
+                                                                                 PC = as.numeric(substr(names(perc_group)[x], 3, nchar(names(perc_group)[x]))), 
+                                                                                 covars = perc_group$covars)))
+      perc_group <- switchSign(reshape2::melt(getLoadings(object)$group, id.vars = "covars"), perc_group)
       
-    perc_loading_time <- data.frame()
-    perc_score_time <- data.frame()
-    perc_loading_group <- data.frame()
-    perc_score_group <- data.frame()
-    for(p in which(object$RMASCA$loading$explained$time > 0.05)){
-      for(t in unique(df_loading_time$covars)){
-        perc_loading_time_temp <- data.frame(
-          a = quantile(df_loading_time[df_loading_time$covars == t,p], probs = c(0.025)),
-          b = quantile(df_loading_time[df_loading_time$covars == t,p], probs = c(0.975)),
-          c = t,
-          d = p
-        )
-        perc_loading_time <- rbind(perc_loading_time, perc_loading_time_temp)
-      }
-      for(t in unique(df_score_time$time)){
-        perc_score_time_temp <- data.frame(
-          a = quantile(df_score_time[df_score_time$time == t,p], probs = c(0.025)),
-          b = quantile(df_score_time[df_score_time$time == t,p], probs = c(0.975)),
-          c = t,
-          d = p
-        )
-        perc_score_time <- rbind(perc_score_time, perc_score_time_temp)
-      }
-      for(t in unique(df_loading_group$covars)){
-        perc_loading_group_temp <- data.frame(
-          a = quantile(df_loading_group[df_loading_group$covars == t,p], probs = c(0.025)),
-          b = quantile(df_loading_group[df_loading_group$covars == t,p], probs = c(0.975)),
-          c = t,
-          d = p
-        )
-        perc_loading_group <- rbind(perc_loading_group, perc_loading_group_temp)
-      }
-      for(t in unique(df_score_group$time)){
-        for(g in unique(df_score_group$group)){
-          perc_score_group_temp <- data.frame(
-            a = quantile(df_score_group[df_score_group$time == t & df_score_group$group == g,p], probs = c(0.025)),
-            b = quantile(df_score_group[df_score_group$time == t & df_score_group$group == g,p], probs = c(0.975)),
-            c = t,
-            g = g,
-            d = p
-          )
-          perc_score_group <- rbind(perc_score_group, perc_score_group_temp)
-        }
-      }
+      object$validation$group$loading <- subset(perc_group, PC %in% PC_group)
     }
-    colnames(perc_loading_time) <- c("low", "high", "covars","PC")
-    rownames(perc_loading_time) <- NULL
-    colnames(perc_score_time) <- c("low", "high", "time","PC")
-    rownames(perc_score_time) <- NULL
-    colnames(perc_loading_group) <- c("low", "high", "covars","PC")
-    rownames(perc_loading_group) <- NULL
-    colnames(perc_score_group) <- c("low", "high", "time","group","PC")
-    rownames(perc_score_group) <- NULL
-
-    # Check if we need to switch sign
-    loadings <- getLoadings(object)$time
-    for(comp in which(object$RMASCA$loading$explained$time > 0.05)){
-      temp_limits <- perc_loading_time[perc_loading_time$PC == comp,]
-      temp_limits <- merge(temp_limits, loadings[,c(comp, ncol(loadings))], by = "covars")
-      if( any(temp_limits$low > temp_limits[,3]) | any(temp_limits[,3] > temp_limits$high) ){
-        perc_loading_time[perc_loading_time$PC == comp,] <- perc_loading_time[perc_loading_time$PC == comp,]*-1
-        perc_score_time[perc_score_time$PC == comp,] <- perc_score_time[perc_score_time$PC == comp,]*-1
-      }
-    }
-
-    # Check if we need to switch sign
-    loadings <- getLoadings(object)$group
-    for(comp in which(object$RMASCA$loading$explained$group > 0.05)){
-      temp_limits <- perc_loading_group[perc_loading_group$PC == comp,]
-      temp_limits <- merge(temp_limits, loadings[,c(comp, ncol(loadings))], by = "covars")
-      if( any(temp_limits$low > temp_limits[,3]) | any(temp_limits[,3] > temp_limits$high) ){
-        perc_loading_group[perc_loading_group$PC == comp,] <- perc_loading_group[perc_loading_group$PC == comp,]*-1
-        perc_score_group[perc_score_group$PC == comp,] <- perc_score_group[perc_score_group$PC == comp,]*-1
-      }
-    }
-
-    object$validation$time$loading  <- perc_loading_time
-    object$validation$time$score  <- perc_score_time
-    object$validation$group$loading  <- perc_loading_group
-    object$validation$group$score  <- perc_score_group
-
-  }else{
-    for(i in 1:length(objectlist)){
-      df_loading_time_temp <- objectlist[[i]]$RMASCA$loading$time
-      df_loading_time <- rbind(df_loading_time, df_loading_time_temp)
-
-      df_score_time_temp <- objectlist[[i]]$RMASCA$score$time
-      df_score_time <- rbind(df_score_time, df_score_time_temp)
-    }
-    perc_loading_time <- data.frame()
-    perc_score_time <- data.frame()
-    for(p in which(object$RMASCA$loading$explained$time > 0.05)){
-      for(t in unique(df_loading_time$covars)){
-        perc_loading_time_temp <- data.frame(
-          a = quantile(df_loading_time[df_loading_time$covars == t,p], probs = c(0.025)),
-          b = quantile(df_loading_time[df_loading_time$covars == t,p], probs = c(0.975)),
-          c = t,
-          d = p
-        )
-        perc_loading_time <- rbind(perc_loading_time, perc_loading_time_temp)
-      }
-      for(t in unique(df_score_time$time)){
-        for(g in unique(df_score_time$group)){
-          perc_score_time_temp <- data.frame(
-            a = quantile(df_score_time[df_score_time$time == t & df_score_time$group == g,p], probs = c(0.025)),
-            b = quantile(df_score_time[df_score_time$time == t & df_score_time$group == g,p], probs = c(0.975)),
-            c = t,
-            g = g,
-            d = p
-          )
-          perc_score_time <- rbind(perc_score_time, perc_score_time_temp)
-        }
-      }
-    }
-    colnames(perc_loading_time) <- c("low", "high", "covars","PC")
-    rownames(perc_loading_time) <- NULL
-    colnames(perc_score_time) <- c("low", "high", "time","group","PC")
-    rownames(perc_score_time) <- NULL
-
-    # Check if we need to switch sign
-    loadings <- getLoadings(object)$time
-    for(comp in which(object$RMASCA$loading$explained$time > 0.05)){
-      temp_limits <- perc_loading_time[perc_loading_time$PC == comp,]
-      temp_limits <- merge(temp_limits, loadings[,c(comp, ncol(loadings))], by = "covars")
-      if( any(temp_limits$low > temp_limits[,3]) | any(temp_limits[,3] > temp_limits$high) ){
-        perc_loading_time[perc_loading_time$PC == comp,] <- perc_loading_time[perc_loading_time$PC == comp,]*-1
-        perc_score_time[perc_score_time$PC == comp,] <- perc_score_time[perc_score_time$PC == comp,]*-1
-      }
-    }
-
-    object$validation$time$loading  <- perc_loading_time
-    object$validation$time$score  <- perc_score_time
+    return(object)
   }
+  
+  getValidationPercentilesScore <- function(object, objectlist){
+    if(object$separateTimeAndGroup){
+      df_time <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$time))
+      PC_time <- getRelevantPCs(object$RMASCA$score$explained$time)
+      perc_time <- aggregate(data = df_time, . ~ time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+      perc_time <- Reduce(rbind,lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
+                                                                                 high = perc_time[[x]][,2],
+                                                                                 PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
+                                                                                 time = perc_time$time)))
+      perc_time <- switchSign(reshape2::melt(getScores(object)$time, id.vars = "time"), perc_time)
+      object$validation$time$score <- subset(perc_time, PC %in% PC_time)
+      
+      df_group <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$group))
+      PC_group <- getRelevantPCs(object$RMASCA$score$explained$group)
+      perc_group <- aggregate(data = df_group, . ~ group + time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+      perc_group <- Reduce(rbind,lapply(3:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
+                                                                                   high = perc_group[[x]][,2],
+                                                                                   PC = as.numeric(substr(names(perc_group)[x], 3, nchar(names(perc_group)[x]))), 
+                                                                                   time = perc_group$time,
+                                                                                   group = perc_group$group)))
+      perc_group <- switchSign(reshape2::melt(getScores(object)$group, id.vars = c("time", "group")), perc_group)
+      object$validation$group$score <- subset(perc_group, PC %in% PC_group)
+    }else{
+      df_time <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$time))
+      PC_time <- getRelevantPCs(object$RMASCA$score$explained$time > 0.05)
+      perc_time <- aggregate(data = df_time, . ~ time + group, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+      perc_time <- Reduce(rbind,lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
+                                                                                 high = perc_time[[x]][,2],
+                                                                                 PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
+                                                                                 time = perc_time$time,
+                                                                                 group = perc_time$group)))
+      perc_time <- switchSign(reshape2::melt(getScores(object)$time, id.vars = c("time", "group")), perc_time)
+      object$validation$time$score <- subset(perc_time, PC %in% PC_time)
+    }
+    return(object)
+  }
+  
+  getRelevantPCs <- function(x){
+    PC <- x > 0.05
+    PC[1:2] <- TRUE
+    return(which(PC))
+  }
+  
+  switchSign <- function(value, perc){
+    value$PC <- as.numeric(substr(as.character(value$variable), 3, nchar(as.character(value$variable))))
+    value$variable <- NULL
+    perc <- merge(perc, value, all.x = TRUE)
+    for(p in unique(perc$PC)){
+      if(any(perc$value[perc$PC == p] < perc$low[perc$PC == p]) | any(perc$value[perc$PC == p] > perc$high[perc$PC == p])){
+        perc$high[perc$PC == p] <- perc$high[perc$PC == p]*(-1)
+        perc$low[perc$PC == p] <- perc$low[perc$PC == p]*(-1)
+      }
+    }
+    return(perc)
+  }
+
+  object <- getValidationPercentilesLoading(object, objectlist)
+  object <- getValidationPercentilesScore(object, objectlist)
+  
   return(object)
 }
