@@ -270,3 +270,114 @@ getScorePlot <- function(object, component = "PC1", effect = "time"){
   }
   return(g)
 }
+
+#' Plot participants
+#'
+#' This function returns the scores for an RMASCA model
+#'
+#' @param object An RMASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the RMASCA model before.
+#' @param variable List of variable names to print. If `NA`, return all (default).
+#' @param participantColumn Specify the column with participant identifier. Not necessary if you have already provided it to the RMASCA object
+#' @param valueColumn Specify column with values (y axis). Not necessary to provide if you are plotting an RMASCA object.
+#' @param timeColumn Specify column with times (x axis). Defaults to `time`.
+#' @param addSmooth. Specify which geom_smooth model you want to apply, eg. "`lm`", "`glm`", "`gam`", "`loess`" (default). Set to `NA` to remove.
+#' @return A list with ggplot2 objects.
+#' 
+#' @examples
+#' plotParts(df, variable = "CRP", participantColumn = "ID", valueColumn = "value")
+#' plotParts(model, variable = c("CRP", "IL-6"), participantColumn = "ID")
+#' plotParts(model, variable = "CRP", participantColumn = "ID", timeColumn = "GA")[[1]] + ggplot2::labs(x = "GA")
+#' 
+#' @export
+plotParts <- function(object, variable = NA, participantColumn = FALSE, valueColumn = FALSE, timeColumn = "time", addSmooth = "loess"){
+  if(is.data.frame(object)){
+    df <- object
+    if(any(participantColumn == FALSE) | any(valueColumn == FALSE)){
+      stop("You need to specify participant and value columns")
+    }else{
+      participantColumn <- participantColumn
+      valueColumn <- valueColumn
+    }
+  }else if(is(object, "RMASCA")){
+    df <- object$df
+    valueColumn <- as.character(object$formula)[2]
+    if(any(participantColumn == FALSE)){
+      if(any(object$participantColumn == FALSE)){
+        stop("You need to specify the participant column")
+      }else{
+        participantColumn <- object$participantColumn
+      }
+    }
+  }else{
+    stop("Wrong input object: must be a RMASCA model or a data frame")
+  }
+  plotFunction <- function(df, timeColumn, valueColumn, participantColumn, xi, addSmooth){
+    g <- ggplot2::ggplot(subset(df, variable == xi), ggplot2::aes_string(x = timeColumn, y = valueColumn, color = "group", group = participantColumn)) + 
+      ggplot2::geom_point(alpha = 0.7) + ggplot2::geom_line(alpha = 0.3) +
+      ggplot2::theme(legend.position = "bottom") + ggplot2::labs(x = "Time", y = xi)
+    if(!any(is.na(addSmooth))){
+      g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group), se = FALSE)
+    }
+    return(g)
+  }
+  if(any(is.na(variable))){
+    g <- lapply(unique(df$variable), function(xi){
+      plotFunction(df, timeColumn, valueColumn, participantColumn, xi, addSmooth)
+    })
+  }else{
+    g <- lapply(variable, function(xi){
+      plotFunction(df, timeColumn, valueColumn, participantColumn, xi, addSmooth)
+    })
+  }
+  return(g)
+}
+
+#' Plot participants
+#'
+#' This function returns the scores for an RMASCA model
+#'
+#' @param object An RMASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the RMASCA model before.
+#' @param variable List of variable names to print. If `NA`, return all (default).
+#' @return A list with ggplot2 objects.
+#' 
+#' @examples
+#' 
+#' 
+#' @export
+plotPred <- function(object, variable = NA){
+  if(any(is.na(variable))){
+    variable <- unique(object$df$variable)
+  }
+  gg <- lapply(variable, function(x){
+    xi <- which(x == names(object$lmer.models))
+    model <- object$lmer.models[[xi]]
+    newdata <- object$df[,c("time", "group")]
+    newdata <- newdata[!duplicated(newdata),]
+    cols <- colnames(object$df)
+    covars <- object$covars
+    covars <- covars[!grepl("\\|", covars)]
+    cc <- 3
+    for(i in covars){
+      if(class(object$df[,cols == i]) == "numeric"){
+        newdata[,cc] <- mean(object$df[,cols == i], na.rm = TRUE)
+        cat("- Using mean of ", i, ": ",mean(object$df[,cols == i], na.rm = TRUE),"\n")
+      }else if(class(object$df[,cols == i]) == "factor"){
+        newdata[,cc] <- unique(object$df[,cols == i])[1]
+        cat("- Using ",unique(object$df[,cols == i])[1]," as reference\n")
+      }else if(class(object$df[,cols == i]) == "character"){
+        newdata[,cc] <- unique(object$df[,cols == i])[1]
+        cat("- Using ",unique(object$df[,cols == i])[1]," as reference\n")
+      }
+      cc <- cc + 1
+    }
+    colnames(newdata) <- c("time", "group", covars)
+    newdata$pred <- predict(model, newdata = newdata, re.form=NA)
+    g <- ggplot2::ggplot(newdata, ggplot2::aes(x = time, y = pred, color = group, group = group)) +
+      ggplot2::geom_point() + ggplot2::geom_line() +
+      ggplot2::theme(legend.position = "bottom") +
+      ggplot2::labs(x = "Time", y = x)
+    g
+  })
+  return(gg)
+}
+
