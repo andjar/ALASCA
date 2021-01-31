@@ -16,7 +16,8 @@ knitr::opts_chunk$set(
   fig.asp = 0.7,
   fig.width = 12,
   fig.align = "center",
-  cache = FALSE
+  cache = FALSE,
+  external = FALSE
 )
 df <- read.csv(file = "PE.csv", header = TRUE, sep = ";")
 somaids <- read.csv(file = "somaids.csv", header = TRUE, sep = ";")
@@ -111,6 +112,16 @@ df <- df[selectedVariables,]
 df$variable <- factor(df$Target)
 ```
 
+We can have a quick look at the data,
+
+```{r}
+do.call(
+  ggpubr::ggarrange,
+  c(plotParts(df, participantColumn = "ID", timeColumn = "GA", valueColumn = "value", addSmooth = "loess", variable = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotaxin")), 
+                      common.legend = TRUE, legend = "bottom")
+  )
+```
+
 ## Preparing the model
 
 Now we can set up our model. Since it's an observational study, we can start with
@@ -152,6 +163,16 @@ We can also look up specific variables,
 
 ```{r}
 plot(PE.mod, highlight = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotaxin"))
+```
+
+and also have a look at the underlying model predictions
+
+```{r}
+do.call(
+  ggpubr::ggarrange,
+  c(plotPred(PE.mod, variable = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotaxin")), 
+                      common.legend = TRUE, legend = "bottom")
+  )
 ```
 
 Let us add some uncertainty estimates to our model. This may take some time, but it is extra slow when compiling this documentation; usually this model needs about 5 seconds per run.

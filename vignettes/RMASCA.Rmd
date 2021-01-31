@@ -15,7 +15,8 @@ knitr::opts_chunk$set(
   fig.asp = 0.7,
   fig.width = 12,
   fig.align = "center",
-  cache = FALSE
+  cache = FALSE,
+  external = FALSE
 )
 ```
 
@@ -101,7 +102,7 @@ for(i in unique(df$variables)){
 }
 ```
 
-Let us see how it looks
+Let us see how it looks at group level
 
 ```{r data_dummy_plot}
 ggplot(data = df,
@@ -112,15 +113,14 @@ ggplot(data = df,
   labs(x = "Time", y = "Value", color = "Group")
 ```
 
-And we can have a look at some random participants to see typical trajectories
+And we can have a look at the participants using the plotParts() function,
 
 ```{r data_dummy_plot_2}
-ggplot(data = subset(df, partid %in% sample(unique(partid), 5)),
-     aes(x = factor(time), y = value, group = partid, color = group)) +
-     geom_point() + geom_line() +
-     facet_wrap(~variable, scales = "free_y") +
-     theme(legend.position = "bottom") +
-     labs(x = "Time", y = "Value", color = "Group")
+do.call(
+  ggpubr::ggarrange,
+  c(plotParts(df, participantColumn = "partid", valueColumn = "value", addSmooth = NA), 
+                      common.legend = TRUE, legend = "bottom")
+  )
 ```
 
 ## Using RM-ASCA+
@@ -151,6 +151,16 @@ plot(res.simple, component = "PC2")
 ```
 
 The interpretation is similar to the one above. We are most interested in the bottom panels: the chocolate group has first an increase at time 2, but then decrease again. To the right, we can see that happiness follows that trajectory, whereas anger has the inverted trajectory (first decreased anger, then return to baseline). The salad group has the opposite trajectories. Cool, huh?
+
+We can explore this by visualizing predictions on group level from the underlying linear mixed models. For example
+
+```{r RMASCA_simple_model_plotPred}
+do.call(
+  ggpubr::ggarrange,
+  c(plotPred(res.simple, variable = c("BMI", "Age", "Happiness", "Anger")), 
+                      common.legend = TRUE, legend = "bottom")
+  )
+```
 
 #### Scree plots
 
@@ -296,6 +306,12 @@ model.formula <- value ~ time + time:group + age + (1|partid)
 res.mod4 <- RMASCA(df = df, formula = model.formula)
 plot(res.mod4)
 plot(res.mod4, component = "PC2")
+
+do.call(
+  ggpubr::ggarrange,
+  c(plotPred(res.mod4, variable = c("BMI", "Happiness", "Anger", "HDL")), 
+                      common.legend = TRUE, legend = "bottom")
+  )
 ```
 
 We can see that the linear increase in age is no longer part of the output.
@@ -313,10 +329,10 @@ summary(res.simple$lmer.models[[1]])
 We can also assess the residuals,
 
 ```{r lmm_residuals}
-plot(density(residuals(res.simple$lmer.models[[1]])), main = unique(df$variable)[1])
+plot(density(residuals(res.simple, variable = "BMI")[[1]]), main = "BMI")
 
-qqnorm(residuals(res.simple$lmer.models[[1]]), main = unique(df$variable)[1]) 
-qqline(residuals(res.simple$lmer.models[[1]]))
+qqnorm(residuals(res.simple, variable = "BMI")[[1]], main = "BMI") 
+qqline(residuals(res.simple, variable = "BMI")[[1]])
 ```
 
 ### P values
