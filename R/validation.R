@@ -160,7 +160,7 @@ getValidationPercentiles <- function(object, objectlist){
       df_time <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$time))
       PC_time <- getRelevantPCs(object$RMASCA$score$explained$time > 0.05)
       perc_time <- aggregate(data = df_time, . ~ time + group, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-      perc_time <- Reduce(rbind,lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
+      perc_time <- Reduce(rbind,lapply(3:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
                                                                                  high = perc_time[[x]][,2],
                                                                                  PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
                                                                                  time = perc_time$time,

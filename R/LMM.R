@@ -17,6 +17,18 @@ getLMECoefficients <- function(object){
   object$lmer.models <- lapply(unique(object$df$variable), function(i){
       lmer.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i), 
                                    control = lme4::lmerControl(calc.derivs = FALSE))
+      if(object$forceEqualBaseline){
+        X <- model.matrix(lmer.model)
+        baselineLabel <- paste0("time", unique(object$df$time)[1])
+        X <- X[, substr(colnames(X),1,nchar(baselineLabel)) != baselineLabel]
+        newFormula <- as.character(form)
+        newFormulaPred <- strsplit(as.character(newFormula[3]), "\\+")[[1]]
+        newFormulaPred <- newFormulaPred[Reduce(cbind,lapply(newFormulaPred, function (x) grepl("\\(",x)))]
+        newFormula <- paste(newFormula[2],"~","X +",newFormulaPred, collapse = " ")
+        object$newFormula <- formula(newFormula)
+        lmer.model <- lmerTest::lmer(object$newFormula, data = subset(object$df, variable == i), 
+                                     control = lme4::lmerControl(calc.derivs = FALSE))
+      }
       attr(lmer.model, "name") <- i
       lmer.model
     }
@@ -33,6 +45,9 @@ getLMECoefficients <- function(object){
     rownames(a) <- NULL
     a
   }))
+  if(object$forceEqualBaseline){
+    fdf$variable[substr(fdf$variable,1,1) == "X"] <- substr(fdf$variable[substr(fdf$variable,1,1) == "X"],2,nchar(fdf$variable[substr(fdf$variable,1,1) == "X"]))
+  }
   # fdf <- Reduce(rbind,lapply(seq_along(object$lmer.models), function(y, n, i){
   #       tmp_ef <- lme4::fixef(y[[i]])
   #       a <- as.data.frame(summary(y[[i]])[["coefficients"]][,c(1,5)])
@@ -99,10 +114,13 @@ separateLMECoefficients <- function(object){
 #' @return An RMASCA object
 getEffectMatrix <- function(object){
   if(!object$minimizeObject){
-    cat("Calculating effect matrix (may take some time...)\n")
+    cat("Calculating effect matrix\n")
   }
   parts <- subset(object$df, variable == object$df$variable[1])
   Dmatrix <- lme4::getME(object$lmer.model[[1]],"X")
+  if(object$forceEqualBaseline){
+    colnames(Dmatrix)[substr(colnames(Dmatrix),1,1) == "X"] <- substr(colnames(Dmatrix)[substr(colnames(Dmatrix),1,1) == "X"],2,nchar(colnames(Dmatrix)[substr(colnames(Dmatrix),1,1) == "X"]))
+  }
   if(object$separateTimeAndGroup){
     BmatrixTime <- object$LMM.coefficients[object$LMM.coefficients$comp == "TIME",c("covar","estimate","variable")]
     BmatrixTime <- reshape2::dcast(BmatrixTime, formula = variable~covar, value.var = "estimate")

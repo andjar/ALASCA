@@ -12,6 +12,7 @@
 #' @param participantColumn String. Name of the column containing participant identification
 #' @param minimizeObject Logical. If `TRUE`, remove unnecessary clutter, optimize for validation
 #' @param scale If `TRUE` (default), each variable is scaled to unit SD and zero mean
+#' @param forceEqualBaseline
 #' @param nValFold Partitions when validating
 #' @param nValRuns number of validation runs
 #' @param validationMethod among  `loo` (leave-one-out, default)
@@ -31,6 +32,7 @@ RMASCA <- function(df,
                    participantColumn = FALSE,
                    validate = FALSE,
                    scale = TRUE,
+                   forceEqualBaseline = FALSE,
                    minimizeObject = FALSE,
                    nValFold = 7,
                    nValRuns = 50,
@@ -45,6 +47,7 @@ RMASCA <- function(df,
                 pAdjustMethod = validationObject$pAdjustMethod, #inherit
                 participantColumn = validationObject$participantColumn, #inherit
                 validate = validate, #overwrite
+                forceEqualBaseline = validationObject$forceEqualBaseline,
                 scale = validationObject$scale, #inherit
                 minimizeObject = minimizeObject, #overwrite
                 nValFold = validationObject$nValFold, #inherit
@@ -61,6 +64,7 @@ RMASCA <- function(df,
                    participantColumn = participantColumn,
                    validate = validate,
                    scale = scale,
+                   forceEqualBaseline = forceEqualBaseline,
                    minimizeObject = minimizeObject,
                    nValFold = nValFold,
                    nValRuns = nValRuns,
@@ -187,25 +191,25 @@ removeEmbedded <- function(object){
 #' @return An RMASCA object
 #' @export
 flipIt <- function(object){
-  PC_col <- Reduce(cbind,lapply(PE.mod$RMASCA$score$time[1,], FUN = function(x) is.numeric(x)))
+  PC_col <- Reduce(cbind,lapply(object$RMASCA$score$time[1,], FUN = function(x) is.numeric(x)))
   object$RMASCA$score$time[,PC_col] <- object$RMASCA$score$time[,PC_col]*(-1)
-  PC_col <- Reduce(cbind,lapply(PE.mod$RMASCA$loading$time[1,], FUN = function(x) is.numeric(x)))
+  PC_col <- Reduce(cbind,lapply(object$RMASCA$loading$time[1,], FUN = function(x) is.numeric(x)))
   object$RMASCA$loading$time[,PC_col] <- object$RMASCA$loading$time[,PC_col]*(-1)
   if(object$separateTimeAndGroup){
-    PC_col <- Reduce(cbind,lapply(PE.mod$RMASCA$score$group[1,], FUN = function(x) is.numeric(x)))
+    PC_col <- Reduce(cbind,lapply(object$RMASCA$score$group[1,], FUN = function(x) is.numeric(x)))
     object$RMASCA$score$group[,PC_col] <- object$RMASCA$score$group[,PC_col]*(-1)
-    PC_col <- Reduce(cbind,lapply(PE.mod$RMASCA$loading$group[1,], FUN = function(x) is.numeric(x)))
+    PC_col <- Reduce(cbind,lapply(object$RMASCA$loading$group[1,], FUN = function(x) is.numeric(x)))
     object$RMASCA$loading$group[,PC_col] <- object$RMASCA$loading$group[,PC_col]*(-1)
   }
   if(object$validate){
-    PC_col <- Reduce(cbind,lapply(PE.mod$validation$score$time[1,], FUN = function(x) is.numeric(x)))
+    PC_col <- Reduce(cbind,lapply(object$validation$score$time[1,], FUN = function(x) is.numeric(x)))
     object$validation$score$time[,PC_col] <- object$validation$score$time[,PC_col]*(-1)
-    PC_col <- Reduce(cbind,lapply(PE.mod$validation$loading$time[1,], FUN = function(x) is.numeric(x)))
+    PC_col <- Reduce(cbind,lapply(object$validation$loading$time[1,], FUN = function(x) is.numeric(x)))
     object$validation$loading$time[,PC_col] <- object$validation$loading$time[,PC_col]*(-1)
     if(object$separateTimeAndGroup){
-      PC_col <- Reduce(cbind,lapply(PE.mod$validation$score$group[1,], FUN = function(x) is.numeric(x)))
+      PC_col <- Reduce(cbind,lapply(object$validation$score$group[1,], FUN = function(x) is.numeric(x)))
       object$validation$score$group[,PC_col] <- object$validation$score$group[,PC_col]*(-1)
-      PC_col <- Reduce(cbind,lapply(PE.mod$validation$loading$group[1,], FUN = function(x) is.numeric(x)))
+      PC_col <- Reduce(cbind,lapply(object$validation$loading$group[1,], FUN = function(x) is.numeric(x)))
       object$validation$loading$group[,PC_col] <- object$validation$loading$group[,PC_col]*(-1)
     }
   }

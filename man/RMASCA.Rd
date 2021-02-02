@@ -12,6 +12,7 @@ RMASCA(
   participantColumn = FALSE,
   validate = FALSE,
   scale = TRUE,
+  forceEqualBaseline = FALSE,
   minimizeObject = FALSE,
   nValFold = 7,
   nValRuns = 50,
