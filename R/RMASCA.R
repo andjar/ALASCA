@@ -178,3 +178,36 @@ removeEmbedded <- function(object){
   object$effect.matrix <- NULL
   return(object)
 }
+
+#' Flip an RMASCA object
+#'
+#' Changes the sign of loadings and scores
+#'
+#' @param object An RMASCA object
+#' @return An RMASCA object
+#' @export
+flipIt <- function(object){
+  PC_col <- Reduce(cbind,lapply(PE.mod$RMASCA$score$time[1,], FUN = function(x) is.numeric(x)))
+  object$RMASCA$score$time[,PC_col] <- object$RMASCA$score$time[,PC_col]*(-1)
+  PC_col <- Reduce(cbind,lapply(PE.mod$RMASCA$loading$time[1,], FUN = function(x) is.numeric(x)))
+  object$RMASCA$loading$time[,PC_col] <- object$RMASCA$loading$time[,PC_col]*(-1)
+  if(object$separateTimeAndGroup){
+    PC_col <- Reduce(cbind,lapply(PE.mod$RMASCA$score$group[1,], FUN = function(x) is.numeric(x)))
+    object$RMASCA$score$group[,PC_col] <- object$RMASCA$score$group[,PC_col]*(-1)
+    PC_col <- Reduce(cbind,lapply(PE.mod$RMASCA$loading$group[1,], FUN = function(x) is.numeric(x)))
+    object$RMASCA$loading$group[,PC_col] <- object$RMASCA$loading$group[,PC_col]*(-1)
+  }
+  if(object$validate){
+    PC_col <- Reduce(cbind,lapply(PE.mod$validation$score$time[1,], FUN = function(x) is.numeric(x)))
+    object$validation$score$time[,PC_col] <- object$validation$score$time[,PC_col]*(-1)
+    PC_col <- Reduce(cbind,lapply(PE.mod$validation$loading$time[1,], FUN = function(x) is.numeric(x)))
+    object$validation$loading$time[,PC_col] <- object$validation$loading$time[,PC_col]*(-1)
+    if(object$separateTimeAndGroup){
+      PC_col <- Reduce(cbind,lapply(PE.mod$validation$score$group[1,], FUN = function(x) is.numeric(x)))
+      object$validation$score$group[,PC_col] <- object$validation$score$group[,PC_col]*(-1)
+      PC_col <- Reduce(cbind,lapply(PE.mod$validation$loading$group[1,], FUN = function(x) is.numeric(x)))
+      object$validation$loading$group[,PC_col] <- object$validation$loading$group[,PC_col]*(-1)
+    }
+  }
+  return(object)
+}
