@@ -11,7 +11,7 @@
 #' @param validate Logical. If `TRUE`, give estimates for robustness
 #' @param participantColumn String. Name of the column containing participant identification
 #' @param minimizeObject Logical. If `TRUE`, remove unnecessary clutter, optimize for validation
-#' @param scale If `TRUE` (default), each variable is scaled to unit SD and zero mean
+#' @param scaleFun If `TRUE` (default), each variable is scaled to unit SD and zero mean. If `FALSE`, no scaling is performed. You can also provide a custom scaling function that has the data frame `df` as input and output
 #' @param forceEqualBaseline
 #' @param nValFold Partitions when validating
 #' @param nValRuns number of validation runs
@@ -31,7 +31,7 @@ RMASCA <- function(df,
                    pAdjustMethod = NA,
                    participantColumn = FALSE,
                    validate = FALSE,
-                   scale = TRUE,
+                   scaleFun = TRUE,
                    forceEqualBaseline = FALSE,
                    minimizeObject = FALSE,
                    nValFold = 7,
@@ -41,14 +41,14 @@ RMASCA <- function(df,
                    validationParticipants = NA){
 
   if(!is.na(validationObject[1])){
-    object <- list(df = validationObject$df, #inherit
+    object <- list(df = validationObject$dfRaw, #inherit unscaled
                 formula = validationObject$formula, #inherit
                 separateTimeAndGroup = validationObject$separateTimeAndGroup, #inherit
                 pAdjustMethod = validationObject$pAdjustMethod, #inherit
                 participantColumn = validationObject$participantColumn, #inherit
                 validate = validate, #overwrite
                 forceEqualBaseline = validationObject$forceEqualBaseline,
-                scale = validationObject$scale, #inherit
+                scaleFun = validationObject$scaleFun, #inherit
                 minimizeObject = minimizeObject, #overwrite
                 nValFold = validationObject$nValFold, #inherit
                 nValRuns = validationObject$nValRuns, #inherit
@@ -63,7 +63,7 @@ RMASCA <- function(df,
                    pAdjustMethod = pAdjustMethod,
                    participantColumn = participantColumn,
                    validate = validate,
-                   scale = scale,
+                   scaleFun = scaleFun,
                    forceEqualBaseline = forceEqualBaseline,
                    minimizeObject = minimizeObject,
                    nValFold = nValFold,
@@ -138,10 +138,12 @@ sanitizeObject <- function(object){
   }
 
   if(object$minimizeObject){
+    # This is usually a validation object
     object$df <- object$df[object$validationParticipants,]
     partColumn <- which(colnames(object$df) == object$participantColumn)
     object$df[,partColumn] <- factor(object$df[,partColumn])
   }
+  
   object$df$time <- factor(object$df$time)
   object$df$group <- factor(object$df$group)
   object$df$variable <- factor(object$df$variable)
@@ -150,12 +152,24 @@ sanitizeObject <- function(object){
     cat("\n\n!!! -> Oh dear, at least on of your rows is missing either time or group. I have removed it/them for now, but you should check if this is a problem...\n\n")
     object$df <- object$df[!is.na(object$df$time) & !is.na(object$df$group),]
   }
-  if(!object$minimizeObject & object$scale){
+  
+  # Keep a copy of unscaled data
+  object$dfRaw <- object$df
+  
+  if(is.function(object$scaleFun)){
+    cat("Scaling data with custom function...\n")
+    for(i in unique(object$df$variable)){
+      valColumn <- which(as.character(object$formula)[2] == colnames(object$df))
+      object$df <- scaleFun(object$df)
+    }
+  }else if(object$scaleFun == TRUE){
     cat("Scaling data...\n")
     for(i in unique(object$df$variable)){
       valColumn <- which(as.character(object$formula)[2] == colnames(object$df))
       object$df[object$df$variable == i,valColumn] <- (object$df[object$df$variable == i,valColumn] - mean(object$df[object$df$variable == i,valColumn]))/sd(object$df[object$df$variable == i,valColumn])
     }
+  }else{
+    cat("Not scaling data...\n")
   }
 
   object$hasGroupTerm <- ifelse(any(formulaTerms == "group"), TRUE, FALSE)

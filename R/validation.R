@@ -31,18 +31,26 @@ validate <- function(object, participantColumn = FALSE){
     cat("- Run ",ii," of ",object$nValRuns,"\n")
     start.time <- Sys.time()
     selectedParts <- c()
+    
+    # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
     selectedParts <- Reduce(c,lapply(unique(object$df$group), function(gr){
       selectedParts_temp_all <- unique(object$df[object$df$group == gr,partColumn])
       selectedParts_temp_ticket <- sample(1:object$nValFold, length(selectedParts_temp_all), replace = TRUE)
       selectedParts_temp <- selectedParts_temp_all[selectedParts_temp_ticket != 1]
       selectedParts_temp
     }))
+    
+    # Make RMASCA model from the selected subset
     temp_object[[ii]] <- RMASCA(df = NA,
                                 validate = FALSE, # to avoid recursion
-                                minimizeObject = TRUE,
+                                minimizeObject = TRUE, # remove data that's not needed in temporary models
                                 validationObject = object,
                                 validationParticipants = object$df[,partColumn] %in% selectedParts)
+    
+    # Rotate new loadings/scores to the original model
     temp_object[[ii]] <- rotateMatrix(object = temp_object[[ii]], target = object)
+    
+    
     end.time <- Sys.time()
     time_mean[ii] <- end.time - start.time
     cat("--- Used ",round(time_mean[ii],2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*mean(time_mean),2)," seconds \n")
@@ -136,6 +144,8 @@ getValidationPercentiles <- function(object, objectlist){
   
   getValidationPercentilesScore <- function(object, objectlist){
     if(object$separateTimeAndGroup){
+      # Separate time and group effects
+      
       df_time <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$time))
       PC_time <- getRelevantPCs(object$RMASCA$score$explained$time)
       perc_time <- aggregate(data = df_time, . ~ time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
@@ -157,6 +167,8 @@ getValidationPercentiles <- function(object, objectlist){
       perc_group <- switchSign(reshape2::melt(getScores(object)$group, id.vars = c("time", "group")), perc_group)
       object$validation$group$score <- subset(perc_group, PC %in% PC_group)
     }else{
+      # Pool time and groups effects
+      
       df_time <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$time))
       PC_time <- getRelevantPCs(object$RMASCA$score$explained$time > 0.05)
       perc_time <- aggregate(data = df_time, . ~ time + group, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
@@ -171,12 +183,14 @@ getValidationPercentiles <- function(object, objectlist){
     return(object)
   }
   
+  # Only interested in PCs explaining at least 5% of the variation
   getRelevantPCs <- function(x){
     PC <- x > 0.05
     PC[1:2] <- TRUE
     return(which(PC))
   }
   
+  # Loading/score is only unique up to a factor +/- 1
   switchSign <- function(value, perc){
     value$PC <- as.numeric(substr(as.character(value$variable), 3, nchar(as.character(value$variable))))
     value$variable <- NULL
