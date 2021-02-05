@@ -12,7 +12,8 @@
 #' @param participantColumn String. Name of the column containing participant identification
 #' @param minimizeObject Logical. If `TRUE`, remove unnecessary clutter, optimize for validation
 #' @param scaleFun If `TRUE` (default), each variable is scaled to unit SD and zero mean. If `FALSE`, no scaling is performed. You can also provide a custom scaling function that has the data frame `df` as input and output
-#' @param forceEqualBaseline
+#' @param forceEqualBaseline Set to `TRUE` to remove interaction between group and first time point (defaults to `FALSE`)
+#' @param useSumCoding Set to `TRUE` to use sum coding instead of contrast coding for group (defaults to `FALSE`)
 #' @param nValFold Partitions when validating
 #' @param nValRuns number of validation runs
 #' @param validationMethod among  `loo` (leave-one-out, default)
@@ -33,6 +34,7 @@ RMASCA <- function(df,
                    validate = FALSE,
                    scaleFun = TRUE,
                    forceEqualBaseline = FALSE,
+                   useSumCoding = FALSE,
                    minimizeObject = FALSE,
                    nValFold = 7,
                    nValRuns = 50,
@@ -48,6 +50,7 @@ RMASCA <- function(df,
                 participantColumn = validationObject$participantColumn, #inherit
                 validate = validate, #overwrite
                 forceEqualBaseline = validationObject$forceEqualBaseline,
+                useSumCoding = validationObject$useSumCoding,
                 scaleFun = validationObject$scaleFun, #inherit
                 minimizeObject = minimizeObject, #overwrite
                 nValFold = validationObject$nValFold, #inherit
@@ -65,6 +68,7 @@ RMASCA <- function(df,
                    validate = validate,
                    scaleFun = scaleFun,
                    forceEqualBaseline = forceEqualBaseline,
+                   useSumCoding = FALSE,
                    minimizeObject = minimizeObject,
                    nValFold = nValFold,
                    nValRuns = nValRuns,
@@ -156,19 +160,30 @@ sanitizeObject <- function(object){
   # Keep a copy of unscaled data
   object$dfRaw <- object$df
   
+  # Use sum coding?
+  if(object$useSumCoding){
+    contrasts(object$df$group) <- contr.sum(length(unique(object$df$group)))
+  }
+  
   if(is.function(object$scaleFun)){
-    cat("Scaling data with custom function...\n")
+    if(!object$minimizeObject){
+      cat("Scaling data with custom function...\n")
+    }
     for(i in unique(object$df$variable)){
       object$df <- scaleFun(object$df)
     }
   }else if(object$scaleFun == TRUE){
-    cat("Scaling data...\n")
+    if(!object$minimizeObject){
+      cat("Scaling data...\n")
+    }
     for(i in unique(object$df$variable)){
       valColumn <- which(as.character(object$formula)[2] == colnames(object$df))
       object$df[object$df$variable == i,valColumn] <- (object$df[object$df$variable == i,valColumn] - mean(object$df[object$df$variable == i,valColumn]))/sd(object$df[object$df$variable == i,valColumn])
     }
   }else{
-    cat("Not scaling data...\n")
+    if(!object$minimizeObject){
+      cat("Not scaling data...\n")
+    }
   }
 
   object$hasGroupTerm <- ifelse(any(formulaTerms == "group"), TRUE, FALSE)
