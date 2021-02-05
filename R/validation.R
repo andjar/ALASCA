@@ -35,7 +35,8 @@ validate <- function(object, participantColumn = FALSE){
     # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
     selectedParts <- Reduce(c,lapply(unique(object$df$group), function(gr){
       selectedParts_temp_all <- unique(object$df[object$df$group == gr,partColumn])
-      selectedParts_temp_ticket <- sample(1:object$nValFold, length(selectedParts_temp_all), replace = TRUE)
+      selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
+      selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
       selectedParts_temp <- selectedParts_temp_all[selectedParts_temp_ticket != 1]
       selectedParts_temp
     }))
@@ -74,7 +75,7 @@ validate <- function(object, participantColumn = FALSE){
   #   temp_object <- rotateMatrix(object = temp_object, target = object)
   # })
   object <- getValidationPercentiles(object, objectlist = temp_object)
-
+  object$validation$temp_objects <- temp_object
   return(object)
 }
 
@@ -89,20 +90,75 @@ rotateMatrix <- function(object, target){
   a <- object$RMASCA$loading
   b <- target$RMASCA$loading
   
-  # We are only looking at components explaining more than 5% of variation
-  PCloading <- object$RMASCA$loading$explained$time > 0.05
-  PCloading[1:2] <- TRUE
-  
-  c <- GPArotation::targetT(L = as.matrix(a$time[,which(PCloading)]), Target = as.matrix(b$time[,which(PCloading)]))
-  object$RMASCA$loading$time[,which(PCloading)] <- c$loadings
-  object$RMASCA$score$time[,which(PCloading)] <- as.matrix(object$RMASCA$score$time[,which(PCloading)]) %*% solve(t(c$Th))
-  if(object$separateTimeAndGroup){
-    PCloading <- object$RMASCA$loading$explained$group > 0.05
-    PCloading[1:2] <- TRUE
-    c <- GPArotation::targetT(L = as.matrix(a$group[,which(PCloading)]), Target = as.matrix(b$group[,which(PCloading)]))
-    object$RMASCA$loading$group[,which(PCloading)] <- c$loadings
-    object$RMASCA$score$group[,which(PCloading)] <- as.matrix(object$RMASCA$score$group[,which(PCloading)]) %*% solve(t(c$Th))
+  procrustes <- function(loadings, target){
+    s= t(loadings)%*%target
+    w1 = s %*% t(s)
+    v1 = t(s) %*% s
+    w <- eigen(w1) $vectors
+    ew <- diag(eigen(w1) $values)
+    v <- eigen(v1) $vectors
+    ev <- diag(eigen(v1) $values)
+    o = t(w) %*% s %*% v
+    k = diag(  ((diag(o)) / abs(diag(o))) , nrow = nrow(o), ncol =nrow(o))
+    ww = w %*% k
+    out <- list()
+    out$t1 = ww %*% t(v) # Rotation matrix
+    out$procrust = loadings %*% out$t1 # Rotated loadings
+    return(out)
   }
+  
+  # We are only looking at components explaining more than 5% of variation
+  PCloading <- target$RMASCA$loading$explained$time > 0.05
+  PCloading[1:2] <- TRUE
+  PCloading <- which(PCloading)
+  
+  # PCA can give loadings with either sign, so we have to check whether this improves the rotation
+  N   <- length(PCloading)
+  vec <- c(-1, 1)
+  lst <- lapply(numeric(N), function(x) vec)
+  signMatrix <- as.matrix(expand.grid(lst))
+  signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
+    c <- procrustes(loadings= as.matrix(a$time[,PCloading]* signMatrix[i,]),
+                    target = as.matrix(b$time[,PCloading]))
+    sum((b$time[,PCloading] - c$procrust)^2)
+  }))
+  minSignVar <- which(signVar == min(signVar))[1]
+  object$RMASCA$loading$time[,PCloading] <- object$RMASCA$loading$time[,PCloading] * signMatrix[minSignVar,]
+  object$RMASCA$score$time[,PCloading] <- object$RMASCA$score$time[,PCloading] * signMatrix[minSignVar,]
+  a <- object$RMASCA$loading
+  
+  c <- procrustes(loadings= as.matrix(a$time[,PCloading]),
+                  target = as.matrix(b$time[,PCloading]))
+  object$RMASCA$loading$time[,PCloading] <- c$procrust
+  object$RMASCA$score$time[,PCloading] <- as.matrix(object$RMASCA$score$time[,PCloading]) %*% solve(c$t1)
+  
+  if(object$separateTimeAndGroup){
+    # We are only looking at components explaining more than 5% of variation
+    PCloading <- target$RMASCA$loading$explained$group > 0.05
+    PCloading[1:2] <- TRUE
+    PCloading <- which(PCloading)
+    
+    # PCA can give loadings with either sign, so we have to check whether this improves the rotation
+    N   <- length(PCloading)
+    vec <- c(-1, 1)
+    lst <- lapply(numeric(N), function(x) vec)
+    signMatrix <- as.matrix(expand.grid(lst))
+    signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
+      c <- procrustes(loadings= as.matrix(a$group[,PCloading]* signMatrix[i,]),
+                      target = as.matrix(b$group[,PCloading]))
+      sum((b$group[,PCloading] - c$procrust)^2)
+    }))
+    minSignVar <- which(signVar == min(signVar))[1]
+    object$RMASCA$loading$group[,PCloading] <- object$RMASCA$loading$group[,PCloading] * signMatrix[minSignVar,]
+    object$RMASCA$score$group[,PCloading] <- object$RMASCA$score$group[,PCloading] * signMatrix[minSignVar,]
+    a <- object$RMASCA$loading
+    
+    c <- procrustes(loadings= as.matrix(a$group[,PCloading]),
+                    target = as.matrix(b$group[,PCloading]))
+    object$RMASCA$loading$group[,PCloading] <- c$procrust
+    object$RMASCA$score$group[,PCloading] <- as.matrix(object$RMASCA$score$group[,PCloading]) %*% solve(c$t1)
+  }
+ 
   return(object)
 }
 
