@@ -20,7 +20,7 @@ getLMECoefficients <- function(object){
         X <- model.matrix(lmer.model)
         baselineLabel <- paste0("time", unique(object$df$time)[1])
         X <- X[, substr(colnames(X),1,nchar(baselineLabel)) != baselineLabel]
-        newFormula <- as.character(form)
+        newFormula <- as.character(object$formula)
         newFormulaPred <- strsplit(as.character(newFormula[3]), "\\+")[[1]]
         newFormulaPred <- newFormulaPred[Reduce(cbind,lapply(newFormulaPred, function (x) grepl("\\(",x)))]
         newFormula <- paste(newFormula[2],"~","X +",newFormulaPred, collapse = " ")
