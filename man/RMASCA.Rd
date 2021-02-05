@@ -11,7 +11,7 @@ RMASCA(
   pAdjustMethod = NA,
   participantColumn = FALSE,
   validate = FALSE,
-  scale = TRUE,
+  scaleFun = TRUE,
   forceEqualBaseline = FALSE,
   minimizeObject = FALSE,
   nValFold = 7,
@@ -34,7 +34,7 @@ RMASCA(
 
 \item{validate}{Logical. If \code{TRUE}, give estimates for robustness}
 
-\item{scale}{If \code{TRUE} (default), each variable is scaled to unit SD and zero mean}
+\item{scaleFun}{If \code{TRUE} (default), each variable is scaled to unit SD and zero mean. If \code{FALSE}, no scaling is performed. You can also provide a custom scaling function that has the data frame \code{df} as input and output}
 
 \item{minimizeObject}{Logical. If \code{TRUE}, remove unnecessary clutter, optimize for validation}
 

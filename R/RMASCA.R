@@ -72,8 +72,8 @@ RMASCA <- function(df,
                    validationObject = validationObject,
                    validationParticipants = validationParticipants
     )
-    class(object) <- "RMASCA"
   }
+  class(object) <- "RMASCA"
 
   #start.time <- Sys.time()
   object <- sanitizeObject(object)
@@ -159,7 +159,6 @@ sanitizeObject <- function(object){
   if(is.function(object$scaleFun)){
     cat("Scaling data with custom function...\n")
     for(i in unique(object$df$variable)){
-      valColumn <- which(as.character(object$formula)[2] == colnames(object$df))
       object$df <- scaleFun(object$df)
     }
   }else if(object$scaleFun == TRUE){
@@ -190,6 +189,7 @@ sanitizeObject <- function(object){
 #' @return An RMASCA object
 removeEmbedded <- function(object){
   object$df <- NULL
+  object$dfRaw <- NULL
   object$validationObject <- NULL
   object$lmer.models <- NULL
   object$LMM.coefficients <- NULL

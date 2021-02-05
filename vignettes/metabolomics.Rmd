@@ -45,22 +45,26 @@ do.call(
   )
 ```
 
-So there is three time points, two groups and 16 variables. ??? state that <blockquote>All metabolite responses were log-transformed before analysis, and the effect matrix was mean-centered before PCA.</blockquote> But our data is already log-transformed, and centering is handled by RMASCA(). But we need to scale each metabolite with the standard deviation at baseline, as instructed by the authors. So let us set the desired reference groups and normalize:
+So there is three time points, two groups and 16 variables. @madssenRepeatedMeasuresASCA2020a state that <blockquote>All metabolite responses were log-transformed before analysis, and the effect matrix was mean-centered before PCA.</blockquote> But our data is already log-transformed, and centering is handled by \code{\link{RMASCA()}}. But we need to scale each metabolite with the standard deviation at baseline, as instructed by the authors. So let us set the desired reference groups and normalize:
 
 ```{r}
 df$group <- relevel(df$group, ref = "Chemotherapy only")
 df$time <- relevel(df$time, ref = "TP1")
 
-for(i in unique(df$variable)){
-  df$value[df$variable == i] <- df$value[df$variable == i]/sd(df$value[df$variable == i & df$time == "TP1"])
+scaleFun <- function(df){
+  for(i in unique(df$variable)){
+    df$value[df$variable == i] <- df$value[df$variable == i]/sd(df$value[df$variable == i & df$time == "TP1"])
+  }
+  return(df)
 }
+
 ```
 
 Without any fuss, let us see what RMASCA makes out of it using the same model as @madssenRepeatedMeasuresASCA2020a. Note that we have to `forceEqualBaseline` to remove the interaction term for TP1 * treatment.
 
 ```{r}
 form <- value ~ time + time:group + (1|ID)
-mod <- RMASCA(df, form, separateTimeAndGroup = FALSE, forceEqualBaseline = TRUE, scale = FALSE)
+mod <- RMASCA(df, form, separateTimeAndGroup = FALSE, forceEqualBaseline = TRUE, scaleFun = scaleFun)
 ```
 
 Let us check that our model is as expected:
@@ -84,7 +88,7 @@ And compare to the original plot:
 plot(flipIt(mod))
 ```
 
-Note that we used the flipIt() function to flip the loadings and scores to produce similar plots as in the original article.
+Note that we used the \code{\link{flipIt()}} function to flip the loadings and scores to produce similar plots as in the original article.
 
 ```{r}
 plot(mod, component = "PC2")
@@ -95,14 +99,21 @@ As we can see, it looks indeed as a very good match with the original findings.
 Let us validate our model (outside knitr, it uses about 2 seconds per run),
 
 ```{r, message=FALSE}
+mod$nValRuns = 50
 mod.val <- validate(mod, participantColumn = "ID")
 ```
 
-The result **Her blir det feil av en eller annen grunn...**:
+The result:
 
 ```{r}
 plot(mod.val)
 plot(mod.val, component = "PC2")
 ```
 
+Or if want to see the validation models instead of errorbars:
+
+```{r}
+plotVal(mod.val)
+plotVal(mod.val, component = "PC2")
+```
 ## References

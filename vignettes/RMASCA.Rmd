@@ -132,6 +132,10 @@ model.formula <- value ~ time*group + (1|partid)
 res.simple <- RMASCA(df = df, formula = model.formula)
 ```
 
+<div class="alert alert-info">
+  <strong>What does scaling mean?</strong> It is often necessary to rescale your data, and `RMASCA()` defaults to transforming each variable to z scores. You can turn this off by setting `scaleFun = FALSE`. You can also define your own scaling function, `foo <- function(df)` and provide it as an argument `scaleFun = foo`. You should *not* do such scaling beforehand (although simple log transformations are okay) since the validation involves selecting subsets from your data and the variables need to be scaled based on that subset to prevent data leak into you validation data sets.
+</div>
+
 To visualize the result, simply use `plot(res.simple)`;
 
 ```{r RMASCA_simple_model_plot_PC1}
@@ -281,7 +285,20 @@ plot(res.mod2)
 plot(res.mod2, component = "PC2")
 ```
 
-As you can see, it is quite similar to the previous model, but all the groups have the same value for time 1.
+As you can see, it is quite similar to the previous model. Why are they different at the first time point? Well, we can look at the model
+
+```{r RMASCA_model_2_summary}
+summary(res.mod2$lmer.models[[1]])
+```
+
+And you may notice that there is an interaction term between group and the first time point. To remove, we have to set `forceEqualBaseline = TRUE`:
+
+```{r RMASCA_model_2}
+model.formula <- value ~ time + time:group + (1|partid)
+res.mod2b <- RMASCA(df = df, formula = model.formula, forceEqualBaseline = TRUE)
+plot(res.mod2b)
+plot(res.mod2b, component = "PC2")
+```
 
 #### Interaction only with combined time and group effect
 

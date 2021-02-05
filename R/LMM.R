@@ -15,8 +15,7 @@ getLMECoefficients <- function(object){
   ccc <- 1
   #start.time <- Sys.time()
   object$lmer.models <- lapply(unique(object$df$variable), function(i){
-      lmer.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i), 
-                                   control = lme4::lmerControl(calc.derivs = FALSE))
+      lmer.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
       if(object$forceEqualBaseline){
         X <- model.matrix(lmer.model)
         baselineLabel <- paste0("time", unique(object$df$time)[1])
@@ -26,8 +25,7 @@ getLMECoefficients <- function(object){
         newFormulaPred <- newFormulaPred[Reduce(cbind,lapply(newFormulaPred, function (x) grepl("\\(",x)))]
         newFormula <- paste(newFormula[2],"~","X +",newFormulaPred, collapse = " ")
         object$newFormula <- formula(newFormula)
-        lmer.model <- lmerTest::lmer(object$newFormula, data = subset(object$df, variable == i), 
-                                     control = lme4::lmerControl(calc.derivs = FALSE))
+        lmer.model <- lmerTest::lmer(object$newFormula, data = subset(object$df, variable == i))
       }
       attr(lmer.model, "name") <- i
       lmer.model

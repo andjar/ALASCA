@@ -101,22 +101,26 @@
                       common.legend <span class="op">=</span> <span class="cn">TRUE</span>, legend <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
   <span class="op">)</span></code></pre></div>
 <p><img src="metabolomics_files/figure-html/unnamed-chunk-2-1.png" width="100%" style="display: block; margin: auto;"></p>
-So there is three time points, two groups and 16 variables. ??? state that
+So there is three time points, two groups and 16 variables. <span class="citation">Madssen et al. (2020)</span> state that
 <blockquote>
 All metabolite responses were log-transformed before analysis, and the effect matrix was mean-centered before PCA.
 </blockquote>
-<p>But our data is already log-transformed, and centering is handled by RMASCA(). But we need to scale each metabolite with the standard deviation at baseline, as instructed by the authors. So let us set the desired reference groups and normalize:</p>
+<p>But our data is already log-transformed, and centering is handled by . But we need to scale each metabolite with the standard deviation at baseline, as instructed by the authors. So let us set the desired reference groups and normalize:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df</span><span class="op">$</span><span class="va">group</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/relevel.html">relevel</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">group</span>, ref <span class="op">=</span> <span class="st">"Chemotherapy only"</span><span class="op">)</span>
 <span class="va">df</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/relevel.html">relevel</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">time</span>, ref <span class="op">=</span> <span class="st">"TP1"</span><span class="op">)</span>
 
-<span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">variable</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
-  <span class="va">df</span><span class="op">$</span><span class="va">value</span><span class="op">[</span><span class="va">df</span><span class="op">$</span><span class="va">variable</span> <span class="op">==</span> <span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">df</span><span class="op">$</span><span class="va">value</span><span class="op">[</span><span class="va">df</span><span class="op">$</span><span class="va">variable</span> <span class="op">==</span> <span class="va">i</span><span class="op">]</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">value</span><span class="op">[</span><span class="va">df</span><span class="op">$</span><span class="va">variable</span> <span class="op">==</span> <span class="va">i</span> <span class="op">&amp;</span> <span class="va">df</span><span class="op">$</span><span class="va">time</span> <span class="op">==</span> <span class="st">"TP1"</span><span class="op">]</span><span class="op">)</span>
+<span class="va">scaleFun</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">{</span>
+  <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">variable</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
+    <span class="va">df</span><span class="op">$</span><span class="va">value</span><span class="op">[</span><span class="va">df</span><span class="op">$</span><span class="va">variable</span> <span class="op">==</span> <span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">df</span><span class="op">$</span><span class="va">value</span><span class="op">[</span><span class="va">df</span><span class="op">$</span><span class="va">variable</span> <span class="op">==</span> <span class="va">i</span><span class="op">]</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">value</span><span class="op">[</span><span class="va">df</span><span class="op">$</span><span class="va">variable</span> <span class="op">==</span> <span class="va">i</span> <span class="op">&amp;</span> <span class="va">df</span><span class="op">$</span><span class="va">time</span> <span class="op">==</span> <span class="st">"TP1"</span><span class="op">]</span><span class="op">)</span>
+  <span class="op">}</span>
+  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 <p>Without any fuss, let us see what RMASCA makes out of it using the same model as <span class="citation">Madssen et al. (2020)</span>. Note that we have to <code>forceEqualBaseline</code> to remove the interaction term for TP1 * treatment.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">form</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">ID</span><span class="op">)</span>
-<span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RMASCA.html">RMASCA</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">form</span>, separateTimeAndGroup <span class="op">=</span> <span class="cn">FALSE</span>, forceEqualBaseline <span class="op">=</span> <span class="cn">TRUE</span>, scale <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+<span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RMASCA.html">RMASCA</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">form</span>, separateTimeAndGroup <span class="op">=</span> <span class="cn">FALSE</span>, forceEqualBaseline <span class="op">=</span> <span class="cn">TRUE</span>, scaleFun <span class="op">=</span> <span class="va">scaleFun</span><span class="op">)</span>
+<span class="co">#&gt; Scaling data with custom function...</span>
 <span class="co">#&gt; Calculating LMM coefficients...</span>
 <span class="co">#&gt; Registered S3 methods overwritten by 'lme4':</span>
 <span class="co">#&gt;   method                          from</span>
@@ -124,22 +128,6 @@ All metabolite responses were log-transformed before analysis, and the effect ma
 <span class="co">#&gt;   influence.merMod                car </span>
 <span class="co">#&gt;   dfbeta.influence.merMod         car </span>
 <span class="co">#&gt;   dfbetas.influence.merMod        car</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
@@ -166,7 +154,6 @@ All metabolite responses were log-transformed before analysis, and the effect ma
 <span class="co">#&gt; lmerModLmerTest]</span>
 <span class="co">#&gt; Formula: object$newFormula</span>
 <span class="co">#&gt;    Data: subset(object$df, variable == i)</span>
-<span class="co">#&gt; Control: lme4::lmerControl(calc.derivs = FALSE)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; REML criterion at convergence: 761.7</span>
 <span class="co">#&gt; </span>
@@ -213,134 +200,186 @@ All metabolite responses were log-transformed before analysis, and the effect ma
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/flipIt.html">flipIt</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p><img src="metabolomics_files/figure-html/unnamed-chunk-7-1.png" width="100%" style="display: block; margin: auto;"></p>
-<p>Note that we used the flipIt() function to flip the loadings and scores to produce similar plots as in the original article.</p>
+<p>Note that we used the  function to flip the loadings and scores to produce similar plots as in the original article.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">mod</span>, component <span class="op">=</span> <span class="st">"PC2"</span><span class="op">)</span></code></pre></div>
 <p><img src="metabolomics_files/figure-html/unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>As we can see, it looks indeed as a very good match with the original findings.</p>
 <p>Let us validate our model (outside knitr, it uses about 2 seconds per run),</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">mod.val</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">mod</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">mod</span><span class="op">$</span><span class="va">nValRuns</span> <span class="op">=</span> <span class="fl">50</span>
+<span class="va">mod.val</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">mod</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span><span class="op">)</span>
 <span class="co">#&gt; Running validation...</span>
 <span class="co">#&gt; - Run  1  of  50 </span>
-<span class="co">#&gt; --- Used  3.26  seconds. Est. time remaining:  159.77  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.79  seconds. Est. time remaining:  185.75  seconds </span>
 <span class="co">#&gt; - Run  2  of  50 </span>
-<span class="co">#&gt; --- Used  3.55  seconds. Est. time remaining:  163.48  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.57  seconds. Est. time remaining:  176.67  seconds </span>
 <span class="co">#&gt; - Run  3  of  50 </span>
-<span class="co">#&gt; --- Used  2.95  seconds. Est. time remaining:  152.89  seconds </span>
-<span class="co">#&gt; - Run  4  of  50</span>
-<span class="co">#&gt; Warning in GPForth(L, Tmat = Tmat, normalize = normalize, eps = eps, maxit =</span>
-<span class="co">#&gt; maxit, : convergence not obtained in GPForth. 1000 iterations used.</span>
-<span class="co">#&gt; --- Used  3.04  seconds. Est. time remaining:  147.23  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.44  seconds. Est. time remaining:  169.16  seconds </span>
+<span class="co">#&gt; - Run  4  of  50 </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.4  seconds. Est. time remaining:  163.28  seconds </span>
 <span class="co">#&gt; - Run  5  of  50 </span>
-<span class="co">#&gt; --- Used  2.92  seconds. Est. time remaining:  141.52  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.53  seconds. Est. time remaining:  159.58  seconds </span>
 <span class="co">#&gt; - Run  6  of  50 </span>
-<span class="co">#&gt; --- Used  3.03  seconds. Est. time remaining:  137.53  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.46  seconds. Est. time remaining:  155.41  seconds </span>
 <span class="co">#&gt; - Run  7  of  50 </span>
-<span class="co">#&gt; --- Used  2.94  seconds. Est. time remaining:  133.23  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.6  seconds. Est. time remaining:  152.32  seconds </span>
 <span class="co">#&gt; - Run  8  of  50 </span>
-<span class="co">#&gt; --- Used  2.98  seconds. Est. time remaining:  129.51  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.21  seconds. Est. time remaining:  147.02  seconds </span>
 <span class="co">#&gt; - Run  9  of  50 </span>
-<span class="co">#&gt; --- Used  3.04  seconds. Est. time remaining:  126.2  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.37  seconds. Est. time remaining:  142.94  seconds </span>
 <span class="co">#&gt; - Run  10  of  50 </span>
-<span class="co">#&gt; --- Used  2.96  seconds. Est. time remaining:  122.64  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.39  seconds. Est. time remaining:  139.05  seconds </span>
 <span class="co">#&gt; - Run  11  of  50 </span>
-<span class="co">#&gt; --- Used  2.9  seconds. Est. time remaining:  119  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.37  seconds. Est. time remaining:  135.19  seconds </span>
 <span class="co">#&gt; - Run  12  of  50 </span>
-<span class="co">#&gt; --- Used  2.95  seconds. Est. time remaining:  115.63  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.37  seconds. Est. time remaining:  131.4  seconds </span>
 <span class="co">#&gt; - Run  13  of  50 </span>
-<span class="co">#&gt; --- Used  3.08  seconds. Est. time remaining:  112.69  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.36  seconds. Est. time remaining:  127.67  seconds </span>
 <span class="co">#&gt; - Run  14  of  50 </span>
-<span class="co">#&gt; --- Used  3.2  seconds. Est. time remaining:  110.05  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.4  seconds. Est. time remaining:  124.1  seconds </span>
 <span class="co">#&gt; - Run  15  of  50 </span>
-<span class="co">#&gt; --- Used  3.41  seconds. Est. time remaining:  107.81  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.4  seconds. Est. time remaining:  120.54  seconds </span>
 <span class="co">#&gt; - Run  16  of  50 </span>
-<span class="co">#&gt; --- Used  3.1  seconds. Est. time remaining:  104.77  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.39  seconds. Est. time remaining:  116.99  seconds </span>
 <span class="co">#&gt; - Run  17  of  50 </span>
-<span class="co">#&gt; --- Used  2.98  seconds. Est. time remaining:  101.5  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.6  seconds. Est. time remaining:  113.86  seconds </span>
 <span class="co">#&gt; - Run  18  of  50 </span>
-<span class="co">#&gt; --- Used  3.07  seconds. Est. time remaining:  98.41  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.85  seconds. Est. time remaining:  111.13  seconds </span>
 <span class="co">#&gt; - Run  19  of  50 </span>
-<span class="co">#&gt; --- Used  3.07  seconds. Est. time remaining:  95.33  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.7  seconds. Est. time remaining:  108.03  seconds </span>
 <span class="co">#&gt; - Run  20  of  50 </span>
-<span class="co">#&gt; --- Used  2.97  seconds. Est. time remaining:  92.1  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  4.28  seconds. Est. time remaining:  105.74  seconds </span>
 <span class="co">#&gt; - Run  21  of  50 </span>
-<span class="co">#&gt; --- Used  2.98  seconds. Est. time remaining:  88.91  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  4.19  seconds. Est. time remaining:  103.13  seconds </span>
 <span class="co">#&gt; - Run  22  of  50 </span>
-<span class="co">#&gt; --- Used  2.94  seconds. Est. time remaining:  85.68  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  4.31  seconds. Est. time remaining:  100.53  seconds </span>
 <span class="co">#&gt; - Run  23  of  50 </span>
-<span class="co">#&gt; --- Used  3.08  seconds. Est. time remaining:  82.64  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.88  seconds. Est. time remaining:  97.29  seconds </span>
 <span class="co">#&gt; - Run  24  of  50 </span>
-<span class="co">#&gt; --- Used  2.97  seconds. Est. time remaining:  79.47  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.86  seconds. Est. time remaining:  93.96  seconds </span>
 <span class="co">#&gt; - Run  25  of  50 </span>
-<span class="co">#&gt; --- Used  2.96  seconds. Est. time remaining:  76.32  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.85  seconds. Est. time remaining:  90.58  seconds </span>
 <span class="co">#&gt; - Run  26  of  50 </span>
-<span class="co">#&gt; --- Used  3.17  seconds. Est. time remaining:  73.37  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.49  seconds. Est. time remaining:  86.84  seconds </span>
 <span class="co">#&gt; - Run  27  of  50 </span>
-<span class="co">#&gt; --- Used  2.93  seconds. Est. time remaining:  70.2  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.71  seconds. Est. time remaining:  83.3  seconds </span>
 <span class="co">#&gt; - Run  28  of  50 </span>
-<span class="co">#&gt; --- Used  2.94  seconds. Est. time remaining:  67.06  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  4.08  seconds. Est. time remaining:  80.04  seconds </span>
 <span class="co">#&gt; - Run  29  of  50 </span>
-<span class="co">#&gt; --- Used  2.87  seconds. Est. time remaining:  63.89  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.75  seconds. Est. time remaining:  76.48  seconds </span>
 <span class="co">#&gt; - Run  30  of  50 </span>
-<span class="co">#&gt; --- Used  2.98  seconds. Est. time remaining:  60.8  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.65  seconds. Est. time remaining:  72.84  seconds </span>
 <span class="co">#&gt; - Run  31  of  50 </span>
-<span class="co">#&gt; --- Used  2.96  seconds. Est. time remaining:  57.71  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.59  seconds. Est. time remaining:  69.17  seconds </span>
 <span class="co">#&gt; - Run  32  of  50 </span>
-<span class="co">#&gt; --- Used  2.95  seconds. Est. time remaining:  54.63  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.95  seconds. Est. time remaining:  65.7  seconds </span>
 <span class="co">#&gt; - Run  33  of  50 </span>
-<span class="co">#&gt; --- Used  3.13  seconds. Est. time remaining:  51.64  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.66  seconds. Est. time remaining:  62.06  seconds </span>
 <span class="co">#&gt; - Run  34  of  50 </span>
-<span class="co">#&gt; --- Used  3  seconds. Est. time remaining:  48.58  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.66  seconds. Est. time remaining:  58.41  seconds </span>
 <span class="co">#&gt; - Run  35  of  50 </span>
-<span class="co">#&gt; --- Used  3.1  seconds. Est. time remaining:  45.58  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.68  seconds. Est. time remaining:  54.77  seconds </span>
 <span class="co">#&gt; - Run  36  of  50 </span>
-<span class="co">#&gt; --- Used  2.93  seconds. Est. time remaining:  42.5  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.8  seconds. Est. time remaining:  51.18  seconds </span>
 <span class="co">#&gt; - Run  37  of  50 </span>
-<span class="co">#&gt; --- Used  3.01  seconds. Est. time remaining:  39.45  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  4.05  seconds. Est. time remaining:  47.66  seconds </span>
 <span class="co">#&gt; - Run  38  of  50 </span>
-<span class="co">#&gt; --- Used  3.25  seconds. Est. time remaining:  36.48  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  4.1  seconds. Est. time remaining:  44.13  seconds </span>
 <span class="co">#&gt; - Run  39  of  50 </span>
-<span class="co">#&gt; --- Used  3  seconds. Est. time remaining:  33.43  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.7  seconds. Est. time remaining:  40.46  seconds </span>
 <span class="co">#&gt; - Run  40  of  50 </span>
-<span class="co">#&gt; --- Used  2.94  seconds. Est. time remaining:  30.37  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.6  seconds. Est. time remaining:  36.76  seconds </span>
 <span class="co">#&gt; - Run  41  of  50 </span>
-<span class="co">#&gt; --- Used  3.18  seconds. Est. time remaining:  27.36  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.59  seconds. Est. time remaining:  33.06  seconds </span>
 <span class="co">#&gt; - Run  42  of  50 </span>
-<span class="co">#&gt; --- Used  2.97  seconds. Est. time remaining:  24.31  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.45  seconds. Est. time remaining:  29.35  seconds </span>
 <span class="co">#&gt; - Run  43  of  50 </span>
-<span class="co">#&gt; --- Used  3.03  seconds. Est. time remaining:  21.27  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.46  seconds. Est. time remaining:  25.64  seconds </span>
 <span class="co">#&gt; - Run  44  of  50 </span>
-<span class="co">#&gt; --- Used  2.95  seconds. Est. time remaining:  18.22  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.52  seconds. Est. time remaining:  21.96  seconds </span>
 <span class="co">#&gt; - Run  45  of  50 </span>
-<span class="co">#&gt; --- Used  3.02  seconds. Est. time remaining:  15.18  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.53  seconds. Est. time remaining:  18.29  seconds </span>
 <span class="co">#&gt; - Run  46  of  50 </span>
-<span class="co">#&gt; --- Used  3.15  seconds. Est. time remaining:  12.15  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.49  seconds. Est. time remaining:  14.62  seconds </span>
 <span class="co">#&gt; - Run  47  of  50 </span>
-<span class="co">#&gt; --- Used  3.09  seconds. Est. time remaining:  9.12  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.68  seconds. Est. time remaining:  10.96  seconds </span>
 <span class="co">#&gt; - Run  48  of  50 </span>
-<span class="co">#&gt; --- Used  3  seconds. Est. time remaining:  6.08  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.64  seconds. Est. time remaining:  7.31  seconds </span>
 <span class="co">#&gt; - Run  49  of  50 </span>
-<span class="co">#&gt; --- Used  3  seconds. Est. time remaining:  3.04  seconds </span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.55  seconds. Est. time remaining:  3.65  seconds </span>
 <span class="co">#&gt; - Run  50  of  50 </span>
-<span class="co">#&gt; --- Used  3.1  seconds. Est. time remaining:  0  seconds</span></code></pre></div>
-<p>The result <strong>Her blir det feil av en eller annen grunn…</strong>:</p>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; --- Used  3.61  seconds. Est. time remaining:  0  seconds</span></code></pre></div>
+<p>The result:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">mod.val</span><span class="op">)</span></code></pre></div>
 <p><img src="metabolomics_files/figure-html/unnamed-chunk-10-1.png" width="100%" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">mod.val</span>, component <span class="op">=</span> <span class="st">"PC2"</span><span class="op">)</span></code></pre></div>
 <p><img src="metabolomics_files/figure-html/unnamed-chunk-10-2.png" width="100%" style="display: block; margin: auto;"></p>
-<div id="references" class="section level2 unnumbered">
-<h2 class="hasAnchor">
-<a href="#references" class="anchor"></a>References</h2>
+<p>Or if want to see the validation models instead of errorbars:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotVal.html">plotVal</a></span><span class="op">(</span><span class="va">mod.val</span><span class="op">)</span></code></pre></div>
+<p><img src="metabolomics_files/figure-html/unnamed-chunk-11-1.png" width="100%" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotVal.html">plotVal</a></span><span class="op">(</span><span class="va">mod.val</span>, component <span class="op">=</span> <span class="st">"PC2"</span><span class="op">)</span></code></pre></div>
+<p><img src="metabolomics_files/figure-html/unnamed-chunk-11-2.png" width="100%" style="display: block; margin: auto;"> ## References</p>
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-eucedaEvaluationMetabolomicChanges2017" class="csl-entry">
 Euceda, Leslie R., Tonje H. Haukaas, Guro F. Giskeødegård, Riyas Vettukattil, Jasper Engel, Laxmi Silwal-Pandit, Steinar Lundgren, et al. 2017. <span>“Evaluation of Metabolomic Changes During Neoadjuvant Chemotherapy Combined with Bevacizumab in Breast Cancer Using <span>MR</span> Spectroscopy.”</span> <em>Metabolomics</em> 13 (4): 37. <a href="https://doi.org/10.1007/s11306-017-1168-0">https://doi.org/10.1007/s11306-017-1168-0</a>.
 </div>
 <div id="ref-madssenRepeatedMeasuresASCA2020a" class="csl-entry">
 Madssen, Torfinn S., Guro F. Giskeødegård, Age K. Smilde, and Johan A. Westerhuis. 2020. <span>“Repeated Measures <span>ASCA</span>+ for Analysis of Longitudinal Intervention Studies with Multivariate Outcome Data.”</span> <em>medRxiv</em>, December, 2020.12.03.20243097. <a href="https://doi.org/10.1101/2020.12.03.20243097">https://doi.org/10.1101/2020.12.03.20243097</a>.
-</div>
 </div>
 </div>
 </div>

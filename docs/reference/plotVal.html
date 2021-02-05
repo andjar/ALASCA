@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Get an RMASCA object — RMASCA • RMASCA</title>
+<title>Plot validations models — plotVal • RMASCA</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Get an RMASCA object — RMASCA" />
-<meta property="og:description" content="RMASCA initializes an RMASCA model and returns an RMASCA object" />
+<meta property="og:title" content="Plot validations models — plotVal" />
+<meta property="og:description" content="This function returns a plot of the validation models" />
 
 
 
@@ -121,105 +121,30 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Get an RMASCA object</h1>
+    <h1>Plot validations models</h1>
     
-    <div class="hidden name"><code>RMASCA.Rd</code></div>
+    <div class="hidden name"><code>plotVal.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p><code>RMASCA</code> initializes an RMASCA model and returns an RMASCA object</p>
+    <p>This function returns a plot of the validation models</p>
     </div>
 
-    <pre class="usage"><span class='fu'>RMASCA</span><span class='op'>(</span>
-  <span class='va'>df</span>,
-  <span class='va'>formula</span>,
-  separateTimeAndGroup <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  pAdjustMethod <span class='op'>=</span> <span class='cn'>NA</span>,
-  participantColumn <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  validate <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  scaleFun <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  forceEqualBaseline <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  minimizeObject <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  nValFold <span class='op'>=</span> <span class='fl'>7</span>,
-  nValRuns <span class='op'>=</span> <span class='fl'>50</span>,
-  validationMethod <span class='op'>=</span> <span class='st'>"loo"</span>,
-  validationObject <span class='op'>=</span> <span class='cn'>NA</span>,
-  validationParticipants <span class='op'>=</span> <span class='cn'>NA</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>plotVal</span><span class='op'>(</span><span class='va'>object</span>, component <span class='op'>=</span> <span class='st'>"PC1"</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>df</th>
-      <td><p>Data frame to be analyzed</p></td>
-    </tr>
-    <tr>
-      <th>formula</th>
-      <td><p>Regression model</p></td>
-    </tr>
-    <tr>
-      <th>separateTimeAndGroup</th>
-      <td><p>Logical: should time and group effect be separated?</p></td>
-    </tr>
-    <tr>
-      <th>pAdjustMethod</th>
-      <td><p>Method for correcting p values for multiple testing, see p.adjust.methods</p></td>
-    </tr>
-    <tr>
-      <th>participantColumn</th>
-      <td><p>String. Name of the column containing participant identification</p></td>
-    </tr>
-    <tr>
-      <th>validate</th>
-      <td><p>Logical. If <code>TRUE</code>, give estimates for robustness</p></td>
-    </tr>
-    <tr>
-      <th>scaleFun</th>
-      <td><p>If <code>TRUE</code> (default), each variable is scaled to unit SD and zero mean. If <code>FALSE</code>, no scaling is performed. You can also provide a custom scaling function that has the data frame <code>df</code> as input and output</p></td>
-    </tr>
-    <tr>
-      <th>minimizeObject</th>
-      <td><p>Logical. If <code>TRUE</code>, remove unnecessary clutter, optimize for validation</p></td>
-    </tr>
-    <tr>
-      <th>nValFold</th>
-      <td><p>Partitions when validating</p></td>
-    </tr>
-    <tr>
-      <th>nValRuns</th>
-      <td><p>number of validation runs</p></td>
-    </tr>
-    <tr>
-      <th>validationMethod</th>
-      <td><p>among  <code>loo</code> (leave-one-out, default)</p></td>
-    </tr>
-    <tr>
-      <th>validationObject</th>
-      <td><p>Don't worry about me:)</p></td>
-    </tr>
-    <tr>
-      <th>validationParticipants</th>
-      <td><p>Don't worry about me:)</p></td>
+      <th>object</th>
+      <td><p>A validated RMASCA object</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An RMASCA object</p>
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+    <p>A list with ggplot2 objects.</p>
 
-    <p>This function builds your RMASCA model. It needs a data frame containing at least a column identifying participants, a column called <code>time</code> contining time information, a column <code>group</code> containing group information, a column <code>variable</code> containing variable names, and a value column. In addition you need to specify the model you want, and whether you want to separate group and time effects (defaults to <code>TRUE</code>).</p>
-
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/load.html'>load</a></span><span class='op'>(</span><span class='st'>"PE.Rdata"</span><span class='op'>)</span>
-<span class='va'>model</span> <span class='op'>&lt;-</span> <span class='fu'>RMASCA</span><span class='op'>(</span>df <span class='op'>=</span> <span class='va'>df</span>, formula <span class='op'>=</span> <span class='va'>value</span><span class='op'>~</span><span class='va'>time</span><span class='op'>*</span><span class='va'>group</span> <span class='op'>+</span> <span class='op'>(</span><span class='fl'>1</span><span class='op'>|</span><span class='va'>ID</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; Scaling data...
-#&gt; Calculating LMM coefficients...
-#&gt; Finished calculating LMM coefficients!
-#&gt; Calculating effect matrix
-#&gt; Finished calculating effect matrix!</div><div class='input'>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

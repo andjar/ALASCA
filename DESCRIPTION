@@ -18,7 +18,6 @@ Imports:
 	ggpubr,
 	lme4,
 	lmerTest,
-	GPArotation,
 	reshape2,
 	ggrepel
 Suggests: 
