@@ -399,7 +399,7 @@ plotPred <- function(object, variable = NA){
 #' This function returns a plot of the validation models
 #'
 #' @param object A validated RMASCA object
-#' @param component
+#' @param component Which component to plot (default: "PC1")
 #' @return A list with ggplot2 objects.
 #' 
 #' @export
@@ -408,6 +408,8 @@ plotVal <- function(object, component = "PC1"){
     stop("You must validate the model first.")
   }
   if(object$separateTimeAndGroup){
+    # Score plots
+    ## Time
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
       data.frame(
         getScores(object$validation$temp_objects[[x]])$time,
@@ -419,6 +421,7 @@ plotVal <- function(object, component = "PC1"){
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2)
       ggplot2::labs(x = "Time")
     
+    ## Group
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
       data.frame(
         getScores(object$validation$temp_objects[[x]])$group,
@@ -434,6 +437,7 @@ plotVal <- function(object, component = "PC1"){
       ggplot2::labs(x = "Time")
     g <- list(gt, gg)
   }else{
+    # Score plot
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
       data.frame(
         getScores(object$validation$temp_objects[[x]])$time,
