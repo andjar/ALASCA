@@ -1,5 +1,7 @@
 ---
 title: "Early Preeclampsia"
+author: "Anders H. Jarmund"
+date: "`r Sys.Date()`"
 bibliography: rmasca.bib
 output: rmarkdown::html_vignette
 vignette: >
@@ -28,6 +30,8 @@ somaids <- read.csv(file = "somaids.csv", header = TRUE, sep = ";")
 ```{r setup}
 library(RMASCA)
 ```
+
+This is an example of RMASCA applied on **observational data**. If you are more interested in **interventional data**, have a look at [the metabolomics vignette](metabolomics.html). If you want an introduction to RMASCA, have a look at [Get Started](RMASCA.html).
 
 ## Preparing the data
 
@@ -181,7 +185,6 @@ Let us add some uncertainty estimates to our model. This may take some time, but
 PE.mod <- validate(PE.mod, participantColumn = "ID")
 plot(PE.mod, tooDense = 5)
 plot(PE.mod, component = "PC2", tooDense = 5)
-#plot(PE.mod, component = "PC3") # At the moment, we are only calculating uncertainty for component 1 and 2
 ```
 
 # References

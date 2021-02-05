@@ -36,6 +36,8 @@ RMASCA(
 
 \item{scaleFun}{If \code{TRUE} (default), each variable is scaled to unit SD and zero mean. If \code{FALSE}, no scaling is performed. You can also provide a custom scaling function that has the data frame \code{df} as input and output}
 
+\item{forceEqualBaseline}{Set to \code{TRUE} to remove interaction between group and first time point (defaults to \code{FALSE})}
+
 \item{minimizeObject}{Logical. If \code{TRUE}, remove unnecessary clutter, optimize for validation}
 
 \item{nValFold}{Partitions when validating}
@@ -47,6 +49,8 @@ RMASCA(
 \item{validationObject}{Don't worry about me:)}
 
 \item{validationParticipants}{Don't worry about me:)}
+
+\item{useSumCoding}{Set to \code{TRUE} to use sum coding instead of contrast coding for group (defaults to \code{FALSE})}
 }
 \value{
 An RMASCA object

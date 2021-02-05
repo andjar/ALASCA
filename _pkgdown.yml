@@ -23,6 +23,7 @@ reference:
   - screeplot.RMASCA
   - plotParts
   - plotPred
+  - plotVal
 - title: "Diagnostics"
   desc: "Functions for checking statistical validity"
 - contents: 

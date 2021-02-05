@@ -1,5 +1,8 @@
 ---
 title: "Get Started"
+author: "Anders H. Jarmund"
+date: "`r Sys.Date()`"
+bibliography: rmasca.bib
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Get Started}
@@ -22,41 +25,97 @@ knitr::opts_chunk$set(
 
 # Introduction to RM-ASCA+
 
+<script src="js/hideOutput.js"></script>
+<style>
+.showopt {
+  background-color: #004c93;
+  color: #FFFFFF; 
+  width: 150px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle !important;
+  float: left;
+  font-family: sans-serif;
+  border-radius: 8px;
+}
+
+.showopt:hover {
+    background-color: #dfe4f2;
+    color: #004c93;
+}
+
+.showopttext::before{
+  content: "Show/Hide Source"
+}
+
+pre.plot {
+  background-color: white !important;
+}
+</style>
+
 ```{r setup}
 library(RMASCA)
 library(ggplot2)
 ```
 
+This vignette demonstrates the basic functionality of the [RMASCA package](https://andjar.github.io/RMASCA). For more detailed case studies, see
+
+* For analysis of **interventional**, see [the vignette on metabolomics](metabolomics.html)
+* For analysis of **observational** data, see [the vignette on early preeclampsia](pregnancy.html)
+
+In general, you need to start by deciding what kind of model you want to set up. RMSCA builds on linear mixed models, and you are required to have at least one random intercept (usually participant). You need to decide if you want to separate time and group effects (`separateTimeAndGroup = TRUE/FALSE`) and, if you are working with interventional data, whether you want a common baseline between groups (`forceEqualBaseline = TRUE`).
+
+Next, you need to think through whether you want to scale your data. If not, use `scaleFun = FALSE`, but default is `scaleFun = TRUE` corresponding to z score transformation. Often you want to use a custom scaling function, for example mean centering but dividing by the standard deviation at baseline. The custom scaling function, eg. `foo(df)` should have your data frame as both input and output and be provided to RMASCA() (`scaleFun = foo`). You should *not* do the scaling yourself as this can result in information leak during validation, which should be avoided.
+
+<div class="alert alert-info">
+<strong>How do I know what scaling to use?</strong> There is no straight answer, but have a look at @timmermanScalingANOVAsimultaneousComponent2015.
+</div>
+
+Your data should be organized in a long-format data frame where
+
+* one column contains participant IDs, and the column should be specified with `participantColumn` (eg. `participantColumn = "ID"`)
+* one column is called `time` and contains categorical time points
+* one column is called `group` and contains group belonging
+* one column is called `variable` and contains the named of the measured variable
+* one column contains measured values. The name of this column is automatically extracted from the model you set up.
+
+<div class="alert alert-info">
+<strong>What does long format mean?</strong> Sometimes we talk about *long* vs *wide* format. In *wide* format, each measured variable would have its own column, eg. BMI, glucose, age etc. but in *long* format, we have a single column for variable name and a single column for the corresponding values. To convert between them, have a look at the `melt()` (wide -> long) and `reshape2::dcast()` (long -> wide) functions.
+</div>
+
+You can, of course, have more columns. In the following is some key concepts demonstrated. You may also want have a look at @madssenRepeatedMeasuresASCA2020a.
+
 ## Creating a dummy data set
 
 Let us start out by creating some dummy data for us to work with. In this example we have 600 participants measured four different times. The participants belonged to three different groups -- for example control group, chocolate diet and salad diet -- and we measured ten variables each time.
 
+<div class="fold s">
 ```{r dummy_data_configuration}
 nPart <- 600
 nGroups <- c("Controls", "Chocolate", "Salad")
 nTime <- c(1, 2, 3, 4)
 variables <- c("BMI", "Glucose", "VLDL", "LDL", "HDL", "ferritin", "CRP", "Happiness", "Anger", "Age")
 ```
+</div>
 
 The `RMASCA()` function expects a data frame in long format that contains at least one column for time (called `time`), one for group (called `group`) and one for variables (called `variable`).
 
+<div class="fold s">
 ```{r dummy_data}
-df <- data.frame(
-  partid = c(1:nPart),
-  group = nGroups[sample(c(1:length(unique(nGroups))), nPart, replace = TRUE)]
-)
-df$time <- nTime[1]
-df_temp_temp <- df
-for(i in nTime[2:length(nTime)]){
-  df_temp <- df_temp_temp
-  df_temp$time <- i
-  df <- rbind(df, df_temp)
-}
+gr <- nGroups[sample(c(1:length(unique(nGroups))), nPart, replace = TRUE)]
+df <- Reduce(rbind, lapply(nTime, function(x){
+  data.frame(
+    partid = c(1:nPart),
+    group = gr,
+    time = rep(x, nPart)
+  )
+}))
 for(i in 1:length(variables)){
   df[,3+i] <- rnorm(nrow(df), mean = 10, sd = 3)
 }
 colnames(df) <- c("partid", "group", "time", variables)
 ```
+</div>
 
 Random data aren't very interesting, so let us add some trends.
 
@@ -68,8 +127,9 @@ Random data aren't very interesting, so let us add some trends.
   * Decreasing BMI and glucose
   * Initially increased anger and decreased happiness, but only at time 2 and 3 before they get used to it and start to enjoy their new life
 
-The age and HDL, however, increases for all groups, and the other variables are unaffected and vary at random.
+The age, however, increases for all groups, and HDL is in this case a function of age, and the other variables are unaffected and vary at random.
 
+<div class="fold s">
 ```{r dummy_data_trends}
 df$Anger[df$group == "Chocolate" & df$time == 2] <- df$Anger[df$group == "Chocolate" & df$time == 1]/2
 df$Anger[df$group == "Chocolate" & df$time == 3] <- df$Anger[df$group == "Chocolate" & df$time == 1]/1.5
@@ -85,12 +145,14 @@ df$Happiness[df$group == "Salad" & df$time == 3] <- df$Happiness[df$group == "Sa
 df$BMI[df$group == "Salad"] <- df$BMI[df$group == "Salad"]/df$time[df$group == "Salad"]
 df$Glucose[df$group == "Salad"] <- df$Glucose[df$group == "Salad"]/df$time[df$group == "Salad"]
 
-df$Age <- df$Age*df$time
-df$HDL <- df$HDL*df$time
+df$Age <- df$Age+df$time
+df$HDL <- df$Age*1.2
 ```
+</div>
 
 And we need to define the control group and transform it to the long format. And since they are "real" people, we will give them individual baselines so that we need to use linear mixed models with participant as random intercepts.
 
+<div class="fold s">
 ```{r data_dummy_melt}
 df$group <- factor(df$group)
 df$group <- relevel(df$group, ref = "Controls")
@@ -101,20 +163,23 @@ for(i in unique(df$variables)){
   }
 }
 ```
+</div>
 
 Let us see how it looks at group level
 
+<div class="fold s">
 ```{r data_dummy_plot}
-ggplot(data = df,
-                aes(x = factor(time), y = value, color = group)) +
+ggplot(data = df, aes(x = factor(time), y = value, color = group)) +
   geom_boxplot() +
   facet_wrap(~variable, scales = "free_y") +
   theme(legend.position = "bottom") +
   labs(x = "Time", y = "Value", color = "Group")
 ```
+</div>
 
-And we can have a look at the participants using the plotParts() function,
+And we can have a look at the participants using the `plotParts()` function,
 
+<div class="fold s">
 ```{r data_dummy_plot_2}
 do.call(
   ggpubr::ggarrange,
@@ -122,6 +187,7 @@ do.call(
                       common.legend = TRUE, legend = "bottom")
   )
 ```
+</div>
 
 ## Using RM-ASCA+
 
@@ -133,7 +199,11 @@ res.simple <- RMASCA(df = df, formula = model.formula)
 ```
 
 <div class="alert alert-info">
-  <strong>What does scaling mean?</strong> It is often necessary to rescale your data, and `RMASCA()` defaults to transforming each variable to z scores. You can turn this off by setting `scaleFun = FALSE`. You can also define your own scaling function, `foo <- function(df)` and provide it as an argument `scaleFun = foo`. You should *not* do such scaling beforehand (although simple log transformations are okay) since the validation involves selecting subsets from your data and the variables need to be scaled based on that subset to prevent data leak into you validation data sets.
+<strong>What does "Scaling data" mean?</strong> It is often necessary to rescale your data, and `RMASCA()` defaults to transforming each variable to z scores. You can turn this off by setting `scaleFun = FALSE`. You can also define your own scaling function, `foo <- function(df)` and provide it as an argument `scaleFun = foo`. You should *not* do such scaling beforehand (although simple log transformations are okay) since the validation involves selecting subsets from your data and the variables need to be scaled based on that subset to prevent data leak into you validation data sets.
+</div>
+
+<div class="alert alert-info">
+<strong>What is meant by formula?</strong> RMASCA builds on linear mixed models, and you need to specify a regression model that includes at least one random intercept. In R, a regression formula typically looks like `y ~ x1 + x2` that will result in an intercept and a beta coefficient for `x1` and `x2`. For `RMASCA()`, you will often use a formula like `value ~ time*group + (1|participantID)`. Here, `participantID` represents the random intercept, whereas `time*group` is shorthand for `time + group + time:group` -- that is, main effects for time and group, and their interaction (`time:group`). You can also specify *only* time and interaction if you think that there are no main group effect by using `value ~ time + time:group + (1|participantID)`. Note, however, that there is an interaction term between group and first time point that you can remove by specifying `forceEqualBaseline = TRUE`. Various models are demonstrated below and in the case studies for [metabolomics](metabolomics.html) and [preeclampsia](pregnancy.html).
 </div>
 
 To visualize the result, simply use `plot(res.simple)`;
@@ -148,7 +218,7 @@ Let us interpret the figure from top left:
 * Bottom left: Relative to the control group, the chocolate group increases in some variable and the salad group decreases
 * Bottom right: The variables that increase for the chocolate group (and decreases for the salad group) are mainly BMI and glucose
 
-However, that is only the first component. In this case, that variable alone explains most of the variation in the data (>99%) **NB: Må sjekke om forklart varians har blitt riktig**. Let us plot the second component too:
+However, that is only the first component. In this case, that variable alone explains most of the variation in the data (>99%). Let us plot the second component too:
 
 ```{r RMASCA_simple_model_plot_PC2}
 plot(res.simple, component = "PC2")
@@ -158,6 +228,7 @@ The interpretation is similar to the one above. We are most interested in the bo
 
 We can explore this by visualizing predictions on group level from the underlying linear mixed models. For example
 
+<div class="fold s">
 ```{r RMASCA_simple_model_plotPred}
 do.call(
   ggpubr::ggarrange,
@@ -165,6 +236,11 @@ do.call(
                       common.legend = TRUE, legend = "bottom")
   )
 ```
+</div>
+
+<div class="alert alert-info">
+<strong>Why is the y axis so strange?</strong> Because the linear mixed models are built on *scaled* data.
+</div>
 
 #### Scree plots
 
@@ -180,6 +256,7 @@ And it seems that we should use PC1 for the time effect, but probably both PC1 a
 
 Often, we want some more control over the plots. Luckily, we can easily get the necessary data using `getLoadings()` and `getScores()`. For example
 
+<div class="fold s">
 ```{r RMASCA_custom_plot}
 scores <- getScores(res.simple)
 loadings <- getLoadings(res.simple)
@@ -237,9 +314,11 @@ ggpubr::ggarrange(
   nrow = 2
 )
 ```
+</div>
 
 Note that we can also call the various parts of the plot directly, and apply styles as we wish, for example
 
+<div class="fold s">
 ```{r RMASCA_custom_plot_2}
 ggpubr::ggarrange(
   ggpubr::ggarrange(plot(res.simple, effect = "time", only = "score") + theme_bw(), 
@@ -257,6 +336,7 @@ ggpubr::ggarrange(
   nrow = 2
 )
 ```
+</div>
 
 ### Robustness testing
 
@@ -271,6 +351,10 @@ plot(res.simple)
 
 plot(res.simple, component = "PC2")
 ```
+
+<div class="alert alert-info">
+<strong>Why no p value?</strong> At the moment, `RMASCA()` does not feature p values, in part because the interpretation might not be straight forward. Instead, we perform **robustness testing**. This is implemented with jack-knifing: divide your participants into *k* groups, and select *k-1* of them. As a default, the participants are stratified by group so that the group proportions are kept constant. You can provide custom stratification groups by specifying a column name, eg. stratGroup, with `stratificationGroup = stratGroup` (Not yet implemented). Nest, we repeat the RMASCA analysis on this subgroup. After repeating this, we collect 2.5 and 97.5 percentiles of scores and loadings to see how stable they are when the underlying data is modified a bit.
+</div>
 
 ### Alternative models
 
@@ -291,35 +375,48 @@ As you can see, it is quite similar to the previous model. Why are they differen
 summary(res.mod2$lmer.models[[1]])
 ```
 
-And you may notice that there is an interaction term between group and the first time point. To remove, we have to set `forceEqualBaseline = TRUE`:
+And you may notice that there is an interaction term between group and the first time point. To remove it, we have to set `forceEqualBaseline = TRUE`:
 
-```{r RMASCA_model_2}
+```{r RMASCA_model_2b}
 model.formula <- value ~ time + time:group + (1|partid)
 res.mod2b <- RMASCA(df = df, formula = model.formula, forceEqualBaseline = TRUE)
 plot(res.mod2b)
 plot(res.mod2b, component = "PC2")
 ```
 
-#### Interaction only with combined time and group effect
+#### Combined time and group effects
 
 Sometimes it doesn't make sense to use a reference group -- for example if we didn't have any controls and the first group had a salt-free diet. We can then use a single PCA instead of separating time and group effects:
 
 ```{r RMASCA_model_3}
-model.formula <- value ~ time + time:group + (1|partid)
+model.formula <- value ~ time*group + (1|partid)
 res.mod3 <- RMASCA(df = df, formula = model.formula, separateTimeAndGroup = FALSE)
 plot(res.mod3)
 plot(res.mod3, component = "PC2")
+```
+
+
+#### Sum coding
+
+When we don't have any reference group, it may also make sense to use sum coding instead of ordinary contrast coding:
+
+```{r RMASCA_model_3s}
+model.formula <- value ~ time*group + (1|partid)
+res.mods <- RMASCA(df = df, formula = model.formula, separateTimeAndGroup = FALSE, useSumCoding = TRUE)
+plot(res.mods)
+plot(res.mods, component = "PC2")
 ```
 
 #### Covariates
 
 This time we want to adjust for age and not include it in the ASCA itself;
 
+<div class="fold s">
 ```{r RMASCA_model_4}
 age <- subset(df, variable == "Age")$value
 df <- subset(df, variable != "Age")
 df$age <- age
-model.formula <- value ~ time + time:group + age + (1|partid)
+model.formula <- value ~ time*group + age + (1|partid)
 res.mod4 <- RMASCA(df = df, formula = model.formula)
 plot(res.mod4)
 plot(res.mod4, component = "PC2")
@@ -330,14 +427,15 @@ do.call(
                       common.legend = TRUE, legend = "bottom")
   )
 ```
+</div>
 
-We can see that the linear increase in age is no longer part of the output.
+We can see that age is no longer part of the output, and HDL (which was correlated with age) has no longer a strong loading.
 
 ## Diagnostics
 
 ### Normal distribution of residuals
 
-RM-ASCA+ is built on Linear Mixed Models, and one should check that the residuals approach normal distribution. With `RMASCA`, the LMM objects can be found as
+RM-ASCA+ is built on linear mixed models, and one should check that the residuals approach normal distribution. With `RMASCA()`, the LMM objects can be found as
 
 ```{r lmm_info}
 summary(res.simple$lmer.models[[1]])
@@ -352,10 +450,16 @@ qqnorm(residuals(res.simple, variable = "BMI")[[1]], main = "BMI")
 qqline(residuals(res.simple, variable = "BMI")[[1]])
 ```
 
+<div class="alert alert-info">
+<strong>Why do I need to write `[[1]]` after `residuals.RMASCA()`?</strong> Because a *list* is returned, even though you only specify a single variable, and you have to look at the first item in the list. If you specify several variables, say `variable = c("BMI", "glucose", "Age")`, you must specify if you want to look at BMI (`[[1]]`), glucose (`[[2]]`) or age (`[[3]]`).
+</div>
+
 ### P values
 
-As you saw above, we can use the `summary` function to view the p values from your LMMs, but a shortcut is
+As you probably noticed above, you can use the `summary()` function to view the p values from your LMMs, but a shortcut is
 
 ```{r lmm_pvalues}
 head(res.simple$LMM.coefficient)
 ```
+
+## References

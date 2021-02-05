@@ -8,6 +8,8 @@ plotVal(object, component = "PC1")
 }
 \arguments{
 \item{object}{A validated RMASCA object}
+
+\item{component}{Which component to plot (default: "PC1")}
 }
 \value{
 A list with ggplot2 objects.

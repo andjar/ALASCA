@@ -1,5 +1,7 @@
 ---
 title: "Metabolomics"
+author: "Anders H. Jarmund"
+date: "`r Sys.Date()`"
 bibliography: rmasca.bib
 output: rmarkdown::html_vignette
 vignette: >
@@ -32,20 +34,24 @@ df <- subset(df, !is.na(df$ID))
 # Metabolomics
 
 ```{r setup}
+library("ggplot2")
+library("ggpubr")
 library(RMASCA)
 ```
 
-This time we will look at a small metabolomics dataset by @eucedaEvaluationMetabolomicChanges2017 and replicate the findings of @madssenRepeatedMeasuresASCA2020a. Let us start by having a quick look at it:
+This time we will look at a small metabolomics dataset by @eucedaEvaluationMetabolomicChanges2017 and replicate the findings of @madssenRepeatedMeasuresASCA2020a. Note that this is an example of RMASCA applied on **intervention data**. If you are more interested in **observational data**, have a look at [the preeclampsia vignette](pregnancy.html). If you want an introduction to RMASCA, have a look at [Get Started](RMASCA.html).
+
+Let us start by having a quick look at it:
 
 ```{r}
 do.call(
-  ggpubr::ggarrange,
+  ggarrange,
   c(plotParts(df, participantColumn = "ID", valueColumn = "value", addSmooth = NA), 
                       common.legend = TRUE, legend = "bottom")
   )
 ```
 
-So there is three time points, two groups and 16 variables. @madssenRepeatedMeasuresASCA2020a state that <blockquote>All metabolite responses were log-transformed before analysis, and the effect matrix was mean-centered before PCA.</blockquote> But our data is already log-transformed, and centering is handled by \code{\link{RMASCA()}}. But we need to scale each metabolite with the standard deviation at baseline, as instructed by the authors. So let us set the desired reference groups and normalize:
+So there is three time points, two groups and 16 variables. @madssenRepeatedMeasuresASCA2020a state that <blockquote>All metabolite responses were log-transformed before analysis, and the effect matrix was mean-centered before PCA.</blockquote> But our data is already log-transformed, and centering is handled by `RMASCA()`. However, as instructed by the authors, we need to scale each metabolite with the standard deviation at baseline. So let us set the desired reference groups and normalize:
 
 ```{r}
 df$group <- relevel(df$group, ref = "Chemotherapy only")
@@ -116,4 +122,29 @@ Or if want to see the validation models instead of errorbars:
 plotVal(mod.val)
 plotVal(mod.val, component = "PC2")
 ```
+
+## Comparison of result
+
+To better visualize the agreement between the RMASCA package and the published code by @madssenRepeatedMeasuresASCA2020a, I've run both and collected the loadings and scores for P1 and PC2. Although there are some variation in the robustness estimates, the two implementations seem to match reasonable well.
+
+```{r, echo = FALSE}
+df <- read.csv(file = "Madssen_Jarmund_loadings.csv", header = TRUE, sep = ";")
+df$value[df$model == "Jarmund" & df$ï.. == 1] <- -df$value[df$model == "Jarmund" & df$ï.. == 1]
+df$high[df$model == "Jarmund" & df$ï.. == 1] <- -df$high[df$model == "Jarmund" & df$ï.. == 1]
+df$low[df$model == "Jarmund" & df$ï.. == 1] <- -df$low[df$model == "Jarmund" & df$ï.. == 1]
+g1 <- ggplot(subset(df, ï..PC == 1), aes(x = covars, y = value, ymin = low, ymax = high, color = model)) + geom_pointrange(position = position_dodge(width = 0.35))
+g2 <- ggplot(subset(df, ï..PC == 2), aes(x = covars, y = value, ymin = low, ymax = high, color = model)) + geom_pointrange(position = position_dodge(width = 0.35))
+
+df <- read.csv(file = "Madssen_Jarmund_scores.csv", header = TRUE, sep = ";")
+df$value[df$model == "Jarmund" & df$ï.. == 1] <- -df$value[df$model == "Jarmund" & df$ï.. == 1]
+df$high[df$model == "Jarmund" & df$ï.. == 1] <- -df$high[df$model == "Jarmund" & df$ï.. == 1]
+df$low[df$model == "Jarmund" & df$ï.. == 1] <- -df$low[df$model == "Jarmund" & df$ï.. == 1]
+g3 <- ggplot(subset(df, ï..PC == 1), aes(x = paste(time, group), y = value, ymin = low, ymax = high, color = model)) + geom_pointrange(position = position_dodge(width = 0.35))
+g4 <- ggplot(subset(df, ï..PC == 2), aes(x = paste(time, group), y = value, ymin = low, ymax = high, color = model)) + geom_pointrange(position = position_dodge(width = 0.35))
+
+ggarrange(g3, g1, g4, g2, 
+          nrow = 2, ncol = 2,
+          common.legend = TRUE)
+```
+
 ## References
