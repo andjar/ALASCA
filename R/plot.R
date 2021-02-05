@@ -394,3 +394,60 @@ plotPred <- function(object, variable = NA){
   return(gg)
 }
 
+#' Plot validations models
+#'
+#' This function returns a plot of the validation models
+#'
+#' @param object A validated RMASCA object
+#' @param component
+#' @return A list with ggplot2 objects.
+#' 
+#' @export
+plotVal <- function(object, component = "PC1"){
+  if(!object$validate){
+    stop("You must validate the model first.")
+  }
+  if(object$separateTimeAndGroup){
+    dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
+      data.frame(
+        getScores(object$validation$temp_objects[[x]])$time,
+        model = x
+      )
+    })
+    )
+    gt <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "time", y = component)) + 
+      ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2)
+      ggplot2::labs(x = "Time")
+    
+    dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
+      data.frame(
+        getScores(object$validation$temp_objects[[x]])$group,
+        model = x
+      )
+    })
+    )
+    dff$plotGroup <- paste0(dff$model,dff$group)
+    gg <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "time", y = component, group = "plotGroup", color = "group")) + 
+      ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
+      ggplot2::geom_point(data = getScores(object)$group, group = NA, alpha = 1, color = "black") +
+      ggplot2::geom_line(data = getScores(object)$group, group = getScores(object)$group$group, alpha = 1, color = "black") +
+      ggplot2::labs(x = "Time")
+    g <- list(gt, gg)
+  }else{
+    dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
+      data.frame(
+        getScores(object$validation$temp_objects[[x]])$time,
+        model = x
+      )
+    })
+    )
+    dff$plotGroup <- paste0(dff$model,dff$group)
+    g <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "time", y = component, group = "plotGroup", color = "group")) + 
+      ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
+      ggplot2::geom_point(data = getScores(object)$time, group = NA, alpha = 1, color = "black") +
+      ggplot2::geom_line(data = getScores(object)$time, group = getScores(object)$time$group, alpha = 1, color = "black") +
+      ggplot2::labs(x = "Time") + ggplot2::theme(legend.position = "bottom")
+  }
+  return(g)
+  
+}
