@@ -79,7 +79,9 @@
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Early Preeclampsia</h1>
+                        <h4 class="author">Anders H. Jarmund</h4>
             
+            <h4 class="date">2021-02-06</h4>
       
       
       <div class="hidden name"><code>pregnancy.Rmd</code></div>
@@ -93,6 +95,7 @@
 <a href="#getting-started" class="anchor"></a>Getting started</h1>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">RMASCA</span><span class="op">)</span></code></pre></div>
+<p>This is an example of RMASCA applied on <strong>observational data</strong>. If you are more interested in <strong>interventional data</strong>, have a look at <a href="metabolomics.html">the metabolomics vignette</a>. If you want an introduction to RMASCA, have a look at <a href="RMASCA.html">Get Started</a>.</p>
 <div id="preparing-the-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#preparing-the-data" class="anchor"></a>Preparing the data</h2>
@@ -264,112 +267,110 @@
 <code class="sourceCode R"><span class="va">PE.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">PE.mod</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span><span class="op">)</span>
 <span class="co">#&gt; Running validation...</span>
 <span class="co">#&gt; - Run  1  of  50 </span>
-<span class="co">#&gt; --- Used  1.11  seconds. Est. time remaining:  54.29  seconds </span>
+<span class="co">#&gt; --- Used  1.01  seconds. Est. time remaining:  49.27  seconds </span>
 <span class="co">#&gt; - Run  2  of  50 </span>
-<span class="co">#&gt; --- Used  53.52  seconds. Est. time remaining:  1311.06  seconds </span>
+<span class="co">#&gt; --- Used  50.71  seconds. Est. time remaining:  1241.17  seconds </span>
 <span class="co">#&gt; - Run  3  of  50 </span>
-<span class="co">#&gt; --- Used  54.56  seconds. Est. time remaining:  1710.63  seconds </span>
+<span class="co">#&gt; --- Used  51.73  seconds. Est. time remaining:  1620.61  seconds </span>
 <span class="co">#&gt; - Run  4  of  50 </span>
-<span class="co">#&gt; --- Used  54.1  seconds. Est. time remaining:  1877.79  seconds </span>
+<span class="co">#&gt; --- Used  52.01  seconds. Est. time remaining:  1787.69  seconds </span>
 <span class="co">#&gt; - Run  5  of  50 </span>
-<span class="co">#&gt; --- Used  54.61  seconds. Est. time remaining:  1961.05  seconds </span>
+<span class="co">#&gt; --- Used  52.33  seconds. Est. time remaining:  1870.02  seconds </span>
 <span class="co">#&gt; - Run  6  of  50 </span>
-<span class="co">#&gt; --- Used  53.83  seconds. Est. time remaining:  1992.66  seconds </span>
+<span class="co">#&gt; --- Used  52.11  seconds. Est. time remaining:  1905.82  seconds </span>
 <span class="co">#&gt; - Run  7  of  50 </span>
-<span class="co">#&gt; --- Used  55.21  seconds. Est. time remaining:  2008.31  seconds </span>
+<span class="co">#&gt; --- Used  52.61  seconds. Est. time remaining:  1919.63  seconds </span>
 <span class="co">#&gt; - Run  8  of  50 </span>
-<span class="co">#&gt; --- Used  54.58  seconds. Est. time remaining:  2002.96  seconds </span>
+<span class="co">#&gt; --- Used  52.58  seconds. Est. time remaining:  1916.67  seconds </span>
 <span class="co">#&gt; - Run  9  of  50 </span>
-<span class="co">#&gt; --- Used  53.8  seconds. Est. time remaining:  1983.09  seconds </span>
+<span class="co">#&gt; --- Used  52.33  seconds. Est. time remaining:  1901.52  seconds </span>
 <span class="co">#&gt; - Run  10  of  50 </span>
-<span class="co">#&gt; --- Used  56.01  seconds. Est. time remaining:  1965.27  seconds </span>
+<span class="co">#&gt; --- Used  52.98  seconds. Est. time remaining:  1881.56  seconds </span>
 <span class="co">#&gt; - Run  11  of  50 </span>
-<span class="co">#&gt; --- Used  56.61  seconds. Est. time remaining:  1942.65  seconds </span>
+<span class="co">#&gt; --- Used  52.95  seconds. Est. time remaining:  1855.46  seconds </span>
 <span class="co">#&gt; - Run  12  of  50 </span>
-<span class="co">#&gt; --- Used  57.11  seconds. Est. time remaining:  1915.95  seconds </span>
+<span class="co">#&gt; --- Used  51.09  seconds. Est. time remaining:  1819  seconds </span>
 <span class="co">#&gt; - Run  13  of  50 </span>
-<span class="co">#&gt; --- Used  57.3  seconds. Est. time remaining:  1885.1  seconds </span>
+<span class="co">#&gt; --- Used  51.76  seconds. Est. time remaining:  1782.21  seconds </span>
 <span class="co">#&gt; - Run  14  of  50 </span>
-<span class="co">#&gt; --- Used  57.39  seconds. Est. time remaining:  1850.71  seconds </span>
+<span class="co">#&gt; --- Used  51.3  seconds. Est. time remaining:  1742.1  seconds </span>
 <span class="co">#&gt; - Run  15  of  50 </span>
-<span class="co">#&gt; --- Used  56.95  seconds. Est. time remaining:  1812.22  seconds </span>
+<span class="co">#&gt; --- Used  51.58  seconds. Est. time remaining:  1701.14  seconds </span>
 <span class="co">#&gt; - Run  16  of  50 </span>
-<span class="co">#&gt; --- Used  57.06  seconds. Est. time remaining:  1771.67  seconds </span>
+<span class="co">#&gt; --- Used  52.03  seconds. Est. time remaining:  1659.81  seconds </span>
 <span class="co">#&gt; - Run  17  of  50 </span>
-<span class="co">#&gt; --- Used  57.17  seconds. Est. time remaining:  1729.4  seconds </span>
+<span class="co">#&gt; --- Used  51.07  seconds. Est. time remaining:  1615.37  seconds </span>
 <span class="co">#&gt; - Run  18  of  50 </span>
-<span class="co">#&gt; --- Used  55.62  seconds. Est. time remaining:  1682.71  seconds </span>
+<span class="co">#&gt; --- Used  37.2  seconds. Est. time remaining:  1545.52  seconds </span>
 <span class="co">#&gt; - Run  19  of  50 </span>
-<span class="co">#&gt; --- Used  42.5  seconds. Est. time remaining:  1613.67  seconds </span>
+<span class="co">#&gt; --- Used  38.32  seconds. Est. time remaining:  1480.94  seconds </span>
 <span class="co">#&gt; - Run  20  of  50 </span>
-<span class="co">#&gt; --- Used  41.5  seconds. Est. time remaining:  1545.79  seconds </span>
+<span class="co">#&gt; --- Used  37.84  seconds. Est. time remaining:  1418.27  seconds </span>
 <span class="co">#&gt; - Run  21  of  50 </span>
-<span class="co">#&gt; --- Used  42.63  seconds. Est. time remaining:  1481.98  seconds </span>
+<span class="co">#&gt; --- Used  37.49  seconds. Est. time remaining:  1357.48  seconds </span>
 <span class="co">#&gt; - Run  22  of  50 </span>
-<span class="co">#&gt; --- Used  42.29  seconds. Est. time remaining:  1419.67  seconds </span>
+<span class="co">#&gt; --- Used  38.61  seconds. Est. time remaining:  1300.23  seconds </span>
 <span class="co">#&gt; - Run  23  of  50 </span>
-<span class="co">#&gt; --- Used  42.09  seconds. Est. time remaining:  1358.85  seconds </span>
+<span class="co">#&gt; --- Used  38.37  seconds. Est. time remaining:  1244.32  seconds </span>
 <span class="co">#&gt; - Run  24  of  50 </span>
-<span class="co">#&gt; --- Used  42.07  seconds. Est. time remaining:  1299.58  seconds </span>
+<span class="co">#&gt; --- Used  39.45  seconds. Est. time remaining:  1191.04  seconds </span>
 <span class="co">#&gt; - Run  25  of  50 </span>
-<span class="co">#&gt; --- Used  42.76  seconds. Est. time remaining:  1242.37  seconds </span>
+<span class="co">#&gt; --- Used  38.12  seconds. Est. time remaining:  1137.54  seconds </span>
 <span class="co">#&gt; - Run  26  of  50 </span>
-<span class="co">#&gt; --- Used  43.01  seconds. Est. time remaining:  1186.5  seconds </span>
+<span class="co">#&gt; --- Used  38.96  seconds. Est. time remaining:  1086.01  seconds </span>
 <span class="co">#&gt; - Run  27  of  50 </span>
-<span class="co">#&gt; --- Used  42.92  seconds. Est. time remaining:  1131.51  seconds </span>
+<span class="co">#&gt; --- Used  38.62  seconds. Est. time remaining:  1035.11  seconds </span>
 <span class="co">#&gt; - Run  28  of  50 </span>
-<span class="co">#&gt; --- Used  43.3  seconds. Est. time remaining:  1077.69  seconds </span>
+<span class="co">#&gt; --- Used  39.62  seconds. Est. time remaining:  985.87  seconds </span>
 <span class="co">#&gt; - Run  29  of  50 </span>
-<span class="co">#&gt; --- Used  45.58  seconds. Est. time remaining:  1026.23  seconds </span>
+<span class="co">#&gt; --- Used  40.27  seconds. Est. time remaining:  937.77  seconds </span>
 <span class="co">#&gt; - Run  30  of  50 </span>
-<span class="co">#&gt; --- Used  43.73  seconds. Est. time remaining:  973.94  seconds </span>
+<span class="co">#&gt; --- Used  39.99  seconds. Est. time remaining:  890  seconds </span>
 <span class="co">#&gt; - Run  31  of  50 </span>
-<span class="co">#&gt; --- Used  46.17  seconds. Est. time remaining:  923.69  seconds </span>
+<span class="co">#&gt; --- Used  41.92  seconds. Est. time remaining:  843.92  seconds </span>
 <span class="co">#&gt; - Run  32  of  50 </span>
-<span class="co">#&gt; --- Used  46.63  seconds. Est. time remaining:  873.96  seconds </span>
+<span class="co">#&gt; --- Used  42.34  seconds. Est. time remaining:  798.34  seconds </span>
 <span class="co">#&gt; - Run  33  of  50 </span>
-<span class="co">#&gt; --- Used  46.39  seconds. Est. time remaining:  824.29  seconds </span>
+<span class="co">#&gt; --- Used  42.3  seconds. Est. time remaining:  752.93  seconds </span>
 <span class="co">#&gt; - Run  34  of  50 </span>
-<span class="co">#&gt; --- Used  47.33  seconds. Est. time remaining:  775.26  seconds </span>
+<span class="co">#&gt; --- Used  42.12  seconds. Est. time remaining:  707.61  seconds </span>
 <span class="co">#&gt; - Run  35  of  50 </span>
-<span class="co">#&gt; --- Used  48.08  seconds. Est. time remaining:  726.64  seconds </span>
+<span class="co">#&gt; --- Used  42.89  seconds. Est. time remaining:  662.81  seconds </span>
 <span class="co">#&gt; - Run  36  of  50 </span>
-<span class="co">#&gt; --- Used  49.16  seconds. Est. time remaining:  678.48  seconds </span>
+<span class="co">#&gt; --- Used  43.58  seconds. Est. time remaining:  618.39  seconds </span>
 <span class="co">#&gt; - Run  37  of  50 </span>
-<span class="co">#&gt; --- Used  47.99  seconds. Est. time remaining:  629.85  seconds </span>
+<span class="co">#&gt; --- Used  43.04  seconds. Est. time remaining:  573.82  seconds </span>
 <span class="co">#&gt; - Run  38  of  50 </span>
-<span class="co">#&gt; --- Used  47.65  seconds. Est. time remaining:  581.15  seconds </span>
+<span class="co">#&gt; --- Used  43.89  seconds. Est. time remaining:  529.6  seconds </span>
 <span class="co">#&gt; - Run  39  of  50 </span>
-<span class="co">#&gt; --- Used  48.32  seconds. Est. time remaining:  532.69  seconds </span>
+<span class="co">#&gt; --- Used  43.55  seconds. Est. time remaining:  485.3  seconds </span>
 <span class="co">#&gt; - Run  40  of  50 </span>
-<span class="co">#&gt; --- Used  48.54  seconds. Est. time remaining:  484.29  seconds </span>
+<span class="co">#&gt; --- Used  41.95  seconds. Est. time remaining:  440.64  seconds </span>
 <span class="co">#&gt; - Run  41  of  50 </span>
-<span class="co">#&gt; --- Used  46.47  seconds. Est. time remaining:  435.43  seconds </span>
+<span class="co">#&gt; --- Used  32.89  seconds. Est. time remaining:  394.13  seconds </span>
 <span class="co">#&gt; - Run  42  of  50 </span>
-<span class="co">#&gt; --- Used  36.77  seconds. Est. time remaining:  384.84  seconds </span>
+<span class="co">#&gt; --- Used  33.43  seconds. Est. time remaining:  348.36  seconds </span>
 <span class="co">#&gt; - Run  43  of  50 </span>
-<span class="co">#&gt; --- Used  37.27  seconds. Est. time remaining:  334.97  seconds </span>
+<span class="co">#&gt; --- Used  33.15  seconds. Est. time remaining:  303.12  seconds </span>
 <span class="co">#&gt; - Run  44  of  50 </span>
-<span class="co">#&gt; --- Used  36.58  seconds. Est. time remaining:  285.58  seconds </span>
+<span class="co">#&gt; --- Used  34.41  seconds. Est. time remaining:  258.61  seconds </span>
 <span class="co">#&gt; - Run  45  of  50 </span>
-<span class="co">#&gt; --- Used  37.79  seconds. Est. time remaining:  236.89  seconds </span>
+<span class="co">#&gt; --- Used  33.59  seconds. Est. time remaining:  214.45  seconds </span>
 <span class="co">#&gt; - Run  46  of  50 </span>
-<span class="co">#&gt; --- Used  37.66  seconds. Est. time remaining:  188.67  seconds </span>
+<span class="co">#&gt; --- Used  34.34  seconds. Est. time remaining:  170.82  seconds </span>
 <span class="co">#&gt; - Run  47  of  50 </span>
-<span class="co">#&gt; --- Used  38.43  seconds. Est. time remaining:  140.94  seconds </span>
+<span class="co">#&gt; --- Used  35.69  seconds. Est. time remaining:  127.66  seconds </span>
 <span class="co">#&gt; - Run  48  of  50 </span>
-<span class="co">#&gt; --- Used  38.21  seconds. Est. time remaining:  93.6  seconds </span>
+<span class="co">#&gt; --- Used  33.27  seconds. Est. time remaining:  84.72  seconds </span>
 <span class="co">#&gt; - Run  49  of  50 </span>
-<span class="co">#&gt; --- Used  39.23  seconds. Est. time remaining:  46.64  seconds </span>
+<span class="co">#&gt; --- Used  34.96  seconds. Est. time remaining:  42.21  seconds </span>
 <span class="co">#&gt; - Run  50  of  50 </span>
-<span class="co">#&gt; --- Used  40.19  seconds. Est. time remaining:  0  seconds</span>
+<span class="co">#&gt; --- Used  35.96  seconds. Est. time remaining:  0  seconds</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
 <p><img src="pregnancy_files/figure-html/unnamed-chunk-16-1.png" width="100%" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="st">"PC2"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
 <p><img src="pregnancy_files/figure-html/unnamed-chunk-16-2.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">#plot(PE.mod, component = "PC3") # At the moment, we are only calculating uncertainty for component 1 and 2</span></code></pre></div>
 </div>
 <div id="references" class="section level1 unnumbered">
 <h1 class="hasAnchor">
