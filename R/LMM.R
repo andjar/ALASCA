@@ -13,9 +13,10 @@ getLMECoefficients <- function(object){
   cyts <- unique(object$df$variable)
   cc <- 1
   ccc <- 1
-  #start.time <- Sys.time()
-  object$lmer.models <- lapply(unique(object$df$variable), function(i){
-      lmer.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
+
+    object$lmer.models <- lapply(unique(object$df$variable), function(i){
+      #lmer.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
+      lmer.model <- lm(object$formula, data = subset(object$df, variable == i))
       if(object$forceEqualBaseline){
         X <- model.matrix(lmer.model)
         baselineLabel <- paste0("time", unique(object$df$time)[1])
@@ -31,13 +32,16 @@ getLMECoefficients <- function(object){
       lmer.model
     }
   )
-  #end.time <- Sys.time()
-  #cat("Time 1: ", end.time - start.time, "\n")
+  
   names(object$lmer.models) <- unique(object$df$variable)
-  #start.time <- Sys.time()
   fdf <- Reduce(rbind,lapply(object$lmer.models, function(y){
-    tmp_ef <- lme4::fixef(y)
-    a <- as.data.frame(summary(y)[["coefficients"]][,c(1,5)])
+    if(object$useLM){
+      tmp_ef <- coef(y)
+      a <- as.data.frame(summary(y)[["coefficients"]][,c(1,4)])
+    }else{
+      tmp_ef <- lme4::fixef(y)
+      a <- as.data.frame(summary(y)[["coefficients"]][,c(1,5)])
+    }
     a$covar <- attr(y, "name")
     a$variable <- rownames(a)
     rownames(a) <- NULL
@@ -46,17 +50,7 @@ getLMECoefficients <- function(object){
   if(object$forceEqualBaseline){
     fdf$variable[substr(fdf$variable,1,1) == "X"] <- substr(fdf$variable[substr(fdf$variable,1,1) == "X"],2,nchar(fdf$variable[substr(fdf$variable,1,1) == "X"]))
   }
-  # fdf <- Reduce(rbind,lapply(seq_along(object$lmer.models), function(y, n, i){
-  #       tmp_ef <- lme4::fixef(y[[i]])
-  #       a <- as.data.frame(summary(y[[i]])[["coefficients"]][,c(1,5)])
-  #       a$covar <- n[[i]]
-  #       a$variable <- rownames(a)
-  #       rownames(a) <- NULL
-  #       a
-  #     }, y = object$lmer.models, n = names(object$lmer.models)
-  #   ))
-  #end.time <- Sys.time()
-  #cat("Time 2: ", end.time - start.time, "\n")
+  
   if(!object$minimizeObject){
     cat("Finished calculating LMM coefficients!\n")
   }
@@ -115,7 +109,12 @@ getEffectMatrix <- function(object){
     cat("Calculating effect matrix\n")
   }
   parts <- subset(object$df, variable == object$df$variable[1])
-  Dmatrix <- lme4::getME(object$lmer.model[[1]],"X")
+  if(object$useLM){
+    Dmatrix <- model.matrix(object$lmer.model[[1]],"X")
+  }else{
+    Dmatrix <- lme4::getME(object$lmer.model[[1]],"X")
+  }
+  
   if(object$forceEqualBaseline){
     colnames(Dmatrix)[substr(colnames(Dmatrix),1,1) == "X"] <- substr(colnames(Dmatrix)[substr(colnames(Dmatrix),1,1) == "X"],2,nchar(colnames(Dmatrix)[substr(colnames(Dmatrix),1,1) == "X"]))
   }
