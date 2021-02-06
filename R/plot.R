@@ -417,7 +417,7 @@ plotVal <- function(object, component = "PC1"){
       )
     })
     )
-    gt <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "time", y = component)) + 
+    gst <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "time", y = component)) + 
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2)
       ggplot2::labs(x = "Time")
     
@@ -430,12 +430,40 @@ plotVal <- function(object, component = "PC1"){
     })
     )
     dff$plotGroup <- paste0(dff$model,dff$group)
-    gg <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "time", y = component, group = "plotGroup", color = "group")) + 
+    gsg <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "time", y = component, group = "plotGroup", color = "group")) + 
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
       ggplot2::geom_point(data = getScores(object)$group, group = NA, alpha = 1, color = "black") +
       ggplot2::geom_line(data = getScores(object)$group, group = getScores(object)$group$group, alpha = 1, color = "black") +
       ggplot2::labs(x = "Time")
-    g <- list(gt, gg)
+    
+    
+    # Loading plot
+    ## Time
+    dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
+      data.frame(
+        getLoadings(object$validation$temp_objects[[x]])$time
+      )
+    })
+    )
+    glt <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "covars", y = component)) + 
+      ggplot2::geom_point(alpha = 0.2, color = "black") + 
+      ggplot2::geom_point(data = getLoadings(object)$time, alpha = 1, color = "red") +
+      ggplot2::labs(x = "Variable")
+    
+    ## Group
+    dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
+      data.frame(
+        getLoadings(object$validation$temp_objects[[x]])$group
+      )
+    })
+    )
+    glg <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "covars", y = component)) + 
+      ggplot2::geom_point(alpha = 0.2, color = "black") + 
+      ggplot2::geom_point(data = getLoadings(object)$group, alpha = 1, color = "red") +
+      ggplot2::labs(x = "Variable")
+    
+    g <- ggpubr::ggarrange(gst, glt, gsg, glg, nrow = 2, ncol = 2, widths = c(1,2,1,2))
+    
   }else{
     # Score plot
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
@@ -446,11 +474,25 @@ plotVal <- function(object, component = "PC1"){
     })
     )
     dff$plotGroup <- paste0(dff$model,dff$group)
-    g <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "time", y = component, group = "plotGroup", color = "group")) + 
+    gs <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "time", y = component, group = "plotGroup", color = "group")) + 
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
       ggplot2::geom_point(data = getScores(object)$time, group = NA, alpha = 1, color = "black") +
       ggplot2::geom_line(data = getScores(object)$time, group = getScores(object)$time$group, alpha = 1, color = "black") +
       ggplot2::labs(x = "Time") + ggplot2::theme(legend.position = "bottom")
+    
+    # Loading plot
+    dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
+      data.frame(
+        getLoadings(object$validation$temp_objects[[x]])$time
+      )
+    })
+    )
+    gl <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "covars", y = component)) + 
+      ggplot2::geom_point(alpha = 0.2, color = "black") + 
+      ggplot2::geom_point(data = getLoadings(object)$time, alpha = 1, color = "red") +
+      ggplot2::labs(x = "Variable")
+    
+    g <- ggpubr::ggarrange(gs, gl, nrow = 1, ncol = 2, widths = c(1,2))
   }
   return(g)
   
