@@ -15,8 +15,12 @@ getLMECoefficients <- function(object){
   ccc <- 1
 
     object$lmer.models <- lapply(unique(object$df$variable), function(i){
-      #lmer.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
-      lmer.model <- lm(object$formula, data = subset(object$df, variable == i))
+      if(object$useLM){
+        lmer.model <- lm(object$formula, data = subset(object$df, variable == i))
+      }else{
+        lmer.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
+      }
+      
       if(object$forceEqualBaseline){
         X <- model.matrix(lmer.model)
         baselineLabel <- paste0("time", unique(object$df$time)[1])
