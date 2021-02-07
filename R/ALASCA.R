@@ -138,7 +138,9 @@ sanitizeObject <- function(object){
 
   formulaTerms <- colnames(attr(terms.formula(object$formula),"factors"))
   if(!any(grepl("\\|",formulaTerms))){
-    stop("The model must contain at least one random effect")
+  #  stop("The model must contain at least one random effect")
+    object$useLM <- TRUE
+    cat("Will use linear models instead of LMMs!\n")
   }
 
   if(object$minimizeObject){
