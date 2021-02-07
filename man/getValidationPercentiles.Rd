@@ -7,12 +7,12 @@
 getValidationPercentiles(object, objectlist)
 }
 \arguments{
-\item{object}{RMASCA object}
+\item{object}{ALASCA object}
 
-\item{objectlist}{List of RMASCA objects}
+\item{objectlist}{List of ALASCA objects}
 }
 \value{
-An RMASCA object
+An ALASCA object
 }
 \description{
 This function extract percentiles during validation

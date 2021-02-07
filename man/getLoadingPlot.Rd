@@ -14,7 +14,7 @@ getLoadingPlot(
 )
 }
 \arguments{
-\item{object}{An RMASCA object}
+\item{object}{An ALASCA object}
 
 \item{component}{Which component to plot?}
 

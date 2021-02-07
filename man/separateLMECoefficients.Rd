@@ -7,10 +7,10 @@
 separateLMECoefficients(object)
 }
 \arguments{
-\item{object}{An RMASCA object to be sanitized}
+\item{object}{An ALASCA object to be sanitized}
 }
 \value{
-An RMASCA object
+An ALASCA object
 }
 \description{
 This function separates time and group variables if separateTimeAndGroup = TRUE

@@ -2,7 +2,7 @@
 title: "Metabolomics"
 author: "Anders H. Jarmund"
 date: "`r Sys.Date()`"
-bibliography: rmasca.bib
+bibliography: ALASCA.bib
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Metabolomics}
@@ -36,10 +36,10 @@ df <- subset(df, !is.na(df$ID))
 ```{r setup}
 library("ggplot2")
 library("ggpubr")
-library(RMASCA)
+library(ALASCA)
 ```
 
-This time we will look at a small metabolomics dataset by @eucedaEvaluationMetabolomicChanges2017 and replicate the findings of @madssenRepeatedMeasuresASCA2020a. Note that this is an example of RMASCA applied on **intervention data**. If you are more interested in **observational data**, have a look at [the preeclampsia vignette](pregnancy.html). If you want an introduction to RMASCA, have a look at [Get Started](RMASCA.html).
+This time we will look at a small metabolomics dataset by @eucedaEvaluationMetabolomicChanges2017 and replicate the findings of @madssenRepeatedMeasuresASCA2020a. Note that this is an example of ALASCA applied on **intervention data**. If you are more interested in **observational data**, have a look at [the preeclampsia vignette](pregnancy.html). If you want an introduction to ALASCA, have a look at [Get Started](ALASCA.html).
 
 Let us start by having a quick look at it:
 
@@ -51,7 +51,7 @@ do.call(
   )
 ```
 
-So there is three time points, two groups and 16 variables. @madssenRepeatedMeasuresASCA2020a state that <blockquote>All metabolite responses were log-transformed before analysis, and the effect matrix was mean-centered before PCA.</blockquote> But our data is already log-transformed, and centering is handled by `RMASCA()`. However, as instructed by the authors, we need to scale each metabolite with the standard deviation at baseline. So let us set the desired reference groups and normalize:
+So there is three time points, two groups and 16 variables. @madssenRepeatedMeasuresASCA2020a state that <blockquote>All metabolite responses were log-transformed before analysis, and the effect matrix was mean-centered before PCA.</blockquote> But our data is already log-transformed, and centering is handled by `ALASCA()`. However, as instructed by the authors, we need to scale each metabolite with the standard deviation at baseline. So let us set the desired reference groups and normalize:
 
 ```{r}
 df$group <- relevel(df$group, ref = "Chemotherapy only")
@@ -66,11 +66,11 @@ scaleFun <- function(df){
 
 ```
 
-Without any fuss, let us see what RMASCA makes out of it using the same model as @madssenRepeatedMeasuresASCA2020a. Note that we have to `forceEqualBaseline` to remove the interaction term for TP1 * treatment.
+Without any fuss, let us see what ALASCA makes out of it using the same model as @madssenRepeatedMeasuresASCA2020a. Note that we have to `forceEqualBaseline` to remove the interaction term for TP1 * treatment.
 
 ```{r}
 form <- value ~ time + time:group + (1|ID)
-mod <- RMASCA(df, form, separateTimeAndGroup = FALSE, forceEqualBaseline = TRUE, scaleFun = scaleFun)
+mod <- ALASCA(df, form, separateTimeAndGroup = FALSE, forceEqualBaseline = TRUE, scaleFun = scaleFun)
 ```
 
 Let us check that our model is as expected:
@@ -125,7 +125,7 @@ plotVal(mod.val, component = "PC2")
 
 ## Comparison of result
 
-To better visualize the agreement between the RMASCA package and the published code by @madssenRepeatedMeasuresASCA2020a, I've run both and collected the loadings and scores for P1 and PC2. Although there are some variation in the robustness estimates, the two implementations seem to match reasonable well.
+To better visualize the agreement between the ALASCA package and the published code by @madssenRepeatedMeasuresASCA2020a, I've run both and collected the loadings and scores for P1 and PC2. Although there are some variation in the robustness estimates, the two implementations seem to match reasonable well.
 
 ```{r, echo = FALSE}
 df <- read.csv(file = "Madssen_Jarmund_loadings.csv", header = TRUE, sep = ";")

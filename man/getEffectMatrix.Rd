@@ -7,10 +7,10 @@
 getEffectMatrix(object)
 }
 \arguments{
-\item{object}{An RMASCA object}
+\item{object}{An ALASCA object}
 }
 \value{
-An RMASCA object
+An ALASCA object
 }
 \description{
 This function separates time and group variables if separateTimeAndGroup = TRUE

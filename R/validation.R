@@ -42,15 +42,11 @@ validate <- function(object, participantColumn = FALSE){
     }))
     
     # Make ALASCA model from the selected subset
-    temp_object[[ii]] <- ALASCA(df = NA,
-                                validate = FALSE, # to avoid recursion
-                                minimizeObject = TRUE, # remove data that's not needed in temporary models
-                                validationObject = object,
+    temp_object[[ii]] <- ALASCA(validationObject = object,
                                 validationParticipants = object$df[,partColumn] %in% selectedParts)
     
     # Rotate new loadings/scores to the original model
     temp_object[[ii]] <- rotateMatrix(object = temp_object[[ii]], target = object)
-    
     
     end.time <- Sys.time()
     time_mean[ii] <- end.time - start.time

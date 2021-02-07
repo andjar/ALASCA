@@ -7,7 +7,7 @@
 plotVal(object, component = "PC1")
 }
 \arguments{
-\item{object}{A validated RMASCA object}
+\item{object}{A validated ALASCA object}
 
 \item{component}{Which component to plot (default: "PC1")}
 }

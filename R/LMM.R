@@ -15,7 +15,7 @@ getLMECoefficients <- function(object){
   ccc <- 1
 
     object$lmer.models <- lapply(unique(object$df$variable), function(i){
-      if(object$useLM){
+      if(object$method == "LM"){
         lmer.model <- lm(object$formula, data = subset(object$df, variable == i))
       }else{
         lmer.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
@@ -39,7 +39,7 @@ getLMECoefficients <- function(object){
   
   names(object$lmer.models) <- unique(object$df$variable)
   fdf <- Reduce(rbind,lapply(object$lmer.models, function(y){
-    if(object$useLM){
+    if(object$method == "LM"){
       tmp_ef <- coef(y)
       a <- as.data.frame(summary(y)[["coefficients"]][,c(1,4)])
     }else{
@@ -113,7 +113,7 @@ getEffectMatrix <- function(object){
     cat("Calculating effect matrix\n")
   }
   parts <- subset(object$df, variable == object$df$variable[1])
-  if(object$useLM){
+  if(object$method == "LM"){
     Dmatrix <- model.matrix(object$lmer.model[[1]],"X")
   }else{
     Dmatrix <- lme4::getME(object$lmer.model[[1]],"X")

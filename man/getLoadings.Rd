@@ -7,11 +7,11 @@
 getLoadings(object)
 }
 \arguments{
-\item{object}{An RMASCA object}
+\item{object}{An ALASCA object}
 }
 \value{
 A list with loadings for time (and group), and the exploratory power for each component
 }
 \description{
-This function  returns the loadings for an RMASCA model
+This function  returns the loadings for an ALASCA model
 }

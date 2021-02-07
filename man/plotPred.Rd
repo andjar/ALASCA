@@ -7,7 +7,7 @@
 plotPred(object, variable = NA)
 }
 \arguments{
-\item{object}{An RMASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the RMASCA model before.}
+\item{object}{An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.}
 
 \item{variable}{List of variable names to print. If \code{NA}, return all (default).}
 }
@@ -15,7 +15,7 @@ plotPred(object, variable = NA)
 A list with ggplot2 objects.
 }
 \description{
-This function returns the scores for an RMASCA model
+This function returns the scores for an ALASCA model
 }
 \examples{
 load("PE.Rdata")

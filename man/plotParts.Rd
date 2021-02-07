@@ -14,13 +14,13 @@ plotParts(
 )
 }
 \arguments{
-\item{object}{An RMASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the RMASCA model before.}
+\item{object}{An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.}
 
 \item{variable}{List of variable names to print. If \code{NA}, return all (default).}
 
-\item{participantColumn}{Specify the column with participant identifier. Not necessary if you have already provided it to the RMASCA object}
+\item{participantColumn}{Specify the column with participant identifier. Not necessary if you have already provided it to the ALASCA object}
 
-\item{valueColumn}{Specify column with values (y axis). Not necessary to provide if you are plotting an RMASCA object.}
+\item{valueColumn}{Specify column with values (y axis). Not necessary to provide if you are plotting an ALASCA object.}
 
 \item{timeColumn}{Specify column with times (x axis). Defaults to \code{time}.}
 
@@ -30,7 +30,7 @@ plotParts(
 A list with ggplot2 objects.
 }
 \description{
-This function returns the scores for an RMASCA model
+This function returns the scores for an ALASCA model
 }
 \examples{
 load("PE.Rdata")

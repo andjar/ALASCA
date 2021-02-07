@@ -7,10 +7,10 @@
 removeCovars(object)
 }
 \arguments{
-\item{object}{An RMASCA object to be sanitized}
+\item{object}{An ALASCA object to be sanitized}
 }
 \value{
-An RMASCA object
+An ALASCA object
 }
 \description{
 This function removes coefficients that we do not want in our PCA

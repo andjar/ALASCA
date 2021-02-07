@@ -2,20 +2,20 @@
 % Please edit documentation in R/validation.R
 \name{validate}
 \alias{validate}
-\title{Validate the RMASCA model LMM}
+\title{Validate the ALASCA model LMM}
 \usage{
 validate(object, participantColumn = FALSE)
 }
 \arguments{
-\item{object}{An RMASCA object}
+\item{object}{An ALASCA object}
 
 \item{participantColumn}{The name of the column containing participant identifier. Needed if not set during initialization of the model.}
 }
 \value{
-An RMASCA object
+An ALASCA object
 }
 \description{
-This function performs leave-one-out robustness testing of your RMASCA model. If you didn't specify the number of runs \code{nValRuns} when initializing the model (see \code{\link{RMASCA}}), you can do it by running for example \code{model$nValRuns <- 100} prior to calling \code{validate}. Your dataset is divided into \code{nValFold} partitions, keeping group proportions, and one of these are left out. \code{nValFold} is set the same way as  \code{nValRuns}.
+This function performs leave-one-out robustness testing of your ALASCA model. If you didn't specify the number of runs \code{nValRuns} when initializing the model (see \code{\link{ALASCA}}), you can do it by running for example \code{model$nValRuns <- 100} prior to calling \code{validate}. Your dataset is divided into \code{nValFold} partitions, keeping group proportions, and one of these are left out. \code{nValFold} is set the same way as  \code{nValRuns}.
 }
 \examples{
 load("PE.Rdata")

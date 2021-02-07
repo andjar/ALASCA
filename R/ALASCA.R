@@ -14,6 +14,7 @@
 #' @param scaleFun If `TRUE` (default), each variable is scaled to unit SD and zero mean. If `FALSE`, no scaling is performed. You can also provide a custom scaling function that has the data frame `df` as input and output
 #' @param forceEqualBaseline Set to `TRUE` to remove interaction between group and first time point (defaults to `FALSE`)
 #' @param useSumCoding Set to `TRUE` to use sum coding instead of contrast coding for group (defaults to `FALSE`)
+#' @param method Defaults to `NA` where method is either LM or LMM, depending on whether your formula contains a random effect or not
 #' @param nValFold Partitions when validating
 #' @param nValRuns number of validation runs
 #' @param validationMethod among  `loo` (leave-one-out, default)
@@ -35,6 +36,7 @@ ALASCA <- function(df,
                    scaleFun = TRUE,
                    forceEqualBaseline = FALSE,
                    useSumCoding = FALSE,
+                   method = NA,
                    minimizeObject = FALSE,
                    nValFold = 7,
                    nValRuns = 50,
@@ -43,22 +45,25 @@ ALASCA <- function(df,
                    validationParticipants = NA){
 
   if(!is.na(validationObject[1])){
-    object <- list(df = validationObject$dfRaw, #inherit unscaled
-                formula = validationObject$formula, #inherit
-                separateTimeAndGroup = validationObject$separateTimeAndGroup, #inherit
-                pAdjustMethod = validationObject$pAdjustMethod, #inherit
-                participantColumn = validationObject$participantColumn, #inherit
-                validate = validate, #overwrite
-                forceEqualBaseline = validationObject$forceEqualBaseline,
-                useSumCoding = validationObject$useSumCoding,
-                scaleFun = validationObject$scaleFun, #inherit
-                minimizeObject = minimizeObject, #overwrite
-                nValFold = validationObject$nValFold, #inherit
-                nValRuns = validationObject$nValRuns, #inherit
-                validationMethod = validationObject$validationMethod, #inherit
-                validationObject = validationObject, #overwrite
-                validationParticipants = validationParticipants #overwrite
-    )
+    # This is a validation run
+    
+    object <- validationObject
+    # Overwrite some data
+    
+    ## Unscaled values
+    object$df <- validationObject$dfRaw
+    
+    ## Avoid recursion
+    object$validate <- FALSE
+    
+    ## Save space
+    object$minimizeObject <- TRUE
+    
+    ## Selected participants for this run
+    object$validationParticipants <- validationParticipants
+    
+    ## Keep original object?
+    object$validationObject = NULL #validationObject
   }else{
     object <- list(df = df,
                    formula = formula,
@@ -69,6 +74,7 @@ ALASCA <- function(df,
                    scaleFun = scaleFun,
                    forceEqualBaseline = forceEqualBaseline,
                    useSumCoding = FALSE,
+                   method = method,
                    minimizeObject = minimizeObject,
                    nValFold = nValFold,
                    nValRuns = nValRuns,
@@ -79,34 +85,14 @@ ALASCA <- function(df,
   }
   class(object) <- "ALASCA"
 
-  #start.time <- Sys.time()
   object <- sanitizeObject(object)
-  #end.time <- Sys.time()
-  #cat("Time 1: ", end.time - start.time, "\n")
-  #start.time <- Sys.time()
   object <- getLMECoefficients(object)
-  #end.time <- Sys.time()
-  #cat("Time 2: ", end.time - start.time, "\n")
-  #start.time <- Sys.time()
   object <- removeCovars(object)
-  #end.time <- Sys.time()
-  #cat("Time 3: ", end.time - start.time, "\n")
-  #start.time <- Sys.time()
   object <- separateLMECoefficients(object)
-  #end.time <- Sys.time()
-  #cat("Time 4: ", end.time - start.time, "\n")
-  #start.time <- Sys.time()
   object <- getEffectMatrix(object)
-  #end.time <- Sys.time()
-  #cat("Time 5: ", end.time - start.time, "\n")
-  #start.time <- Sys.time()
   object <- doPCA(object)
-  #end.time <- Sys.time()
-  #cat("Time 6: ", end.time - start.time, "\n")
-  #start.time <- Sys.time()
   object <- cleanPCA(object)
-  #end.time <- Sys.time()
-  #cat("Time 7: ", end.time - start.time, "\n")
+  
   if(object$minimizeObject){
     # To save space, we remove unnecessary embedded data
     object <- removeEmbedded(object)
@@ -118,6 +104,30 @@ ALASCA <- function(df,
   return(object)
 }
 
+#' Run RMASCA
+#'
+#' Same as calling ALASCA with `method = "LMM"`
+#'
+#' @inheritParams ALASCA
+#' @return An ALASCA object
+#' @export
+RMASCA <- function(...){
+  object <- ALASCA(..., method = "LMM")
+  return(object)
+}
+
+#' Run SMASCA
+#'
+#' Same as calling ALASCA with `method = "LM"`
+#'
+#' @inheritParams ALASCA
+#' @return An ALASCA object
+#' @export
+SMASCA <- function(...){
+  object <- ALASCA(..., method = "LM")
+  return(object)
+}
+
 #' Sanitize an ALASCA object
 #'
 #' This function checks that the input to an ALASCA object is as expected
@@ -125,6 +135,33 @@ ALASCA <- function(df,
 #' @param object An ALASCA object to be sanitized
 #' @return An ALASCA object
 sanitizeObject <- function(object){
+  
+  # Check formula from user
+  formulaTerms <- colnames(attr(terms.formula(object$formula),"factors"))
+  if(!is.na(object$method)){ 
+    # The user has specified a method to use
+    if(object$method == "LMM"){
+      if(!any(grepl("\\|",formulaTerms))){
+        stop("The model must contain at least one random effect. Sure you wanted linear mixed models?")
+      }
+    }else if(object$method == "LM"){
+      if(any(grepl("\\|",formulaTerms))){
+        stop("The model contains at least one random effect. Sure you not wanted linear mixed models instead?")
+      }
+    }else{
+      stop("You entered an undefined method. Use `LMM` or `LM`!")
+    }
+  }else{ 
+    # Find which default method to use
+    if(any(grepl("\\|",formulaTerms))){
+      object$method <- "LMM"
+      cat("Will use linear mixed models!\n")
+    }else{
+      object$method <- "LM"
+      cat("Will use linear models!\n")
+    }
+  }
+  
   # Check that the input is as expected
   if(!("time" %in% colnames(object$df))){
     stop("The dataframe must contain a column names 'time'")
@@ -134,13 +171,6 @@ sanitizeObject <- function(object){
   }
   if(!("variable" %in% colnames(object$df))){
     stop("The dataframe must contain a column names 'variable'")
-  }
-
-  formulaTerms <- colnames(attr(terms.formula(object$formula),"factors"))
-  if(!any(grepl("\\|",formulaTerms))){
-  #  stop("The model must contain at least one random effect")
-    object$useLM <- TRUE
-    cat("Will use linear models instead of LMMs!\n")
   }
 
   if(object$minimizeObject){

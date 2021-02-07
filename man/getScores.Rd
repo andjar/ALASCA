@@ -7,11 +7,11 @@
 getScores(object)
 }
 \arguments{
-\item{object}{An RMASCA object}
+\item{object}{An ALASCA object}
 }
 \value{
 A list with scores for time (and group), and the exploratory power for each component
 }
 \description{
-This function returns the scores for an RMASCA model
+This function returns the scores for an ALASCA model
 }

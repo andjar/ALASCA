@@ -7,7 +7,7 @@
 getScorePlot(object, component = "PC1", effect = "time")
 }
 \arguments{
-\item{object}{An RMASCA object}
+\item{object}{An ALASCA object}
 
 \item{component}{Which component to plot?}
 

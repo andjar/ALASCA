@@ -7,12 +7,12 @@
 rotateMatrix(object, target)
 }
 \arguments{
-\item{object}{RMASCA object to be rotated (and returned)}
+\item{object}{ALASCA object to be rotated (and returned)}
 
-\item{target}{RMASCA object acting as target}
+\item{target}{ALASCA object acting as target}
 }
 \value{
-An RMASCA object
+An ALASCA object
 }
 \description{
 This function rotates loadings and scores during validation
