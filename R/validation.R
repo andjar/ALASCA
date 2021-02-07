@@ -1,10 +1,10 @@
-#' Validate the RMASCA model LMM
+#' Validate the ALASCA model LMM
 #'
-#' This function performs leave-one-out robustness testing of your RMASCA model. If you didn't specify the number of runs `nValRuns` when initializing the model (see \code{\link{RMASCA}}), you can do it by running for example `model$nValRuns <- 100` prior to calling `validate`. Your dataset is divided into `nValFold` partitions, keeping group proportions, and one of these are left out. `nValFold` is set the same way as  `nValRuns`.
+#' This function performs leave-one-out robustness testing of your ALASCA model. If you didn't specify the number of runs `nValRuns` when initializing the model (see \code{\link{ALASCA}}), you can do it by running for example `model$nValRuns <- 100` prior to calling `validate`. Your dataset is divided into `nValFold` partitions, keeping group proportions, and one of these are left out. `nValFold` is set the same way as  `nValRuns`.
 #'
-#' @param object An RMASCA object
+#' @param object An ALASCA object
 #' @param participantColumn The name of the column containing participant identifier. Needed if not set during initialization of the model.
-#' @return An RMASCA object
+#' @return An ALASCA object
 #' 
 #' @examples
 #' load("PE.Rdata")
@@ -41,8 +41,8 @@ validate <- function(object, participantColumn = FALSE){
       selectedParts_temp
     }))
     
-    # Make RMASCA model from the selected subset
-    temp_object[[ii]] <- RMASCA(df = NA,
+    # Make ALASCA model from the selected subset
+    temp_object[[ii]] <- ALASCA(df = NA,
                                 validate = FALSE, # to avoid recursion
                                 minimizeObject = TRUE, # remove data that's not needed in temporary models
                                 validationObject = object,
@@ -59,7 +59,7 @@ validate <- function(object, participantColumn = FALSE){
   
   # Tried parallelization, but it didn't improve performance significantly
   # doMC::registerDoMC(cores=parallel::detectCores()-1)
-  # temp_object <- foreach::"%dopar%"(foreach::foreach(1:object$nValRuns, .inorder = FALSE, .packages=c("RMASCA","foreach")),{
+  # temp_object <- foreach::"%dopar%"(foreach::foreach(1:object$nValRuns, .inorder = FALSE, .packages=c("ALASCA","foreach")),{
   #   selectedParts <- c()
   #   for(gr in unique(object$df$group)){
   #     selectedParts_temp_all <- unique(object$df[object$df$group == gr,partColumn])
@@ -67,7 +67,7 @@ validate <- function(object, participantColumn = FALSE){
   #     selectedParts_temp <- selectedParts_temp_all[selectedParts_temp_ticket != 1]
   #     selectedParts <- c(selectedParts, selectedParts_temp)
   #   }
-  #   temp_object <- RMASCA(df = NA,
+  #   temp_object <- ALASCA(df = NA,
   #                               validate = FALSE, # to avoid recursion
   #                               minimizeObject = TRUE,
   #                               validationObject = object,
@@ -83,12 +83,12 @@ validate <- function(object, participantColumn = FALSE){
 #'
 #' This function rotates loadings and scores during validation
 #'
-#' @param object RMASCA object to be rotated (and returned)
-#' @param target RMASCA object acting as target
-#' @return An RMASCA object
+#' @param object ALASCA object to be rotated (and returned)
+#' @param target ALASCA object acting as target
+#' @return An ALASCA object
 rotateMatrix <- function(object, target){
-  a <- object$RMASCA$loading
-  b <- target$RMASCA$loading
+  a <- object$ALASCA$loading
+  b <- target$ALASCA$loading
   
   procrustes <- function(loadings, target){
     s= t(loadings)%*%target
@@ -108,7 +108,7 @@ rotateMatrix <- function(object, target){
   }
   
   # We are only looking at components explaining more than 5% of variation
-  PCloading <- target$RMASCA$loading$explained$time > 0.05
+  PCloading <- target$ALASCA$loading$explained$time > 0.05
   PCloading[1:2] <- TRUE
   PCloading <- which(PCloading)
   
@@ -123,18 +123,18 @@ rotateMatrix <- function(object, target){
     sum((b$time[,PCloading] - c$procrust)^2)
   }))
   minSignVar <- which(signVar == min(signVar))[1]
-  object$RMASCA$loading$time[,PCloading] <- object$RMASCA$loading$time[,PCloading] * signMatrix[minSignVar,]
-  object$RMASCA$score$time[,PCloading] <- object$RMASCA$score$time[,PCloading] * signMatrix[minSignVar,]
-  a <- object$RMASCA$loading
+  object$ALASCA$loading$time[,PCloading] <- object$ALASCA$loading$time[,PCloading] * signMatrix[minSignVar,]
+  object$ALASCA$score$time[,PCloading] <- object$ALASCA$score$time[,PCloading] * signMatrix[minSignVar,]
+  a <- object$ALASCA$loading
   
   c <- procrustes(loadings= as.matrix(a$time[,PCloading]),
                   target = as.matrix(b$time[,PCloading]))
-  object$RMASCA$loading$time[,PCloading] <- c$procrust
-  object$RMASCA$score$time[,PCloading] <- as.matrix(object$RMASCA$score$time[,PCloading]) %*% solve(c$t1)
+  object$ALASCA$loading$time[,PCloading] <- c$procrust
+  object$ALASCA$score$time[,PCloading] <- as.matrix(object$ALASCA$score$time[,PCloading]) %*% solve(c$t1)
   
   if(object$separateTimeAndGroup){
     # We are only looking at components explaining more than 5% of variation
-    PCloading <- target$RMASCA$loading$explained$group > 0.05
+    PCloading <- target$ALASCA$loading$explained$group > 0.05
     PCloading[1:2] <- TRUE
     PCloading <- which(PCloading)
     
@@ -149,14 +149,14 @@ rotateMatrix <- function(object, target){
       sum((b$group[,PCloading] - c$procrust)^2)
     }))
     minSignVar <- which(signVar == min(signVar))[1]
-    object$RMASCA$loading$group[,PCloading] <- object$RMASCA$loading$group[,PCloading] * signMatrix[minSignVar,]
-    object$RMASCA$score$group[,PCloading] <- object$RMASCA$score$group[,PCloading] * signMatrix[minSignVar,]
-    a <- object$RMASCA$loading
+    object$ALASCA$loading$group[,PCloading] <- object$ALASCA$loading$group[,PCloading] * signMatrix[minSignVar,]
+    object$ALASCA$score$group[,PCloading] <- object$ALASCA$score$group[,PCloading] * signMatrix[minSignVar,]
+    a <- object$ALASCA$loading
     
     c <- procrustes(loadings= as.matrix(a$group[,PCloading]),
                     target = as.matrix(b$group[,PCloading]))
-    object$RMASCA$loading$group[,PCloading] <- c$procrust
-    object$RMASCA$score$group[,PCloading] <- as.matrix(object$RMASCA$score$group[,PCloading]) %*% solve(c$t1)
+    object$ALASCA$loading$group[,PCloading] <- c$procrust
+    object$ALASCA$score$group[,PCloading] <- as.matrix(object$ALASCA$score$group[,PCloading]) %*% solve(c$t1)
   }
  
   return(object)
@@ -166,14 +166,14 @@ rotateMatrix <- function(object, target){
 #'
 #' This function extract percentiles during validation
 #'
-#' @param object RMASCA object
-#' @param objectlist List of RMASCA objects
-#' @return An RMASCA object
+#' @param object ALASCA object
+#' @param objectlist List of ALASCA objects
+#' @return An ALASCA object
 getValidationPercentiles <- function(object, objectlist){
   
   getValidationPercentilesLoading <- function(object, objectlist){
     df_time <- Reduce(rbind,lapply(objectlist, function(x) getLoadings(x)$time))
-    PC_time <- getRelevantPCs(object$RMASCA$loading$explained$time)
+    PC_time <- getRelevantPCs(object$ALASCA$loading$explained$time)
     perc_time <- aggregate(data = df_time, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
     perc_time <- Reduce(rbind,lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
                                                                                high = perc_time[[x]][,2],
@@ -185,7 +185,7 @@ getValidationPercentiles <- function(object, objectlist){
     
     if(object$separateTimeAndGroup){
       df_group <- Reduce(rbind,lapply(objectlist, function(x) getLoadings(x)$group))
-      PC_group <- getRelevantPCs(object$RMASCA$loading$explained$group)
+      PC_group <- getRelevantPCs(object$ALASCA$loading$explained$group)
       perc_group <- aggregate(data = df_group, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
       perc_group <- Reduce(rbind,lapply(2:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
                                                                                  high = perc_group[[x]][,2],
@@ -203,7 +203,7 @@ getValidationPercentiles <- function(object, objectlist){
       # Separate time and group effects
       
       df_time <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$time))
-      PC_time <- getRelevantPCs(object$RMASCA$score$explained$time)
+      PC_time <- getRelevantPCs(object$ALASCA$score$explained$time)
       perc_time <- aggregate(data = df_time, . ~ time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
       perc_time <- Reduce(rbind,lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
                                                                                  high = perc_time[[x]][,2],
@@ -213,7 +213,7 @@ getValidationPercentiles <- function(object, objectlist){
       object$validation$time$score <- subset(perc_time, PC %in% PC_time)
       
       df_group <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$group))
-      PC_group <- getRelevantPCs(object$RMASCA$score$explained$group)
+      PC_group <- getRelevantPCs(object$ALASCA$score$explained$group)
       perc_group <- aggregate(data = df_group, . ~ group + time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
       perc_group <- Reduce(rbind,lapply(3:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
                                                                                    high = perc_group[[x]][,2],
@@ -226,7 +226,7 @@ getValidationPercentiles <- function(object, objectlist){
       # Pool time and groups effects
       
       df_time <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$time))
-      PC_time <- getRelevantPCs(object$RMASCA$score$explained$time > 0.05)
+      PC_time <- getRelevantPCs(object$ALASCA$score$explained$time > 0.05)
       perc_time <- aggregate(data = df_time, . ~ time + group, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
       perc_time <- Reduce(rbind,lapply(3:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
                                                                                  high = perc_time[[x]][,2],

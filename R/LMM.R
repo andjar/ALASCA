@@ -1,9 +1,9 @@
 #' Get LMM coefficients
 #'
-#' This function calculates the LMM coefficients for the RMASCA-model
+#' This function calculates the LMM coefficients for the ALASCA-model
 #'
-#' @param object An RMASCA object to be sanitized
-#' @return An RMASCA object
+#' @param object An ALASCA object to be sanitized
+#' @return An ALASCA object
 getLMECoefficients <- function(object){
   if(!object$minimizeObject){
     cat("Calculating LMM coefficients...\n")
@@ -79,8 +79,8 @@ getLMECoefficients <- function(object){
 #'
 #' This function removes coefficients that we do not want in our PCA
 #'
-#' @param object An RMASCA object to be sanitized
-#' @return An RMASCA object
+#' @param object An ALASCA object to be sanitized
+#' @return An ALASCA object
 removeCovars <- function(object){
   for(i in unique(object$covars)){
     object$LMM.coefficients <- subset(object$LMM.coefficients, substr(variable, 1, nchar(i)) != i)
@@ -92,8 +92,8 @@ removeCovars <- function(object){
 #'
 #' This function separates time and group variables if separateTimeAndGroup = TRUE
 #'
-#' @param object An RMASCA object to be sanitized
-#' @return An RMASCA object
+#' @param object An ALASCA object to be sanitized
+#' @return An ALASCA object
 separateLMECoefficients <- function(object){
   object$LMM.coefficients$comp <- "TIME"
   if(object$separateTimeAndGroup){
@@ -108,8 +108,8 @@ separateLMECoefficients <- function(object){
 #'
 #' This function separates time and group variables if separateTimeAndGroup = TRUE
 #'
-#' @param object An RMASCA object
-#' @return An RMASCA object
+#' @param object An ALASCA object
+#' @return An ALASCA object
 getEffectMatrix <- function(object){
   if(!object$minimizeObject){
     cat("Calculating effect matrix\n")

@@ -1,8 +1,8 @@
-#' Get an RMASCA object
+#' Get an ALASCA object
 #'
-#' This function plots your RMASCA model
+#' This function plots your ALASCA model
 #'
-#' @param object An [RMASCA()] object
+#' @param object An [ALASCA()] object
 #' @param component String stating which component to return ("PC1" is default)
 #' @param effect String stating which effect to return; `time`, `group`, `both` (default)
 #' @param decreasingLoadings Sort the loadings in decreasing (default) or increasing order
@@ -21,7 +21,7 @@
 #' plot(model, highlight = c("PlGF", "IL-1b", "IL-6"))
 #' 
 #' @export
-plot.RMASCA <- function(object, component = "PC1", effect = "both", decreasingLoadings = TRUE, only = "both", enlist = FALSE, tooDense = NA, highlight = NA){
+plot.ALASCA <- function(object, component = "PC1", effect = "both", decreasingLoadings = TRUE, only = "both", enlist = FALSE, tooDense = NA, highlight = NA){
   if(!(effect %in% c("both","time","group"))){
     stop("`effect` has to be `both`, `time` or `group`")
   }
@@ -70,9 +70,9 @@ plot.RMASCA <- function(object, component = "PC1", effect = "both", decreasingLo
 
 #' Get screeplot
 #'
-#' This function returns a screeplot for an RMASCA model showing what proportion of the variance each component of the model explains
+#' This function returns a screeplot for an ALASCA model showing what proportion of the variance each component of the model explains
 #'
-#' @param object An RMASCA object
+#' @param object An ALASCA object
 #' @param effect String stating which effect to return; `time`, `group`, `both` (default)
 #' @return An ggplot2 object (or a list og ggplot objects)
 #' 
@@ -81,14 +81,14 @@ plot.RMASCA <- function(object, component = "PC1", effect = "both", decreasingLo
 #' screeplot(model)
 #' 
 #' @export
-screeplot.RMASCA <- function(object, effect = "both"){
+screeplot.ALASCA <- function(object, effect = "both"){
   explained <- as.data.frame(getScores(object)$explained)
   explained$component <- 1:nrow(explained)
   g <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = time, group = NA)) +
     ggplot2::geom_point() +
     ggplot2::geom_line() +
     ggplot2::labs(x = "Principal Component", y = "Relative Expl. of Time Var.")
-  if(length(object$RMASCA$loading) == 3){
+  if(length(object$ALASCA$loading) == 3){
     gg <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = group, group = NA)) +
       ggplot2::geom_point() +
       ggplot2::geom_line() +
@@ -106,32 +106,32 @@ screeplot.RMASCA <- function(object, effect = "both"){
 
 #' Get loadings
 #'
-#' This function  returns the loadings for an RMASCA model
+#' This function  returns the loadings for an ALASCA model
 #'
-#' @param object An RMASCA object
+#' @param object An ALASCA object
 #' @return A list with loadings for time (and group), and the exploratory power for each component
 #' @export
 getLoadings <- function(object){
-  object$RMASCA$loading$time <- object$RMASCA$loading$time[!duplicated(object$RMASCA$loading$time),]
-  if(length(object$RMASCA$loading) == 3){
-    object$RMASCA$loading$group <- object$RMASCA$loading$group[!duplicated(object$RMASCA$loading$group),]
+  object$ALASCA$loading$time <- object$ALASCA$loading$time[!duplicated(object$ALASCA$loading$time),]
+  if(length(object$ALASCA$loading) == 3){
+    object$ALASCA$loading$group <- object$ALASCA$loading$group[!duplicated(object$ALASCA$loading$group),]
   }
-  return(object$RMASCA$loading)
+  return(object$ALASCA$loading)
 }
 
 #' Get scores
 #'
-#' This function returns the scores for an RMASCA model
+#' This function returns the scores for an ALASCA model
 #'
-#' @param object An RMASCA object
+#' @param object An ALASCA object
 #' @return A list with scores for time (and group), and the exploratory power for each component
 #' @export
 getScores <- function(object){
-  object$RMASCA$score$time <- object$RMASCA$score$time[!duplicated(object$RMASCA$score$time),]
-  if(length(object$RMASCA$score) == 3){
-    object$RMASCA$score$group <- object$RMASCA$score$group[!duplicated(object$RMASCA$score$group),]
+  object$ALASCA$score$time <- object$ALASCA$score$time[!duplicated(object$ALASCA$score$time),]
+  if(length(object$ALASCA$score) == 3){
+    object$ALASCA$score$group <- object$ALASCA$score$group[!duplicated(object$ALASCA$score$group),]
   }
-  return(object$RMASCA$score)
+  return(object$ALASCA$score)
 }
 
 #' Get loading plot
@@ -141,7 +141,7 @@ getScores <- function(object){
 #' Any rows with duplicated row names will be dropped with the first one being
 #' kepted.
 #'
-#' @param object An RMASCA object
+#' @param object An ALASCA object
 #' @param component Which component to plot?
 #' @param effect Plot time or group
 #' @param decreasingLoadings Logical. Should loading sbe sorted in decreasing order?
@@ -177,7 +177,7 @@ getLoadingPlot <- function(object, component = "PC1", effect = "time", decreasin
   g <- g +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust=1)) +
     ggplot2::labs(x = "Variable",
-                  y = paste0(component, " (", round(100*ifelse(effect == "time", object$RMASCA$loading$explained$time[PC],object$RMASCA$loading$explained$group[PC]),2),"%)"))
+                  y = paste0(component, " (", round(100*ifelse(effect == "time", object$ALASCA$loading$explained$time[PC],object$ALASCA$loading$explained$group[PC]),2),"%)"))
   if(!any(is.na(highlight))){
     g <- g + ggplot2::geom_point(color = ifelse(loadings$covars %in% highlight, "red", "grey")) +
       ggrepel::geom_text_repel(data = subset(loadings, covars %in% highlight), ggplot2::aes(label=covars), max.iter	= 5000) +
@@ -205,17 +205,17 @@ getLoadingPlot <- function(object, component = "PC1", effect = "time", decreasin
 #' Any rows with duplicated row names will be dropped with the first one being
 #' kepted.
 #'
-#' @param object An RMASCA object
+#' @param object An ALASCA object
 #' @param component Which component to plot?
 #' @param effect Plot time or group
 #' @return A ggplot object
 getScorePlot <- function(object, component = "PC1", effect = "time"){
   pointSize <- 0.4
-  PC <- which(colnames(object$RMASCA$score$time) == component)
+  PC <- which(colnames(object$ALASCA$score$time) == component)
   if(effect == "time"){
     if(object$separateTimeAndGroup){
       score <- data.frame(
-                          score = object$RMASCA$score$time[,PC],
+                          score = object$ALASCA$score$time[,PC],
                           time = object$parts$time
                           )
       score <- score[!duplicated(score),]
@@ -230,7 +230,7 @@ getScorePlot <- function(object, component = "PC1", effect = "time"){
       }
     }else{
       score <- data.frame(
-        score = object$RMASCA$score$time[,PC],
+        score = object$ALASCA$score$time[,PC],
         time = object$parts$time,
         group = object$parts$group
       )
@@ -248,10 +248,10 @@ getScorePlot <- function(object, component = "PC1", effect = "time"){
     }
     g <- g +
       ggplot2::theme(legend.position = "bottom") +
-      ggplot2::labs(x = "Time", y = paste0(component, " (",round(100*object$RMASCA$score$explained$time[PC],2),"%)"))
+      ggplot2::labs(x = "Time", y = paste0(component, " (",round(100*object$ALASCA$score$explained$time[PC],2),"%)"))
   }else{
     score <- data.frame(
-      score = object$RMASCA$score$group[,PC],
+      score = object$ALASCA$score$group[,PC],
       time = object$parts$time,
       group = object$parts$group
     )
@@ -268,19 +268,19 @@ getScorePlot <- function(object, component = "PC1", effect = "time"){
     }
     g <- g +
       ggplot2::theme(legend.position = "bottom") +
-      ggplot2::labs(x = "Time", y = paste0(component, " (",round(100*object$RMASCA$score$explained$group[PC],2),"%)"))
+      ggplot2::labs(x = "Time", y = paste0(component, " (",round(100*object$ALASCA$score$explained$group[PC],2),"%)"))
   }
   return(g)
 }
 
 #' Plot participants
 #'
-#' This function returns the scores for an RMASCA model
+#' This function returns the scores for an ALASCA model
 #'
-#' @param object An RMASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the RMASCA model before.
+#' @param object An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.
 #' @param variable List of variable names to print. If `NA`, return all (default).
-#' @param participantColumn Specify the column with participant identifier. Not necessary if you have already provided it to the RMASCA object
-#' @param valueColumn Specify column with values (y axis). Not necessary to provide if you are plotting an RMASCA object.
+#' @param participantColumn Specify the column with participant identifier. Not necessary if you have already provided it to the ALASCA object
+#' @param valueColumn Specify column with values (y axis). Not necessary to provide if you are plotting an ALASCA object.
 #' @param timeColumn Specify column with times (x axis). Defaults to `time`.
 #' @param addSmooth. Specify which geom_smooth model you want to apply, eg. `lm`, `glm`, `gam`, `loess` (default). Set to `NA` to remove.
 #' @return A list with ggplot2 objects.
@@ -306,7 +306,7 @@ plotParts <- function(object, variable = NA, participantColumn = FALSE, valueCol
       participantColumn <- participantColumn
       valueColumn <- valueColumn
     }
-  }else if(is(object, "RMASCA")){
+  }else if(is(object, "ALASCA")){
     df <- object$df
     valueColumn <- as.character(object$formula)[2]
     if(any(participantColumn == FALSE)){
@@ -317,7 +317,7 @@ plotParts <- function(object, variable = NA, participantColumn = FALSE, valueCol
       }
     }
   }else{
-    stop("Wrong input object: must be a RMASCA model or a data frame")
+    stop("Wrong input object: must be a ALASCA model or a data frame")
   }
   plotFunction <- function(df, timeColumn, valueColumn, participantColumn, xi, addSmooth){
     g <- ggplot2::ggplot(subset(df, variable == xi), ggplot2::aes_string(x = timeColumn, y = valueColumn, color = "group", group = participantColumn)) + 
@@ -342,9 +342,9 @@ plotParts <- function(object, variable = NA, participantColumn = FALSE, valueCol
 
 #' Plot model predictions
 #'
-#' This function returns the scores for an RMASCA model
+#' This function returns the scores for an ALASCA model
 #'
-#' @param object An RMASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the RMASCA model before.
+#' @param object An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.
 #' @param variable List of variable names to print. If `NA`, return all (default).
 #' @return A list with ggplot2 objects.
 #' 
@@ -398,7 +398,7 @@ plotPred <- function(object, variable = NA){
 #'
 #' This function returns a plot of the validation models
 #'
-#' @param object A validated RMASCA object
+#' @param object A validated ALASCA object
 #' @param component Which component to plot (default: "PC1")
 #' @return A list with ggplot2 objects.
 #' 

@@ -1,8 +1,8 @@
-#' Get an RMASCA object
+#' Get an ALASCA object
 #' 
-#' `RMASCA` initializes an RMASCA model and returns an RMASCA object
+#' `ALASCA` initializes an ALASCA model and returns an ALASCA object
 #'
-#' This function builds your RMASCA model. It needs a data frame containing at least a column identifying participants, a column called `time` contining time information, a column `group` containing group information, a column `variable` containing variable names, and a value column. In addition you need to specify the model you want, and whether you want to separate group and time effects (defaults to `TRUE`).
+#' This function builds your ALASCA model. It needs a data frame containing at least a column identifying participants, a column called `time` contining time information, a column `group` containing group information, a column `variable` containing variable names, and a value column. In addition you need to specify the model you want, and whether you want to separate group and time effects (defaults to `TRUE`).
 #'
 #' @param df Data frame to be analyzed
 #' @param formula Regression model
@@ -19,14 +19,14 @@
 #' @param validationMethod among  `loo` (leave-one-out, default)
 #' @param validationObject Don't worry about me:)
 #' @param validationParticipants Don't worry about me:)
-#' @return An RMASCA object
+#' @return An ALASCA object
 #' 
 #' @examples
 #' load("PE.Rdata")
-#' model <- RMASCA(df = df, formula = value~time*group + (1|ID))
+#' model <- ALASCA(df = df, formula = value~time*group + (1|ID))
 #' 
 #' @export
-RMASCA <- function(df,
+ALASCA <- function(df,
                    formula,
                    separateTimeAndGroup = TRUE,
                    pAdjustMethod = NA,
@@ -77,7 +77,7 @@ RMASCA <- function(df,
                    validationParticipants = validationParticipants
     )
   }
-  class(object) <- "RMASCA"
+  class(object) <- "ALASCA"
 
   #start.time <- Sys.time()
   object <- sanitizeObject(object)
@@ -118,12 +118,12 @@ RMASCA <- function(df,
   return(object)
 }
 
-#' Sanitize an RMASCA object
+#' Sanitize an ALASCA object
 #'
-#' This function checks that the input to an RMASCA object is as expected
+#' This function checks that the input to an ALASCA object is as expected
 #'
-#' @param object An RMASCA object to be sanitized
-#' @return An RMASCA object
+#' @param object An ALASCA object to be sanitized
+#' @return An ALASCA object
 sanitizeObject <- function(object){
   # Check that the input is as expected
   if(!("time" %in% colnames(object$df))){
@@ -198,10 +198,10 @@ sanitizeObject <- function(object){
 
 #' Remove df from objectt
 #'
-#' This function checks that the input to an RMASCA object is as expected
+#' This function checks that the input to an ALASCA object is as expected
 #'
-#' @param object An RMASCA object
-#' @return An RMASCA object
+#' @param object An ALASCA object
+#' @return An ALASCA object
 removeEmbedded <- function(object){
   object$df <- NULL
   object$dfRaw <- NULL
@@ -212,23 +212,23 @@ removeEmbedded <- function(object){
   return(object)
 }
 
-#' Flip an RMASCA object
+#' Flip an ALASCA object
 #'
 #' Changes the sign of loadings and scores
 #'
-#' @param object An RMASCA object
-#' @return An RMASCA object
+#' @param object An ALASCA object
+#' @return An ALASCA object
 #' @export
 flipIt <- function(object){
-  PC_col <- Reduce(cbind,lapply(object$RMASCA$score$time[1,], FUN = function(x) is.numeric(x)))
-  object$RMASCA$score$time[,PC_col] <- object$RMASCA$score$time[,PC_col]*(-1)
-  PC_col <- Reduce(cbind,lapply(object$RMASCA$loading$time[1,], FUN = function(x) is.numeric(x)))
-  object$RMASCA$loading$time[,PC_col] <- object$RMASCA$loading$time[,PC_col]*(-1)
+  PC_col <- Reduce(cbind,lapply(object$ALASCA$score$time[1,], FUN = function(x) is.numeric(x)))
+  object$ALASCA$score$time[,PC_col] <- object$ALASCA$score$time[,PC_col]*(-1)
+  PC_col <- Reduce(cbind,lapply(object$ALASCA$loading$time[1,], FUN = function(x) is.numeric(x)))
+  object$ALASCA$loading$time[,PC_col] <- object$ALASCA$loading$time[,PC_col]*(-1)
   if(object$separateTimeAndGroup){
-    PC_col <- Reduce(cbind,lapply(object$RMASCA$score$group[1,], FUN = function(x) is.numeric(x)))
-    object$RMASCA$score$group[,PC_col] <- object$RMASCA$score$group[,PC_col]*(-1)
-    PC_col <- Reduce(cbind,lapply(object$RMASCA$loading$group[1,], FUN = function(x) is.numeric(x)))
-    object$RMASCA$loading$group[,PC_col] <- object$RMASCA$loading$group[,PC_col]*(-1)
+    PC_col <- Reduce(cbind,lapply(object$ALASCA$score$group[1,], FUN = function(x) is.numeric(x)))
+    object$ALASCA$score$group[,PC_col] <- object$ALASCA$score$group[,PC_col]*(-1)
+    PC_col <- Reduce(cbind,lapply(object$ALASCA$loading$group[1,], FUN = function(x) is.numeric(x)))
+    object$ALASCA$loading$group[,PC_col] <- object$ALASCA$loading$group[,PC_col]*(-1)
   }
   if(object$validate){
     PC_col <- Reduce(cbind,lapply(object$validation$score$time[1,], FUN = function(x) is.numeric(x)))
