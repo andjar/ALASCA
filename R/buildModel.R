@@ -1,44 +1,85 @@
-#' Get LMM coefficients
+#' Organize the ALASCA model construction
 #'
-#' This function calculates the LMM coefficients for the ALASCA-model
+#' This function builds the ALASCA model
 #'
-#' @param object An ALASCA object to be sanitized
+#' @param object An ALASCA object
 #' @return An ALASCA object
-getLMECoefficients <- function(object){
+buildModel <- function(object){
   if(!object$minimizeObject){
-    cat("Calculating LMM coefficients...\n")
+    # This is a validation run
+    cat("Calculating ",object$method," coefficients...\n")
   }
-  lmer.model <- list()
+  object <- runRegression(object)
+  object <- getRegressionCoefficients(object)
+  if(!object$minimizeObject){
+    # This is a validation run
+    cat("Finished calculating regression coefficients!\n")
+  }
+  object <- removeCovars(object)
+  object <- separateLMECoefficients(object)
+  object <- getEffectMatrix(object)
+  object <- doPCA(object)
+  object <- cleanPCA(object)
+  return(object)
+}
+
+#' Run regressions
+#'
+#' This function runs the underlying regression models
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+runRegression <- function(object){
+  
+  regr.model <- list()
   fdf <- data.frame()
   cyts <- unique(object$df$variable)
   cc <- 1
   ccc <- 1
-
-    object$lmer.models <- lapply(unique(object$df$variable), function(i){
-      if(object$method == "LM"){
-        lmer.model <- lm(object$formula, data = subset(object$df, variable == i))
-      }else{
-        lmer.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
-      }
-      
-      if(object$forceEqualBaseline){
-        X <- model.matrix(lmer.model)
-        baselineLabel <- paste0("time", unique(object$df$time)[1])
-        X <- X[, substr(colnames(X),1,nchar(baselineLabel)) != baselineLabel]
-        newFormula <- as.character(object$formula)
-        newFormulaPred <- strsplit(as.character(newFormula[3]), "\\+")[[1]]
-        newFormulaPred <- newFormulaPred[Reduce(cbind,lapply(newFormulaPred, function (x) grepl("\\(",x)))]
-        newFormula <- paste(newFormula[2],"~","X +",newFormulaPred, collapse = " ")
-        object$newFormula <- formula(newFormula)
-        lmer.model <- lmerTest::lmer(object$newFormula, data = subset(object$df, variable == i))
-      }
-      attr(lmer.model, "name") <- i
-      lmer.model
+  
+  object$regr.model <- lapply(unique(object$df$variable), function(i){
+    if(object$method == "LM"){
+      regr.model <- lm(object$formula, data = subset(object$df, variable == i))
+    }else{
+      regr.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
     }
+    
+    if(object$forceEqualBaseline){
+      # Remove interaction between group and first time point
+      
+      X <- model.matrix(regr.model)
+      baselineLabel <- paste0("time", unique(object$df$time)[1])
+      X <- X[, substr(colnames(X),1,nchar(baselineLabel)) != baselineLabel]
+      newFormula <- as.character(object$formula)
+      newFormulaPred <- strsplit(as.character(newFormula[3]), "\\+")[[1]]
+      newFormulaPred <- newFormulaPred[Reduce(cbind,lapply(newFormulaPred, function (x) grepl("\\(",x)))]
+      newFormula <- paste(newFormula[2],"~","X +",newFormulaPred, collapse = " ")
+      object$newFormula <- formula(newFormula)
+      if(object$method == "LM"){
+        regr.model <- lm(object$newFormula, data = subset(object$df, variable == i))
+      }else{
+        regr.model <- lmerTest::lmer(object$newFormula, data = subset(object$df, variable == i))
+      }
+    }
+    attr(regr.model, "name") <- i
+    regr.model
+  }
   )
   
-  names(object$lmer.models) <- unique(object$df$variable)
-  fdf <- Reduce(rbind,lapply(object$lmer.models, function(y){
+  names(object$regr.model) <- unique(object$df$variable)
+  
+  return(object)
+}
+
+#' Get regression coefficients
+#'
+#' This function extract the regression coefficients for the ALASCA model
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+getRegressionCoefficients <- function(object){
+  
+  fdf <- Reduce(rbind,lapply(object$regr.model, function(y){
     if(object$method == "LM"){
       tmp_ef <- coef(y)
       a <- as.data.frame(summary(y)[["coefficients"]][,c(1,4)])
@@ -55,20 +96,16 @@ getLMECoefficients <- function(object){
     fdf$variable[substr(fdf$variable,1,1) == "X"] <- substr(fdf$variable[substr(fdf$variable,1,1) == "X"],2,nchar(fdf$variable[substr(fdf$variable,1,1) == "X"]))
   }
   
-  if(!object$minimizeObject){
-    cat("Finished calculating LMM coefficients!\n")
-  }
-  
   colnames(fdf) <- c("estimate", "pvalue", "covar", "variable")
   
   if(!is.na(object$pAdjustMethod)){
     cat("Adjusting p values...\n")
-    object$LMM.coefficients$pvalue_adj <- NA
-    for(i in unique(object$LMM.coefficients$covar)){
-      object$LMM.coefficients$pvalue_adj[object$LMM.coefficients$covar == i, ] <- p.adjust(object$LMM.coefficients$pvalue[object$LMM.coefficients$covar == i, ], method = object$pAdjustMethod)
+    object$RegressionCoefficients$pvalue_adj <- NA
+    for(i in unique(object$RegressionCoefficients$covar)){
+      object$RegressionCoefficients$pvalue_adj[object$RegressionCoefficients$covar == i, ] <- p.adjust(object$RegressionCoefficients$pvalue[object$RegressionCoefficients$covar == i, ], method = object$pAdjustMethod)
     }
   }
-  object$LMM.coefficients <- fdf
+  object$RegressionCoefficients <- fdf
 
   return(object)
 }
@@ -81,7 +118,7 @@ getLMECoefficients <- function(object){
 #' @return An ALASCA object
 removeCovars <- function(object){
   for(i in unique(object$covars)){
-    object$LMM.coefficients <- subset(object$LMM.coefficients, substr(variable, 1, nchar(i)) != i)
+    object$RegressionCoefficients <- subset(object$RegressionCoefficients, substr(variable, 1, nchar(i)) != i)
   }
   return(object)
 }
@@ -93,10 +130,10 @@ removeCovars <- function(object){
 #' @param object An ALASCA object to be sanitized
 #' @return An ALASCA object
 separateLMECoefficients <- function(object){
-  object$LMM.coefficients$comp <- "TIME"
+  object$RegressionCoefficients$comp <- "TIME"
   if(object$separateTimeAndGroup){
-    object$LMM.coefficients$comp[!(object$LMM.coefficients$variable == "(Intercept)" |
-                                  (substr(object$LMM.coefficients$variable, 1, 4) == "time" & !grepl(":",object$LMM.coefficients$variable)))
+    object$RegressionCoefficients$comp[!(object$RegressionCoefficients$variable == "(Intercept)" |
+                                  (substr(object$RegressionCoefficients$variable, 1, 4) == "time" & !grepl(":",object$RegressionCoefficients$variable)))
                                  ] <- "GROUP"
   }
   return(object)
@@ -123,7 +160,7 @@ getEffectMatrix <- function(object){
     colnames(Dmatrix)[substr(colnames(Dmatrix),1,1) == "X"] <- substr(colnames(Dmatrix)[substr(colnames(Dmatrix),1,1) == "X"],2,nchar(colnames(Dmatrix)[substr(colnames(Dmatrix),1,1) == "X"]))
   }
   if(object$separateTimeAndGroup){
-    BmatrixTime <- object$LMM.coefficients[object$LMM.coefficients$comp == "TIME",c("covar","estimate","variable")]
+    BmatrixTime <- object$RegressionCoefficients[object$RegressionCoefficients$comp == "TIME",c("covar","estimate","variable")]
     BmatrixTime <- reshape2::dcast(BmatrixTime, formula = variable~covar, value.var = "estimate")
     selectDColumnsTime <- colnames(Dmatrix) %in% BmatrixTime$variable
     rowOrder <- c()
@@ -137,7 +174,7 @@ getEffectMatrix <- function(object){
     AmatrixTime <- as.data.frame(as.matrix(Dmatrix[,selectDColumnsTime])%*%as.matrix(BmatrixTime[,2:ncol(BmatrixTime)]))
     AmatrixTime$comp <- "TIME"
     
-    BmatrixGroup <- object$LMM.coefficients[object$LMM.coefficients$comp == "GROUP",c("covar","estimate","variable")]
+    BmatrixGroup <- object$RegressionCoefficients[object$RegressionCoefficients$comp == "GROUP",c("covar","estimate","variable")]
     BmatrixGroup <- reshape2::dcast(BmatrixGroup, formula = variable~covar, value.var = "estimate")
     selectDColumnsGroup <- colnames(Dmatrix) %in% BmatrixGroup$variable
     rowOrder <- c()
@@ -153,7 +190,7 @@ getEffectMatrix <- function(object){
     object$effect.matrix <- rbind(AmatrixTime, AmatrixGroup)
     
   }else{
-    BmatrixTime <- object$LMM.coefficients[object$LMM.coefficients$comp == "TIME",c("covar","estimate","variable")]
+    BmatrixTime <- object$RegressionCoefficients[object$RegressionCoefficients$comp == "TIME",c("covar","estimate","variable")]
     BmatrixTime <- reshape2::dcast(BmatrixTime, formula = variable~covar, value.var = "estimate")
     selectDColumnsTime <- colnames(Dmatrix) %in% BmatrixTime$variable
     rowOrder <- c()

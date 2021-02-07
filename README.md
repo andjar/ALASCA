@@ -22,6 +22,7 @@ For a working example, see [Get Started](articles/ALASCA.html). For different ca
 ALASCA expects a data frame, eg. `df`, with at least the following columns (with these exact names)
 
 * `time` Either factor, string or integer. Defines when a sample is taken.
+  * Note: Even though you call it `time`, it can contain other variable values, eg. age or BMI!
 * `variable` Either a factor or a string. The measured variable.
 * `group` Either a factor, string or integer. Defines the group of a participant
 

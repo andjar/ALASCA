@@ -459,7 +459,7 @@ qqline(residuals(res.simple, variable = "BMI")[[1]])
 As you probably noticed above, you can use the `summary()` function to view the p values from your LMMs, but a shortcut is
 
 ```{r lmm_pvalues}
-head(res.simple$LMM.coefficient)
+head(res.simple$RegressionCoefficients)
 ```
 
 ## References

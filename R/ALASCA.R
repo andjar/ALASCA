@@ -86,12 +86,7 @@ ALASCA <- function(df,
   class(object) <- "ALASCA"
 
   object <- sanitizeObject(object)
-  object <- getLMECoefficients(object)
-  object <- removeCovars(object)
-  object <- separateLMECoefficients(object)
-  object <- getEffectMatrix(object)
-  object <- doPCA(object)
-  object <- cleanPCA(object)
+  object <- buildModel(object)
   
   if(object$minimizeObject){
     # To save space, we remove unnecessary embedded data
@@ -238,8 +233,8 @@ removeEmbedded <- function(object){
   object$df <- NULL
   object$dfRaw <- NULL
   object$validationObject <- NULL
-  object$lmer.models <- NULL
-  object$LMM.coefficients <- NULL
+  object$regr.model <- NULL
+  object$RegressionCoefficients <- NULL
   object$effect.matrix <- NULL
   return(object)
 }
