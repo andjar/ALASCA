@@ -1,5 +1,5 @@
-Package: RMASCA
-Title: Repeated Measures extended ASCA
+Package: ALASCA
+Title: Assorted, Linear ASCA Functions
 Version: 0.0.0.9
 Authors@R: 
     person(given = "Anders H.",
@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "anders.h.jarmund@ntnu.no",
            comment = c(ORCID = "0000-0002-3923-1637"))
-Description: Perform Repeated Measures extended ANOVA Simultaneous Component Analysis (RM-ASCA+) on multivariate, longitudinal data with repeated measures
+Description: Perform ASCA with various underlying models
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

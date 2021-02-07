@@ -6,25 +6,25 @@ development:
   version_label: danger
   version_tooltip: "Under development"
 home:
-  title: "An R package for RM-ASCA+"
-  description: "Multivariate analysis of repeated measures data"
+  title: "Assorted, Linear ASCA Functions"
+  description: "Multivariate analysis of data"
 reference:
-- title: "Running RMASCA"
+- title: "Running ASCA"
   desc: "Functions for performing analysis and work with the results"
 - contents: 
-  - RMASCA
+  - ALASCA
   - validate
   - getScores
   - getLoadings
 - title: "Plotting"
   desc: "Functions for visualizing results"
 - contents: 
-  - plot.RMASCA
-  - screeplot.RMASCA
+  - plot.ALASCA
+  - screeplot.ALASCA
   - plotParts
   - plotPred
   - plotVal
 - title: "Diagnostics"
   desc: "Functions for checking statistical validity"
 - contents: 
-  - residuals.RMASCA
+  - residuals.ALASCA
