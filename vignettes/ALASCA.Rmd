@@ -2,7 +2,7 @@
 title: "Get Started"
 author: "Anders H. Jarmund"
 date: "`r Sys.Date()`"
-bibliography: rmasca.bib
+bibliography: ALASCA.bib
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Get Started}
@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Introduction to RM-ASCA+
+# Introduction to ALASCA
 
 <script src="js/hideOutput.js"></script>
 <style>
@@ -54,18 +54,18 @@ pre.plot {
 </style>
 
 ```{r setup}
-library(RMASCA)
+library(ALASCA)
 library(ggplot2)
 ```
 
-This vignette demonstrates the basic functionality of the [RMASCA package](https://andjar.github.io/RMASCA). For more detailed case studies, see
+This vignette demonstrates the basic functionality of the [ALASCA package](https://andjar.github.io/ALASCA). For more detailed case studies, see
 
 * For analysis of **interventional**, see [the vignette on metabolomics](metabolomics.html)
 * For analysis of **observational** data, see [the vignette on early preeclampsia](pregnancy.html)
 
 In general, you need to start by deciding what kind of model you want to set up. RMSCA builds on linear mixed models, and you are required to have at least one random intercept (usually participant). You need to decide if you want to separate time and group effects (`separateTimeAndGroup = TRUE/FALSE`) and, if you are working with interventional data, whether you want a common baseline between groups (`forceEqualBaseline = TRUE`).
 
-Next, you need to think through whether you want to scale your data. If not, use `scaleFun = FALSE`, but default is `scaleFun = TRUE` corresponding to z score transformation. Often you want to use a custom scaling function, for example mean centering but dividing by the standard deviation at baseline. The custom scaling function, eg. `foo(df)` should have your data frame as both input and output and be provided to RMASCA() (`scaleFun = foo`). You should *not* do the scaling yourself as this can result in information leak during validation, which should be avoided.
+Next, you need to think through whether you want to scale your data. If not, use `scaleFun = FALSE`, but default is `scaleFun = TRUE` corresponding to z score transformation. Often you want to use a custom scaling function, for example mean centering but dividing by the standard deviation at baseline. The custom scaling function, eg. `foo(df)` should have your data frame as both input and output and be provided to ALASCA() (`scaleFun = foo`). You should *not* do the scaling yourself as this can result in information leak during validation, which should be avoided.
 
 <div class="alert alert-info">
 <strong>How do I know what scaling to use?</strong> There is no straight answer, but have a look at @timmermanScalingANOVAsimultaneousComponent2015.
@@ -98,7 +98,7 @@ variables <- c("BMI", "Glucose", "VLDL", "LDL", "HDL", "ferritin", "CRP", "Happi
 ```
 </div>
 
-The `RMASCA()` function expects a data frame in long format that contains at least one column for time (called `time`), one for group (called `group`) and one for variables (called `variable`).
+The `ALASCA()` function expects a data frame in long format that contains at least one column for time (called `time`), one for group (called `group`) and one for variables (called `variable`).
 
 <div class="fold s">
 ```{r dummy_data}
@@ -191,24 +191,24 @@ do.call(
 
 ## Using RM-ASCA+
 
-Now that we have a data set, let us try the `RMASCA()` function! First we need to decide what kind of model we want. For simplicity, let us start with a very simple model with terms for time, group and interaction.
+Now that we have a data set, let us try the `ALASCA()` function! First we need to decide what kind of model we want. For simplicity, let us start with a very simple model with terms for time, group and interaction.
 
-```{r RMASCA_simple_model}
+```{r ALASCA_simple_model}
 model.formula <- value ~ time*group + (1|partid)
-res.simple <- RMASCA(df = df, formula = model.formula)
+res.simple <- ALASCA(df = df, formula = model.formula)
 ```
 
 <div class="alert alert-info">
-<strong>What does "Scaling data" mean?</strong> It is often necessary to rescale your data, and `RMASCA()` defaults to transforming each variable to z scores. You can turn this off by setting `scaleFun = FALSE`. You can also define your own scaling function, `foo <- function(df)` and provide it as an argument `scaleFun = foo`. You should *not* do such scaling beforehand (although simple log transformations are okay) since the validation involves selecting subsets from your data and the variables need to be scaled based on that subset to prevent data leak into you validation data sets.
+<strong>What does "Scaling data" mean?</strong> It is often necessary to rescale your data, and `ALASCA()` defaults to transforming each variable to z scores. You can turn this off by setting `scaleFun = FALSE`. You can also define your own scaling function, `foo <- function(df)` and provide it as an argument `scaleFun = foo`. You should *not* do such scaling beforehand (although simple log transformations are okay) since the validation involves selecting subsets from your data and the variables need to be scaled based on that subset to prevent data leak into you validation data sets.
 </div>
 
 <div class="alert alert-info">
-<strong>What is meant by formula?</strong> RMASCA builds on linear mixed models, and you need to specify a regression model that includes at least one random intercept. In R, a regression formula typically looks like `y ~ x1 + x2` that will result in an intercept and a beta coefficient for `x1` and `x2`. For `RMASCA()`, you will often use a formula like `value ~ time*group + (1|participantID)`. Here, `participantID` represents the random intercept, whereas `time*group` is shorthand for `time + group + time:group` -- that is, main effects for time and group, and their interaction (`time:group`). You can also specify *only* time and interaction if you think that there are no main group effect by using `value ~ time + time:group + (1|participantID)`. Note, however, that there is an interaction term between group and first time point that you can remove by specifying `forceEqualBaseline = TRUE`. Various models are demonstrated below and in the case studies for [metabolomics](metabolomics.html) and [preeclampsia](pregnancy.html).
+<strong>What is meant by formula?</strong> ALASCA builds on linear mixed models, and you need to specify a regression model that includes at least one random intercept. In R, a regression formula typically looks like `y ~ x1 + x2` that will result in an intercept and a beta coefficient for `x1` and `x2`. For `ALASCA()`, you will often use a formula like `value ~ time*group + (1|participantID)`. Here, `participantID` represents the random intercept, whereas `time*group` is shorthand for `time + group + time:group` -- that is, main effects for time and group, and their interaction (`time:group`). You can also specify *only* time and interaction if you think that there are no main group effect by using `value ~ time + time:group + (1|participantID)`. Note, however, that there is an interaction term between group and first time point that you can remove by specifying `forceEqualBaseline = TRUE`. Various models are demonstrated below and in the case studies for [metabolomics](metabolomics.html) and [preeclampsia](pregnancy.html).
 </div>
 
 To visualize the result, simply use `plot(res.simple)`;
 
-```{r RMASCA_simple_model_plot_PC1}
+```{r ALASCA_simple_model_plot_PC1}
 plot(res.simple)
 ```
 Let us interpret the figure from top left:
@@ -220,7 +220,7 @@ Let us interpret the figure from top left:
 
 However, that is only the first component. In this case, that variable alone explains most of the variation in the data (>99%). Let us plot the second component too:
 
-```{r RMASCA_simple_model_plot_PC2}
+```{r ALASCA_simple_model_plot_PC2}
 plot(res.simple, component = "PC2")
 ```
 
@@ -229,7 +229,7 @@ The interpretation is similar to the one above. We are most interested in the bo
 We can explore this by visualizing predictions on group level from the underlying linear mixed models. For example
 
 <div class="fold s">
-```{r RMASCA_simple_model_plotPred}
+```{r ALASCA_simple_model_plotPred}
 do.call(
   ggpubr::ggarrange,
   c(plotPred(res.simple, variable = c("BMI", "Age", "Happiness", "Anger")), 
@@ -246,7 +246,7 @@ do.call(
 
 So, how many components do we need? With PCA, the first component is always the one explaining most variance. We can look at how much the various components explain,
 
-```{r RMASCA_screeplot}
+```{r ALASCA_screeplot}
 screeplot(res.simple)
 ```
 
@@ -257,7 +257,7 @@ And it seems that we should use PC1 for the time effect, but probably both PC1 a
 Often, we want some more control over the plots. Luckily, we can easily get the necessary data using `getLoadings()` and `getScores()`. For example
 
 <div class="fold s">
-```{r RMASCA_custom_plot}
+```{r ALASCA_custom_plot}
 scores <- getScores(res.simple)
 loadings <- getLoadings(res.simple)
 tplot_score <- function(df, x, y, group, color = NA){
@@ -319,7 +319,7 @@ ggpubr::ggarrange(
 Note that we can also call the various parts of the plot directly, and apply styles as we wish, for example
 
 <div class="fold s">
-```{r RMASCA_custom_plot_2}
+```{r ALASCA_custom_plot_2}
 ggpubr::ggarrange(
   ggpubr::ggarrange(plot(res.simple, effect = "time", only = "score") + theme_bw(), 
                     plot(res.simple, effect = "time", only = "loading") + theme_bw(), 
@@ -340,7 +340,7 @@ ggpubr::ggarrange(
 
 ### Robustness testing
 
-We often need to now how robust our results are. In this package, we use leave-one-out jack-knifing where we divide our participants into `nValFold` groups and leave out one of the groups. Note that the group proportions are kept relatively stable. We repeat this process `nValRuns` times and use the 2.5 and 97.5 percentiles as our uncertainty estimate. If you know that you are going to do this, you can set `validate = TRUE` when you run the RMASCA model the first time. This usually takes some time (but it is extra slow in rmarkdown, so don't be scared, outside knitr it used less than two-three seconds per run on my computer). Also note that we need to specify which column that contains participant id with the argument `partid`. We can also call validation after having initialized the RMASCA object:
+We often need to now how robust our results are. In this package, we use leave-one-out jack-knifing where we divide our participants into `nValFold` groups and leave out one of the groups. Note that the group proportions are kept relatively stable. We repeat this process `nValRuns` times and use the 2.5 and 97.5 percentiles as our uncertainty estimate. If you know that you are going to do this, you can set `validate = TRUE` when you run the ALASCA model the first time. This usually takes some time (but it is extra slow in rmarkdown, so don't be scared, outside knitr it used less than two-three seconds per run on my computer). Also note that we need to specify which column that contains participant id with the argument `partid`. We can also call validation after having initialized the ALASCA object:
 
 ```{r robustness}
 res.simple$nValRuns <- 20 # you should use more, but this is simply an example
@@ -353,7 +353,7 @@ plot(res.simple, component = "PC2")
 ```
 
 <div class="alert alert-info">
-<strong>Why no p value?</strong> At the moment, `RMASCA()` does not feature p values, in part because the interpretation might not be straight forward. Instead, we perform **robustness testing**. This is implemented with jack-knifing: divide your participants into *k* groups, and select *k-1* of them. As a default, the participants are stratified by group so that the group proportions are kept constant. You can provide custom stratification groups by specifying a column name, eg. stratGroup, with `stratificationGroup = stratGroup` (Not yet implemented). Nest, we repeat the RMASCA analysis on this subgroup. After repeating this, we collect 2.5 and 97.5 percentiles of scores and loadings to see how stable they are when the underlying data is modified a bit.
+<strong>Why no p value?</strong> At the moment, `ALASCA()` does not feature p values, in part because the interpretation might not be straight forward. Instead, we perform **robustness testing**. This is implemented with jack-knifing: divide your participants into *k* groups, and select *k-1* of them. As a default, the participants are stratified by group so that the group proportions are kept constant. You can provide custom stratification groups by specifying a column name, eg. stratGroup, with `stratificationGroup = stratGroup` (Not yet implemented). Nest, we repeat the ALASCA analysis on this subgroup. After repeating this, we collect 2.5 and 97.5 percentiles of scores and loadings to see how stable they are when the underlying data is modified a bit.
 </div>
 
 ### Alternative models
@@ -362,24 +362,24 @@ plot(res.simple, component = "PC2")
 
 If our experiment was an intervention, then we can assume that the groups were equal at baseline (time 1). Then we can skip the main group effect and only use time and interaction, like this:
 
-```{r RMASCA_model_2}
+```{r ALASCA_model_2}
 model.formula <- value ~ time + time:group + (1|partid)
-res.mod2 <- RMASCA(df = df, formula = model.formula)
+res.mod2 <- ALASCA(df = df, formula = model.formula)
 plot(res.mod2)
 plot(res.mod2, component = "PC2")
 ```
 
 As you can see, it is quite similar to the previous model. Why are they different at the first time point? Well, we can look at the model
 
-```{r RMASCA_model_2_summary}
+```{r ALASCA_model_2_summary}
 summary(res.mod2$lmer.models[[1]])
 ```
 
 And you may notice that there is an interaction term between group and the first time point. To remove it, we have to set `forceEqualBaseline = TRUE`:
 
-```{r RMASCA_model_2b}
+```{r ALASCA_model_2b}
 model.formula <- value ~ time + time:group + (1|partid)
-res.mod2b <- RMASCA(df = df, formula = model.formula, forceEqualBaseline = TRUE)
+res.mod2b <- ALASCA(df = df, formula = model.formula, forceEqualBaseline = TRUE)
 plot(res.mod2b)
 plot(res.mod2b, component = "PC2")
 ```
@@ -388,9 +388,9 @@ plot(res.mod2b, component = "PC2")
 
 Sometimes it doesn't make sense to use a reference group -- for example if we didn't have any controls and the first group had a salt-free diet. We can then use a single PCA instead of separating time and group effects:
 
-```{r RMASCA_model_3}
+```{r ALASCA_model_3}
 model.formula <- value ~ time*group + (1|partid)
-res.mod3 <- RMASCA(df = df, formula = model.formula, separateTimeAndGroup = FALSE)
+res.mod3 <- ALASCA(df = df, formula = model.formula, separateTimeAndGroup = FALSE)
 plot(res.mod3)
 plot(res.mod3, component = "PC2")
 ```
@@ -400,9 +400,9 @@ plot(res.mod3, component = "PC2")
 
 When we don't have any reference group, it may also make sense to use sum coding instead of ordinary contrast coding:
 
-```{r RMASCA_model_3s}
+```{r ALASCA_model_3s}
 model.formula <- value ~ time*group + (1|partid)
-res.mods <- RMASCA(df = df, formula = model.formula, separateTimeAndGroup = FALSE, useSumCoding = TRUE)
+res.mods <- ALASCA(df = df, formula = model.formula, separateTimeAndGroup = FALSE, useSumCoding = TRUE)
 plot(res.mods)
 plot(res.mods, component = "PC2")
 ```
@@ -412,12 +412,12 @@ plot(res.mods, component = "PC2")
 This time we want to adjust for age and not include it in the ASCA itself;
 
 <div class="fold s">
-```{r RMASCA_model_4}
+```{r ALASCA_model_4}
 age <- subset(df, variable == "Age")$value
 df <- subset(df, variable != "Age")
 df$age <- age
 model.formula <- value ~ time*group + age + (1|partid)
-res.mod4 <- RMASCA(df = df, formula = model.formula)
+res.mod4 <- ALASCA(df = df, formula = model.formula)
 plot(res.mod4)
 plot(res.mod4, component = "PC2")
 
@@ -435,7 +435,7 @@ We can see that age is no longer part of the output, and HDL (which was correlat
 
 ### Normal distribution of residuals
 
-RM-ASCA+ is built on linear mixed models, and one should check that the residuals approach normal distribution. With `RMASCA()`, the LMM objects can be found as
+RM-ASCA+ is built on linear mixed models, and one should check that the residuals approach normal distribution. With `ALASCA()`, the LMM objects can be found as
 
 ```{r lmm_info}
 summary(res.simple$lmer.models[[1]])
@@ -451,7 +451,7 @@ qqline(residuals(res.simple, variable = "BMI")[[1]])
 ```
 
 <div class="alert alert-info">
-<strong>Why do I need to write `[[1]]` after `residuals.RMASCA()`?</strong> Because a *list* is returned, even though you only specify a single variable, and you have to look at the first item in the list. If you specify several variables, say `variable = c("BMI", "glucose", "Age")`, you must specify if you want to look at BMI (`[[1]]`), glucose (`[[2]]`) or age (`[[3]]`).
+<strong>Why do I need to write `[[1]]` after `residuals.ALASCA()`?</strong> Because a *list* is returned, even though you only specify a single variable, and you have to look at the first item in the list. If you specify several variables, say `variable = c("BMI", "glucose", "Age")`, you must specify if you want to look at BMI (`[[1]]`), glucose (`[[2]]`) or age (`[[3]]`).
 </div>
 
 ### P values
