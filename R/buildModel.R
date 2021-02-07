@@ -37,28 +37,36 @@ runRegression <- function(object){
   cc <- 1
   ccc <- 1
   
-  object$regr.model <- lapply(unique(object$df$variable), function(i){
+  if(object$forceEqualBaseline){
+    # Remove interaction between group and first time point
     if(object$method == "LM"){
-      regr.model <- lm(object$formula, data = subset(object$df, variable == i))
+      regr.model <- lm(object$formula, data = subset(object$df, variable == unique(object$df$variable)[1]))
     }else{
-      regr.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
+      regr.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == unique(object$df$variable)[1]))
     }
-    
+    X <- model.matrix(regr.model)
+    baselineLabel <- paste0("time", unique(object$df$time)[1])
+    X <- X[, substr(colnames(X),1,nchar(baselineLabel)) != baselineLabel]
+    newFormula <- as.character(object$formula)
+    newFormulaPred <- strsplit(as.character(newFormula[3]), "\\+")[[1]]
+    newFormulaPred <- newFormulaPred[Reduce(cbind,lapply(newFormulaPred, function (x) grepl("\\(",x)))]
+    newFormula <- paste(newFormula[2],"~","X +",newFormulaPred, collapse = " ")
+    object$newFormula <- formula(newFormula)
+    object$X <- X
+  }
+  
+  object$regr.model <- lapply(unique(object$df$variable), function(i){
     if(object$forceEqualBaseline){
-      # Remove interaction between group and first time point
-      
-      X <- model.matrix(regr.model)
-      baselineLabel <- paste0("time", unique(object$df$time)[1])
-      X <- X[, substr(colnames(X),1,nchar(baselineLabel)) != baselineLabel]
-      newFormula <- as.character(object$formula)
-      newFormulaPred <- strsplit(as.character(newFormula[3]), "\\+")[[1]]
-      newFormulaPred <- newFormulaPred[Reduce(cbind,lapply(newFormulaPred, function (x) grepl("\\(",x)))]
-      newFormula <- paste(newFormula[2],"~","X +",newFormulaPred, collapse = " ")
-      object$newFormula <- formula(newFormula)
       if(object$method == "LM"){
         regr.model <- lm(object$newFormula, data = subset(object$df, variable == i))
       }else{
         regr.model <- lmerTest::lmer(object$newFormula, data = subset(object$df, variable == i))
+      }
+    }else{
+      if(object$method == "LM"){
+        regr.model <- lm(object$formula, data = subset(object$df, variable == i))
+      }else{
+        regr.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
       }
     }
     attr(regr.model, "name") <- i
@@ -151,9 +159,9 @@ getEffectMatrix <- function(object){
   }
   parts <- subset(object$df, variable == object$df$variable[1])
   if(object$method == "LM"){
-    Dmatrix <- model.matrix(object$lmer.model[[1]],"X")
+    Dmatrix <- model.matrix(object$regr.model[[1]],"X")
   }else{
-    Dmatrix <- lme4::getME(object$lmer.model[[1]],"X")
+    Dmatrix <- lme4::getME(object$regr.model[[1]],"X")
   }
   
   if(object$forceEqualBaseline){

@@ -247,26 +247,22 @@ removeEmbedded <- function(object){
 #' @return An ALASCA object
 #' @export
 flipIt <- function(object){
-  PC_col <- Reduce(cbind,lapply(object$ALASCA$score$time[1,], FUN = function(x) is.numeric(x)))
-  object$ALASCA$score$time[,PC_col] <- object$ALASCA$score$time[,PC_col]*(-1)
-  PC_col <- Reduce(cbind,lapply(object$ALASCA$loading$time[1,], FUN = function(x) is.numeric(x)))
-  object$ALASCA$loading$time[,PC_col] <- object$ALASCA$loading$time[,PC_col]*(-1)
+  object$ALASCA$score$time$score <- -object$ALASCA$score$time$score
+  object$ALASCA$loading$time$loading <- -object$ALASCA$loading$time$loading
   if(object$separateTimeAndGroup){
-    PC_col <- Reduce(cbind,lapply(object$ALASCA$score$group[1,], FUN = function(x) is.numeric(x)))
-    object$ALASCA$score$group[,PC_col] <- object$ALASCA$score$group[,PC_col]*(-1)
-    PC_col <- Reduce(cbind,lapply(object$ALASCA$loading$group[1,], FUN = function(x) is.numeric(x)))
-    object$ALASCA$loading$group[,PC_col] <- object$ALASCA$loading$group[,PC_col]*(-1)
+    object$ALASCA$score$group$score <- -object$ALASCA$score$group$score
+    object$ALASCA$loading$group$loading <- -object$ALASCA$loading$group$loading
   }
   if(object$validate){
-    PC_col <- Reduce(cbind,lapply(object$validation$score$time[1,], FUN = function(x) is.numeric(x)))
-    object$validation$score$time[,PC_col] <- object$validation$score$time[,PC_col]*(-1)
-    PC_col <- Reduce(cbind,lapply(object$validation$loading$time[1,], FUN = function(x) is.numeric(x)))
-    object$validation$loading$time[,PC_col] <- object$validation$loading$time[,PC_col]*(-1)
+    object$ALASCA$score$time$high <- -object$ALASCA$score$time$high
+    object$ALASCA$loading$time$high <- -object$ALASCA$loading$time$high
+    object$ALASCA$score$time$low <- -object$ALASCA$score$time$low
+    object$ALASCA$loading$time$low <- -object$ALASCA$loading$time$low
     if(object$separateTimeAndGroup){
-      PC_col <- Reduce(cbind,lapply(object$validation$score$group[1,], FUN = function(x) is.numeric(x)))
-      object$validation$score$group[,PC_col] <- object$validation$score$group[,PC_col]*(-1)
-      PC_col <- Reduce(cbind,lapply(object$validation$loading$group[1,], FUN = function(x) is.numeric(x)))
-      object$validation$loading$group[,PC_col] <- object$validation$loading$group[,PC_col]*(-1)
+      object$ALASCA$score$group$high <- -object$ALASCA$score$group$high
+      object$ALASCA$loading$group$high <- -object$ALASCA$loading$group$high
+      object$ALASCA$score$group$low <- -object$ALASCA$score$group$low
+      object$ALASCA$loading$group$low <- -object$ALASCA$loading$group$low
     }
   }
   return(object)

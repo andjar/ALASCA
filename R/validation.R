@@ -30,7 +30,6 @@ validate <- function(object, participantColumn = FALSE){
   for(ii in 1:object$nValRuns){
     cat("- Run ",ii," of ",object$nValRuns,"\n")
     start.time <- Sys.time()
-    selectedParts <- c()
     
     # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
     selectedParts <- Reduce(c,lapply(unique(object$df$group), function(gr){
@@ -83,8 +82,14 @@ validate <- function(object, participantColumn = FALSE){
 #' @param target ALASCA object acting as target
 #' @return An ALASCA object
 rotateMatrix <- function(object, target){
-  a <- object$ALASCA$loading
-  b <- target$ALASCA$loading
+  # We are only looking at components explaining more than 5% of variation
+  PCloading <- target$ALASCA$loading$explained$time > 0.05
+  PCloading[1:2] <- TRUE
+  PCloading <- which(PCloading)
+  
+  
+  a <- object$pca$loading
+  b <- target$pca$loading
   
   procrustes <- function(loadings, target){
     s= t(loadings)%*%target
@@ -103,11 +108,6 @@ rotateMatrix <- function(object, target){
     return(out)
   }
   
-  # We are only looking at components explaining more than 5% of variation
-  PCloading <- target$ALASCA$loading$explained$time > 0.05
-  PCloading[1:2] <- TRUE
-  PCloading <- which(PCloading)
-  
   # PCA can give loadings with either sign, so we have to check whether this improves the rotation
   N   <- length(PCloading)
   vec <- c(-1, 1)
@@ -119,18 +119,18 @@ rotateMatrix <- function(object, target){
     sum((b$time[,PCloading] - c$procrust)^2)
   }))
   minSignVar <- which(signVar == min(signVar))[1]
-  object$ALASCA$loading$time[,PCloading] <- object$ALASCA$loading$time[,PCloading] * signMatrix[minSignVar,]
-  object$ALASCA$score$time[,PCloading] <- object$ALASCA$score$time[,PCloading] * signMatrix[minSignVar,]
-  a <- object$ALASCA$loading
+  object$pca$loading$time[,PCloading] <- object$pca$loading$time[,PCloading] * signMatrix[minSignVar,]
+  object$pca$score$time[,PCloading] <- object$pca$score$time[,PCloading] * signMatrix[minSignVar,]
+  a <- object$pca$loading
   
   c <- procrustes(loadings= as.matrix(a$time[,PCloading]),
                   target = as.matrix(b$time[,PCloading]))
-  object$ALASCA$loading$time[,PCloading] <- c$procrust
-  object$ALASCA$score$time[,PCloading] <- as.matrix(object$ALASCA$score$time[,PCloading]) %*% solve(c$t1)
+  object$pca$loading$time[,PCloading] <- c$procrust
+  object$pca$score$time[,PCloading] <- as.matrix(object$pca$score$time[,PCloading]) %*% solve(c$t1)
   
   if(object$separateTimeAndGroup){
     # We are only looking at components explaining more than 5% of variation
-    PCloading <- target$ALASCA$loading$explained$group > 0.05
+    PCloading <- target$pca$loading$explained$group > 0.05
     PCloading[1:2] <- TRUE
     PCloading <- which(PCloading)
     
@@ -145,14 +145,14 @@ rotateMatrix <- function(object, target){
       sum((b$group[,PCloading] - c$procrust)^2)
     }))
     minSignVar <- which(signVar == min(signVar))[1]
-    object$ALASCA$loading$group[,PCloading] <- object$ALASCA$loading$group[,PCloading] * signMatrix[minSignVar,]
-    object$ALASCA$score$group[,PCloading] <- object$ALASCA$score$group[,PCloading] * signMatrix[minSignVar,]
-    a <- object$ALASCA$loading
+    object$pca$loading$group[,PCloading] <- object$pca$loading$group[,PCloading] * signMatrix[minSignVar,]
+    object$pca$score$group[,PCloading] <- object$pca$score$group[,PCloading] * signMatrix[minSignVar,]
+    a <- object$pca$loading
     
     c <- procrustes(loadings= as.matrix(a$group[,PCloading]),
                     target = as.matrix(b$group[,PCloading]))
-    object$ALASCA$loading$group[,PCloading] <- c$procrust
-    object$ALASCA$score$group[,PCloading] <- as.matrix(object$ALASCA$score$group[,PCloading]) %*% solve(c$t1)
+    object$pca$loading$group[,PCloading] <- c$procrust
+    object$pca$score$group[,PCloading] <- as.matrix(object$pca$score$group[,PCloading]) %*% solve(c$t1)
   }
  
   return(object)
@@ -166,98 +166,128 @@ rotateMatrix <- function(object, target){
 #' @param objectlist List of ALASCA objects
 #' @return An ALASCA object
 getValidationPercentiles <- function(object, objectlist){
-  
-  getValidationPercentilesLoading <- function(object, objectlist){
-    df_time <- Reduce(rbind,lapply(objectlist, function(x) getLoadings(x)$time))
-    PC_time <- getRelevantPCs(object$ALASCA$loading$explained$time)
-    perc_time <- aggregate(data = df_time, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-    perc_time <- Reduce(rbind,lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
-                                                                               high = perc_time[[x]][,2],
-                                                                               PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
-                                                                               covars = perc_time$covars)))
-    
-    perc_time <- switchSign(reshape2::melt(getLoadings(object)$time, id.vars = "covars"), perc_time)
-    object$validation$time$loading <- subset(perc_time, PC %in% PC_time)
-    
-    if(object$separateTimeAndGroup){
-      df_group <- Reduce(rbind,lapply(objectlist, function(x) getLoadings(x)$group))
-      PC_group <- getRelevantPCs(object$ALASCA$loading$explained$group)
-      perc_group <- aggregate(data = df_group, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-      perc_group <- Reduce(rbind,lapply(2:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
-                                                                                 high = perc_group[[x]][,2],
-                                                                                 PC = as.numeric(substr(names(perc_group)[x], 3, nchar(names(perc_group)[x]))), 
-                                                                                 covars = perc_group$covars)))
-      perc_group <- switchSign(reshape2::melt(getLoadings(object)$group, id.vars = "covars"), perc_group)
-      
-      object$validation$group$loading <- subset(perc_group, PC %in% PC_group)
-    }
-    return(object)
-  }
-  
-  getValidationPercentilesScore <- function(object, objectlist){
-    if(object$separateTimeAndGroup){
-      # Separate time and group effects
-      
-      df_time <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$time))
-      PC_time <- getRelevantPCs(object$ALASCA$score$explained$time)
-      perc_time <- aggregate(data = df_time, . ~ time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-      perc_time <- Reduce(rbind,lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
-                                                                                 high = perc_time[[x]][,2],
-                                                                                 PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
-                                                                                 time = perc_time$time)))
-      perc_time <- switchSign(reshape2::melt(getScores(object)$time, id.vars = "time"), perc_time)
-      object$validation$time$score <- subset(perc_time, PC %in% PC_time)
-      
-      df_group <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$group))
-      PC_group <- getRelevantPCs(object$ALASCA$score$explained$group)
-      perc_group <- aggregate(data = df_group, . ~ group + time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-      perc_group <- Reduce(rbind,lapply(3:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
-                                                                                   high = perc_group[[x]][,2],
-                                                                                   PC = as.numeric(substr(names(perc_group)[x], 3, nchar(names(perc_group)[x]))), 
-                                                                                   time = perc_group$time,
-                                                                                   group = perc_group$group)))
-      perc_group <- switchSign(reshape2::melt(getScores(object)$group, id.vars = c("time", "group")), perc_group)
-      object$validation$group$score <- subset(perc_group, PC %in% PC_group)
-    }else{
-      # Pool time and groups effects
-      
-      df_time <- Reduce(rbind,lapply(objectlist, function(x) getScores(x)$time))
-      PC_time <- getRelevantPCs(object$ALASCA$score$explained$time > 0.05)
-      perc_time <- aggregate(data = df_time, . ~ time + group, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-      perc_time <- Reduce(rbind,lapply(3:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
-                                                                                 high = perc_time[[x]][,2],
-                                                                                 PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
-                                                                                 time = perc_time$time,
-                                                                                 group = perc_time$group)))
-      perc_time <- switchSign(reshape2::melt(getScores(object)$time, id.vars = c("time", "group")), perc_time)
-      object$validation$time$score <- subset(perc_time, PC %in% PC_time)
-    }
-    return(object)
-  }
-  
-  # Only interested in PCs explaining at least 5% of the variation
-  getRelevantPCs <- function(x){
-    PC <- x > 0.05
-    PC[1:2] <- TRUE
-    return(which(PC))
-  }
-  
-  # Loading/score is only unique up to a factor +/- 1
-  switchSign <- function(value, perc){
-    value$PC <- as.numeric(substr(as.character(value$variable), 3, nchar(as.character(value$variable))))
-    value$variable <- NULL
-    perc <- merge(perc, value, all.x = TRUE)
-    for(p in unique(perc$PC)){
-      if(any(perc$value[perc$PC == p] < perc$low[perc$PC == p]) | any(perc$value[perc$PC == p] > perc$high[perc$PC == p])){
-        perc$high[perc$PC == p] <- perc$high[perc$PC == p]*(-1)
-        perc$low[perc$PC == p] <- perc$low[perc$PC == p]*(-1)
-      }
-    }
-    return(perc)
-  }
 
   object <- getValidationPercentilesLoading(object, objectlist)
   object <- getValidationPercentilesScore(object, objectlist)
   
   return(object)
+}
+
+#' Extract percentiles for loading
+#'
+#' This function extract percentiles during validation
+#'
+#' @inheritParams getValidationPercentiles
+#' @return An ALASCA object
+getValidationPercentilesLoading <- function(object, objectlist){
+  df_time <- Reduce(rbind,lapply(objectlist, function(x) x$pca$loading$time))
+  PC_time <- getRelevantPCs(object$pca$loading$explained$time)
+  perc_time <- aggregate(data = df_time, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+  perc_time <- Reduce(rbind,lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
+                                                                             high = perc_time[[x]][,2],
+                                                                             PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
+                                                                             covars = perc_time$covars)))
+  
+  object$validation$time$loading <- subset(perc_time, PC %in% PC_time)
+  names(object$validation$time$loading)[names(object$validation$time$loading) == 'value'] <- 'loading'
+  object$ALASCA$loading$time <- merge(object$ALASCA$loading$time, object$validation$time$loading, all.x = TRUE)
+  
+  if(object$separateTimeAndGroup){
+    df_group <- Reduce(rbind,lapply(objectlist, function(x) x$pca$loading$group))
+    PC_group <- getRelevantPCs(object$pca$loading$explained$group)
+    perc_group <- aggregate(data = df_group, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+    perc_group <- Reduce(rbind,lapply(2:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
+                                                                                 high = perc_group[[x]][,2],
+                                                                                 PC = as.numeric(substr(names(perc_group)[x], 3, nchar(names(perc_group)[x]))), 
+                                                                                 covars = perc_group$covars)))
+    object$validation$group$loading <- subset(perc_group, PC %in% PC_group)
+    names(object$validation$group$loading)[names(object$validation$group$loading) == 'value'] <- 'loading'
+    object$ALASCA$loading$group <- merge(object$ALASCA$loading$group, object$validation$group$loading, all.x = TRUE)
+  }
+  return(object)
+}
+
+#' Extract percentiles for score
+#'
+#' This function extract percentiles during validation
+#'
+#' @inheritParams getValidationPercentiles
+#' @return An ALASCA object
+getValidationPercentilesScore <- function(object, objectlist){
+  if(object$separateTimeAndGroup){
+    # Separate time and group effects
+    
+    df_time <- Reduce(rbind,lapply(objectlist, function(x) x$pca$score$time))
+    PC_time <- getRelevantPCs(object$pca$score$explained$time)
+    perc_time <- aggregate(data = df_time, . ~ time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+    perc_time <- Reduce(rbind,lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
+                                                                               high = perc_time[[x]][,2],
+                                                                               PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
+                                                                               time = perc_time$time)))
+    perc_time <- switchSign(reshape2::melt(object$pca$score$time, id.vars = "time"), perc_time)
+    object$validation$time$score <- subset(perc_time, PC %in% PC_time)
+    names(object$validation$time$score)[names(object$validation$time$score) == 'value'] <- 'score'
+    object$ALASCA$score$time <- merge(object$ALASCA$score$time, object$validation$time$score, all.x = TRUE)
+    
+    df_group <- Reduce(rbind,lapply(objectlist, function(x) x$pca$score$group))
+    PC_group <- getRelevantPCs(object$pca$score$explained$group)
+    perc_group <- aggregate(data = df_group, . ~ group + time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+    perc_group <- Reduce(rbind,lapply(3:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
+                                                                                 high = perc_group[[x]][,2],
+                                                                                 PC = as.numeric(substr(names(perc_group)[x], 3, nchar(names(perc_group)[x]))), 
+                                                                                 time = perc_group$time,
+                                                                                 group = perc_group$group)))
+    perc_group <- switchSign(reshape2::melt(object$pca$score$group, id.vars = c("time", "group")), perc_group)
+    object$validation$group$score <- subset(perc_group, PC %in% PC_group)
+    names(object$validation$group$score)[names(object$validation$group$score) == 'value'] <- 'score'
+    object$ALASCA$score$group <- merge(object$ALASCA$score$group, object$validation$group$score, all.x = TRUE)
+  }else{
+    # Pool time and groups effects
+    
+    df_time <- Reduce(rbind,lapply(objectlist, function(x) x$pca$score$time))
+    PC_time <- getRelevantPCs(object$pca$score$explained$time > 0.05)
+    perc_time <- aggregate(data = df_time, . ~ time + group, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+    perc_time <- Reduce(rbind,lapply(3:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
+                                                                               high = perc_time[[x]][,2],
+                                                                               PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
+                                                                               time = perc_time$time,
+                                                                               group = perc_time$group)))
+    object$validation$time$score <- subset(perc_time, PC %in% PC_time)
+    names(object$validation$time$score)[names(object$validation$time$score) == 'value'] <- 'score'
+    object$ALASCA$score$time <- merge(object$ALASCA$score$time, object$validation$time$score, all.x = TRUE)
+  }
+  return(object)
+}
+
+#' Get relevant PCs
+#'
+#' This function extract percentiles during validation
+#'
+#' @param x Explanatory power of PC
+#' @return A vector with relevant PCs
+getRelevantPCs <- function(x){
+  PC <- x > 0.05
+  PC[1:2] <- TRUE
+  return(which(PC))
+}
+
+#' Switch sign
+#'
+#' This function extract percentiles during validation
+#'
+#' @param value
+#' @param perc
+#' @param PCs
+#' @return An ALASCA object
+switchSign <- function(value, perc, PCs){
+  value$variable <- NULL
+  perc <- merge(perc, value, all.x = TRUE)
+  perc <- subset(perc, PC %in% PCs)
+  for(p in unique(perc$PC)){
+    if(any(perc$value[perc$PC == p] < perc$low[perc$PC == p]) | any(perc$value[perc$PC == p] > perc$high[perc$PC == p])){
+      perc$high[perc$PC == p] <- perc$high[perc$PC == p]*(-1)
+      perc$low[perc$PC == p] <- perc$low[perc$PC == p]*(-1)
+    }
+  }
+  return(perc)
 }
