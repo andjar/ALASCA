@@ -155,7 +155,7 @@ getLoadingPlot <- function(object, component = 1, effect = "time", decreasingLoa
   g <- g +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust=1)) +
     ggplot2::labs(x = "Variable",
-                  y = paste0(component, " (", round(100*ifelse(effect == "time", object$ALASCA$loading$explained$time[component],object$ALASCA$loading$explained$group[component]),2),"%)"))
+                  y = paste0("PC",component, " (", round(100*ifelse(effect == "time", object$ALASCA$loading$explained$time[component],object$ALASCA$loading$explained$group[component]),2),"%)"))
   if(!any(is.na(highlight))){
     g <- g + ggplot2::geom_point(color = ifelse(loadings$covars %in% highlight, "red", "grey")) +
       ggrepel::geom_text_repel(data = subset(loadings, covars %in% highlight), ggplot2::aes(label=covars), max.iter	= 5000) +
@@ -212,7 +212,7 @@ getScorePlot <- function(object, component = 1, effect = "time"){
     }
     g <- g +
       ggplot2::theme(legend.position = "bottom") +
-      ggplot2::labs(x = "Time", y = paste0(component, " (",round(100*object$ALASCA$score$explained$time[component],2),"%)"))
+      ggplot2::labs(x = "Time", y = paste0("PC",component, " (",round(100*object$ALASCA$score$explained$time[component],2),"%)"))
   }else{
     score <- subset(getScores(object)$group, PC == component)
     if(object$validate){
@@ -225,7 +225,7 @@ getScorePlot <- function(object, component = 1, effect = "time"){
     }
     g <- g +
       ggplot2::theme(legend.position = "bottom") +
-      ggplot2::labs(x = "Time", y = paste0(component, " (",round(100*object$ALASCA$score$explained$group[component],2),"%)"))
+      ggplot2::labs(x = "Time", y = paste0("PC",component, " (",round(100*object$ALASCA$score$explained$group[component],2),"%)"))
   }
   return(g)
 }
@@ -349,7 +349,12 @@ plotPred <- function(object, variable = NA){
       )
       newdata <- aggregate(data = newdata, pred~time+group, FUN = "mean")
     }else{
-      newdata$pred <- lme4:::predict.merMod(model, newdata = newdata, re.form=NA)
+      if(object$method == "LMM"){
+        newdata$pred <- lme4:::predict.merMod(model, newdata = newdata, re.form=NA)
+      }else if(object$method == "LM"){
+        newdata$pred <- predict(model, newdata = newdata)
+      }
+      
     }
     g <- ggplot2::ggplot(newdata, ggplot2::aes(x = time, y = pred, color = group, group = group)) +
       ggplot2::geom_point() + ggplot2::geom_line() +
@@ -378,28 +383,28 @@ plotVal <- function(object, component = 1){
     ## Time
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
       data.frame(
-        getScores(object$validation$temp_objects[[x]])$time,
+        subset(getScores(object$validation$temp_objects[[x]])$time, PC == component),
         model = x
       )
     })
     )
-    gst <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "time", y = component)) + 
+    gst <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score)) + 
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2)
       ggplot2::labs(x = "Time")
     
     ## Group
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
       data.frame(
-        getScores(object$validation$temp_objects[[x]])$group,
+        subset(getScores(object$validation$temp_objects[[x]])$group, PC == component),
         model = x
       )
     })
     )
     dff$plotGroup <- paste0(dff$model,dff$group)
-    gsg <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "time", y = component, group = "plotGroup", color = "group")) + 
+    gsg <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group)) + 
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
-      ggplot2::geom_point(data = getScores(object)$group, group = NA, alpha = 1, color = "black") +
-      ggplot2::geom_line(data = getScores(object)$group, group = getScores(object)$group$group, alpha = 1, color = "black") +
+      ggplot2::geom_point(data = subset(getScores(object)$group, PC == component), group = NA, alpha = 1, color = "black") +
+      ggplot2::geom_line(data = subset(getScores(object)$group, PC == component), group = subset(getScores(object)$group, PC == component)$group, alpha = 1, color = "black") +
       ggplot2::labs(x = "Time")
     
     
@@ -407,25 +412,25 @@ plotVal <- function(object, component = 1){
     ## Time
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
       data.frame(
-        getLoadings(object$validation$temp_objects[[x]])$time
+        subset(getLoadings(object$validation$temp_objects[[x]])$time, PC == component)
       )
     })
     )
-    glt <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "covars", y = component)) + 
+    glt <- ggplot2::ggplot(dff, ggplot2::aes(x = covars, y = loading)) + 
       ggplot2::geom_point(alpha = 0.2, color = "black") + 
-      ggplot2::geom_point(data = getLoadings(object)$time, alpha = 1, color = "red") +
+      ggplot2::geom_point(data = subset(getLoadings(object)$time, PC == component), alpha = 1, color = "red") +
       ggplot2::labs(x = "Variable")
     
     ## Group
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
       data.frame(
-        getLoadings(object$validation$temp_objects[[x]])$group
+        subset(getLoadings(object$validation$temp_objects[[x]])$group, PC == component)
       )
     })
     )
-    glg <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "covars", y = component)) + 
+    glg <- ggplot2::ggplot(dff, ggplot2::aes_string(x = covars, y = loading)) + 
       ggplot2::geom_point(alpha = 0.2, color = "black") + 
-      ggplot2::geom_point(data = getLoadings(object)$group, alpha = 1, color = "red") +
+      ggplot2::geom_point(data = subset(getLoadings(object)$group, PC == component), alpha = 1, color = "red") +
       ggplot2::labs(x = "Variable")
     
     g <- ggpubr::ggarrange(gst, glt, gsg, glg, nrow = 2, ncol = 2, widths = c(1,2,1,2))
@@ -434,28 +439,28 @@ plotVal <- function(object, component = 1){
     # Score plot
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
       data.frame(
-        getScores(object$validation$temp_objects[[x]])$time,
+        subset(getScores(object$validation$temp_objects[[x]])$time, PC == component),
         model = x
       )
     })
     )
     dff$plotGroup <- paste0(dff$model,dff$group)
-    gs <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "time", y = component, group = "plotGroup", color = "group")) + 
+    gs <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group)) + 
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
-      ggplot2::geom_point(data = getScores(object)$time, group = NA, alpha = 1, color = "black") +
-      ggplot2::geom_line(data = getScores(object)$time, group = getScores(object)$time$group, alpha = 1, color = "black") +
+      ggplot2::geom_point(data = subset(getScores(object)$time, PC == component), group = NA, alpha = 1, color = "black") +
+      ggplot2::geom_line(data = subset(getScores(object)$time, PC == component), group = subset(getScores(object)$time, PC == component)$group, alpha = 1, color = "black") +
       ggplot2::labs(x = "Time") + ggplot2::theme(legend.position = "bottom")
     
     # Loading plot
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
       data.frame(
-        getLoadings(object$validation$temp_objects[[x]])$time
+        subset(getLoadings(object$validation$temp_objects[[x]])$time, PC == component)
       )
     })
     )
-    gl <- ggplot2::ggplot(dff, ggplot2::aes_string(x = "covars", y = component)) + 
+    gl <- ggplot2::ggplot(dff, ggplot2::aes(x = covars, y = loading)) + 
       ggplot2::geom_point(alpha = 0.2, color = "black") + 
-      ggplot2::geom_point(data = getLoadings(object)$time, alpha = 1, color = "red") +
+      ggplot2::geom_point(data = subset(getLoadings(object)$time, PC == component), alpha = 1, color = "red") +
       ggplot2::labs(x = "Variable")
     
     g <- ggpubr::ggarrange(gs, gl, nrow = 1, ncol = 2, widths = c(1,2))

@@ -15,13 +15,16 @@
 validate <- function(object, participantColumn = FALSE){
   object$validate <- TRUE
 
-  if(participantColumn == FALSE){
-    if(object$participantColumn == FALSE){
-      stop("You need to specify the column containing participant id in `participantColumn`")
+  if(object$method == "LMM"){
+    if(participantColumn == FALSE){
+      if(object$participantColumn == FALSE){
+        stop("You need to specify the column containing participant id in `participantColumn`")
+      }
+    }else{
+      object$participantColumn <- participantColumn
     }
-  }else{
-    object$participantColumn <- participantColumn
   }
+  
   cat("Running validation...\n")
   partColumn <- which(colnames(object$df) == object$participantColumn)
   temp_object <- list()
@@ -46,29 +49,13 @@ validate <- function(object, participantColumn = FALSE){
     
     # Rotate new loadings/scores to the original model
     temp_object[[ii]] <- rotateMatrix(object = temp_object[[ii]], target = object)
+    temp_object[[ii]] <- cleanALASCA(temp_object[[ii]])
     
     end.time <- Sys.time()
     time_mean[ii] <- end.time - start.time
     cat("--- Used ",round(time_mean[ii],2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*mean(time_mean),2)," seconds \n")
   }
   
-  # Tried parallelization, but it didn't improve performance significantly
-  # doMC::registerDoMC(cores=parallel::detectCores()-1)
-  # temp_object <- foreach::"%dopar%"(foreach::foreach(1:object$nValRuns, .inorder = FALSE, .packages=c("ALASCA","foreach")),{
-  #   selectedParts <- c()
-  #   for(gr in unique(object$df$group)){
-  #     selectedParts_temp_all <- unique(object$df[object$df$group == gr,partColumn])
-  #     selectedParts_temp_ticket <- sample(1:object$nValFold, length(selectedParts_temp_all), replace = TRUE)
-  #     selectedParts_temp <- selectedParts_temp_all[selectedParts_temp_ticket != 1]
-  #     selectedParts <- c(selectedParts, selectedParts_temp)
-  #   }
-  #   temp_object <- ALASCA(df = NA,
-  #                               validate = FALSE, # to avoid recursion
-  #                               minimizeObject = TRUE,
-  #                               validationObject = object,
-  #                               validationParticipants = object$df[,partColumn] %in% selectedParts)
-  #   temp_object <- rotateMatrix(object = temp_object, target = object)
-  # })
   object <- getValidationPercentiles(object, objectlist = temp_object)
   object$validation$temp_objects <- temp_object
   return(object)
@@ -224,7 +211,7 @@ getValidationPercentilesScore <- function(object, objectlist){
                                                                                high = perc_time[[x]][,2],
                                                                                PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
                                                                                time = perc_time$time)))
-    perc_time <- switchSign(reshape2::melt(object$pca$score$time, id.vars = "time"), perc_time)
+    #perc_time <- switchSign(reshape2::melt(object$pca$score$time, id.vars = "time"), perc_time)
     object$validation$time$score <- subset(perc_time, PC %in% PC_time)
     names(object$validation$time$score)[names(object$validation$time$score) == 'value'] <- 'score'
     object$ALASCA$score$time <- merge(object$ALASCA$score$time, object$validation$time$score, all.x = TRUE)
@@ -237,7 +224,7 @@ getValidationPercentilesScore <- function(object, objectlist){
                                                                                  PC = as.numeric(substr(names(perc_group)[x], 3, nchar(names(perc_group)[x]))), 
                                                                                  time = perc_group$time,
                                                                                  group = perc_group$group)))
-    perc_group <- switchSign(reshape2::melt(object$pca$score$group, id.vars = c("time", "group")), perc_group)
+    #perc_group <- switchSign(reshape2::melt(object$pca$score$group, id.vars = c("time", "group")), perc_group)
     object$validation$group$score <- subset(perc_group, PC %in% PC_group)
     names(object$validation$group$score)[names(object$validation$group$score) == 'value'] <- 'score'
     object$ALASCA$score$group <- merge(object$ALASCA$score$group, object$validation$group$score, all.x = TRUE)

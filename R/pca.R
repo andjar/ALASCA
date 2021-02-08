@@ -46,6 +46,10 @@ cleanPCA <- function(object){
     object$pca$loading$explained$group <- object$pca$score$explained$group
   }
   
+  return(object)
+}
+
+cleanALASCA<- function(object){
   # Clean up a copy
   if(object$separateTimeAndGroup){
     # Time effect
@@ -55,7 +59,7 @@ cleanPCA <- function(object){
     object$ALASCA$loading$time$PC <- as.numeric(gsub("PC","", object$ALASCA$loading$time$PC))
     
     object$ALASCA$score$time <- object$pca$score$time[!duplicated(object$pca$score$time),]
-    object$ALASCA$score$time <- reshape2::melt(object$ALASCA$score$time, id.vars = c(time))
+    object$ALASCA$score$time <- reshape2::melt(object$ALASCA$score$time, id.vars = c("time"))
     colnames(object$ALASCA$score$time) <- c("time","PC","score")
     object$ALASCA$score$time$PC <- as.numeric(gsub("PC","", object$ALASCA$score$time$PC))
     
@@ -72,7 +76,7 @@ cleanPCA <- function(object){
     object$ALASCA$score$group <- reshape2::melt(object$ALASCA$score$group, id.vars = c("time","group"))
     colnames(object$ALASCA$score$group) <- c("time","group","PC","score")
     object$ALASCA$score$group$PC <- as.numeric(gsub("PC","", object$ALASCA$score$group$PC))
-      
+    
     object$ALASCA$score$explained$group <- object$pca$score$explained$group
     object$ALASCA$loading$explained$group <- object$pca$loading$explained$group
   }else{
@@ -89,6 +93,5 @@ cleanPCA <- function(object){
     object$ALASCA$score$explained$time <- object$pca$score$explained$time
     object$ALASCA$loading$explained$time <- object$pca$loading$explained$time
   }
-  
   return(object)
 }

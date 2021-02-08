@@ -11,13 +11,13 @@
 #' residuals(model, variable = c("IL-6", "PlGF"))
 #' 
 #' @export
-residuals.RMASCA <- function(object, variable = NA){
+residuals.ALASCA <- function(object, variable = NA){
   if(any(is.na(variable))){
-    return(lapply(object$lmer.models, residuals))
+    return(lapply(object$regr.model, residuals))
   }else{
-   varList <- names(object$lmer.models)
-   resList <- lapply(seq_along(object$lmer.models), function(x) if(varList[x] %in% variable){residuals(object$lmer.models[[x]])})
-   names(resList) <- names(object$lmer.models)
+   varList <- names(object$regr.model)
+   resList <- lapply(seq_along(object$regr.model), function(x) if(varList[x] %in% variable){residuals(object$regr.model[[x]])})
+   names(resList) <- names(object$regr.model)
    resList[sapply(resList, is.null)] <- NULL
    return(resList)
   }

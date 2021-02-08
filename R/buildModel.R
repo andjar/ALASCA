@@ -20,6 +20,7 @@ buildModel <- function(object){
   object <- getEffectMatrix(object)
   object <- doPCA(object)
   object <- cleanPCA(object)
+  object <- cleanALASCA(object)
   return(object)
 }
 
