@@ -1,4 +1,4 @@
-# Assorted, linear ASCA (ALASCA)
+# Assorted, linear ASCA (ALASCA) Functions
 ## Installation
 
 ```{r}
