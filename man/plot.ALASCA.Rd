@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{ALASCA}(
   object,
-  component = "PC1",
+  component = 1,
   effect = "both",
   decreasingLoadings = TRUE,
   only = "both",
@@ -18,7 +18,7 @@
 \arguments{
 \item{object}{An \code{\link[=ALASCA]{ALASCA()}} object}
 
-\item{component}{String stating which component to return ("PC1" is default)}
+\item{component}{Integer stating which component to return (1 is default)}
 
 \item{effect}{String stating which effect to return; \code{time}, \code{group}, \code{both} (default)}
 

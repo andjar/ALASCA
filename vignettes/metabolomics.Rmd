@@ -39,7 +39,7 @@ library("ggpubr")
 library(ALASCA)
 ```
 
-This time we will look at a small metabolomics dataset by @eucedaEvaluationMetabolomicChanges2017 and replicate the findings of @madssenRepeatedMeasuresASCA2020a. Note that this is an example of ALASCA applied on **intervention data**. If you are more interested in **observational data**, have a look at [the preeclampsia vignette](pregnancy.html). If you want an introduction to ALASCA, have a look at [Get Started](ALASCA.html).
+This time we will look at a small metabolomics dataset by @eucedaEvaluationMetabolomicChanges2017 and replicate the findings of @madssenRepeatedMeasuresASCA2020a. Note that this is an example of ALASCA applied on **intervention data**. If you are more interested in repeated measures **observational data**, have a look at [the preeclampsia vignette](pregnancy.html). If you want an introduction to ALASCA, have a look at [Get Started](ALASCA.html).
 
 Let us start by having a quick look at it:
 
@@ -76,9 +76,8 @@ mod <- ALASCA(df, form, separateTimeAndGroup = FALSE, forceEqualBaseline = TRUE,
 Let us check that our model is as expected:
 
 ```{r}
-summary(mod$lmer.models[[1]])
+summary(mod$regr.model[[1]])
 ```
-
 
 And now, let us plot it:
 
@@ -97,7 +96,7 @@ plot(flipIt(mod))
 Note that we used the \code{\link{flipIt()}} function to flip the loadings and scores to produce similar plots as in the original article.
 
 ```{r}
-plot(mod, component = "PC2")
+plot(mod, component = 2)
 ```
 
 As we can see, it looks indeed as a very good match with the original findings.
@@ -113,14 +112,14 @@ The result:
 
 ```{r}
 plot(mod.val)
-plot(mod.val, component = "PC2")
+plot(mod.val, component = 2)
 ```
 
 Or if want to see the validation models instead of errorbars:
 
 ```{r}
 plotVal(mod.val)
-plotVal(mod.val, component = "PC2")
+plotVal(mod.val, component = 2)
 ```
 
 ## Comparison of result

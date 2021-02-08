@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Validate the RMASCA model LMM — validate • RMASCA</title>
+<title>Validate the ALASCA model LMM — validate • ALASCA</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Validate the RMASCA model LMM — validate" />
-<meta property="og:description" content="This function performs leave-one-out robustness testing of your RMASCA model. If you didn't specify the number of runs nValRuns when initializing the model (see RMASCA), you can do it by running for example model$nValRuns &amp;lt;- 100 prior to calling validate. Your dataset is divided into nValFold partitions, keeping group proportions, and one of these are left out. nValFold is set the same way as  nValRuns." />
+<meta property="og:title" content="Validate the ALASCA model LMM — validate" />
+<meta property="og:description" content="This function performs leave-one-out robustness testing of your ALASCA model. If you didn't specify the number of runs nValRuns when initializing the model (see ALASCA), you can do it by running for example model$nValRuns &amp;lt;- 100 prior to calling validate. Your dataset is divided into nValFold partitions, keeping group proportions, and one of these are left out. nValFold is set the same way as  nValRuns." />
 
 
 
@@ -71,7 +71,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">RMASCA</a>
+        <a class="navbar-link" href="../index.html">ALASCA</a>
         <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.9</span>
       </span>
     </div>
@@ -85,7 +85,7 @@
   </a>
 </li>
 <li>
-  <a href="../articles/RMASCA.html">Get started</a>
+  <a href="../articles/ALASCA.html">Get started</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
@@ -121,13 +121,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Validate the RMASCA model LMM</h1>
+    <h1>Validate the ALASCA model LMM</h1>
     
     <div class="hidden name"><code>validate.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This function performs leave-one-out robustness testing of your RMASCA model. If you didn't specify the number of runs <code>nValRuns</code> when initializing the model (see <code><a href='RMASCA.html'>RMASCA</a></code>), you can do it by running for example <code>model$nValRuns &lt;- 100</code> prior to calling <code>validate</code>. Your dataset is divided into <code>nValFold</code> partitions, keeping group proportions, and one of these are left out. <code>nValFold</code> is set the same way as  <code>nValRuns</code>.</p>
+    <p>This function performs leave-one-out robustness testing of your ALASCA model. If you didn't specify the number of runs <code>nValRuns</code> when initializing the model (see <code><a href='ALASCA.html'>ALASCA</a></code>), you can do it by running for example <code>model$nValRuns &lt;- 100</code> prior to calling <code>validate</code>. Your dataset is divided into <code>nValFold</code> partitions, keeping group proportions, and one of these are left out. <code>nValFold</code> is set the same way as  <code>nValRuns</code>.</p>
     </div>
 
     <pre class="usage"><span class='fu'>validate</span><span class='op'>(</span><span class='va'>object</span>, participantColumn <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
@@ -137,7 +137,7 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>object</th>
-      <td><p>An RMASCA object</p></td>
+      <td><p>An ALASCA object</p></td>
     </tr>
     <tr>
       <th>participantColumn</th>
@@ -147,14 +147,14 @@
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An RMASCA object</p>
+    <p>An ALASCA object</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/load.html'>load</a></span><span class='op'>(</span><span class='st'>"PE.Rdata"</span><span class='op'>)</span>
 <span class='va'>model</span><span class='op'>$</span><span class='va'>nValRuns</span> <span class='op'>&lt;-</span> <span class='fl'>10</span>
 <span class='va'>model.val</span> <span class='op'>&lt;-</span> <span class='fu'>validate</span><span class='op'>(</span><span class='va'>model</span>, participantColumn <span class='op'>=</span> <span class='st'>"ID"</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; Running validation...
-#&gt; - Run  1  of  10 </div><div class='output co'>#&gt; <span class='error'>Error in sanitizeObject(object): The dataframe must contain a column names 'time'</span></div><div class='input'>
+#&gt; - Run  1  of  10 </div><div class='output co'>#&gt; <span class='error'>Error in if (!is.na(object$method)) {    if (object$method == "LMM") {        if (!any(grepl("\\|", formulaTerms))) {            stop("The model must contain at least one random effect. Sure you wanted linear mixed models?")        }    }    else if (object$method == "LM") {        if (any(grepl("\\|", formulaTerms))) {            stop("The model contains at least one random effect. Sure you not wanted linear mixed models instead?")        }    }    else {        stop("You entered an undefined method. Use `LMM` or `LM`!")    }} else {    if (any(grepl("\\|", formulaTerms))) {        object$method &lt;- "LMM"        cat("Will use linear mixed models!\n")    }    else {        object$method &lt;- "LM"        cat("Will use linear models!\n")    }}: argument is of length zero</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

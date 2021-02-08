@@ -4,7 +4,7 @@
 \alias{getScorePlot}
 \title{Get score plot}
 \usage{
-getScorePlot(object, component = "PC1", effect = "time")
+getScorePlot(object, component = 1, effect = "time")
 }
 \arguments{
 \item{object}{An ALASCA object}

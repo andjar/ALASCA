@@ -13,11 +13,11 @@ devtools::install_github("andjar/ALASCA",ref="main")
 
 ## Usage
 
-For a working example, see [Get Started](articles/ALASCA.html). For different case examples, see
+For a working example, see [Get Started](articles/ALASCA.html). For various case examples, see
 
-* [Repeated-measures observational data](articles/pregnancy.html)
-* [Repeated-measures intervention data](articles/metabolomics.html)
-* [Single-measures observational data](articles/personality.html)
+* Repeated-measures observational data: [Proteomics and Preeclampsia](articles/pregnancy.html)
+* Repeated-measures intervention data: [Metabolomics and Cancer Treatment](articles/metabolomics.html)
+* Single-measures observational data: [Personality and Age](articles/personality.html)
 
 ALASCA expects a data frame, eg. `df`, with at least the following columns (with these exact names)
 

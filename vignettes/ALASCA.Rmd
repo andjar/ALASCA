@@ -58,14 +58,15 @@ library(ALASCA)
 library(ggplot2)
 ```
 
-This vignette demonstrates the basic functionality of the [ALASCA package](https://andjar.github.io/ALASCA). For more detailed case studies, see
+This vignette demonstrates the basic functionality of the [ALASCA package](https://andjar.github.io/ALASCA), with **repeated measures** (`RMASCA()`). For more detailed case studies, see
 
 * For analysis of **interventional**, see [the vignette on metabolomics](metabolomics.html)
 * For analysis of **observational** data, see [the vignette on early preeclampsia](pregnancy.html)
+* For analysis of single measures data, see [the vignette on personality](personality.html)
 
-In general, you need to start by deciding what kind of model you want to set up. RMSCA builds on linear mixed models, and you are required to have at least one random intercept (usually participant). You need to decide if you want to separate time and group effects (`separateTimeAndGroup = TRUE/FALSE`) and, if you are working with interventional data, whether you want a common baseline between groups (`forceEqualBaseline = TRUE`).
+In general, you need to start by deciding what kind of model you want to set up. ALASCA builds on linear mixed models, and you are required to have at least one random intercept (usually participant). You need to decide if you want to separate time and group effects (`separateTimeAndGroup = TRUE/FALSE`) and, if you are working with interventional data, whether you want a common baseline between groups (`forceEqualBaseline = TRUE`).
 
-Next, you need to think through whether you want to scale your data. If not, use `scaleFun = FALSE`, but default is `scaleFun = TRUE` corresponding to z score transformation. Often you want to use a custom scaling function, for example mean centering but dividing by the standard deviation at baseline. The custom scaling function, eg. `foo(df)` should have your data frame as both input and output and be provided to ALASCA() (`scaleFun = foo`). You should *not* do the scaling yourself as this can result in information leak during validation, which should be avoided.
+Next, you need to think through whether you want to scale your data. If not, use `scaleFun = FALSE`, but default is `scaleFun = TRUE` corresponding to z score transformation. Often you want to use a custom scaling function, for example mean centering but dividing by the standard deviation at baseline. The custom scaling function, eg. `foo(df)` should have your data frame as both input and output and be provided to `ALASCA()` (`scaleFun = foo`). You should *not* do the scaling yourself as this can result in information leak during validation, which should be avoided.
 
 <div class="alert alert-info">
 <strong>How do I know what scaling to use?</strong> There is no straight answer, but have a look at @timmermanScalingANOVAsimultaneousComponent2015.
@@ -221,7 +222,7 @@ Let us interpret the figure from top left:
 However, that is only the first component. In this case, that variable alone explains most of the variation in the data (>99%). Let us plot the second component too:
 
 ```{r ALASCA_simple_model_plot_PC2}
-plot(res.simple, component = "PC2")
+plot(res.simple, component = 2)
 ```
 
 The interpretation is similar to the one above. We are most interested in the bottom panels: the chocolate group has first an increase at time 2, but then decrease again. To the right, we can see that happiness follows that trajectory, whereas anger has the inverted trajectory (first decreased anger, then return to baseline). The salad group has the opposite trajectories. Cool, huh?
@@ -258,61 +259,69 @@ Often, we want some more control over the plots. Luckily, we can easily get the 
 
 <div class="fold s">
 ```{r ALASCA_custom_plot}
-scores <- getScores(res.simple)
-loadings <- getLoadings(res.simple)
-tplot_score <- function(df, x, y, group, color = NA){
-  if(is.na(color)){
-    g <- ggplot(df, aes(x = x, y = y, group = group)) +
-      geom_point() + 
-      geom_line() + 
-      theme_bw()
-  }else{
-    g <- ggplot(df, aes(x = x, y = y, group = group, color = color)) +
-      geom_point() + 
-      geom_line() + 
-      theme_bw()
-  }
-  
-  return(g)
-}
-
-tplot_loading <- function(df, x, y){
-  g <- ggplot(df, aes(x = x, y = y)) + 
-  geom_point() + 
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.4, hjust=1))
-  return(g)
-}
-
-gst_1 <- tplot_score(df = scores$time, x = scores$time$time, y = scores$time$PC1, group = NA) +
-  labs(x = "Time", y = paste0("Pr Comp. 1 (",round(100*scores$explained$time[1], 2),"%)"))
-  
-gst_2 <- tplot_score(scores$time, scores$time$time, scores$time$PC2, group = NA) + 
-  labs(x = "Time", y = paste0("Pr Comp. 2 (",round(100*scores$explained$time[2], 2),"%)"))
-
-gsg_1 <- tplot_score(scores$group, x = scores$group$time, y = scores$group$PC1, group = scores$group$group, color = scores$group$group) + 
-  labs(x = "Time", y = paste0("Pr Comp. 1 (",round(100*scores$explained$group[1], 2),"%)"))
-
-gsg_2 <- tplot_score(scores$group, x = scores$group$time, y = scores$group$PC2, group = scores$group$group, color = scores$group$group) + 
-  labs(x = "Time", y = paste0("Pr Comp. 2 (",round(100*scores$explained$group[2], 2),"%)"))
-
-glt_1 <- tplot_loading(loadings$time, x = loadings$time$covars, y = loadings$time$PC1) + 
-  labs(x = "Variable", y = paste0("Pr Comp. 1 (",round(100*loadings$explained$time[1], 2),"%)"))
-
-glt_2 <- tplot_loading(loadings$time, x = loadings$time$covars, y = loadings$time$PC2) + 
-  labs(x = "Variable", y = paste0("Pr Comp. 2 (",round(100*loadings$explained$time[2], 2),"%)"))
-
-glg_1 <- tplot_loading(loadings$group, x = loadings$group$covars, y = loadings$group$PC1) + 
-  labs(x = "Variable", y = paste0("Pr Comp. 1 (",round(100*loadings$explained$group[1], 2),"%)"))
-
-glg_2 <- tplot_loading(loadings$group, x = loadings$group$covars, y = loadings$group$PC2) + 
-  labs(x = "Variable", y = paste0("Pr. Comp. 2 (",round(100*loadings$explained$group[2], 2),"%)"))
-
-ggpubr::ggarrange(
-  ggpubr::ggarrange(gst_1, glt_1, gsg_1, glg_1, nrow = 1, widths = c(2,3,2,3), common.legend = TRUE, legend = "none"),
-  ggpubr::ggarrange(gst_2, glt_2, gsg_2, glg_2, nrow = 1, widths = c(2,3,2,3), common.legend = TRUE, legend = "bottom"),
-  nrow = 2
-)
+# scores <- getScores(res.simple)
+# loadings <- getLoadings(res.simple)
+# tplot_score <- function(df, x, y, group, color = NA){
+#   if(is.na(color)){
+#     g <- ggplot(df, aes(x = x, y = y, group = group)) +
+#       geom_point() + 
+#       geom_line() + 
+#       theme_bw()
+#   }else{
+#     g <- ggplot(df, aes(x = x, y = y, group = group, color = color)) +
+#       geom_point() + 
+#       geom_line() + 
+#       theme_bw()
+#   }
+#   
+#   return(g)
+# }
+# 
+# tplot_loading <- function(df, x, y){
+#   g <- ggplot(df, aes(x = x, y = y)) + 
+#   geom_point() + 
+#   theme_bw() +
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.4, hjust=1))
+#   return(g)
+# }
+# 
+# sc <- subset(scores$time, PC == 1)
+# gst_1 <- tplot_score(df = sc, x = sc$time, y = sc$score, group = NA) +
+#   labs(x = "Time", y = paste0("Pr Comp. 1 (",round(100*scores$explained$time[1], 2),"%)"))
+#   
+# sc <- subset(scores$time, PC == 2)
+# gst_2 <- tplot_score(df = sc, x = sc$time, y = sc$score, group = NA) + 
+#   labs(x = "Time", y = paste0("Pr Comp. 2 (",round(100*scores$explained$time[2], 2),"%)"))
+# 
+# sc <- subset(scores$group, PC == 1)
+# gsg_1 <- tplot_score(df = sc, x = sc$time, y = sc$score, group = sc$group, color = sc$group) + 
+#   labs(x = "Time", y = paste0("Pr Comp. 1 (",round(100*scores$explained$group[1], 2),"%)"))
+# 
+# sc <- subset(scores$group, PC == 2)
+# gsg_2 <- tplot_score(df = sc, x = sc$time, y = sc$score, group = sc$group, color = sc$group) + 
+#   labs(x = "Time", y = paste0("Pr Comp. 2 (",round(100*scores$explained$group[2], 2),"%)"))
+# 
+# l <- subset(loadings$time, PC == 1)
+# glt_1 <- tplot_loading(df = l, x = l$covars, y = l$loading) + 
+#   labs(x = "Variable", y = paste0("Pr Comp. 1 (",round(100*loadings$explained$time[1], 2),"%)"))
+# 
+# l <- subset(loadings$time, PC == 2)
+# glt_2 <- tplot_loading(df = l, x = l$covars, y = l$loading) + 
+#   labs(x = "Variable", y = paste0("Pr Comp. 2 (",round(100*loadings$explained$time[2], 2),"%)"))
+# 
+# l <- subset(loadings$group, PC == 1)
+# glg_1 <- tplot_loading(df = l, x = l$covars, y = l$loading) + 
+#   labs(x = "Variable", y = paste0("Pr Comp. 1 (",round(100*loadings$explained$group[1], 2),"%)"))
+# 
+# l <- subset(loadings$group, PC == 2)
+# glg_2 <- tplot_loading(df = l, x = l$covars, y = l$loading) + 
+#   labs(x = "Variable", y = paste0("Pr. Comp. 2 (",round(100*loadings$explained$group[2], 2),"%)"))
+# 
+# ggpubr::ggarrange(
+#   ggpubr::ggarrange(gst_1, glt_1, gsg_1, glg_1, nrow = 1, widths = c(2,3,2,3), common.legend = TRUE, legend = "none"),
+#   ggpubr::ggarrange(gst_2, glt_2, gsg_2, glg_2, nrow = 1, widths = c(2,3,2,3), common.legend = TRUE, legend = "bottom"),
+#   nrow = 2
+# )
 ```
 </div>
 
@@ -327,10 +336,10 @@ ggpubr::ggarrange(
                     plot(res.simple, effect = "group", only = "loading") + theme_bw(), 
                     nrow = 1, widths = c(2,3,2,3), 
                     common.legend = TRUE, legend = "none"),
-  ggpubr::ggarrange(plot(res.simple, effect = "time", only = "score", component = "PC2") + theme_bw(), 
-                    plot(res.simple, effect = "time", only = "loading", component = "PC2") + theme_bw(), 
-                    plot(res.simple, effect = "group", only = "score", component = "PC2") + theme_bw(), 
-                    plot(res.simple, effect = "group", only = "loading", component = "PC2") + theme_bw(), 
+  ggpubr::ggarrange(plot(res.simple, effect = "time", only = "score", component = 2) + theme_bw(), 
+                    plot(res.simple, effect = "time", only = "loading", component = 2) + theme_bw(), 
+                    plot(res.simple, effect = "group", only = "score", component = 2) + theme_bw(), 
+                    plot(res.simple, effect = "group", only = "loading", component = 2) + theme_bw(), 
                     nrow = 1, widths = c(2,3,2,3), 
                     common.legend = TRUE, legend = "bottom"),
   nrow = 2
@@ -349,7 +358,7 @@ res.simple <- validate(res.simple, participantColumn = "partid")
 
 plot(res.simple)
 
-plot(res.simple, component = "PC2")
+plot(res.simple, component = 2)
 ```
 
 <div class="alert alert-info">
@@ -366,13 +375,13 @@ If our experiment was an intervention, then we can assume that the groups were e
 model.formula <- value ~ time + time:group + (1|partid)
 res.mod2 <- ALASCA(df = df, formula = model.formula)
 plot(res.mod2)
-plot(res.mod2, component = "PC2")
+plot(res.mod2, component = 2)
 ```
 
 As you can see, it is quite similar to the previous model. Why are they different at the first time point? Well, we can look at the model
 
 ```{r ALASCA_model_2_summary}
-summary(res.mod2$lmer.models[[1]])
+summary(res.mod2$regr.model[[1]])
 ```
 
 And you may notice that there is an interaction term between group and the first time point. To remove it, we have to set `forceEqualBaseline = TRUE`:
@@ -381,7 +390,7 @@ And you may notice that there is an interaction term between group and the first
 model.formula <- value ~ time + time:group + (1|partid)
 res.mod2b <- ALASCA(df = df, formula = model.formula, forceEqualBaseline = TRUE)
 plot(res.mod2b)
-plot(res.mod2b, component = "PC2")
+plot(res.mod2b, component = 2)
 ```
 
 #### Combined time and group effects
@@ -392,7 +401,7 @@ Sometimes it doesn't make sense to use a reference group -- for example if we di
 model.formula <- value ~ time*group + (1|partid)
 res.mod3 <- ALASCA(df = df, formula = model.formula, separateTimeAndGroup = FALSE)
 plot(res.mod3)
-plot(res.mod3, component = "PC2")
+plot(res.mod3, component = 2)
 ```
 
 
@@ -404,7 +413,7 @@ When we don't have any reference group, it may also make sense to use sum coding
 model.formula <- value ~ time*group + (1|partid)
 res.mods <- ALASCA(df = df, formula = model.formula, separateTimeAndGroup = FALSE, useSumCoding = TRUE)
 plot(res.mods)
-plot(res.mods, component = "PC2")
+plot(res.mods, component = 2)
 ```
 
 #### Covariates
@@ -419,7 +428,7 @@ df$age <- age
 model.formula <- value ~ time*group + age + (1|partid)
 res.mod4 <- ALASCA(df = df, formula = model.formula)
 plot(res.mod4)
-plot(res.mod4, component = "PC2")
+plot(res.mod4, component = 2)
 
 do.call(
   ggpubr::ggarrange,
@@ -438,7 +447,7 @@ We can see that age is no longer part of the output, and HDL (which was correlat
 RM-ASCA+ is built on linear mixed models, and one should check that the residuals approach normal distribution. With `ALASCA()`, the LMM objects can be found as
 
 ```{r lmm_info}
-summary(res.simple$lmer.models[[1]])
+summary(res.simple$regr.model[[1]])
 ```
 
 We can also assess the residuals,

@@ -6,7 +6,7 @@
 \usage{
 getLoadingPlot(
   object,
-  component = "PC1",
+  component = 1,
   effect = "time",
   decreasingLoadings = TRUE,
   tooDense = NA,

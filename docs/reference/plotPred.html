@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Plot model predictions — plotPred • RMASCA</title>
+<title>Plot model predictions — plotPred • ALASCA</title>
 
 
 <!-- jquery -->
@@ -40,7 +40,7 @@
 
 
 <meta property="og:title" content="Plot model predictions — plotPred" />
-<meta property="og:description" content="This function returns the scores for an RMASCA model" />
+<meta property="og:description" content="This function returns the scores for an ALASCA model" />
 
 
 
@@ -71,7 +71,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">RMASCA</a>
+        <a class="navbar-link" href="../index.html">ALASCA</a>
         <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.9</span>
       </span>
     </div>
@@ -85,7 +85,7 @@
   </a>
 </li>
 <li>
-  <a href="../articles/RMASCA.html">Get started</a>
+  <a href="../articles/ALASCA.html">Get started</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
@@ -127,7 +127,7 @@
     </div>
 
     <div class="ref-description">
-    <p>This function returns the scores for an RMASCA model</p>
+    <p>This function returns the scores for an ALASCA model</p>
     </div>
 
     <pre class="usage"><span class='fu'>plotPred</span><span class='op'>(</span><span class='va'>object</span>, variable <span class='op'>=</span> <span class='cn'>NA</span><span class='op'>)</span></pre>
@@ -137,7 +137,7 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>object</th>
-      <td><p>An RMASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the RMASCA model before.</p></td>
+      <td><p>An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.</p></td>
     </tr>
     <tr>
       <th>variable</th>
@@ -152,17 +152,12 @@
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/load.html'>load</a></span><span class='op'>(</span><span class='st'>"PE.Rdata"</span><span class='op'>)</span>
 <span class='fu'>plotPred</span><span class='op'>(</span><span class='va'>model</span>, variable <span class='op'>=</span> <span class='st'>"IL-6"</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>+</span> <span class='fu'>ggplot2</span><span class='fu'>::</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_bw</a></span><span class='op'>(</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>Loading required package: lmerTest</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: lme4</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: Matrix</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>Attaching package: 'lmerTest'</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from 'package:lme4':</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    lmer</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from 'package:stats':</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    step</span></div><div class='img'><img src='plotPred-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span><span class='op'>(</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in if (object$forceEqualBaseline) {    newdata &lt;- data.frame(pred = lme4:::predict.merMod(model,         re.form = NA), time = mod$parts$time, group = mod$parts$group)    newdata &lt;- aggregate(data = newdata, pred ~ time + group,         FUN = "mean")} else {    newdata$pred &lt;- lme4:::predict.merMod(model, newdata = newdata,         re.form = NA)}: argument is of length zero</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span><span class='op'>(</span>
   <span class='fu'>ggpubr</span><span class='fu'>::</span><span class='va'><a href='https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html'>ggarrange</a></span>,
   <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'>plotPred</span><span class='op'>(</span><span class='va'>model</span>, variable <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"PlGF"</span>, <span class='st'>"IL-6"</span>, <span class='st'>"IL-1b"</span>, <span class='st'>"IFN-g"</span>, <span class='st'>"Eotaxin-2"</span>, <span class='st'>"Eotaxin"</span><span class='op'>)</span><span class='op'>)</span>, 
     common.legend <span class='op'>=</span> <span class='cn'>TRUE</span>, legend <span class='op'>=</span> <span class='st'>"bottom"</span><span class='op'>)</span>
 <span class='op'>)</span>
-</div><div class='img'><img src='plotPred-2.png' alt='' width='700' height='433' /></div></pre>
+</div><div class='output co'>#&gt; <span class='error'>Error in if (object$forceEqualBaseline) {    newdata &lt;- data.frame(pred = lme4:::predict.merMod(model,         re.form = NA), time = mod$parts$time, group = mod$parts$group)    newdata &lt;- aggregate(data = newdata, pred ~ time + group,         FUN = "mean")} else {    newdata$pred &lt;- lme4:::predict.merMod(model, newdata = newdata,         re.form = NA)}: argument is of length zero</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

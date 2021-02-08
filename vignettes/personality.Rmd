@@ -1,0 +1,114 @@
+---
+title: "Personality and Aging"
+author: "Anders H. Jarmund"
+date: "`r Sys.Date()`"
+bibliography: ALASCA.bib
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Personality and Aging}
+  %\VignetteEngine{knitr::rmarkdown}
+  %VignetteEncoding{UTF-8}
+---
+  
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  out.width = "100%", 
+  fig.asp = 0.7,
+  fig.width = 12,
+  fig.align = "center",
+  cache = FALSE,
+  external = FALSE
+)
+```
+
+# Preparing the data
+
+```{r setup}
+library("reshape2")
+library("ALASCA")
+```
+
+This is a demonstration of single measures data analyzed with `ALASCA()`, with personality data explored with focus on age and gender. You may also be interested in
+
+* Introduction to ALASCA, see [Get Started](ALASCA.html)
+* Analysis of **interventional**, see [the vignette on metabolomics](metabolomics.html)
+* Analysis of **observational** data, see [the vignette on early preeclampsia](pregnancy.html)
+
+We will use the *Development of the Firstborn Personality Scale* data from the [Open-Source Psychometrics Project](https://openpsychometrics.org/_rawdata/). It is quite large, so we will restrict ourself to participants from Great Britain (to speed up things). Let us import and prepare the data:
+
+```{r import_data}
+df <- read.csv(file = "personality.csv", header = TRUE, sep = ";")
+df$ID <- 1:nrow(df)
+df <- melt(df, id.vars = c("ID","age", "engnat", "gender", "birthpos", "birthn", "submittime", "country", "dateload", "source", "screensize", "introelapse", "testelapse", "endelapse"))
+
+df <- subset(df, country == "GB")
+
+# Notice that time is actually age spans
+df$time <- ifelse(df$age < 20, "<20", 
+                  ifelse(df$age < 40, "20-40", 
+                         ifelse(df$age < 60, "40-60", ">60")))
+df$time <- factor(df$time, levels = c("<20", "20-40", "40-60", ">60"))
+df$group <- ifelse(df$gender == 1, "Male", ifelse(df$gender == 2, "Female", NA))
+df <- subset(df, !is.na(group))
+head(df)
+```
+
+Note that the question text itself is kept in another variable for the time being,
+
+```{r import_data_2}
+df.q <- read.csv(file = "personality_q.csv", header = TRUE, sep = ";")
+colnames(df.q) <- c("code", "question") # to get rid of ï..
+head(df.q)
+```
+
+# Applying ALASCA
+
+Applying `ALASCA()` is quite straightforward. If we omit the random effect from our regression model, ALASCA will automatically select linear models.
+
+```{r}
+model.formula <- value ~ time*group
+mod <- ALASCA(df, model.formula, validate = TRUE, participantColumn = "ID")
+
+plot(mod)
+plot(mod, component = 2)
+```
+
+We can see that women (reference group) has an increasing trend of *something*. Let us see for which questions their score is increasing and decreasing with age:
+
+```{r}
+l_PC1 <- subset(getLoadings(mod)$time, PC == 1) # Get PC1 for time effect
+l_PC1 <- merge(l_PC1, df.q, by.x = "covars", by.y = "code", all.x = TRUE) # attach question
+l_PC1 <- l_PC1[order(l_PC1$loading, decreasing = TRUE),] # Order them after loading
+knitr::kable(l_PC1[1:10, c("loading","question")])
+```
+
+And in the other end (in this case, older women score lower on these items):
+
+```{r}
+l_PC1 <- l_PC1[order(l_PC1$loading, decreasing = FALSE),] # Order them after loading
+knitr::kable(l_PC1[1:10, c("loading","question")])
+```
+
+Which features distinguish men from the women? From the plots above, it seems that PC1 indicates a stable difference that do not vary much with age; we do as above; men score higher on these items:
+
+```{r}
+l_PC1 <- subset(getLoadings(mod)$group, PC == 1) # Get PC1 for time effect
+l_PC1 <- merge(l_PC1, df.q, by.x = "covars", by.y = "code", all.x = TRUE) # attach question
+l_PC1 <- l_PC1[order(l_PC1$loading, decreasing = TRUE),] # Order them after loading
+knitr::kable(l_PC1[1:10, c("covars","loading","question")])
+```
+
+and lower on these
+
+```{r}
+l_PC1 <- l_PC1[order(l_PC1$loading, decreasing = FALSE),] # Order them after loading
+knitr::kable(l_PC1[1:10, c("covars","loading","question")])
+```
+
+We can have a quick look at what out underlying linear model will estimate for the two genders for AGR4;
+
+```{r}
+plotPred(mod, variable = "AGR4")
+```

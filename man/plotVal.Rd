@@ -4,12 +4,12 @@
 \alias{plotVal}
 \title{Plot validations models}
 \usage{
-plotVal(object, component = "PC1")
+plotVal(object, component = 1)
 }
 \arguments{
 \item{object}{A validated ALASCA object}
 
-\item{component}{Which component to plot (default: "PC1")}
+\item{component}{Which component to plot (default: 1)}
 }
 \value{
 A list with ggplot2 objects.

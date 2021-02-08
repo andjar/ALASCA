@@ -16,6 +16,8 @@ reference:
   - validate
   - getScores
   - getLoadings
+  - RMASCA
+  - SMASCA
 - title: "Plotting"
   desc: "Functions for visualizing results"
 - contents: 

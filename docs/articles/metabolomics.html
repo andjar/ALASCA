@@ -5,14 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Metabolomics • RMASCA</title>
+<title>Metabolomics • ALASCA</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Metabolomics">
-<meta property="og:description" content="RMASCA">
+<meta property="og:description" content="ALASCA">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -30,7 +30,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">RMASCA</a>
+        <a class="navbar-link" href="../index.html">ALASCA</a>
         <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.9</span>
       </span>
     </div>
@@ -44,7 +44,7 @@
   </a>
 </li>
 <li>
-  <a href="../articles/RMASCA.html">Get started</a>
+  <a href="../articles/ALASCA.html">Get started</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
@@ -58,6 +58,9 @@
   <ul class="dropdown-menu" role="menu">
 <li>
       <a href="../articles/metabolomics.html">Metabolomics</a>
+    </li>
+    <li>
+      <a href="../articles/personality.html">Personality and Aging</a>
     </li>
     <li>
       <a href="../articles/pregnancy.html">Early Preeclampsia</a>
@@ -79,7 +82,9 @@
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Metabolomics</h1>
+                        <h4 class="author">Anders H. Jarmund</h4>
             
+            <h4 class="date">2021-02-08</h4>
       
       
       <div class="hidden name"><code>metabolomics.Rmd</code></div>
@@ -92,11 +97,14 @@
 <h1 class="hasAnchor">
 <a href="#metabolomics" class="anchor"></a>Metabolomics</h1>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">RMASCA</span><span class="op">)</span></code></pre></div>
-<p>This time we will look at a small metabolomics dataset by <span class="citation">Euceda et al. (2017)</span> and replicate the findings of <span class="citation">Madssen et al. (2020)</span>. Let us start by having a quick look at it:</p>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="http://ggplot2.tidyverse.org">"ggplot2"</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://rpkgs.datanovia.com/ggpubr/">"ggpubr"</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">ALASCA</span><span class="op">)</span></code></pre></div>
+<p>This time we will look at a small metabolomics dataset by <span class="citation">Euceda et al. (2017)</span> and replicate the findings of <span class="citation">Madssen et al. (2020)</span>. Note that this is an example of ALASCA applied on <strong>intervention data</strong>. If you are more interested in repeated measures <strong>observational data</strong>, have a look at <a href="pregnancy.html">the preeclampsia vignette</a>. If you want an introduction to ALASCA, have a look at <a href="ALASCA.html">Get Started</a>.</p>
+<p>Let us start by having a quick look at it:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span>
-  <span class="fu">ggpubr</span><span class="fu">::</span><span class="va"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span>,
+  <span class="va">ggarrange</span>,
   <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="../reference/plotParts.html">plotParts</a></span><span class="op">(</span><span class="va">df</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span>, valueColumn <span class="op">=</span> <span class="st">"value"</span>, addSmooth <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span>, 
                       common.legend <span class="op">=</span> <span class="cn">TRUE</span>, legend <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
   <span class="op">)</span></code></pre></div>
@@ -105,7 +113,7 @@ So there is three time points, two groups and 16 variables. <span class="citatio
 <blockquote>
 All metabolite responses were log-transformed before analysis, and the effect matrix was mean-centered before PCA.
 </blockquote>
-<p>But our data is already log-transformed, and centering is handled by . But we need to scale each metabolite with the standard deviation at baseline, as instructed by the authors. So let us set the desired reference groups and normalize:</p>
+<p>But our data is already log-transformed, and centering is handled by <code><a href="../reference/ALASCA.html">ALASCA()</a></code>. However, as instructed by the authors, we need to scale each metabolite with the standard deviation at baseline. So let us set the desired reference groups and normalize:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df</span><span class="op">$</span><span class="va">group</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/relevel.html">relevel</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">group</span>, ref <span class="op">=</span> <span class="st">"Chemotherapy only"</span><span class="op">)</span>
 <span class="va">df</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/relevel.html">relevel</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">time</span>, ref <span class="op">=</span> <span class="st">"TP1"</span><span class="op">)</span>
@@ -116,12 +124,13 @@ All metabolite responses were log-transformed before analysis, and the effect ma
   <span class="op">}</span>
   <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
-<p>Without any fuss, let us see what RMASCA makes out of it using the same model as <span class="citation">Madssen et al. (2020)</span>. Note that we have to <code>forceEqualBaseline</code> to remove the interaction term for TP1 * treatment.</p>
+<p>Without any fuss, let us see what ALASCA makes out of it using the same model as <span class="citation">Madssen et al. (2020)</span>. Note that we have to <code>forceEqualBaseline</code> to remove the interaction term for TP1 * treatment.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">form</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">ID</span><span class="op">)</span>
-<span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RMASCA.html">RMASCA</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">form</span>, separateTimeAndGroup <span class="op">=</span> <span class="cn">FALSE</span>, forceEqualBaseline <span class="op">=</span> <span class="cn">TRUE</span>, scaleFun <span class="op">=</span> <span class="va">scaleFun</span><span class="op">)</span>
+<span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">form</span>, separateTimeAndGroup <span class="op">=</span> <span class="cn">FALSE</span>, forceEqualBaseline <span class="op">=</span> <span class="cn">TRUE</span>, scaleFun <span class="op">=</span> <span class="va">scaleFun</span><span class="op">)</span>
+<span class="co">#&gt; Will use linear mixed models!</span>
 <span class="co">#&gt; Scaling data with custom function...</span>
-<span class="co">#&gt; Calculating LMM coefficients...</span>
+<span class="co">#&gt; Calculating  LMM  coefficients...</span>
 <span class="co">#&gt; Registered S3 methods overwritten by 'lme4':</span>
 <span class="co">#&gt;   method                          from</span>
 <span class="co">#&gt;   cooks.distance.influence.merMod car </span>
@@ -144,12 +153,12 @@ All metabolite responses were log-transformed before analysis, and the effect ma
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; Finished calculating LMM coefficients!</span>
+<span class="co">#&gt; Finished calculating regression coefficients!</span>
 <span class="co">#&gt; Calculating effect matrix</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span></code></pre></div>
 <p>Let us check that our model is as expected:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">mod</span><span class="op">$</span><span class="va">lmer.models</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">mod</span><span class="op">$</span><span class="va">regr.model</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
 <span class="co">#&gt; Linear mixed model fit by REML. t-tests use Satterthwaite's method [</span>
 <span class="co">#&gt; lmerModLmerTest]</span>
 <span class="co">#&gt; Formula: object$newFormula</span>
@@ -202,7 +211,7 @@ All metabolite responses were log-transformed before analysis, and the effect ma
 <p><img src="metabolomics_files/figure-html/unnamed-chunk-7-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>Note that we used the  function to flip the loadings and scores to produce similar plots as in the original article.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">mod</span>, component <span class="op">=</span> <span class="st">"PC2"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">mod</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
 <p><img src="metabolomics_files/figure-html/unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>As we can see, it looks indeed as a very good match with the original findings.</p>
 <p>Let us validate our model (outside knitr, it uses about 2 seconds per run),</p>
@@ -211,119 +220,125 @@ All metabolite responses were log-transformed before analysis, and the effect ma
 <span class="va">mod.val</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">mod</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span><span class="op">)</span>
 <span class="co">#&gt; Running validation...</span>
 <span class="co">#&gt; - Run  1  of  50 </span>
-<span class="co">#&gt; --- Used  4.11  seconds. Est. time remaining:  201.24  seconds </span>
+<span class="co">#&gt; --- Used  1.73  seconds. Est. time remaining:  84.87  seconds </span>
 <span class="co">#&gt; - Run  2  of  50 </span>
-<span class="co">#&gt; --- Used  3.67  seconds. Est. time remaining:  186.65  seconds </span>
+<span class="co">#&gt; --- Used  1.43  seconds. Est. time remaining:  75.99  seconds </span>
 <span class="co">#&gt; - Run  3  of  50 </span>
-<span class="co">#&gt; --- Used  3.95  seconds. Est. time remaining:  183.68  seconds </span>
+<span class="co">#&gt; --- Used  1.61  seconds. Est. time remaining:  74.85  seconds </span>
 <span class="co">#&gt; - Run  4  of  50 </span>
-<span class="co">#&gt; --- Used  4.54  seconds. Est. time remaining:  187.04  seconds </span>
+<span class="co">#&gt; --- Used  1.56  seconds. Est. time remaining:  72.92  seconds </span>
 <span class="co">#&gt; - Run  5  of  50 </span>
-<span class="co">#&gt; --- Used  3.88  seconds. Est. time remaining:  181.3  seconds </span>
+<span class="co">#&gt; --- Used  1.74  seconds. Est. time remaining:  72.72  seconds </span>
 <span class="co">#&gt; - Run  6  of  50 </span>
-<span class="co">#&gt; --- Used  3.68  seconds. Est. time remaining:  174.71  seconds </span>
+<span class="co">#&gt; --- Used  1.62  seconds. Est. time remaining:  71.1  seconds </span>
 <span class="co">#&gt; - Run  7  of  50 </span>
-<span class="co">#&gt; --- Used  3.61  seconds. Est. time remaining:  168.5  seconds </span>
+<span class="co">#&gt; --- Used  1.51  seconds. Est. time remaining:  68.82  seconds </span>
 <span class="co">#&gt; - Run  8  of  50 </span>
-<span class="co">#&gt; --- Used  3.73  seconds. Est. time remaining:  163.57  seconds </span>
+<span class="co">#&gt; --- Used  1.68  seconds. Est. time remaining:  67.66  seconds </span>
 <span class="co">#&gt; - Run  9  of  50 </span>
-<span class="co">#&gt; --- Used  3.71  seconds. Est. time remaining:  158.82  seconds </span>
+<span class="co">#&gt; --- Used  1.47  seconds. Est. time remaining:  65.41  seconds </span>
 <span class="co">#&gt; - Run  10  of  50 </span>
-<span class="co">#&gt; --- Used  3.76  seconds. Est. time remaining:  154.51  seconds </span>
+<span class="co">#&gt; --- Used  1.73  seconds. Est. time remaining:  64.35  seconds </span>
 <span class="co">#&gt; - Run  11  of  50 </span>
-<span class="co">#&gt; --- Used  3.84  seconds. Est. time remaining:  150.57  seconds </span>
+<span class="co">#&gt; --- Used  1.49  seconds. Est. time remaining:  62.31  seconds </span>
 <span class="co">#&gt; - Run  12  of  50 </span>
-<span class="co">#&gt; --- Used  3.68  seconds. Est. time remaining:  146.14  seconds </span>
+<span class="co">#&gt; --- Used  1.73  seconds. Est. time remaining:  61.14  seconds </span>
 <span class="co">#&gt; - Run  13  of  50 </span>
-<span class="co">#&gt; --- Used  3.61  seconds. Est. time remaining:  141.63  seconds </span>
+<span class="co">#&gt; --- Used  1.72  seconds. Est. time remaining:  59.85  seconds </span>
 <span class="co">#&gt; - Run  14  of  50 </span>
-<span class="co">#&gt; --- Used  4.03  seconds. Est. time remaining:  138.33  seconds </span>
+<span class="co">#&gt; --- Used  1.38  seconds. Est. time remaining:  57.63  seconds </span>
 <span class="co">#&gt; - Run  15  of  50 </span>
-<span class="co">#&gt; --- Used  3.7  seconds. Est. time remaining:  134.15  seconds </span>
+<span class="co">#&gt; --- Used  1.51  seconds. Est. time remaining:  55.81  seconds </span>
 <span class="co">#&gt; - Run  16  of  50 </span>
-<span class="co">#&gt; --- Used  3.65  seconds. Est. time remaining:  129.93  seconds </span>
+<span class="co">#&gt; --- Used  1.69  seconds. Est. time remaining:  54.42  seconds </span>
 <span class="co">#&gt; - Run  17  of  50 </span>
-<span class="co">#&gt; --- Used  3.75  seconds. Est. time remaining:  125.97  seconds </span>
+<span class="co">#&gt; --- Used  1.45  seconds. Est. time remaining:  52.53  seconds </span>
 <span class="co">#&gt; - Run  18  of  50 </span>
-<span class="co">#&gt; --- Used  3.65  seconds. Est. time remaining:  121.85  seconds </span>
+<span class="co">#&gt; --- Used  1.52  seconds. Est. time remaining:  50.8  seconds </span>
 <span class="co">#&gt; - Run  19  of  50 </span>
-<span class="co">#&gt; --- Used  3.6  seconds. Est. time remaining:  117.71  seconds </span>
+<span class="co">#&gt; --- Used  1.63  seconds. Est. time remaining:  49.28  seconds </span>
 <span class="co">#&gt; - Run  20  of  50 </span>
-<span class="co">#&gt; --- Used  3.53  seconds. Est. time remaining:  113.51  seconds </span>
+<span class="co">#&gt; --- Used  1.6  seconds. Est. time remaining:  47.71  seconds </span>
 <span class="co">#&gt; - Run  21  of  50 </span>
-<span class="co">#&gt; --- Used  3.53  seconds. Est. time remaining:  109.37  seconds </span>
+<span class="co">#&gt; --- Used  1.72  seconds. Est. time remaining:  46.29  seconds </span>
 <span class="co">#&gt; - Run  22  of  50 </span>
-<span class="co">#&gt; --- Used  3.59  seconds. Est. time remaining:  105.37  seconds </span>
+<span class="co">#&gt; --- Used  1.54  seconds. Est. time remaining:  44.63  seconds </span>
 <span class="co">#&gt; - Run  23  of  50 </span>
-<span class="co">#&gt; --- Used  3.56  seconds. Est. time remaining:  101.38  seconds </span>
+<span class="co">#&gt; --- Used  1.63  seconds. Est. time remaining:  43.08  seconds </span>
 <span class="co">#&gt; - Run  24  of  50 </span>
-<span class="co">#&gt; --- Used  4.22  seconds. Est. time remaining:  98.13  seconds </span>
+<span class="co">#&gt; --- Used  1.43  seconds. Est. time remaining:  41.3  seconds </span>
 <span class="co">#&gt; - Run  25  of  50 </span>
-<span class="co">#&gt; --- Used  3.61  seconds. Est. time remaining:  94.19  seconds </span>
+<span class="co">#&gt; --- Used  1.52  seconds. Est. time remaining:  39.64  seconds </span>
 <span class="co">#&gt; - Run  26  of  50 </span>
-<span class="co">#&gt; --- Used  3.49  seconds. Est. time remaining:  90.16  seconds </span>
+<span class="co">#&gt; --- Used  1.7  seconds. Est. time remaining:  38.16  seconds </span>
 <span class="co">#&gt; - Run  27  of  50 </span>
-<span class="co">#&gt; --- Used  3.56  seconds. Est. time remaining:  86.24  seconds </span>
+<span class="co">#&gt; --- Used  1.44  seconds. Est. time remaining:  36.45  seconds </span>
 <span class="co">#&gt; - Run  28  of  50 </span>
-<span class="co">#&gt; --- Used  3.47  seconds. Est. time remaining:  82.27  seconds </span>
+<span class="co">#&gt; --- Used  1.51  seconds. Est. time remaining:  34.8  seconds </span>
 <span class="co">#&gt; - Run  29  of  50 </span>
-<span class="co">#&gt; --- Used  3.67  seconds. Est. time remaining:  78.48  seconds </span>
+<span class="co">#&gt; --- Used  1.7  seconds. Est. time remaining:  33.3  seconds </span>
 <span class="co">#&gt; - Run  30  of  50 </span>
-<span class="co">#&gt; --- Used  3.48  seconds. Est. time remaining:  74.57  seconds </span>
+<span class="co">#&gt; --- Used  1.54  seconds. Est. time remaining:  31.69  seconds </span>
 <span class="co">#&gt; - Run  31  of  50 </span>
-<span class="co">#&gt; --- Used  3.47  seconds. Est. time remaining:  70.69  seconds </span>
+<span class="co">#&gt; --- Used  1.53  seconds. Est. time remaining:  30.07  seconds </span>
 <span class="co">#&gt; - Run  32  of  50 </span>
-<span class="co">#&gt; --- Used  3.61  seconds. Est. time remaining:  66.9  seconds </span>
+<span class="co">#&gt; --- Used  1.74  seconds. Est. time remaining:  28.58  seconds </span>
 <span class="co">#&gt; - Run  33  of  50 </span>
-<span class="co">#&gt; --- Used  3.74  seconds. Est. time remaining:  63.2  seconds </span>
+<span class="co">#&gt; --- Used  1.6  seconds. Est. time remaining:  26.99  seconds </span>
 <span class="co">#&gt; - Run  34  of  50 </span>
-<span class="co">#&gt; --- Used  3.52  seconds. Est. time remaining:  59.39  seconds </span>
+<span class="co">#&gt; --- Used  1.73  seconds. Est. time remaining:  25.47  seconds </span>
 <span class="co">#&gt; - Run  35  of  50 </span>
-<span class="co">#&gt; --- Used  3.48  seconds. Est. time remaining:  55.58  seconds </span>
+<span class="co">#&gt; --- Used  1.47  seconds. Est. time remaining:  23.83  seconds </span>
 <span class="co">#&gt; - Run  36  of  50 </span>
-<span class="co">#&gt; --- Used  3.5  seconds. Est. time remaining:  51.79  seconds </span>
+<span class="co">#&gt; --- Used  1.48  seconds. Est. time remaining:  22.2  seconds </span>
 <span class="co">#&gt; - Run  37  of  50 </span>
-<span class="co">#&gt; --- Used  3.53  seconds. Est. time remaining:  48.03  seconds </span>
+<span class="co">#&gt; --- Used  1.55  seconds. Est. time remaining:  20.6  seconds </span>
 <span class="co">#&gt; - Run  38  of  50 </span>
-<span class="co">#&gt; --- Used  3.47  seconds. Est. time remaining:  44.27  seconds </span>
+<span class="co">#&gt; --- Used  1.75  seconds. Est. time remaining:  19.07  seconds </span>
 <span class="co">#&gt; - Run  39  of  50 </span>
-<span class="co">#&gt; --- Used  3.48  seconds. Est. time remaining:  40.52  seconds </span>
+<span class="co">#&gt; --- Used  1.55  seconds. Est. time remaining:  17.47  seconds </span>
 <span class="co">#&gt; - Run  40  of  50 </span>
-<span class="co">#&gt; --- Used  3.46  seconds. Est. time remaining:  36.78  seconds </span>
+<span class="co">#&gt; --- Used  1.65  seconds. Est. time remaining:  15.89  seconds </span>
 <span class="co">#&gt; - Run  41  of  50 </span>
-<span class="co">#&gt; --- Used  3.57  seconds. Est. time remaining:  33.08  seconds </span>
+<span class="co">#&gt; --- Used  1.62  seconds. Est. time remaining:  14.31  seconds </span>
 <span class="co">#&gt; - Run  42  of  50 </span>
-<span class="co">#&gt; --- Used  3.56  seconds. Est. time remaining:  29.38  seconds </span>
+<span class="co">#&gt; --- Used  1.62  seconds. Est. time remaining:  12.73  seconds </span>
 <span class="co">#&gt; - Run  43  of  50 </span>
-<span class="co">#&gt; --- Used  3.5  seconds. Est. time remaining:  25.68  seconds </span>
+<span class="co">#&gt; --- Used  1.44  seconds. Est. time remaining:  11.11  seconds </span>
 <span class="co">#&gt; - Run  44  of  50 </span>
-<span class="co">#&gt; --- Used  3.55  seconds. Est. time remaining:  21.99  seconds </span>
+<span class="co">#&gt; --- Used  1.52  seconds. Est. time remaining:  9.52  seconds </span>
 <span class="co">#&gt; - Run  45  of  50 </span>
-<span class="co">#&gt; --- Used  3.56  seconds. Est. time remaining:  18.32  seconds </span>
+<span class="co">#&gt; --- Used  1.63  seconds. Est. time remaining:  7.93  seconds </span>
 <span class="co">#&gt; - Run  46  of  50 </span>
-<span class="co">#&gt; --- Used  3.43  seconds. Est. time remaining:  14.63  seconds </span>
+<span class="co">#&gt; --- Used  1.49  seconds. Est. time remaining:  6.34  seconds </span>
 <span class="co">#&gt; - Run  47  of  50 </span>
-<span class="co">#&gt; --- Used  3.49  seconds. Est. time remaining:  10.96  seconds </span>
+<span class="co">#&gt; --- Used  1.63  seconds. Est. time remaining:  4.76  seconds </span>
 <span class="co">#&gt; - Run  48  of  50 </span>
-<span class="co">#&gt; --- Used  6.02  seconds. Est. time remaining:  7.41  seconds </span>
+<span class="co">#&gt; --- Used  1.4  seconds. Est. time remaining:  3.16  seconds </span>
 <span class="co">#&gt; - Run  49  of  50 </span>
-<span class="co">#&gt; --- Used  6.92  seconds. Est. time remaining:  3.77  seconds </span>
+<span class="co">#&gt; --- Used  1.44  seconds. Est. time remaining:  1.58  seconds </span>
 <span class="co">#&gt; - Run  50  of  50 </span>
-<span class="co">#&gt; --- Used  5.47  seconds. Est. time remaining:  0  seconds</span></code></pre></div>
+<span class="co">#&gt; --- Used  1.65  seconds. Est. time remaining:  0  seconds</span></code></pre></div>
 <p>The result:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">mod.val</span><span class="op">)</span></code></pre></div>
 <p><img src="metabolomics_files/figure-html/unnamed-chunk-10-1.png" width="100%" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">mod.val</span>, component <span class="op">=</span> <span class="st">"PC2"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">mod.val</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
 <p><img src="metabolomics_files/figure-html/unnamed-chunk-10-2.png" width="100%" style="display: block; margin: auto;"></p>
 <p>Or if want to see the validation models instead of errorbars:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotVal.html">plotVal</a></span><span class="op">(</span><span class="va">mod.val</span><span class="op">)</span></code></pre></div>
 <p><img src="metabolomics_files/figure-html/unnamed-chunk-11-1.png" width="100%" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plotVal.html">plotVal</a></span><span class="op">(</span><span class="va">mod.val</span>, component <span class="op">=</span> <span class="st">"PC2"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotVal.html">plotVal</a></span><span class="op">(</span><span class="va">mod.val</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
 <p><img src="metabolomics_files/figure-html/unnamed-chunk-11-2.png" width="100%" style="display: block; margin: auto;"></p>
+<div id="comparison-of-result" class="section level2">
+<h2 class="hasAnchor">
+<a href="#comparison-of-result" class="anchor"></a>Comparison of result</h2>
+<p>To better visualize the agreement between the ALASCA package and the published code by <span class="citation">Madssen et al. (2020)</span>, I’ve run both and collected the loadings and scores for P1 and PC2. Although there are some variation in the robustness estimates, the two implementations seem to match reasonable well.</p>
+<p><img src="metabolomics_files/figure-html/unnamed-chunk-12-1.png" width="100%" style="display: block; margin: auto;"></p>
+</div>
 <div id="references" class="section level2 unnumbered">
 <h2 class="hasAnchor">
 <a href="#references" class="anchor"></a>References</h2>
