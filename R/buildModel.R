@@ -74,10 +74,18 @@ runRegression <- function(object){
   }
   object$regr.model <- lapply(unique(object$df$variable), function(i){
     if(object$doDebug){
-      cat(".... Variable: ",i," (",levels(mod$df$variable)[i],")\n")
+      cat(".... Variable: ",i," (",levels(object$df$variable)[i],")\n")
       cat(".... Number of rows in subset: ",nrow(subset(object$df, variable == i)),"\n")
     }
     if(object$forceEqualBaseline){
+      if(object$doDebug){
+        cat("!!! --- Making special exception --- !!!\n")
+        p1 <- paste0(subset(object$df, variable == unique(object$df$variable)[1])$studyno, subset(object$df, variable == unique(object$df$variable)[1])$time)
+        p2 <- paste0(subset(object$df, variable == i)$studyno, subset(object$df, variable == i)$time)
+        cat(".... Length p1: ",length(p1),"\n")
+        cat(".... Length p2: ",length(p2),"\n")
+        X <- subset(object$X, p2 %in% p1)
+      }
       if(object$method == "LM"){
         regr.model <- lm(object$newFormula, data = subset(object$df, variable == i))
       }else{
