@@ -84,7 +84,7 @@ runRegression <- function(object){
         p2 <- paste0(subset(object$df, variable == i)$studyno, subset(object$df, variable == i)$time)
         cat(".... Length p1: ",length(p1),"\n")
         cat(".... Length p2: ",length(p2),"\n")
-        X <- subset(object$X, p2 %in% p1)
+        X <- subset(object$X, p1 %in% p2)
       }
       if(object$method == "LM"){
         regr.model <- lm(object$newFormula, data = subset(object$df, variable == i))
