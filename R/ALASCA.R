@@ -247,7 +247,7 @@ sanitizeObject <- function(object){
   object$nPartsWithVariable <- Reduce(cbind,lapply(object$partsWithVariable, sum))
   if(any(object$nPartsWithVariable != object$nPartsWithVariable[1])){
     warning("Some of your participants are missing measurements. This WILL slow down the rest of the script!!!\n")
-    if(!object$participantColumn){
+    if(any(object$participantColumn == FALSE)){
       #stop("Some of your participants are missing measurements. To proceed, please specify participant column.")
     }else{
       #warning("Some of your participants are missing measurements. However, I will try to proceed.\n")
