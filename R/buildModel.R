@@ -6,7 +6,7 @@
 #' @return An ALASCA object
 buildModel <- function(object){
   if(!object$minimizeObject){
-    # This is a validation run
+    # This is not a validation run
     cat("Calculating ",object$method," coefficients...\n")
   }
   object <- runRegression(object)
@@ -39,6 +39,9 @@ runRegression <- function(object){
   ccc <- 1
   
   if(object$forceEqualBaseline){
+    if(object$doDebug){
+      cat(".... Starts removing interaction between groups and first time point\n")
+    }
     # Remove interaction between group and first time point
     if(object$method == "LM"){
       regr.model <- lm(object$formula, data = subset(object$df, variable == unique(object$df$variable)[1]))
@@ -47,16 +50,33 @@ runRegression <- function(object){
     }
     X <- model.matrix(regr.model)
     baselineLabel <- paste0("time", unique(object$df$time)[1])
+    if(object$doDebug){
+      cat(".... Baseline found to be: ",baselineLabel,"\n")
+      cat(".... Column names of X: ",colnames(X),"\n")
+    }
     X <- X[, substr(colnames(X),1,nchar(baselineLabel)) != baselineLabel]
     newFormula <- as.character(object$formula)
     newFormulaPred <- strsplit(as.character(newFormula[3]), "\\+")[[1]]
     newFormulaPred <- newFormulaPred[Reduce(cbind,lapply(newFormulaPred, function (x) grepl("\\(",x)))]
     newFormula <- paste(newFormula[2],"~","X +",newFormulaPred, collapse = " ")
     object$newFormula <- formula(newFormula)
+    if(object$doDebug){
+      cat(".... Old formula (given as ~ `outcome` `predictors`): ",as.character(object$formula),"\n")
+      cat(".... New formula (given as ~ `outcome` `predictors`): ",as.character(object$newFormula),"\n")
+      cat(".... Column names of X: ",colnames(X),"\n")
+      cat(".... Size of X (rowsxcols): ",nrow(X),"x",ncol(X),"\n")
+    }
     object$X <- X
   }
   
+  if(object$doDebug){
+    cat(".. Beginning regression\n")
+  }
   object$regr.model <- lapply(unique(object$df$variable), function(i){
+    if(object$doDebug){
+      cat(".... Variable: ",i," (",levels(mod$df$variable)[i],")\n")
+      cat(".... Number of rows in subset: ",nrow(subset(object$df, variable == i)),"\n")
+    }
     if(object$forceEqualBaseline){
       if(object$method == "LM"){
         regr.model <- lm(object$newFormula, data = subset(object$df, variable == i))

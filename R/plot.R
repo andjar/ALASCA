@@ -9,6 +9,7 @@
 #' @param only String stating which plot to return; `both` (default), `score` or `loading`
 #' @param enlist Logical. If TRUE, the plots are returned as a list and not as a composed figure (default)
 #' @param tooDense Integer, If > 0, only name this number of covariables
+#' @param xlabel Defaults to "Time" if not specified during model setup
 #' @param highlight Vector of strings with variables to highlight in the loadings plot
 #' @return An ggplot2 object (or a list og ggplot objects)
 #' 
@@ -21,12 +22,15 @@
 #' plot(model, highlight = c("PlGF", "IL-1b", "IL-6"))
 #' 
 #' @export
-plot.ALASCA <- function(object, component = 1, effect = "both", decreasingLoadings = TRUE, only = "both", enlist = FALSE, tooDense = NA, highlight = NA){
+plot.ALASCA <- function(object, component = 1, effect = "both", decreasingLoadings = TRUE, only = "both", enlist = FALSE, tooDense = NA, highlight = NA, xlabel = NA){
   if(!(effect %in% c("both","time","group"))){
     stop("`effect` has to be `both`, `time` or `group`")
   }
   if(!object$separateTimeAndGroup){
     effect = "time"
+  }
+  if(!is.na(xlabel)){
+    object$plot.xlabel <- xlabel
   }
   if(only == "score"){
     if(effect == "both"){
@@ -87,7 +91,7 @@ screeplot.ALASCA <- function(object, effect = "both"){
   g <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = time, group = NA)) +
     ggplot2::geom_point() +
     ggplot2::geom_line() +
-    ggplot2::labs(x = "Principal Component", y = "Relative Expl. of Time Var.")
+    ggplot2::labs(x = "Principal Component", y = paste0("Relative Expl. of ",object$plot.xlabel," Var."))
   if(length(object$ALASCA$loading) == 3){
     gg <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = group, group = NA)) +
       ggplot2::geom_point() +
@@ -212,7 +216,7 @@ getScorePlot <- function(object, component = 1, effect = "time"){
     }
     g <- g +
       ggplot2::theme(legend.position = "bottom") +
-      ggplot2::labs(x = "Time", y = paste0("PC",component, " (",round(100*object$ALASCA$score$explained$time[component],2),"%)"))
+      ggplot2::labs(x = object$plot.xlabel, y = paste0("PC",component, " (",round(100*object$ALASCA$score$explained$time[component],2),"%)"))
   }else{
     score <- subset(getScores(object)$group, PC == component)
     if(object$validate){
@@ -225,7 +229,7 @@ getScorePlot <- function(object, component = 1, effect = "time"){
     }
     g <- g +
       ggplot2::theme(legend.position = "bottom") +
-      ggplot2::labs(x = "Time", y = paste0("PC",component, " (",round(100*object$ALASCA$score$explained$group[component],2),"%)"))
+      ggplot2::labs(x = object$plot.xlabel, y = paste0("PC",component, " (",round(100*object$ALASCA$score$explained$group[component],2),"%)"))
   }
   return(g)
 }
@@ -359,7 +363,7 @@ plotPred <- function(object, variable = NA){
     g <- ggplot2::ggplot(newdata, ggplot2::aes(x = time, y = pred, color = group, group = group)) +
       ggplot2::geom_point() + ggplot2::geom_line() +
       ggplot2::theme(legend.position = "bottom") +
-      ggplot2::labs(x = "Time", y = x)
+      ggplot2::labs(x = object$plot.xlabel, y = x)
     g
   })
   return(gg)
@@ -390,7 +394,7 @@ plotVal <- function(object, component = 1){
     )
     gst <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score)) + 
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2)
-      ggplot2::labs(x = "Time")
+      ggplot2::labs(x = object$plot.xlabel)
     
     ## Group
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
@@ -405,7 +409,7 @@ plotVal <- function(object, component = 1){
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
       ggplot2::geom_point(data = subset(getScores(object)$group, PC == component), group = NA, alpha = 1, color = "black") +
       ggplot2::geom_line(data = subset(getScores(object)$group, PC == component), group = subset(getScores(object)$group, PC == component)$group, alpha = 1, color = "black") +
-      ggplot2::labs(x = "Time")
+      ggplot2::labs(x = object$plot.xlabel)
     
     
     # Loading plot
@@ -449,7 +453,7 @@ plotVal <- function(object, component = 1){
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
       ggplot2::geom_point(data = subset(getScores(object)$time, PC == component), group = NA, alpha = 1, color = "black") +
       ggplot2::geom_line(data = subset(getScores(object)$time, PC == component), group = subset(getScores(object)$time, PC == component)$group, alpha = 1, color = "black") +
-      ggplot2::labs(x = "Time") + ggplot2::theme(legend.position = "bottom")
+      ggplot2::labs(x = object$plot.xlabel) + ggplot2::theme(legend.position = "bottom")
     
     # Loading plot
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
@@ -461,7 +465,7 @@ plotVal <- function(object, component = 1){
     gl <- ggplot2::ggplot(dff, ggplot2::aes(x = covars, y = loading)) + 
       ggplot2::geom_point(alpha = 0.2, color = "black") + 
       ggplot2::geom_point(data = subset(getLoadings(object)$time, PC == component), alpha = 1, color = "red") +
-      ggplot2::labs(x = "Variable")
+      ggplot2::labs(x = object$plot.xlabel)
     
     g <- ggpubr::ggarrange(gs, gl, nrow = 1, ncol = 2, widths = c(1,2))
   }

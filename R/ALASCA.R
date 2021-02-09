@@ -14,6 +14,7 @@
 #' @param scaleFun If `TRUE` (default), each variable is scaled to unit SD and zero mean. If `FALSE`, no scaling is performed. You can also provide a custom scaling function that has the data frame `df` as input and output
 #' @param forceEqualBaseline Set to `TRUE` to remove interaction between group and first time point (defaults to `FALSE`)
 #' @param useSumCoding Set to `TRUE` to use sum coding instead of contrast coding for group (defaults to `FALSE`)
+#' @param plot.xlabel Defaults to "Time"
 #' @param method Defaults to `NA` where method is either LM or LMM, depending on whether your formula contains a random effect or not
 #' @param nValFold Partitions when validating
 #' @param nValRuns number of validation runs
@@ -38,6 +39,8 @@ ALASCA <- function(df,
                    useSumCoding = FALSE,
                    method = NA,
                    minimizeObject = FALSE,
+                   plot.xlabel = "Time",
+                   doDebug = FALSE,
                    nValFold = 7,
                    nValRuns = 50,
                    validationMethod = "loo",
@@ -63,7 +66,9 @@ ALASCA <- function(df,
     object$validationParticipants <- validationParticipants
     
     ## Keep original object?
-    object$validationObject = NULL #validationObject
+    object$validationObject <- NULL #validationObject
+    
+    object$doDebug <- FALSE
   }else{
     object <- list(df = df,
                    formula = formula,
@@ -75,7 +80,9 @@ ALASCA <- function(df,
                    forceEqualBaseline = forceEqualBaseline,
                    useSumCoding = FALSE,
                    method = method,
+                   plot.xlabel = plot.xlabel,
                    minimizeObject = minimizeObject,
+                   doDebug = doDebug,
                    nValFold = nValFold,
                    nValRuns = nValRuns,
                    validationMethod = validationMethod,
@@ -84,8 +91,15 @@ ALASCA <- function(df,
     )
   }
   class(object) <- "ALASCA"
+  if(object$doDebug){
+    cat(".. Has initialized the ALASCA model. Next step is to clean it and check input\n")
+  }
 
   object <- sanitizeObject(object)
+  
+  if(object$doDebug){
+    cat(".. Has cleaned the ALASCA model. Next step is building it\n")
+  }
   object <- buildModel(object)
   
   if(object$minimizeObject){
@@ -93,6 +107,9 @@ ALASCA <- function(df,
     object <- removeEmbedded(object)
   }
   if(object$validate){
+    if(object$doDebug){
+      cat(".. You chose to validate the model. Starting validation\n")
+    }
     object <- validate(object)
   }
 
@@ -175,10 +192,16 @@ sanitizeObject <- function(object){
     object$df[,partColumn] <- factor(object$df[,partColumn])
   }
   
+  if(object$doDebug){
+    cat(".... Making factors for time, group and variable\n")
+  }
   object$df$time <- factor(object$df$time)
   object$df$group <- factor(object$df$group)
   object$df$variable <- factor(object$df$variable)
 
+  if(object$doDebug){
+    cat(".... Checking for missing information\n")
+  }
   if(any(is.na(object$df$time) | is.na(object$df$group))){
     cat("\n\n!!! -> Oh dear, at least on of your rows is missing either time or group. I have removed it/them for now, but you should check if this is a problem...\n\n")
     object$df <- object$df[!is.na(object$df$time) & !is.na(object$df$group),]
@@ -189,6 +212,9 @@ sanitizeObject <- function(object){
   
   # Use sum coding?
   if(object$useSumCoding){
+    if(object$doDebug){
+      cat(".... Use sum coding\n")
+    }
     contrasts(object$df$group) <- contr.sum(length(unique(object$df$group)))
   }
   
@@ -214,11 +240,17 @@ sanitizeObject <- function(object){
   }
 
   object$hasGroupTerm <- ifelse(any(formulaTerms == "group"), TRUE, FALSE)
-  # if(!object$hasGroupTerm){
-  #   object$separateTimeAndGroup <- FALSE
-  # }
+  if(object$doDebug){
+    cat(".... Group term in formula? ",object$hasGroupTerm,"\n")
+  }
   object$hasInteractionTerm <- ifelse(any(formulaTerms == "group:time" | formulaTerms == "time:group"), TRUE, FALSE)
+  if(object$doDebug){
+    cat(".... Interaction term in formula? ",object$hasInteractionTerm,"\n")
+  }
   object$covars <- formulaTerms[!(formulaTerms %in% c("time","group","group:time","time:group"))]
+  if(object$doDebug){
+    cat(".... Identified the following covariates in addition to time and troup: ",object$covars,"\n")
+  }
 
   return(object)
 }
