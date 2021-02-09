@@ -43,11 +43,19 @@ runRegression <- function(object){
       cat(".... Starts removing interaction between groups and first time point\n")
     }
     # Remove interaction between group and first time point
-    if(object$method == "LM"){
-      regr.model <- lm(object$formula, data = subset(object$df, variable == unique(object$df$variable)[1]))
-    }else{
-      regr.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == unique(object$df$variable)[1]))
+    if(!object$missingMeasurements){
+      if(object$method == "LM"){
+        regr.model <- lm(object$formula, data = subset(object$df, variable == unique(object$df$variable)[1]))
+      }else{
+        regr.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == unique(object$df$variable)[1]))
+      }
+      object <- makeX(object, regr.model)
     }
+  }
+  
+  
+  
+  makeX <- function(object, regr.model){
     X <- model.matrix(regr.model)
     baselineLabel <- paste0("time", unique(object$df$time)[1])
     if(object$doDebug){
@@ -67,6 +75,7 @@ runRegression <- function(object){
       cat(".... Size of X (rowsxcols): ",nrow(X),"x",ncol(X),"\n")
     }
     object$X <- X
+    return(object)
   }
   
   if(object$doDebug){
@@ -78,18 +87,27 @@ runRegression <- function(object){
       cat(".... Number of rows in subset: ",nrow(subset(object$df, variable == i)),"\n")
     }
     if(object$forceEqualBaseline){
-      if(object$doDebug){
-        cat("!!! --- Making special exception --- !!!\n")
-        p1 <- paste0(subset(object$df, variable == unique(object$df$variable)[1])$studyno, subset(object$df, variable == unique(object$df$variable)[1])$time)
-        p2 <- paste0(subset(object$df, variable == i)$studyno, subset(object$df, variable == i)$time)
-        cat(".... Length p1: ",length(p1),"\n")
-        cat(".... Length p2: ",length(p2),"\n")
-        X <- subset(object$X, p1 %in% p2)
-      }
-      if(object$method == "LM"){
-        regr.model <- lm(object$newFormula, data = subset(object$df, variable == i))
+      if(!object$missingMeasurements){
+        if(object$method == "LM"){
+          regr.model <- lm(object$newFormula, data = subset(object$df, variable == i))
+        }else{
+          regr.model <- lmerTest::lmer(object$newFormula, data = subset(object$df, variable == i))
+        }
       }else{
-        regr.model <- lmerTest::lmer(object$newFormula, data = subset(object$df, variable == i))
+        
+        if(object$method == "LM"){
+          regr.model <- lm(object$formula, data = subset(object$df, variable == i))
+        }else{
+          regr.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
+        }
+        
+        object <- makeX(object, regr.model)
+        
+        if(object$method == "LM"){
+          regr.model <- lm(object$newFormula, data = subset(object$df, variable == i))
+        }else{
+          regr.model <- lmerTest::lmer(object$newFormula, data = subset(object$df, variable == i))
+        }
       }
     }else{
       if(object$method == "LM"){

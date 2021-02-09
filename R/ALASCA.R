@@ -204,7 +204,7 @@ sanitizeObject <- function(object){
     cat(".... Checking for missing information\n")
   }
   if(any(is.na(object$df$time) | is.na(object$df$group))){
-    cat("\n\n!!! -> Oh dear, at least on of your rows is missing either time or group. I have removed it/them for now, but you should check if this is a problem...\n\n")
+    warning("\n\n!!! -> Oh dear, at least on of your rows is missing either time or group. I have removed it/them for now, but you should check if this is a problem...\n\n")
     object$df <- object$df[!is.na(object$df$time) & !is.na(object$df$group),]
   }
   
@@ -236,20 +236,34 @@ sanitizeObject <- function(object){
     }
   }else{
     if(!object$minimizeObject){
-      cat("Not scaling data...\n")
+      warning("Not scaling data...\n")
     }
   }
-
+  
+  # Check if all participants have all values
+  object$partsWithVariable <- lapply(unique(object$df$variable), function(i){
+    object$df$variable == i
+  })
+  object$nPartsWithVariable <- Reduce(cbind,lapply(object$partsWithVariable, sum))
+  if(any(object$nPartsWithVariable != object$nPartsWithVariable[1])){
+    warning("Some of your participants are missing measurements. This WILL slow down the rest of the script!!!\n")
+    if(!object$participantColumn){
+      #stop("Some of your participants are missing measurements. To proceed, please specify participant column.")
+    }else{
+      #warning("Some of your participants are missing measurements. However, I will try to proceed.\n")
+    }
+    object$missingMeasurements <- TRUE
+  }else{
+    object$missingMeasurements <- FALSE
+  }
+  
+  # Check what terms that is present in formula
   object$hasGroupTerm <- ifelse(any(formulaTerms == "group"), TRUE, FALSE)
-  if(object$doDebug){
-    cat(".... Group term in formula? ",object$hasGroupTerm,"\n")
-  }
   object$hasInteractionTerm <- ifelse(any(formulaTerms == "group:time" | formulaTerms == "time:group"), TRUE, FALSE)
-  if(object$doDebug){
-    cat(".... Interaction term in formula? ",object$hasInteractionTerm,"\n")
-  }
   object$covars <- formulaTerms[!(formulaTerms %in% c("time","group","group:time","time:group"))]
   if(object$doDebug){
+    cat(".... Group term in formula? ",object$hasGroupTerm,"\n")
+    cat(".... Interaction term in formula? ",object$hasInteractionTerm,"\n")
     cat(".... Identified the following covariates in addition to time and troup: ",object$covars,"\n")
   }
 
