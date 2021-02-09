@@ -16,6 +16,8 @@ ALASCA(
   useSumCoding = FALSE,
   method = NA,
   minimizeObject = FALSE,
+  plot.xlabel = "Time",
+  doDebug = FALSE,
   nValFold = 7,
   nValRuns = 50,
   validationMethod = "loo",
@@ -45,6 +47,10 @@ ALASCA(
 \item{method}{Defaults to \code{NA} where method is either LM or LMM, depending on whether your formula contains a random effect or not}
 
 \item{minimizeObject}{Logical. If \code{TRUE}, remove unnecessary clutter, optimize for validation}
+
+\item{plot.xlabel}{Defaults to "Time"}
+
+\item{doDebug}{Print what happens (default: \code{FALSE})}
 
 \item{nValFold}{Partitions when validating}
 

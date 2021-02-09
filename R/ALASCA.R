@@ -15,6 +15,7 @@
 #' @param forceEqualBaseline Set to `TRUE` to remove interaction between group and first time point (defaults to `FALSE`)
 #' @param useSumCoding Set to `TRUE` to use sum coding instead of contrast coding for group (defaults to `FALSE`)
 #' @param plot.xlabel Defaults to "Time"
+#' @param doDebug Print what happens (default: `FALSE`)
 #' @param method Defaults to `NA` where method is either LM or LMM, depending on whether your formula contains a random effect or not
 #' @param nValFold Partitions when validating
 #' @param nValRuns number of validation runs

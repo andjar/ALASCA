@@ -12,7 +12,8 @@
   only = "both",
   enlist = FALSE,
   tooDense = NA,
-  highlight = NA
+  highlight = NA,
+  xlabel = NA
 )
 }
 \arguments{
@@ -31,6 +32,8 @@
 \item{tooDense}{Integer, If > 0, only name this number of covariables}
 
 \item{highlight}{Vector of strings with variables to highlight in the loadings plot}
+
+\item{xlabel}{Defaults to "Time" if not specified during model setup}
 }
 \value{
 An ggplot2 object (or a list og ggplot objects)
