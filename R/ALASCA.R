@@ -242,10 +242,11 @@ sanitizeObject <- function(object){
   
   # Check if all participants have all values
   object$partsWithVariable <- lapply(unique(object$df$variable), function(i){
-    object$df$variable == i
+    b <- object$df[object$df$variable == i, which(!(colnames(object$df) %in% c("variable", as.character(object$formula)[2])))]
+    rownames(b) <- NULL
+    b
   })
   doAllParticipantsHaveSameMeasurements <- function(x) all(duplicated.default(x)[-1])
-  object$nPartsWithVariable <- Reduce(cbind,lapply(object$partsWithVariable, sum))
   if( !doAllParticipantsHaveSameMeasurements(object$partsWithVariable) ){
     warning("Some of your participants are missing measurements. This WILL slow down the rest of the script!!!\n")
     if(any(object$participantColumn == FALSE)){
