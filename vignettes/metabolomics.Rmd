@@ -146,4 +146,30 @@ ggarrange(g3, g1, g4, g2,
           common.legend = TRUE)
 ```
 
+## Regression models
+
+Sometimes it may be difficult to interpret the ALASCA plots and you may wish to visualize the underlying regression models. The ALASCA package features two functions for that: `plotPred()` and `plotRegression()`. The first one only shows the predicted values from our main models, whereas the second is based on bootstrapping and also shows confidence intervals for the predictions. Using `plotPred()` is straight forward:
+
+```{r}
+do.call(
+  ggpubr::ggarrange,
+  c(plotPred(mod, variable = c("Glucose", "Glutathione")), 
+                      common.legend = TRUE, legend = "bottom")
+  )
+```
+
+To use `plotRegression()` we first need to do the bootstrapping and then we can plot
+
+```{r}
+mod <- validateRegression(mod, variable = c("Glucose", "Glutathione"))
+head(mod$mod.pred)
+do.call(
+  ggpubr::ggarrange,
+  c(plotRegression(mod, variable = c("Glucose", "Glutathione")), 
+                      common.legend = TRUE, legend = "bottom")
+  )
+```
+
+Why do the outputs from `plotPred()` and `plotRegression()` differ? As mentioned above is `plotPred()` based on the fixed effects from the main models in your ALASCA model. In contrast, `plotRegression()` performs bootstrapping where new regression models are simulated from the bootstrapped data, including random effects. For each observation, we extract percentiles, and finally extract percentiles (2.5%, 50%, 97.5%) for each time and group. Note that `plotPred()` calculates predictions for the *mean* of additional covariates (other than time and group), whereas `plotRegression()` depends on the distribution in your study sample.
+
 ## References

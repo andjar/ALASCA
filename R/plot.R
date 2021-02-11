@@ -550,3 +550,33 @@ plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE, myThem
     return(g)
   }
 }
+
+
+#' Plot regression models
+#'
+#' This function returns a plot of the regression models after bootstrapping
+#'
+#' @param object An ALASCA object
+#' @param variable Which variable(s) to plot (default: `NA` which plots all)
+#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
+#' @return A ggplot2 objects\.
+#' 
+#' @export
+plotRegression <- function(object, variable = NA, myTheme = ggplot2::theme_bw()){
+  if(any(is.na(variable))){
+    variable <- object$variable
+  }
+  if(!object$mod.regr.validated){
+    stop("You need to validate your regression models first with `validateRegression()`.")
+  }
+  if(any(!(variable %in% object$mod.pred$variable))){
+    stop("Some of your requested variables have not been validated yet. See `validateRegression()`.")
+  }
+  gg <- lapply(variable, function(i){
+    g <- ggplot2::ggplot(subset(object$mod.pred, variable == i), ggplot2::aes(x = time, y = estimate, ymin = low, ymax = high, color = group, group = group)) +
+    ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
+      ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35)) +
+    myTheme + theme(legend.position = "bottom") + ggplot2::labs(x = object$plot.xlabel, y = i)
+  })
+  return(gg)
+}

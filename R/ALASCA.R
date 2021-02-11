@@ -86,6 +86,7 @@ ALASCA <- function(df,
                    doDebug = doDebug,
                    nValFold = nValFold,
                    nValRuns = nValRuns,
+                   mod.regr.validated = FALSE,
                    validationMethod = validationMethod,
                    validationObject = validationObject,
                    validationParticipants = validationParticipants

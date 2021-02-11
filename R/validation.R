@@ -278,3 +278,46 @@ switchSign <- function(value, perc, PCs){
   }
   return(perc)
 }
+
+#' Validate underlying regression models
+#'
+#' This function extract percentiles during validation
+#'
+#' @param object An ALASCA object
+#' @param variable Variable names for which models to validate (default `NA` for all)
+#' @param nSim Number of simulations
+#' @return An ALASCA object
+#' @export
+validateRegression <- function(object, variable, nSim = 500){
+  if(any(is.na(variable))){
+    variable <- unique(object$df$variable)
+  }
+  object$mod.regr.validated <- variable
+  object$mod.pred <- Reduce(rbind,lapply(variable, function(i){
+    nCol <- which(names(object$regr.model) == i)
+    merBoot <- lme4::bootMer(object$regr.model[[nCol]], predict, nsim = nSim, re.form = NA)
+    CI.lower = apply(merBoot$t, 2, function(x) as.numeric(quantile(x, probs=.025, na.rm=TRUE)))
+    CI.upper = apply(merBoot$t, 2, function(x) as.numeric(quantile(x, probs=.975, na.rm=TRUE)))
+    uGr <- unique(object$partsWithVariable[[nCol]]$group)
+    uT <- unique(object$partsWithVariable[[nCol]]$time)
+    a <- data.frame()
+    for(t in uT){
+      for(g in uGr){
+        t0 <- merBoot$t0[object$partsWithVariable[[nCol]]$group == g & object$partsWithVariable[[nCol]]$time == t]
+        CI.l <- CI.lower[object$partsWithVariable[[nCol]]$group == g & object$partsWithVariable[[nCol]]$time == t]
+        CI.u <- CI.upper[object$partsWithVariable[[nCol]]$group == g & object$partsWithVariable[[nCol]]$time == t]
+        a <- rbind(a,
+          data.frame(
+          variable = i,
+          group = g,
+          time = t,
+          high = as.numeric(quantile(CI.u, probs=.975, na.rm=TRUE)),
+          low = as.numeric(quantile(CI.l, probs=.025, na.rm=TRUE)),
+          estimate = as.numeric(quantile(t0, probs=.5, na.rm=TRUE))
+        ))
+      }
+    }
+    a
+  }))
+  return(object)
+}
