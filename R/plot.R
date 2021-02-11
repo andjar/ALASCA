@@ -287,7 +287,13 @@ getScorePlot <- function(object, component = 1, effect = "time", myTheme = ggplo
 #' plotParts(model, variable = "IL-6", participantColumn = "ID", timeColumn = "GA")[[1]] + ggplot2::labs(x = "GA")
 #' 
 #' @export
-plotParts <- function(object, variable = NA, participantColumn = FALSE, valueColumn = FALSE, timeColumn = "time", addSmooth = "loess", myTheme = ggplot2::theme_bw()){
+plotParts <- function(object, 
+                      variable = NA, 
+                      participantColumn = FALSE, 
+                      valueColumn = FALSE, 
+                      timeColumn = "time", 
+                      addSmooth = "loess", 
+                      myTheme = ggplot2::theme_bw()){
   if(is.data.frame(object)){
     df <- object
     if(any(participantColumn == FALSE) | any(valueColumn == FALSE)){
@@ -319,14 +325,12 @@ plotParts <- function(object, variable = NA, participantColumn = FALSE, valueCol
     return(g)
   }
   if(any(is.na(variable))){
-    g <- lapply(unique(df$variable), function(xi){
-      plotFunction(df, timeColumn, valueColumn, participantColumn, xi, addSmooth, myTheme = myTheme)
-    })
-  }else{
-    g <- lapply(variable, function(xi){
-      plotFunction(df, timeColumn, valueColumn, participantColumn, xi, addSmooth, myTheme = myTheme)
-    })
+    variabel <- unique(df$variable)
   }
+  g <- lapply(variable, function(xi){
+    plotFunction(df, timeColumn, valueColumn, participantColumn, xi, addSmooth, myTheme = myTheme)
+  })
+  names(g) <- variable
   return(g)
 }
 
@@ -336,6 +340,7 @@ plotParts <- function(object, variable = NA, participantColumn = FALSE, valueCol
 #'
 #' @param object An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.
 #' @param variable List of variable names to print. If `NA`, return all (default).
+#' @param return_data Set to `TRUE` to return data instead of plot
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A list with ggplot2 objects.
 #' 
@@ -348,7 +353,7 @@ plotParts <- function(object, variable = NA, participantColumn = FALSE, valueCol
 #'     common.legend = TRUE, legend = "bottom")
 #' )
 #' @export
-plotPred <- function(object, variable = NA, myTheme = ggplot2::theme_bw()){
+plotPred <- function(object, variable = NA, return_data = FALSE, myTheme = ggplot2::theme_bw()){
   if(any(is.na(variable))){
     variable <- unique(object$df$variable)
   }
@@ -390,12 +395,17 @@ plotPred <- function(object, variable = NA, myTheme = ggplot2::theme_bw()){
       }
       
     }
-    g <- ggplot2::ggplot(newdata, ggplot2::aes(x = time, y = pred, color = group, group = group)) +
-      ggplot2::geom_point() + ggplot2::geom_line() + myTheme + 
-      ggplot2::theme(legend.position = "bottom") +
-      ggplot2::labs(x = object$plot.xlabel, y = x)
-    g
+    if(return_data){
+      newdata
+    }else{
+      g <- ggplot2::ggplot(newdata, ggplot2::aes(x = time, y = pred, color = group, group = group)) +
+        ggplot2::geom_point() + ggplot2::geom_line() + myTheme + 
+        ggplot2::theme(legend.position = "bottom") +
+        ggplot2::labs(x = object$plot.xlabel, y = x)
+      g
+    }
   })
+  names(gg) <- variable
   return(gg)
 }
 
