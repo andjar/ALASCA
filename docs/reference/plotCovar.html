@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Get loading plot — getLoadingPlot • ALASCA</title>
+<title>Plot validations models — plotCovar • ALASCA</title>
 
 
 <!-- jquery -->
@@ -39,11 +39,8 @@
 
 
 
-<meta property="og:title" content="Get loading plot — getLoadingPlot" />
-<meta property="og:description" content="This function loads a file as a matrix. It assumes that the first column
-contains the rownames and the subsequent columns are the sample identifiers.
-Any rows with duplicated row names will be dropped with the first one being
-kepted." />
+<meta property="og:title" content="Plot validations models — plotCovar" />
+<meta property="og:description" content="This function returns a plot of the validation models" />
 
 
 
@@ -127,25 +124,20 @@ kepted." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Get loading plot</h1>
+    <h1>Plot validations models</h1>
     
-    <div class="hidden name"><code>getLoadingPlot.Rd</code></div>
+    <div class="hidden name"><code>plotCovar.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This function loads a file as a matrix. It assumes that the first column
-contains the rownames and the subsequent columns are the sample identifiers.
-Any rows with duplicated row names will be dropped with the first one being
-kepted.</p>
+    <p>This function returns a plot of the validation models</p>
     </div>
 
-    <pre class="usage"><span class='fu'>getLoadingPlot</span><span class='op'>(</span>
+    <pre class="usage"><span class='fu'>plotCovar</span><span class='op'>(</span>
   <span class='va'>object</span>,
-  component <span class='op'>=</span> <span class='fl'>1</span>,
-  effect <span class='op'>=</span> <span class='st'>"time"</span>,
-  decreasingLoadings <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  tooDense <span class='op'>=</span> <span class='cn'>NA</span>,
-  highlight <span class='op'>=</span> <span class='cn'>NA</span>,
+  covar <span class='op'>=</span> <span class='cn'>NA</span>,
+  tlab <span class='op'>=</span> <span class='cn'>NA</span>,
+  return_data <span class='op'>=</span> <span class='cn'>FALSE</span>,
   myTheme <span class='op'>=</span> <span class='fu'>ggplot2</span><span class='fu'>::</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_bw</a></span><span class='op'>(</span><span class='op'>)</span>
 <span class='op'>)</span></pre>
 
@@ -157,26 +149,26 @@ kepted.</p>
       <td><p>An ALASCA object</p></td>
     </tr>
     <tr>
-      <th>component</th>
-      <td><p>Which component to plot?</p></td>
+      <th>tlab</th>
+      <td><p>Alternative names for the covariables</p></td>
     </tr>
     <tr>
-      <th>effect</th>
-      <td><p>Plot time or group</p></td>
-    </tr>
-    <tr>
-      <th>decreasingLoadings</th>
-      <td><p>Logical. Should loading sbe sorted in decreasing order?</p></td>
+      <th>return_data</th>
+      <td><p>Set to <code>TRUE</code> to return data instead of plot</p></td>
     </tr>
     <tr>
       <th>myTheme</th>
       <td><p>A ggplot2 theme to use, defaults to <code><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>ggplot2::theme_bw()</a></code></p></td>
     </tr>
+    <tr>
+      <th>component</th>
+      <td><p>Which covariable(s) to plot (default: <code>NA</code> which prints all)</p></td>
+    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A ggplot object</p>
+    <p>A ggplot2 objects\.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

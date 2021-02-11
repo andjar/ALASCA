@@ -60,6 +60,9 @@
       <a href="../articles/metabolomics.html">Metabolomics</a>
     </li>
     <li>
+      <a href="../articles/personality.html">Personality and Aging</a>
+    </li>
+    <li>
       <a href="../articles/pregnancy.html">Early Preeclampsia</a>
     </li>
   </ul>
@@ -81,7 +84,7 @@
       <h1 data-toc-skip>Get Started</h1>
                         <h4 class="author">Anders H. Jarmund</h4>
             
-            <h4 class="date">2021-02-08</h4>
+            <h4 class="date">2021-02-11</h4>
       
       
       <div class="hidden name"><code>ALASCA.Rmd</code></div>
@@ -134,7 +137,7 @@ pre.plot {
 <p>In general, you need to start by deciding what kind of model you want to set up. ALASCA builds on linear mixed models, and you are required to have at least one random intercept (usually participant). You need to decide if you want to separate time and group effects (<code>separateTimeAndGroup = TRUE/FALSE</code>) and, if you are working with interventional data, whether you want a common baseline between groups (<code>forceEqualBaseline = TRUE</code>).</p>
 <p>Next, you need to think through whether you want to scale your data. If not, use <code>scaleFun = FALSE</code>, but default is <code>scaleFun = TRUE</code> corresponding to z score transformation. Often you want to use a custom scaling function, for example mean centering but dividing by the standard deviation at baseline. The custom scaling function, eg. <code>foo(df)</code> should have your data frame as both input and output and be provided to <code><a href="../reference/ALASCA.html">ALASCA()</a></code> (<code>scaleFun = foo</code>). You should <em>not</em> do the scaling yourself as this can result in information leak during validation, which should be avoided.</p>
 <div class="alert alert-info">
-<p><strong>How do I know what scaling to use?</strong> There is no straight answer, but have a look at <span class="citation">(<strong>timmermanScalingANOVAsimultaneousComponent2015?</strong>)</span>.</p>
+<p><strong>How do I know what scaling to use?</strong> There is no straight answer, but have a look at <span class="citation">Timmerman et al. (2015)</span>.</p>
 </div>
 <p>Your data should be organized in a long-format data frame where</p>
 <ul>
@@ -262,6 +265,7 @@ pre.plot {
 <span class="co">#&gt;   dfbetas.influence.merMod        car</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; Finished calculating regression coefficients!</span>
 <span class="co">#&gt; Calculating effect matrix</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span></code></pre></div>
@@ -378,32 +382,44 @@ pre.plot {
 <span class="co">#   nrow = 2</span>
 <span class="co"># )</span></code></pre></div>
 </div>
-<p>Note that we can also call the various parts of the plot directly, and apply styles as we wish, for example</p>
+<p>The plot function can also be given a theme or other objects directly,</p>
 <div class="fold s">
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, myTheme <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_dark</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="ALASCA_files/figure-html/ALASCA_custom_plot_2-1.png" width="100%" style="display: block; margin: auto;"></p>
+</div>
+<p>or we can even specify several features if we want,</p>
+<div class="fold s">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, myTheme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_dark</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html">scale_colour_viridis_d</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="ALASCA_files/figure-html/ALASCA_custom_plot_3-1.png" width="100%" style="display: block; margin: auto;"></p>
+</div>
+<p>Note that we can also call the various parts of the plot directly, and apply styles as we wish, for example</p>
+<div class="fold s">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">ggpubr</span><span class="fu">::</span><span class="fu"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span><span class="op">(</span>
-  <span class="fu">ggpubr</span><span class="fu">::</span><span class="fu"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"time"</span>, only <span class="op">=</span> <span class="st">"score"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
-                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"time"</span>, only <span class="op">=</span> <span class="st">"loading"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
-                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"group"</span>, only <span class="op">=</span> <span class="st">"score"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
-                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"group"</span>, only <span class="op">=</span> <span class="st">"loading"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
+  <span class="fu">ggpubr</span><span class="fu">::</span><span class="fu"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"time"</span>, only <span class="op">=</span> <span class="st">"score"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_dark</a></span><span class="op">(</span><span class="op">)</span>, 
+                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"time"</span>, only <span class="op">=</span> <span class="st">"loading"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_dark</a></span><span class="op">(</span><span class="op">)</span>, 
+                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"group"</span>, only <span class="op">=</span> <span class="st">"score"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_dark</a></span><span class="op">(</span><span class="op">)</span>, 
+                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"group"</span>, only <span class="op">=</span> <span class="st">"loading"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_dark</a></span><span class="op">(</span><span class="op">)</span>, 
                     nrow <span class="op">=</span> <span class="fl">1</span>, widths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>, 
                     common.legend <span class="op">=</span> <span class="cn">TRUE</span>, legend <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span>,
-  <span class="fu">ggpubr</span><span class="fu">::</span><span class="fu"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"time"</span>, only <span class="op">=</span> <span class="st">"score"</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
-                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"time"</span>, only <span class="op">=</span> <span class="st">"loading"</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
-                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"group"</span>, only <span class="op">=</span> <span class="st">"score"</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
-                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"group"</span>, only <span class="op">=</span> <span class="st">"loading"</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>, 
+  <span class="fu">ggpubr</span><span class="fu">::</span><span class="fu"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"time"</span>, only <span class="op">=</span> <span class="st">"score"</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_dark</a></span><span class="op">(</span><span class="op">)</span>, 
+                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"time"</span>, only <span class="op">=</span> <span class="st">"loading"</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_dark</a></span><span class="op">(</span><span class="op">)</span>, 
+                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"group"</span>, only <span class="op">=</span> <span class="st">"score"</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_dark</a></span><span class="op">(</span><span class="op">)</span>, 
+                    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, effect <span class="op">=</span> <span class="st">"group"</span>, only <span class="op">=</span> <span class="st">"loading"</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_dark</a></span><span class="op">(</span><span class="op">)</span>, 
                     nrow <span class="op">=</span> <span class="fl">1</span>, widths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>, 
                     common.legend <span class="op">=</span> <span class="cn">TRUE</span>, legend <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>,
   nrow <span class="op">=</span> <span class="fl">2</span>
 <span class="op">)</span></code></pre></div>
-<p><img src="ALASCA_files/figure-html/ALASCA_custom_plot_2-1.png" width="100%" style="display: block; margin: auto;"></p>
+<p><img src="ALASCA_files/figure-html/ALASCA_custom_plot_4-1.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div id="robustness-testing" class="section level3">
 <h3 class="hasAnchor">
 <a href="#robustness-testing" class="anchor"></a>Robustness testing</h3>
 <p>We often need to now how robust our results are. In this package, we use leave-one-out jack-knifing where we divide our participants into <code>nValFold</code> groups and leave out one of the groups. Note that the group proportions are kept relatively stable. We repeat this process <code>nValRuns</code> times and use the 2.5 and 97.5 percentiles as our uncertainty estimate. If you know that you are going to do this, you can set <code>validate = TRUE</code> when you run the ALASCA model the first time. This usually takes some time (but it is extra slow in rmarkdown, so don’t be scared, outside knitr it used less than two-three seconds per run on my computer). Also note that we need to specify which column that contains participant id with the argument <code>partid</code>. We can also call validation after having initialized the ALASCA object:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">res.simple</span><span class="op">$</span><span class="va">nValRuns</span> <span class="op">&lt;-</span> <span class="fl">20</span> <span class="co"># you should use more, but this is simply an example</span>
 
 <span class="va">res.simple</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">res.simple</span>, participantColumn <span class="op">=</span> <span class="st">"partid"</span><span class="op">)</span>
@@ -411,98 +427,114 @@ pre.plot {
 <span class="co">#&gt; - Run  1  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  3.24  seconds. Est. time remaining:  61.56  seconds </span>
+<span class="co">#&gt; --- Used  5.61  seconds. Est. time remaining:  106.63  seconds </span>
 <span class="co">#&gt; - Run  2  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.77  seconds. Est. time remaining:  54.13  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  4.11  seconds. Est. time remaining:  87.48  seconds </span>
 <span class="co">#&gt; - Run  3  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.52  seconds. Est. time remaining:  48.34  seconds </span>
+<span class="co">#&gt; --- Used  4.67  seconds. Est. time remaining:  81.52  seconds </span>
 <span class="co">#&gt; - Run  4  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.94  seconds. Est. time remaining:  45.87  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  4.63  seconds. Est. time remaining:  76.08  seconds </span>
 <span class="co">#&gt; - Run  5  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.72  seconds. Est. time remaining:  42.57  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  4.49  seconds. Est. time remaining:  70.53  seconds </span>
 <span class="co">#&gt; - Run  6  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.69  seconds. Est. time remaining:  39.4  seconds </span>
+<span class="co">#&gt; --- Used  4.27  seconds. Est. time remaining:  64.83  seconds </span>
 <span class="co">#&gt; - Run  7  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.43  seconds. Est. time remaining:  35.87  seconds </span>
+<span class="co">#&gt; --- Used  4.36  seconds. Est. time remaining:  59.69  seconds </span>
 <span class="co">#&gt; - Run  8  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.4  seconds. Est. time remaining:  32.56  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  3.76  seconds. Est. time remaining:  53.85  seconds </span>
 <span class="co">#&gt; - Run  9  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.47  seconds. Est. time remaining:  29.56  seconds </span>
+<span class="co">#&gt; --- Used  4.41  seconds. Est. time remaining:  49.26  seconds </span>
 <span class="co">#&gt; - Run  10  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.67  seconds. Est. time remaining:  26.86  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  3.87  seconds. Est. time remaining:  44.17  seconds </span>
 <span class="co">#&gt; - Run  11  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  3.01  seconds. Est. time remaining:  24.44  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  4.29  seconds. Est. time remaining:  39.65  seconds </span>
 <span class="co">#&gt; - Run  12  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.73  seconds. Est. time remaining:  21.73  seconds </span>
+<span class="co">#&gt; --- Used  3.89  seconds. Est. time remaining:  34.9  seconds </span>
 <span class="co">#&gt; - Run  13  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.42  seconds. Est. time remaining:  18.86  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  4.45  seconds. Est. time remaining:  30.59  seconds </span>
 <span class="co">#&gt; - Run  14  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  3.01  seconds. Est. time remaining:  16.3  seconds </span>
+<span class="co">#&gt; --- Used  3.78  seconds. Est. time remaining:  25.97  seconds </span>
 <span class="co">#&gt; - Run  15  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  3.07  seconds. Est. time remaining:  13.7  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  4.93  seconds. Est. time remaining:  21.84  seconds </span>
 <span class="co">#&gt; - Run  16  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.23  seconds. Est. time remaining:  10.83  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  4.75  seconds. Est. time remaining:  17.57  seconds </span>
 <span class="co">#&gt; - Run  17  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.47  seconds. Est. time remaining:  8.08  seconds </span>
+<span class="co">#&gt; --- Used  3.47  seconds. Est. time remaining:  13.01  seconds </span>
 <span class="co">#&gt; - Run  18  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.25  seconds. Est. time remaining:  5.34  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  3.13  seconds. Est. time remaining:  8.54  seconds </span>
 <span class="co">#&gt; - Run  19  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.38  seconds. Est. time remaining:  2.65  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  3.28  seconds. Est. time remaining:  4.22  seconds </span>
 <span class="co">#&gt; - Run  20  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  2.32  seconds. Est. time remaining:  0  seconds</span>
+<span class="co">#&gt; --- Used  3.09  seconds. Est. time remaining:  0  seconds</span>
 
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span><span class="op">)</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/robustness-1.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/robustness-2.png" width="100%" style="display: block; margin: auto;"></p>
@@ -517,7 +549,7 @@ pre.plot {
 <h4 class="hasAnchor">
 <a href="#interaction-only" class="anchor"></a>Interaction only</h4>
 <p>If our experiment was an intervention, then we can assume that the groups were equal at baseline (time 1). Then we can skip the main group effect and only use time and interaction, like this:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">model.formula</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">partid</span><span class="op">)</span>
 <span class="va">res.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">df</span>, formula <span class="op">=</span> <span class="va">model.formula</span><span class="op">)</span>
 <span class="co">#&gt; Will use linear mixed models!</span>
@@ -525,64 +557,65 @@ pre.plot {
 <span class="co">#&gt; Calculating  LMM  coefficients...</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; Finished calculating regression coefficients!</span>
 <span class="co">#&gt; Calculating effect matrix</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod2</span><span class="op">)</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/ALASCA_model_2-1.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod2</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/ALASCA_model_2-2.png" width="100%" style="display: block; margin: auto;"></p>
 <p>As you can see, it is quite similar to the previous model. Why are they different at the first time point? Well, we can look at the model</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">res.mod2</span><span class="op">$</span><span class="va">regr.model</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
 <span class="co">#&gt; Linear mixed model fit by REML. t-tests use Satterthwaite's method [</span>
 <span class="co">#&gt; lmerModLmerTest]</span>
 <span class="co">#&gt; Formula: object$formula</span>
 <span class="co">#&gt;    Data: subset(object$df, variable == i)</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; REML criterion at convergence: 2949.9</span>
+<span class="co">#&gt; REML criterion at convergence: 2718.7</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Scaled residuals: </span>
 <span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
-<span class="co">#&gt; -6.0171 -0.3451  0.0018  0.3616  6.8525 </span>
+<span class="co">#&gt; -6.3662 -0.3358  0.0009  0.3360  5.7369 </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random effects:</span>
 <span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span>
-<span class="co">#&gt;  partid   (Intercept) 0.005813 0.07625 </span>
-<span class="co">#&gt;  Residual             0.190518 0.43648 </span>
+<span class="co">#&gt;  partid   (Intercept) 0.000    0.0000  </span>
+<span class="co">#&gt;  Residual             0.178    0.4219  </span>
 <span class="co">#&gt; Number of obs: 2400, groups:  partid, 600</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Fixed effects:</span>
 <span class="co">#&gt;                        Estimate Std. Error         df t value Pr(&gt;|t|)    </span>
-<span class="co">#&gt; (Intercept)          -2.772e-01  3.118e-02  2.382e+03  -8.892   &lt;2e-16 ***</span>
-<span class="co">#&gt; time2                 1.632e-02  4.343e-02  1.791e+03   0.376    0.707    </span>
-<span class="co">#&gt; time3                -2.176e-03  4.343e-02  1.791e+03  -0.050    0.960    </span>
-<span class="co">#&gt; time4                 1.721e-02  4.343e-02  1.791e+03   0.396    0.692    </span>
-<span class="co">#&gt; time1:groupChocolate -9.650e-03  4.420e-02  2.382e+03  -0.218    0.827    </span>
-<span class="co">#&gt; time2:groupChocolate  8.478e-01  4.420e-02  2.382e+03  19.181   &lt;2e-16 ***</span>
-<span class="co">#&gt; time3:groupChocolate  1.591e+00  4.420e-02  2.382e+03  35.987   &lt;2e-16 ***</span>
-<span class="co">#&gt; time4:groupChocolate  2.502e+00  4.420e-02  2.382e+03  56.613   &lt;2e-16 ***</span>
-<span class="co">#&gt; time1:groupSalad     -5.142e-03  4.431e-02  2.382e+03  -0.116    0.908    </span>
-<span class="co">#&gt; time2:groupSalad     -4.544e-01  4.431e-02  2.382e+03 -10.255   &lt;2e-16 ***</span>
-<span class="co">#&gt; time3:groupSalad     -5.839e-01  4.431e-02  2.382e+03 -13.178   &lt;2e-16 ***</span>
-<span class="co">#&gt; time4:groupSalad     -6.721e-01  4.431e-02  2.382e+03 -15.167   &lt;2e-16 ***</span>
+<span class="co">#&gt; (Intercept)          -2.492e-01  3.119e-02  2.388e+03  -7.992 2.05e-15 ***</span>
+<span class="co">#&gt; time2                 2.677e-02  4.411e-02  2.388e+03   0.607    0.544    </span>
+<span class="co">#&gt; time3                 1.557e-02  4.411e-02  2.388e+03   0.353    0.724    </span>
+<span class="co">#&gt; time4                -1.117e-03  4.411e-02  2.388e+03  -0.025    0.980    </span>
+<span class="co">#&gt; time1:groupChocolate -1.596e-03  4.370e-02  2.388e+03  -0.037    0.971    </span>
+<span class="co">#&gt; time2:groupChocolate  7.936e-01  4.370e-02  2.388e+03  18.162  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time3:groupChocolate  1.673e+00  4.370e-02  2.388e+03  38.291  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time4:groupChocolate  2.562e+00  4.370e-02  2.388e+03  58.630  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time1:groupSalad     -6.388e-03  4.191e-02  2.388e+03  -0.152    0.879    </span>
+<span class="co">#&gt; time2:groupSalad     -4.578e-01  4.191e-02  2.388e+03 -10.923  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time3:groupSalad     -5.797e-01  4.191e-02  2.388e+03 -13.831  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time4:groupSalad     -6.377e-01  4.191e-02  2.388e+03 -15.214  &lt; 2e-16 ***</span>
 <span class="co">#&gt; ---</span>
 <span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Correlation of Fixed Effects:</span>
 <span class="co">#&gt;             (Intr) time2  time3  time4  tm1:gC tm2:gC tm3:gC tm4:gC tm1:gS</span>
-<span class="co">#&gt; time2       -0.697                                                        </span>
-<span class="co">#&gt; time3       -0.697  0.500                                                 </span>
-<span class="co">#&gt; time4       -0.697  0.500  0.500                                          </span>
-<span class="co">#&gt; tm1:grpChcl -0.705  0.491  0.491  0.491                                   </span>
-<span class="co">#&gt; tm2:grpChcl -0.021 -0.491  0.000  0.000  0.030                            </span>
-<span class="co">#&gt; tm3:grpChcl -0.021  0.000 -0.491  0.000  0.030  0.030                     </span>
-<span class="co">#&gt; tm4:grpChcl -0.021  0.000  0.000 -0.491  0.030  0.030  0.030              </span>
-<span class="co">#&gt; tim1:grpSld -0.704  0.490  0.490  0.490  0.496  0.015  0.015  0.015       </span>
-<span class="co">#&gt; tim2:grpSld -0.021 -0.490  0.000  0.000  0.015  0.496  0.015  0.015  0.030</span>
-<span class="co">#&gt; tim3:grpSld -0.021  0.000 -0.490  0.000  0.015  0.015  0.496  0.015  0.030</span>
-<span class="co">#&gt; tim4:grpSld -0.021  0.000  0.000 -0.490  0.015  0.015  0.015  0.496  0.030</span>
+<span class="co">#&gt; time2       -0.707                                                        </span>
+<span class="co">#&gt; time3       -0.707  0.500                                                 </span>
+<span class="co">#&gt; time4       -0.707  0.500  0.500                                          </span>
+<span class="co">#&gt; tm1:grpChcl -0.714  0.505  0.505  0.505                                   </span>
+<span class="co">#&gt; tm2:grpChcl  0.000 -0.505  0.000  0.000  0.000                            </span>
+<span class="co">#&gt; tm3:grpChcl  0.000  0.000 -0.505  0.000  0.000  0.000                     </span>
+<span class="co">#&gt; tm4:grpChcl  0.000  0.000  0.000 -0.505  0.000  0.000  0.000              </span>
+<span class="co">#&gt; tim1:grpSld -0.744  0.526  0.526  0.526  0.531  0.000  0.000  0.000       </span>
+<span class="co">#&gt; tim2:grpSld  0.000 -0.526  0.000  0.000  0.000  0.531  0.000  0.000  0.000</span>
+<span class="co">#&gt; tim3:grpSld  0.000  0.000 -0.526  0.000  0.000  0.000  0.531  0.000  0.000</span>
+<span class="co">#&gt; tim4:grpSld  0.000  0.000  0.000 -0.526  0.000  0.000  0.000  0.531  0.000</span>
 <span class="co">#&gt;             tm2:gS tm3:gS</span>
 <span class="co">#&gt; time2                    </span>
 <span class="co">#&gt; time3                    </span>
@@ -593,20 +626,24 @@ pre.plot {
 <span class="co">#&gt; tm4:grpChcl              </span>
 <span class="co">#&gt; tim1:grpSld              </span>
 <span class="co">#&gt; tim2:grpSld              </span>
-<span class="co">#&gt; tim3:grpSld  0.030       </span>
-<span class="co">#&gt; tim4:grpSld  0.030  0.030</span></code></pre></div>
+<span class="co">#&gt; tim3:grpSld  0.000       </span>
+<span class="co">#&gt; tim4:grpSld  0.000  0.000</span>
+<span class="co">#&gt; convergence code: 0</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span></code></pre></div>
 <p>And you may notice that there is an interaction term between group and the first time point. To remove it, we have to set <code>forceEqualBaseline = TRUE</code>:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">model.formula</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">partid</span><span class="op">)</span>
 <span class="va">res.mod2b</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">df</span>, formula <span class="op">=</span> <span class="va">model.formula</span>, forceEqualBaseline <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 <span class="co">#&gt; Will use linear mixed models!</span>
 <span class="co">#&gt; Scaling data...</span>
 <span class="co">#&gt; Calculating  LMM  coefficients...</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
@@ -619,7 +656,7 @@ pre.plot {
 <span class="co">#&gt; Finished calculating effect matrix!</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod2b</span><span class="op">)</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/ALASCA_model_2b-1.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod2b</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/ALASCA_model_2b-2.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
@@ -627,7 +664,7 @@ pre.plot {
 <h4 class="hasAnchor">
 <a href="#combined-time-and-group-effects" class="anchor"></a>Combined time and group effects</h4>
 <p>Sometimes it doesn’t make sense to use a reference group – for example if we didn’t have any controls and the first group had a salt-free diet. We can then use a single PCA instead of separating time and group effects:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">model.formula</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">partid</span><span class="op">)</span>
 <span class="va">res.mod3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">df</span>, formula <span class="op">=</span> <span class="va">model.formula</span>, separateTimeAndGroup <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 <span class="co">#&gt; Will use linear mixed models!</span>
@@ -635,12 +672,13 @@ pre.plot {
 <span class="co">#&gt; Calculating  LMM  coefficients...</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; Finished calculating regression coefficients!</span>
 <span class="co">#&gt; Calculating effect matrix</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod3</span><span class="op">)</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/ALASCA_model_3-1.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod3</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/ALASCA_model_3-2.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
@@ -648,7 +686,7 @@ pre.plot {
 <h4 class="hasAnchor">
 <a href="#sum-coding" class="anchor"></a>Sum coding</h4>
 <p>When we don’t have any reference group, it may also make sense to use sum coding instead of ordinary contrast coding:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">model.formula</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">partid</span><span class="op">)</span>
 <span class="va">res.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">df</span>, formula <span class="op">=</span> <span class="va">model.formula</span>, separateTimeAndGroup <span class="op">=</span> <span class="cn">FALSE</span>, useSumCoding <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 <span class="co">#&gt; Will use linear mixed models!</span>
@@ -656,12 +694,13 @@ pre.plot {
 <span class="co">#&gt; Calculating  LMM  coefficients...</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; Finished calculating regression coefficients!</span>
 <span class="co">#&gt; Calculating effect matrix</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mods</span><span class="op">)</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/ALASCA_model_3s-1.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mods</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/ALASCA_model_3s-2.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
@@ -670,7 +709,7 @@ pre.plot {
 <a href="#covariates" class="anchor"></a>Covariates</h4>
 <p>This time we want to adjust for age and not include it in the ASCA itself;</p>
 <div class="fold s">
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">age</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">variable</span> <span class="op">==</span> <span class="st">"Age"</span><span class="op">)</span><span class="op">$</span><span class="va">value</span>
 <span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">variable</span> <span class="op">!=</span> <span class="st">"Age"</span><span class="op">)</span>
 <span class="va">df</span><span class="op">$</span><span class="va">age</span> <span class="op">&lt;-</span> <span class="va">age</span>
@@ -680,8 +719,9 @@ pre.plot {
 <span class="co">#&gt; Scaling data...</span>
 <span class="co">#&gt; Calculating  LMM  coefficients...</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; Warning in checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, :</span>
-<span class="co">#&gt; Model failed to converge with max|grad| = 18.3183 (tol = 0.002, component 1)</span>
+<span class="co">#&gt; Model failed to converge with max|grad| = 27.187 (tol = 0.002, component 1)</span>
 <span class="co">#&gt; Warning in checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, : Model is nearly unidentifiable: very large eigenvalue</span>
 <span class="co">#&gt;  - Rescale variables?</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
@@ -690,23 +730,26 @@ pre.plot {
 <span class="co">#&gt; Finished calculating effect matrix!</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod4</span><span class="op">)</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/ALASCA_model_4-1.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod4</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/ALASCA_model_4-2.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span>
   <span class="fu">ggpubr</span><span class="fu">::</span><span class="va"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span>,
   <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="../reference/plotPred.html">plotPred</a></span><span class="op">(</span><span class="va">res.mod4</span>, variable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BMI"</span>, <span class="st">"Happiness"</span>, <span class="st">"Anger"</span>, <span class="st">"HDL"</span><span class="op">)</span><span class="op">)</span>, 
                       common.legend <span class="op">=</span> <span class="cn">TRUE</span>, legend <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
   <span class="op">)</span>
-<span class="co">#&gt; - Using mean of  age :  12.53251 </span>
-<span class="co">#&gt; - Using mean of  age :  12.53251 </span>
-<span class="co">#&gt; - Using mean of  age :  12.53251 </span>
-<span class="co">#&gt; - Using mean of  age :  12.53251</span></code></pre></div>
+<span class="co">#&gt; - Using mean of  age :  12.54089 </span>
+<span class="co">#&gt; - Using mean of  age :  12.54089 </span>
+<span class="co">#&gt; - Using mean of  age :  12.54089 </span>
+<span class="co">#&gt; - Using mean of  age :  12.54089</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/ALASCA_model_4-3.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
-<p>We can see that age is no longer part of the output, and HDL (which was correlated with age) has no longer a strong loading.</p>
+<p>We can see that age is no longer part of the output, and HDL (which was correlated with age) has no longer a strong loading. To see how age is affecting out measurements, we can use <code><a href="../reference/plotCovar.html">plotCovar()</a></code> like this</p>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotCovar.html">plotCovar</a></span><span class="op">(</span><span class="va">res.mod4</span>, covar <span class="op">=</span> <span class="st">"age"</span>, tlab <span class="op">=</span> <span class="st">"Age"</span><span class="op">)</span></code></pre></div>
+<p><img src="ALASCA_files/figure-html/unnamed-chunk-2-1.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 </div>
 </div>
@@ -717,55 +760,55 @@ pre.plot {
 <h3 class="hasAnchor">
 <a href="#normal-distribution-of-residuals" class="anchor"></a>Normal distribution of residuals</h3>
 <p>RM-ASCA+ is built on linear mixed models, and one should check that the residuals approach normal distribution. With <code><a href="../reference/ALASCA.html">ALASCA()</a></code>, the LMM objects can be found as</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">res.simple</span><span class="op">$</span><span class="va">regr.model</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
 <span class="co">#&gt; Linear mixed model fit by REML. t-tests use Satterthwaite's method [</span>
 <span class="co">#&gt; lmerModLmerTest]</span>
 <span class="co">#&gt; Formula: object$formula</span>
 <span class="co">#&gt;    Data: subset(object$df, variable == i)</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; REML criterion at convergence: 2949.9</span>
+<span class="co">#&gt; REML criterion at convergence: 2718.7</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Scaled residuals: </span>
 <span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
-<span class="co">#&gt; -6.0171 -0.3451  0.0018  0.3616  6.8525 </span>
+<span class="co">#&gt; -6.3662 -0.3358  0.0009  0.3360  5.7369 </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random effects:</span>
-<span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span>
-<span class="co">#&gt;  partid   (Intercept) 0.005813 0.07625 </span>
-<span class="co">#&gt;  Residual             0.190518 0.43648 </span>
+<span class="co">#&gt;  Groups   Name        Variance  Std.Dev. </span>
+<span class="co">#&gt;  partid   (Intercept) 2.443e-16 1.563e-08</span>
+<span class="co">#&gt;  Residual             1.780e-01 4.219e-01</span>
 <span class="co">#&gt; Number of obs: 2400, groups:  partid, 600</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Fixed effects:</span>
 <span class="co">#&gt;                        Estimate Std. Error         df t value Pr(&gt;|t|)    </span>
-<span class="co">#&gt; (Intercept)          -2.772e-01  3.118e-02  2.382e+03  -8.892  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time2                 1.632e-02  4.343e-02  1.791e+03   0.376    0.707    </span>
-<span class="co">#&gt; time3                -2.176e-03  4.343e-02  1.791e+03  -0.050    0.960    </span>
-<span class="co">#&gt; time4                 1.721e-02  4.343e-02  1.791e+03   0.396    0.692    </span>
-<span class="co">#&gt; groupChocolate       -9.650e-03  4.420e-02  2.382e+03  -0.218    0.827    </span>
-<span class="co">#&gt; groupSalad           -5.142e-03  4.431e-02  2.382e+03  -0.116    0.908    </span>
-<span class="co">#&gt; time2:groupChocolate  8.575e-01  6.157e-02  1.791e+03  13.925  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time3:groupChocolate  1.600e+00  6.157e-02  1.791e+03  25.989  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time4:groupChocolate  2.512e+00  6.157e-02  1.791e+03  40.795  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time2:groupSalad     -4.493e-01  6.173e-02  1.791e+03  -7.278 5.04e-13 ***</span>
-<span class="co">#&gt; time3:groupSalad     -5.788e-01  6.173e-02  1.791e+03  -9.376  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time4:groupSalad     -6.669e-01  6.173e-02  1.791e+03 -10.804  &lt; 2e-16 ***</span>
+<span class="co">#&gt; (Intercept)          -2.492e-01  3.119e-02  2.388e+03  -7.992 2.05e-15 ***</span>
+<span class="co">#&gt; time2                 2.677e-02  4.411e-02  2.388e+03   0.607    0.544    </span>
+<span class="co">#&gt; time3                 1.557e-02  4.411e-02  2.388e+03   0.353    0.724    </span>
+<span class="co">#&gt; time4                -1.117e-03  4.411e-02  2.388e+03  -0.025    0.980    </span>
+<span class="co">#&gt; groupChocolate       -1.596e-03  4.370e-02  2.388e+03  -0.037    0.971    </span>
+<span class="co">#&gt; groupSalad           -6.388e-03  4.191e-02  2.388e+03  -0.152    0.879    </span>
+<span class="co">#&gt; time2:groupChocolate  7.952e-01  6.180e-02  2.388e+03  12.868  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time3:groupChocolate  1.675e+00  6.180e-02  2.388e+03  27.102  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time4:groupChocolate  2.564e+00  6.180e-02  2.388e+03  41.484  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time2:groupSalad     -4.514e-01  5.928e-02  2.388e+03  -7.616 3.75e-14 ***</span>
+<span class="co">#&gt; time3:groupSalad     -5.733e-01  5.928e-02  2.388e+03  -9.672  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time4:groupSalad     -6.313e-01  5.928e-02  2.388e+03 -10.650  &lt; 2e-16 ***</span>
 <span class="co">#&gt; ---</span>
 <span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Correlation of Fixed Effects:</span>
 <span class="co">#&gt;             (Intr) time2  time3  time4  grpChc grpSld tm2:gC tm3:gC tm4:gC</span>
-<span class="co">#&gt; time2       -0.697                                                        </span>
-<span class="co">#&gt; time3       -0.697  0.500                                                 </span>
-<span class="co">#&gt; time4       -0.697  0.500  0.500                                          </span>
-<span class="co">#&gt; groupChoclt -0.705  0.491  0.491  0.491                                   </span>
-<span class="co">#&gt; groupSalad  -0.704  0.490  0.490  0.490  0.496                            </span>
-<span class="co">#&gt; tm2:grpChcl  0.491 -0.705 -0.353 -0.353 -0.697 -0.346                     </span>
-<span class="co">#&gt; tm3:grpChcl  0.491 -0.353 -0.705 -0.353 -0.697 -0.346  0.500              </span>
-<span class="co">#&gt; tm4:grpChcl  0.491 -0.353 -0.353 -0.705 -0.697 -0.346  0.500  0.500       </span>
-<span class="co">#&gt; tim2:grpSld  0.490 -0.704 -0.352 -0.352 -0.346 -0.697  0.496  0.248  0.248</span>
-<span class="co">#&gt; tim3:grpSld  0.490 -0.352 -0.704 -0.352 -0.346 -0.697  0.248  0.496  0.248</span>
-<span class="co">#&gt; tim4:grpSld  0.490 -0.352 -0.352 -0.704 -0.346 -0.697  0.248  0.248  0.496</span>
+<span class="co">#&gt; time2       -0.707                                                        </span>
+<span class="co">#&gt; time3       -0.707  0.500                                                 </span>
+<span class="co">#&gt; time4       -0.707  0.500  0.500                                          </span>
+<span class="co">#&gt; groupChoclt -0.714  0.505  0.505  0.505                                   </span>
+<span class="co">#&gt; groupSalad  -0.744  0.526  0.526  0.526  0.531                            </span>
+<span class="co">#&gt; tm2:grpChcl  0.505 -0.714 -0.357 -0.357 -0.707 -0.376                     </span>
+<span class="co">#&gt; tm3:grpChcl  0.505 -0.357 -0.714 -0.357 -0.707 -0.376  0.500              </span>
+<span class="co">#&gt; tm4:grpChcl  0.505 -0.357 -0.357 -0.714 -0.707 -0.376  0.500  0.500       </span>
+<span class="co">#&gt; tim2:grpSld  0.526 -0.744 -0.372 -0.372 -0.376 -0.707  0.531  0.266  0.266</span>
+<span class="co">#&gt; tim3:grpSld  0.526 -0.372 -0.744 -0.372 -0.376 -0.707  0.266  0.531  0.266</span>
+<span class="co">#&gt; tim4:grpSld  0.526 -0.372 -0.372 -0.744 -0.376 -0.707  0.266  0.266  0.531</span>
 <span class="co">#&gt;             tm2:gS tm3:gS</span>
 <span class="co">#&gt; time2                    </span>
 <span class="co">#&gt; time3                    </span>
@@ -777,12 +820,14 @@ pre.plot {
 <span class="co">#&gt; tm4:grpChcl              </span>
 <span class="co">#&gt; tim2:grpSld              </span>
 <span class="co">#&gt; tim3:grpSld  0.500       </span>
-<span class="co">#&gt; tim4:grpSld  0.500  0.500</span></code></pre></div>
+<span class="co">#&gt; tim4:grpSld  0.500  0.500</span>
+<span class="co">#&gt; convergence code: 0</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span></code></pre></div>
 <p>We can also assess the residuals,</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html">density</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">res.simple</span>, variable <span class="op">=</span> <span class="st">"BMI"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, main <span class="op">=</span> <span class="st">"BMI"</span><span class="op">)</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/lmm_residuals-1.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="fu"><a href="https://rdrr.io/r/stats/qqnorm.html">qqnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">res.simple</span>, variable <span class="op">=</span> <span class="st">"BMI"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, main <span class="op">=</span> <span class="st">"BMI"</span><span class="op">)</span> 
 <span class="fu"><a href="https://rdrr.io/r/stats/qqnorm.html">qqline</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">res.simple</span>, variable <span class="op">=</span> <span class="st">"BMI"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
@@ -795,15 +840,15 @@ pre.plot {
 <h3 class="hasAnchor">
 <a href="#p-values" class="anchor"></a>P values</h3>
 <p>As you probably noticed above, you can use the <code><a href="https://rdrr.io/r/base/summary.html">summary()</a></code> function to view the p values from your LMMs, but a shortcut is</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">res.simple</span><span class="op">$</span><span class="va">RegressionCoefficients</span><span class="op">)</span>
 <span class="co">#&gt;       estimate       pvalue covar       variable  comp</span>
-<span class="co">#&gt; 1 -0.277224202 1.156633e-18   BMI    (Intercept)  TIME</span>
-<span class="co">#&gt; 2  0.016324489 7.070614e-01   BMI          time2  TIME</span>
-<span class="co">#&gt; 3 -0.002175537 9.600555e-01   BMI          time3  TIME</span>
-<span class="co">#&gt; 4  0.017208385 6.919923e-01   BMI          time4  TIME</span>
-<span class="co">#&gt; 5 -0.009649893 8.271938e-01   BMI groupChocolate GROUP</span>
-<span class="co">#&gt; 6 -0.005142228 9.076249e-01   BMI     groupSalad GROUP</span></code></pre></div>
+<span class="co">#&gt; 1 -0.249246025 2.048623e-15   BMI    (Intercept)  TIME</span>
+<span class="co">#&gt; 2  0.026765108 5.440147e-01   BMI          time2  TIME</span>
+<span class="co">#&gt; 3  0.015573044 7.240561e-01   BMI          time3  TIME</span>
+<span class="co">#&gt; 4 -0.001116568 9.798052e-01   BMI          time4  TIME</span>
+<span class="co">#&gt; 5 -0.001596415 9.708602e-01   BMI groupChocolate GROUP</span>
+<span class="co">#&gt; 6 -0.006388313 8.788726e-01   BMI     groupSalad GROUP</span></code></pre></div>
 </div>
 </div>
 <div id="references" class="section level2 unnumbered">
@@ -812,6 +857,9 @@ pre.plot {
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-madssenRepeatedMeasuresASCA2020a" class="csl-entry">
 Madssen, Torfinn S., Guro F. Giskeødegård, Age K. Smilde, and Johan A. Westerhuis. 2020. <span>“Repeated Measures <span>ASCA</span>+ for Analysis of Longitudinal Intervention Studies with Multivariate Outcome Data.”</span> <em>medRxiv</em>, December, 2020.12.03.20243097. <a href="https://doi.org/10.1101/2020.12.03.20243097">https://doi.org/10.1101/2020.12.03.20243097</a>.
+</div>
+<div id="ref-timmermanScalingANOVAsimultaneousComponent2015" class="csl-entry">
+Timmerman, Marieke E., Huub C. J. Hoefsloot, Age K. Smilde, and Eva Ceulemans. 2015. <span>“Scaling in <span>ANOVA</span>-Simultaneous Component Analysis.”</span> <em>Metabolomics</em> 11 (5): 1265–76. <a href="https://doi.org/10.1007/s11306-015-0785-8">https://doi.org/10.1007/s11306-015-0785-8</a>.
 </div>
 </div>
 </div>

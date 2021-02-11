@@ -4,7 +4,12 @@
 \alias{getScorePlot}
 \title{Get score plot}
 \usage{
-getScorePlot(object, component = 1, effect = "time")
+getScorePlot(
+  object,
+  component = 1,
+  effect = "time",
+  myTheme = ggplot2::theme_bw()
+)
 }
 \arguments{
 \item{object}{An ALASCA object}
@@ -12,6 +17,8 @@ getScorePlot(object, component = 1, effect = "time")
 \item{component}{Which component to plot?}
 
 \item{effect}{Plot time or group}
+
+\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }
 \value{
 A ggplot object

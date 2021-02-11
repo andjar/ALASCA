@@ -4,12 +4,14 @@
 \alias{plotPred}
 \title{Plot model predictions}
 \usage{
-plotPred(object, variable = NA)
+plotPred(object, variable = NA, myTheme = ggplot2::theme_bw())
 }
 \arguments{
 \item{object}{An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.}
 
 \item{variable}{List of variable names to print. If \code{NA}, return all (default).}
+
+\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }
 \value{
 A list with ggplot2 objects.

@@ -101,6 +101,9 @@
       <a href="../articles/metabolomics.html">Metabolomics</a>
     </li>
     <li>
+      <a href="../articles/personality.html">Personality and Aging</a>
+    </li>
+    <li>
       <a href="../articles/pregnancy.html">Early Preeclampsia</a>
     </li>
   </ul>
@@ -142,6 +145,8 @@
   useSumCoding <span class='op'>=</span> <span class='cn'>FALSE</span>,
   method <span class='op'>=</span> <span class='cn'>NA</span>,
   minimizeObject <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  plot.xlabel <span class='op'>=</span> <span class='st'>"Time"</span>,
+  doDebug <span class='op'>=</span> <span class='cn'>FALSE</span>,
   nValFold <span class='op'>=</span> <span class='fl'>7</span>,
   nValRuns <span class='op'>=</span> <span class='fl'>50</span>,
   validationMethod <span class='op'>=</span> <span class='st'>"loo"</span>,
@@ -197,6 +202,14 @@
       <td><p>Logical. If <code>TRUE</code>, remove unnecessary clutter, optimize for validation</p></td>
     </tr>
     <tr>
+      <th>plot.xlabel</th>
+      <td><p>Defaults to "Time"</p></td>
+    </tr>
+    <tr>
+      <th>doDebug</th>
+      <td><p>Print what happens (default: <code>FALSE</code>)</p></td>
+    </tr>
+    <tr>
       <th>nValFold</th>
       <td><p>Partitions when validating</p></td>
     </tr>
@@ -233,8 +246,7 @@
 #&gt; Calculating  LMM  coefficients...
 #&gt; Finished calculating regression coefficients!
 #&gt; Calculating effect matrix
-#&gt; Finished calculating effect matrix!</div><div class='output co'>#&gt; <span class='error'>Error: id variables not found in data: function (x, ...) </span>
-#&gt; <span class='error'>UseMethod("time")</span></div><div class='input'>
+#&gt; Finished calculating effect matrix!</div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

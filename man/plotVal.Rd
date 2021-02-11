@@ -4,12 +4,14 @@
 \alias{plotVal}
 \title{Plot validations models}
 \usage{
-plotVal(object, component = 1)
+plotVal(object, component = 1, myTheme = ggplot2::theme_bw())
 }
 \arguments{
 \item{object}{A validated ALASCA object}
 
 \item{component}{Which component to plot (default: 1)}
+
+\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }
 \value{
 A list with ggplot2 objects.

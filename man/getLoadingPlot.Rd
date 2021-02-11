@@ -10,7 +10,8 @@ getLoadingPlot(
   effect = "time",
   decreasingLoadings = TRUE,
   tooDense = NA,
-  highlight = NA
+  highlight = NA,
+  myTheme = ggplot2::theme_bw()
 )
 }
 \arguments{
@@ -21,6 +22,8 @@ getLoadingPlot(
 \item{effect}{Plot time or group}
 
 \item{decreasingLoadings}{Logical. Should loading sbe sorted in decreasing order?}
+
+\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }
 \value{
 A ggplot object

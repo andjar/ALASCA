@@ -101,6 +101,9 @@
       <a href="../articles/metabolomics.html">Metabolomics</a>
     </li>
     <li>
+      <a href="../articles/personality.html">Personality and Aging</a>
+    </li>
+    <li>
       <a href="../articles/pregnancy.html">Early Preeclampsia</a>
     </li>
   </ul>
@@ -139,7 +142,9 @@
   only <span class='op'>=</span> <span class='st'>"both"</span>,
   enlist <span class='op'>=</span> <span class='cn'>FALSE</span>,
   tooDense <span class='op'>=</span> <span class='cn'>NA</span>,
-  highlight <span class='op'>=</span> <span class='cn'>NA</span>
+  highlight <span class='op'>=</span> <span class='cn'>NA</span>,
+  xlabel <span class='op'>=</span> <span class='cn'>NA</span>,
+  myTheme <span class='op'>=</span> <span class='fu'>ggplot2</span><span class='fu'>::</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_bw</a></span><span class='op'>(</span><span class='op'>)</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -176,6 +181,14 @@
     <tr>
       <th>highlight</th>
       <td><p>Vector of strings with variables to highlight in the loadings plot</p></td>
+    </tr>
+    <tr>
+      <th>xlabel</th>
+      <td><p>Defaults to "Time" if not specified during model setup</p></td>
+    </tr>
+    <tr>
+      <th>myTheme</th>
+      <td><p>A ggplot2 theme to use, defaults to <code><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>ggplot2::theme_bw()</a></code></p></td>
     </tr>
     </table>
 

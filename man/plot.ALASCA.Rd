@@ -13,7 +13,8 @@
   enlist = FALSE,
   tooDense = NA,
   highlight = NA,
-  xlabel = NA
+  xlabel = NA,
+  myTheme = ggplot2::theme_bw()
 )
 }
 \arguments{
@@ -34,6 +35,8 @@
 \item{highlight}{Vector of strings with variables to highlight in the loadings plot}
 
 \item{xlabel}{Defaults to "Time" if not specified during model setup}
+
+\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }
 \value{
 An ggplot2 object (or a list og ggplot objects)

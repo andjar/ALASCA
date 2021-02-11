@@ -10,7 +10,8 @@ plotParts(
   participantColumn = FALSE,
   valueColumn = FALSE,
   timeColumn = "time",
-  addSmooth = "loess"
+  addSmooth = "loess",
+  myTheme = ggplot2::theme_bw()
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ plotParts(
 \item{valueColumn}{Specify column with values (y axis). Not necessary to provide if you are plotting an ALASCA object.}
 
 \item{timeColumn}{Specify column with times (x axis). Defaults to \code{time}.}
+
+\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 
 \item{addSmooth.}{Specify which geom_smooth model you want to apply, eg. \code{lm}, \code{glm}, \code{gam}, \code{loess} (default). Set to \code{NA} to remove.}
 }

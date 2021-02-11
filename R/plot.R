@@ -11,6 +11,7 @@
 #' @param tooDense Integer, If > 0, only name this number of covariables
 #' @param xlabel Defaults to "Time" if not specified during model setup
 #' @param highlight Vector of strings with variables to highlight in the loadings plot
+#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return An ggplot2 object (or a list og ggplot objects)
 #' 
 #' @examples
@@ -22,7 +23,16 @@
 #' plot(model, highlight = c("PlGF", "IL-1b", "IL-6"))
 #' 
 #' @export
-plot.ALASCA <- function(object, component = 1, effect = "both", decreasingLoadings = TRUE, only = "both", enlist = FALSE, tooDense = NA, highlight = NA, xlabel = NA){
+plot.ALASCA <- function(object, 
+                        component = 1, 
+                        effect = "both", 
+                        decreasingLoadings = TRUE, 
+                        only = "both", 
+                        enlist = FALSE, 
+                        tooDense = NA, 
+                        highlight = NA, 
+                        xlabel = NA,
+                        myTheme = ggplot2::theme_bw()){
   if(!(effect %in% c("both","time","group"))){
     stop("`effect` has to be `both`, `time` or `group`")
   }
@@ -34,34 +44,34 @@ plot.ALASCA <- function(object, component = 1, effect = "both", decreasingLoadin
   }
   if(only == "score"){
     if(effect == "both"){
-      g_score_time <- getScorePlot(object, component = component, effect = "time")
-      g_score_group <- getScorePlot(object, component = component, effect = "group")
+      g_score_time <- getScorePlot(object, component = component, effect = "time", myTheme = myTheme)
+      g_score_group <- getScorePlot(object, component = component, effect = "group", myTheme = myTheme)
       g <- list(g_score_time, g_score_group)
     }else{
       g <- getScorePlot(object, component = component, effect = effect)
     }
   }else if(only == "loading"){
     if(effect == "both"){
-      g_loading_time <- getLoadingPlot(object, component = component, effect = "time", decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight)
-      g_loading_group <- getLoadingPlot(object, component = component, effect = "group", decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight)
+      g_loading_time <- getLoadingPlot(object, component = component, effect = "time", decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight, myTheme = myTheme)
+      g_loading_group <- getLoadingPlot(object, component = component, effect = "group", decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight, myTheme = myTheme)
       g <- list(g_loading_time, g_loading_group)
     }else{
-      g <- getLoadingPlot(object, component = component, effect = effect, decreasingLoadings = decreasingLoadings, tooDense = tooDense)
+      g <- getLoadingPlot(object, component = component, effect = effect, decreasingLoadings = decreasingLoadings, tooDense = tooDense, myTheme = myTheme)
     }
   }else{
     if(effect == "both"){
-      g_loading_time <- getLoadingPlot(object, component = component, effect = "time", decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight)
-      g_loading_group <- getLoadingPlot(object, component = component, effect = "group", decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight)
-      g_score_time <- getScorePlot(object, component = component, effect = "time")
-      g_score_group <- getScorePlot(object, component = component, effect = "group")
+      g_loading_time <- getLoadingPlot(object, component = component, effect = "time", decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight, myTheme = myTheme)
+      g_loading_group <- getLoadingPlot(object, component = component, effect = "group", decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight, myTheme = myTheme)
+      g_score_time <- getScorePlot(object, component = component, effect = "time", myTheme = myTheme)
+      g_score_group <- getScorePlot(object, component = component, effect = "group", myTheme = myTheme)
       if(enlist){
         g <- list(g_score_time, g_loading_time, g_score_group, g_loading_group)
       }else{
         g <- ggpubr::ggarrange(g_score_time, g_loading_time, g_score_group, g_loading_group, nrow = 2, ncol = 2, widths = c(1,2,1,2), align = "hv", common.legend = TRUE, legend = "bottom")
       }
     }else{
-      g_loading <- getLoadingPlot(object, component = component, effect = effect, decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight)
-      g_score <- getScorePlot(object, component = component, effect = effect)
+      g_loading <- getLoadingPlot(object, component = component, effect = effect, decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight, myTheme = myTheme)
+      g_score <- getScorePlot(object, component = component, effect = effect, myTheme = myTheme)
       if(enlist){
         g <- list(g_score, g_loading)
       }else{
@@ -78,6 +88,7 @@ plot.ALASCA <- function(object, component = 1, effect = "both", decreasingLoadin
 #'
 #' @param object An ALASCA object
 #' @param effect String stating which effect to return; `time`, `group`, `both` (default)
+#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return An ggplot2 object (or a list og ggplot objects)
 #' 
 #' @examples
@@ -85,17 +96,19 @@ plot.ALASCA <- function(object, component = 1, effect = "both", decreasingLoadin
 #' screeplot(model)
 #' 
 #' @export
-screeplot.ALASCA <- function(object, effect = "both"){
+screeplot.ALASCA <- function(object, effect = "both", myTheme = ggplot2::theme_bw()){
   explained <- as.data.frame(getScores(object)$explained)
   explained$component <- 1:nrow(explained)
   g <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = time, group = NA)) +
     ggplot2::geom_point() +
     ggplot2::geom_line() +
+    myTheme + 
     ggplot2::labs(x = "Principal Component", y = paste0("Relative Expl. of ",object$plot.xlabel," Var."))
   if(length(object$ALASCA$loading) == 3){
     gg <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = group, group = NA)) +
       ggplot2::geom_point() +
       ggplot2::geom_line() +
+      myTheme + 
       ggplot2::labs(x = "Principal Component", y = "Relative Expl. of Group Var.")
     if(effect == "both"){
       g <- ggpubr::ggarrange(g, gg)
@@ -152,8 +165,9 @@ getCovars <- function(object){
 #' @param component Which component to plot?
 #' @param effect Plot time or group
 #' @param decreasingLoadings Logical. Should loading sbe sorted in decreasing order?
+#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A ggplot object
-getLoadingPlot <- function(object, component = 1, effect = "time", decreasingLoadings = TRUE, tooDense = NA, highlight = NA){
+getLoadingPlot <- function(object, component = 1, effect = "time", decreasingLoadings = TRUE, tooDense = NA, highlight = NA, myTheme = ggplot2::theme_bw()){
   pointSize <- 0.4
   if(effect == "time"){
     loadings <- subset(getLoadings(object)$time, PC == component)
@@ -167,13 +181,14 @@ getLoadingPlot <- function(object, component = 1, effect = "time", decreasingLoa
     g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading)) + ggplot2::geom_point()
   }
   
-  g <- g +
+  g <- g + myTheme +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust=1)) +
     ggplot2::labs(x = "Variable",
                   y = paste0("PC",component, " (", round(100*ifelse(effect == "time", object$ALASCA$loading$explained$time[component],object$ALASCA$loading$explained$group[component]),2),"%)"))
   if(!any(is.na(highlight))){
     g <- g + ggplot2::geom_point(color = ifelse(loadings$covars %in% highlight, "red", "grey")) +
       ggrepel::geom_text_repel(data = subset(loadings, covars %in% highlight), ggplot2::aes(label=covars), max.iter	= 5000) +
+      myTheme +
       ggplot2::theme(axis.title.x=ggplot2::element_blank(),
                      axis.text.x=ggplot2::element_blank(),
                      axis.ticks.x=ggplot2::element_blank(),
@@ -183,6 +198,7 @@ getLoadingPlot <- function(object, component = 1, effect = "time", decreasingLoa
     limLower <- unique(loadings$loading[order(loadings$loading, decreasing = FALSE)[tooDense]])
     g <- g + ggplot2::geom_point(color = ifelse(loadings$loading <= limLower | loadings$loading >= limUpper, "red", "grey")) +
       ggrepel::geom_text_repel(data = subset(loadings, loading <= limLower | loading >= limUpper), ggplot2::aes(label=covars), max.iter	= 5000) +
+      myTheme +
       ggplot2::theme(axis.title.x=ggplot2::element_blank(),
                      axis.text.x=ggplot2::element_blank(),
                      axis.ticks.x=ggplot2::element_blank(),
@@ -201,8 +217,9 @@ getLoadingPlot <- function(object, component = 1, effect = "time", decreasingLoa
 #' @param object An ALASCA object
 #' @param component Which component to plot?
 #' @param effect Plot time or group
+#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A ggplot object
-getScorePlot <- function(object, component = 1, effect = "time"){
+getScorePlot <- function(object, component = 1, effect = "time", myTheme = ggplot2::theme_bw()){
   pointSize <- 0.4
   if(effect == "time"){
     if(object$separateTimeAndGroup){
@@ -225,7 +242,7 @@ getScorePlot <- function(object, component = 1, effect = "time"){
           ggplot2::geom_point() + ggplot2::geom_line()
       }
     }
-    g <- g +
+    g <- g + myTheme +
       ggplot2::theme(legend.position = "bottom") +
       ggplot2::labs(x = object$plot.xlabel, y = paste0("PC",component, " (",round(100*object$ALASCA$score$explained$time[component],2),"%)"))
   }else{
@@ -238,7 +255,7 @@ getScorePlot <- function(object, component = 1, effect = "time"){
       g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group)) +
         ggplot2::geom_point() + ggplot2::geom_line()
     }
-    g <- g +
+    g <- g + myTheme +
       ggplot2::theme(legend.position = "bottom") +
       ggplot2::labs(x = object$plot.xlabel, y = paste0("PC",component, " (",round(100*object$ALASCA$score$explained$group[component],2),"%)"))
   }
@@ -255,6 +272,7 @@ getScorePlot <- function(object, component = 1, effect = "time"){
 #' @param valueColumn Specify column with values (y axis). Not necessary to provide if you are plotting an ALASCA object.
 #' @param timeColumn Specify column with times (x axis). Defaults to `time`.
 #' @param addSmooth. Specify which geom_smooth model you want to apply, eg. `lm`, `glm`, `gam`, `loess` (default). Set to `NA` to remove.
+#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A list with ggplot2 objects.
 #' 
 #' @examples
@@ -269,7 +287,7 @@ getScorePlot <- function(object, component = 1, effect = "time"){
 #' plotParts(model, variable = "IL-6", participantColumn = "ID", timeColumn = "GA")[[1]] + ggplot2::labs(x = "GA")
 #' 
 #' @export
-plotParts <- function(object, variable = NA, participantColumn = FALSE, valueColumn = FALSE, timeColumn = "time", addSmooth = "loess"){
+plotParts <- function(object, variable = NA, participantColumn = FALSE, valueColumn = FALSE, timeColumn = "time", addSmooth = "loess", myTheme = ggplot2::theme_bw()){
   if(is.data.frame(object)){
     df <- object
     if(any(participantColumn == FALSE) | any(valueColumn == FALSE)){
@@ -291,9 +309,9 @@ plotParts <- function(object, variable = NA, participantColumn = FALSE, valueCol
   }else{
     stop("Wrong input object: must be a ALASCA model or a data frame")
   }
-  plotFunction <- function(df, timeColumn, valueColumn, participantColumn, xi, addSmooth){
+  plotFunction <- function(df, timeColumn, valueColumn, participantColumn, xi, addSmooth, myTheme){
     g <- ggplot2::ggplot(subset(df, variable == xi), ggplot2::aes_string(x = timeColumn, y = valueColumn, color = "group", group = participantColumn)) + 
-      ggplot2::geom_point(alpha = 0.7) + ggplot2::geom_line(alpha = 0.3) +
+      ggplot2::geom_point(alpha = 0.7) + ggplot2::geom_line(alpha = 0.3)  + myTheme +
       ggplot2::theme(legend.position = "bottom") + ggplot2::labs(x = "Time", y = xi)
     if(!any(is.na(addSmooth))){
       g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group), se = TRUE)
@@ -302,11 +320,11 @@ plotParts <- function(object, variable = NA, participantColumn = FALSE, valueCol
   }
   if(any(is.na(variable))){
     g <- lapply(unique(df$variable), function(xi){
-      plotFunction(df, timeColumn, valueColumn, participantColumn, xi, addSmooth)
+      plotFunction(df, timeColumn, valueColumn, participantColumn, xi, addSmooth, myTheme = myTheme)
     })
   }else{
     g <- lapply(variable, function(xi){
-      plotFunction(df, timeColumn, valueColumn, participantColumn, xi, addSmooth)
+      plotFunction(df, timeColumn, valueColumn, participantColumn, xi, addSmooth, myTheme = myTheme)
     })
   }
   return(g)
@@ -318,6 +336,7 @@ plotParts <- function(object, variable = NA, participantColumn = FALSE, valueCol
 #'
 #' @param object An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.
 #' @param variable List of variable names to print. If `NA`, return all (default).
+#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A list with ggplot2 objects.
 #' 
 #' @examples
@@ -329,7 +348,7 @@ plotParts <- function(object, variable = NA, participantColumn = FALSE, valueCol
 #'     common.legend = TRUE, legend = "bottom")
 #' )
 #' @export
-plotPred <- function(object, variable = NA){
+plotPred <- function(object, variable = NA, myTheme = ggplot2::theme_bw()){
   if(any(is.na(variable))){
     variable <- unique(object$df$variable)
   }
@@ -372,7 +391,7 @@ plotPred <- function(object, variable = NA){
       
     }
     g <- ggplot2::ggplot(newdata, ggplot2::aes(x = time, y = pred, color = group, group = group)) +
-      ggplot2::geom_point() + ggplot2::geom_line() +
+      ggplot2::geom_point() + ggplot2::geom_line() + myTheme + 
       ggplot2::theme(legend.position = "bottom") +
       ggplot2::labs(x = object$plot.xlabel, y = x)
     g
@@ -386,10 +405,11 @@ plotPred <- function(object, variable = NA){
 #'
 #' @param object A validated ALASCA object
 #' @param component Which component to plot (default: 1)
+#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A list with ggplot2 objects.
 #' 
 #' @export
-plotVal <- function(object, component = 1){
+plotVal <- function(object, component = 1, myTheme = ggplot2::theme_bw()){
   if(!object$validate){
     stop("You must validate the model first.")
   }
@@ -404,8 +424,8 @@ plotVal <- function(object, component = 1){
     })
     )
     gst <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score)) + 
-      ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2)
-      ggplot2::labs(x = object$plot.xlabel)
+      ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
+      ggplot2::labs(x = object$plot.xlabel) + myTheme
     
     ## Group
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
@@ -420,7 +440,7 @@ plotVal <- function(object, component = 1){
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
       ggplot2::geom_point(data = subset(getScores(object)$group, PC == component), group = NA, alpha = 1, color = "black") +
       ggplot2::geom_line(data = subset(getScores(object)$group, PC == component), group = subset(getScores(object)$group, PC == component)$group, alpha = 1, color = "black") +
-      ggplot2::labs(x = object$plot.xlabel)
+      ggplot2::labs(x = object$plot.xlabel) + myTheme
     
     
     # Loading plot
@@ -434,7 +454,7 @@ plotVal <- function(object, component = 1){
     glt <- ggplot2::ggplot(dff, ggplot2::aes(x = covars, y = loading)) + 
       ggplot2::geom_point(alpha = 0.2, color = "black") + 
       ggplot2::geom_point(data = subset(getLoadings(object)$time, PC == component), alpha = 1, color = "red") +
-      ggplot2::labs(x = "Variable")
+      ggplot2::labs(x = "Variable") + myTheme
     
     ## Group
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
@@ -446,7 +466,7 @@ plotVal <- function(object, component = 1){
     glg <- ggplot2::ggplot(dff, ggplot2::aes_string(x = covars, y = loading)) + 
       ggplot2::geom_point(alpha = 0.2, color = "black") + 
       ggplot2::geom_point(data = subset(getLoadings(object)$group, PC == component), alpha = 1, color = "red") +
-      ggplot2::labs(x = "Variable")
+      ggplot2::labs(x = "Variable") + myTheme
     
     g <- ggpubr::ggarrange(gst, glt, gsg, glg, nrow = 2, ncol = 2, widths = c(1,2,1,2))
     
@@ -464,7 +484,7 @@ plotVal <- function(object, component = 1){
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
       ggplot2::geom_point(data = subset(getScores(object)$time, PC == component), group = NA, alpha = 1, color = "black") +
       ggplot2::geom_line(data = subset(getScores(object)$time, PC == component), group = subset(getScores(object)$time, PC == component)$group, alpha = 1, color = "black") +
-      ggplot2::labs(x = object$plot.xlabel) + ggplot2::theme(legend.position = "bottom")
+      ggplot2::labs(x = object$plot.xlabel) + myTheme + ggplot2::theme(legend.position = "bottom")
     
     # Loading plot
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
@@ -476,7 +496,7 @@ plotVal <- function(object, component = 1){
     gl <- ggplot2::ggplot(dff, ggplot2::aes(x = covars, y = loading)) + 
       ggplot2::geom_point(alpha = 0.2, color = "black") + 
       ggplot2::geom_point(data = subset(getLoadings(object)$time, PC == component), alpha = 1, color = "red") +
-      ggplot2::labs(x = object$plot.xlabel)
+      ggplot2::labs(x = object$plot.xlabel) + myTheme
     
     g <- ggpubr::ggarrange(gs, gl, nrow = 1, ncol = 2, widths = c(1,2))
   }
@@ -492,10 +512,11 @@ plotVal <- function(object, component = 1){
 #' @param component Which covariable(s) to plot (default: `NA` which prints all)
 #' @param tlab Alternative names for the covariables
 #' @param return_data Set to `TRUE` to return data instead of plot
+#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A ggplot2 objects\.
 #' 
 #' @export
-plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE){
+plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE, myTheme = ggplot2::theme_bw()){
   if(any(is.na(covar))){
     covar <- object$covars
   }
@@ -515,7 +536,7 @@ plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE){
       ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
       ggplot2::scale_shape_manual(values = c("Not significant"=3, "< 0.05"=15, "< 0.01"=16, "< 0.001"=17, "Baseline"=5)) +
       ggplot2::facet_wrap(~tlab) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
-      ggplot2::theme_bw() + ggplot2::theme(legend.position = "bottom", legend.box="vertical", legend.margin=ggplot2::margin())
+      myTheme + ggplot2::theme(legend.position = "bottom", legend.box="vertical", legend.margin=ggplot2::margin())
     return(g)
   }
 }

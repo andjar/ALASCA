@@ -4,12 +4,14 @@
 \alias{screeplot.ALASCA}
 \title{Get screeplot}
 \usage{
-\method{screeplot}{ALASCA}(object, effect = "both")
+\method{screeplot}{ALASCA}(object, effect = "both", myTheme = ggplot2::theme_bw())
 }
 \arguments{
 \item{object}{An ALASCA object}
 
 \item{effect}{String stating which effect to return; \code{time}, \code{group}, \code{both} (default)}
+
+\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }
 \value{
 An ggplot2 object (or a list og ggplot objects)

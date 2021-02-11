@@ -101,6 +101,9 @@
       <a href="../articles/metabolomics.html">Metabolomics</a>
     </li>
     <li>
+      <a href="../articles/personality.html">Personality and Aging</a>
+    </li>
+    <li>
       <a href="../articles/pregnancy.html">Early Preeclampsia</a>
     </li>
   </ul>
@@ -136,7 +139,8 @@
   participantColumn <span class='op'>=</span> <span class='cn'>FALSE</span>,
   valueColumn <span class='op'>=</span> <span class='cn'>FALSE</span>,
   timeColumn <span class='op'>=</span> <span class='st'>"time"</span>,
-  addSmooth <span class='op'>=</span> <span class='st'>"loess"</span>
+  addSmooth <span class='op'>=</span> <span class='st'>"loess"</span>,
+  myTheme <span class='op'>=</span> <span class='fu'>ggplot2</span><span class='fu'>::</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_bw</a></span><span class='op'>(</span><span class='op'>)</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -161,6 +165,10 @@
     <tr>
       <th>timeColumn</th>
       <td><p>Specify column with times (x axis). Defaults to <code>time</code>.</p></td>
+    </tr>
+    <tr>
+      <th>myTheme</th>
+      <td><p>A ggplot2 theme to use, defaults to <code><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>ggplot2::theme_bw()</a></code></p></td>
     </tr>
     <tr>
       <th>addSmooth.</th>

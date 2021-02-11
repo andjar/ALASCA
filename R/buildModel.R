@@ -38,23 +38,6 @@ runRegression <- function(object){
   cc <- 1
   ccc <- 1
   
-  if(object$forceEqualBaseline){
-    if(object$doDebug){
-      cat(".... Starts removing interaction between groups and first time point\n")
-    }
-    # Remove interaction between group and first time point
-    if(!object$missingMeasurements){
-      if(object$method == "LM"){
-        regr.model <- lm(object$formula, data = subset(object$df, variable == unique(object$df$variable)[1]))
-      }else{
-        regr.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == unique(object$df$variable)[1]))
-      }
-      object <- makeX(object, regr.model)
-    }
-  }
-  
-  
-  
   makeX <- function(object, regr.model){
     X <- model.matrix(regr.model)
     baselineLabel <- paste0("time", unique(object$df$time)[1])
@@ -76,6 +59,21 @@ runRegression <- function(object){
     }
     object$X <- X
     return(object)
+  }
+  
+  if(object$forceEqualBaseline){
+    if(object$doDebug){
+      cat(".... Starts removing interaction between groups and first time point\n")
+    }
+    # Remove interaction between group and first time point
+    if(!object$missingMeasurements){
+      if(object$method == "LM"){
+        regr.model <- lm(object$formula, data = subset(object$df, variable == unique(object$df$variable)[1]))
+      }else{
+        regr.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == unique(object$df$variable)[1]))
+      }
+      object <- makeX(object, regr.model)
+    }
   }
   
   if(object$doDebug){

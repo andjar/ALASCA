@@ -325,21 +325,37 @@ Often, we want some more control over the plots. Luckily, we can easily get the 
 ```
 </div>
 
-Note that we can also call the various parts of the plot directly, and apply styles as we wish, for example
+The plot function can also be given a theme or other objects directly,
 
 <div class="fold s">
 ```{r ALASCA_custom_plot_2}
+plot(res.simple, myTheme = theme_dark())
+```
+</div>
+
+or we can even specify several features if we want,
+
+<div class="fold s">
+```{r ALASCA_custom_plot_3}
+plot(res.simple, myTheme = list(theme_dark(), scale_colour_viridis_d()))
+```
+</div>
+
+Note that we can also call the various parts of the plot directly, and apply styles as we wish, for example
+
+<div class="fold s">
+```{r ALASCA_custom_plot_4}
 ggpubr::ggarrange(
-  ggpubr::ggarrange(plot(res.simple, effect = "time", only = "score") + theme_bw(), 
-                    plot(res.simple, effect = "time", only = "loading") + theme_bw(), 
-                    plot(res.simple, effect = "group", only = "score") + theme_bw(), 
-                    plot(res.simple, effect = "group", only = "loading") + theme_bw(), 
+  ggpubr::ggarrange(plot(res.simple, effect = "time", only = "score") + theme_dark(), 
+                    plot(res.simple, effect = "time", only = "loading") + theme_dark(), 
+                    plot(res.simple, effect = "group", only = "score") + theme_dark(), 
+                    plot(res.simple, effect = "group", only = "loading") + theme_dark(), 
                     nrow = 1, widths = c(2,3,2,3), 
                     common.legend = TRUE, legend = "none"),
-  ggpubr::ggarrange(plot(res.simple, effect = "time", only = "score", component = 2) + theme_bw(), 
-                    plot(res.simple, effect = "time", only = "loading", component = 2) + theme_bw(), 
-                    plot(res.simple, effect = "group", only = "score", component = 2) + theme_bw(), 
-                    plot(res.simple, effect = "group", only = "loading", component = 2) + theme_bw(), 
+  ggpubr::ggarrange(plot(res.simple, effect = "time", only = "score", component = 2) + theme_dark(), 
+                    plot(res.simple, effect = "time", only = "loading", component = 2) + theme_dark(), 
+                    plot(res.simple, effect = "group", only = "score", component = 2) + theme_dark(), 
+                    plot(res.simple, effect = "group", only = "loading", component = 2) + theme_dark(), 
                     nrow = 1, widths = c(2,3,2,3), 
                     common.legend = TRUE, legend = "bottom"),
   nrow = 2
@@ -438,7 +454,11 @@ do.call(
 ```
 </div>
 
-We can see that age is no longer part of the output, and HDL (which was correlated with age) has no longer a strong loading.
+We can see that age is no longer part of the output, and HDL (which was correlated with age) has no longer a strong loading. To see how age is affecting out measurements, we can use `plotCovar()` like this
+
+```{r}
+plotCovar(res.mod4, covar = "age", tlab = "Age")
+```
 
 ## Diagnostics
 
