@@ -172,7 +172,9 @@ getRegressionCoefficients <- function(object){
 #' @param object An ALASCA object to be sanitized
 #' @return An ALASCA object
 removeCovars <- function(object){
+  object$CovarCoefficients <- data.frame()
   for(i in unique(object$covars)){
+    object$CovarCoefficients <- rbind(object$CovarCoefficients, subset(object$RegressionCoefficients, substr(variable, 1, nchar(i)) == i))
     object$RegressionCoefficients <- subset(object$RegressionCoefficients, substr(variable, 1, nchar(i)) != i)
   }
   return(object)

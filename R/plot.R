@@ -130,6 +130,17 @@ getScores <- function(object){
   return(object$ALASCA$score)
 }
 
+#' Get covariables
+#'
+#' This function returns the other covariables in an ALASCA model
+#'
+#' @inheritParams getLoadings
+#' @return A list with scores for time (and group), and the exploratory power for each component
+#' @export
+getCovars <- function(object){
+  return(object$CovarCoefficients)
+}
+
 #' Get loading plot
 #'
 #' This function loads a file as a matrix. It assumes that the first column
@@ -471,4 +482,40 @@ plotVal <- function(object, component = 1){
   }
   return(g)
   
+}
+
+#' Plot validations models
+#'
+#' This function returns a plot of the validation models
+#'
+#' @param object An ALASCA object
+#' @param component Which covariable(s) to plot (default: `NA` which prints all)
+#' @param tlab Alternative names for the covariables
+#' @param return_data Set to `TRUE` to return data instead of plot
+#' @return A ggplot2 objects\.
+#' 
+#' @export
+plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE){
+  if(any(is.na(covar))){
+    covar <- object$covars
+  }
+  if(any(is.na(tlab))){
+    tlab <- covar
+  }
+  df <- getCovars(object)
+  for(i in 1:length(covar)){
+    df$tlab[df$variable == covar[i]] <- tlab[i]
+  }
+  df$pvalue_label <- ifelse(df$pvalue >= 0.05, "Not significant", ifelse(df$pvalue < 0.001, "< 0.001", ifelse(df$pvalue < 0.01, "< 0.01", "< 0.05")))
+  df$covar <- factor(df$covar, levels = unique(df$covar[order(df$estimate)]))
+  if(return_data){
+    return(df)
+  }else{
+    g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, shape = pvalue_label)) + 
+      ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
+      ggplot2::scale_shape_manual(values = c("Not significant"=3, "< 0.05"=15, "< 0.01"=16, "< 0.001"=17, "Baseline"=5)) +
+      ggplot2::facet_wrap(~tlab) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
+      ggplot2::theme_bw() + ggplot2::theme(legend.position = "bottom", legend.box="vertical", legend.margin=ggplot2::margin())
+    return(g)
+  }
 }
