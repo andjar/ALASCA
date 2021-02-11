@@ -378,8 +378,8 @@ plotPred <- function(object, variable = NA, myTheme = ggplot2::theme_bw()){
     if(object$forceEqualBaseline){
       newdata <- data.frame(
         pred = lme4:::predict.merMod(model, re.form=NA),
-        time = mod$parts$time,
-        group = mod$parts$group
+        time = object$partsWithVariable[[xi]]$time,
+        group = object$partsWithVariable[[xi]]$group
       )
       newdata <- aggregate(data = newdata, pred~time+group, FUN = "mean")
     }else{
