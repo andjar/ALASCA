@@ -12,8 +12,15 @@ buildModel <- function(object){
   object <- runRegression(object)
   object <- getRegressionCoefficients(object)
   if(!object$minimizeObject){
-    # This is a validation run
+    # This is not a validation run
     cat("Finished calculating regression coefficients!\n")
+  }
+  if(object$minimizeObject){
+    if(object$validateRegression){
+      object <- getRegressionPredictions(object)
+    }
+  }else{
+    object <- getRegressionPredictions(object)
   }
   object <- removeCovars(object)
   object <- separateLMECoefficients(object)

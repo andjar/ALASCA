@@ -357,55 +357,53 @@ plotPred <- function(object, variable = NA, return_data = FALSE, myTheme = ggplo
   if(any(is.na(variable))){
     variable <- unique(object$df$variable)
   }
-  gg <- lapply(variable, function(x){
-    xi <- which(x == names(object$regr.model))
-    model <- object$regr.model[[xi]]
-    newdata <- object$df[,c("time", "group")]
-    newdata <- subset(newdata, !duplicated(newdata))
-    cols <- colnames(object$df)
-    covars <- object$covars
-    covars <- covars[!grepl("\\|", covars)]
-    cc <- 3
-    for(i in covars){
-      if(class(object$df[,cols == i]) == "numeric"){
-        newdata[,cc] <- mean(object$df[,cols == i], na.rm = TRUE)
-        cat("- Using mean of ", i, ": ",mean(object$df[,cols == i], na.rm = TRUE),"\n")
-      }else if(class(object$df[,cols == i]) == "factor"){
-        newdata[,cc] <- unique(object$df[,cols == i])[1]
-        cat("- Using ",unique(object$df[,cols == i])[1]," as reference\n")
-      }else if(class(object$df[,cols == i]) == "character"){
-        newdata[,cc] <- unique(object$df[,cols == i])[1]
-        cat("- Using ",unique(object$df[,cols == i])[1]," as reference\n")
+  if(!object$validateRegression){
+    gg <- lapply(variable, function(x){
+      xi <- which(x == names(object$regr.model))
+      model <- object$regr.model[[xi]]
+      newdata <- getNewdataForPrediction(object)
+      if(object$forceEqualBaseline){
+        newdata <- data.frame(
+          pred = lme4:::predict.merMod(model, re.form=NA),
+          time = object$partsWithVariable[[xi]]$time,
+          group = object$partsWithVariable[[xi]]$group
+        )
+        newdata <- aggregate(data = newdata, pred~time+group, FUN = "mean")
+      }else{
+        if(object$method == "LMM"){
+          newdata$pred <- lme4:::predict.merMod(model, newdata = newdata, re.form=NA)
+        }else if(object$method == "LM"){
+          newdata$pred <- predict(model, newdata = newdata)
+        }
       }
-      cc <- cc + 1
-    }
-    colnames(newdata) <- c("time", "group", covars)
-    if(object$forceEqualBaseline){
-      newdata <- data.frame(
-        pred = lme4:::predict.merMod(model, re.form=NA),
-        time = object$partsWithVariable[[xi]]$time,
-        group = object$partsWithVariable[[xi]]$group
-      )
-      newdata <- aggregate(data = newdata, pred~time+group, FUN = "mean")
-    }else{
-      if(object$method == "LMM"){
-        newdata$pred <- lme4:::predict.merMod(model, newdata = newdata, re.form=NA)
-      }else if(object$method == "LM"){
-        newdata$pred <- predict(model, newdata = newdata)
+      if(return_data){
+        newdata
+      }else{
+        g <- ggplot2::ggplot(newdata, ggplot2::aes(x = time, y = pred, color = group, group = group)) +
+          ggplot2::geom_point() + ggplot2::geom_line() + myTheme + 
+          ggplot2::theme(legend.position = "bottom") +
+          ggplot2::labs(x = object$plot.xlabel, y = x)
+        g
       }
-      
-    }
+    })
+    names(gg) <- variable
+  }else{
     if(return_data){
-      newdata
+      gg <- subset(object$mod.pred, variable %in% variable)
     }else{
-      g <- ggplot2::ggplot(newdata, ggplot2::aes(x = time, y = pred, color = group, group = group)) +
-        ggplot2::geom_point() + ggplot2::geom_line() + myTheme + 
-        ggplot2::theme(legend.position = "bottom") +
-        ggplot2::labs(x = object$plot.xlabel, y = x)
-      g
+      gg <- lapply(unique(variable), function(x){
+        g <- ggplot2::ggplot(subset(object$mod.pred, variable == x), ggplot2::aes(x = time, y = pred, color = group, group = group, ymin = low, ymax = high)) +
+          ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) + 
+          ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35)) + 
+          myTheme + 
+          ggplot2::theme(legend.position = "bottom") +
+          ggplot2::labs(x = object$plot.xlabel, y = x)
+        g
+      })
+      names(gg) <- variable
     }
-  })
-  names(gg) <- variable
+  }
+  
   return(gg)
 }
 
@@ -549,34 +547,4 @@ plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE, myThem
       myTheme + ggplot2::theme(legend.position = "bottom", legend.box="vertical", legend.margin=ggplot2::margin())
     return(g)
   }
-}
-
-
-#' Plot regression models
-#'
-#' This function returns a plot of the regression models after bootstrapping
-#'
-#' @param object An ALASCA object
-#' @param variable Which variable(s) to plot (default: `NA` which plots all)
-#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
-#' @return A ggplot2 objects\.
-#' 
-#' @export
-plotRegression <- function(object, variable = NA, myTheme = ggplot2::theme_bw()){
-  if(any(is.na(variable))){
-    variable <- object$variable
-  }
-  if(!object$mod.regr.validated){
-    stop("You need to validate your regression models first with `validateRegression()`.")
-  }
-  if(any(!(variable %in% object$mod.pred$variable))){
-    stop("Some of your requested variables have not been validated yet. See `validateRegression()`.")
-  }
-  gg <- lapply(variable, function(i){
-    g <- ggplot2::ggplot(subset(object$mod.pred, variable == i), ggplot2::aes(x = time, y = estimate, ymin = low, ymax = high, color = group, group = group)) +
-    ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
-      ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35)) +
-    myTheme + theme(legend.position = "bottom") + ggplot2::labs(x = object$plot.xlabel, y = i)
-  })
-  return(gg)
 }

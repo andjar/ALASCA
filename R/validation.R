@@ -4,6 +4,7 @@
 #'
 #' @param object An ALASCA object
 #' @param participantColumn The name of the column containing participant identifier. Needed if not set during initialization of the model.
+#' @param validateRegression Whether to validate regression models
 #' @return An ALASCA object
 #' 
 #' @examples
@@ -12,8 +13,11 @@
 #' model.val <- validate(model, participantColumn = "ID")
 #' 
 #' @export
-validate <- function(object, participantColumn = FALSE){
+validate <- function(object, participantColumn = FALSE, validateRegression = TRUE){
   object$validate <- TRUE
+  if(validateRegression){
+    object$validateRegression <- TRUE
+  }
 
   if(object$method == "LMM"){
     if(participantColumn == FALSE){
@@ -156,7 +160,45 @@ getValidationPercentiles <- function(object, objectlist){
 
   object <- getValidationPercentilesLoading(object, objectlist)
   object <- getValidationPercentilesScore(object, objectlist)
+  if(object$validateRegression){
+    object <- getValidationPercentilesRegression(object, objectlist)
+  }
   
+  return(object)
+}
+
+#' Extract percentiles for loading
+#'
+#' This function extract percentiles during validation
+#'
+#' @inheritParams getValidationPercentiles
+#' @return An ALASCA object
+getValidationPercentilesRegression <- function(object, objectlist){
+  df <- Reduce(rbind,lapply(objectlist, function(x) {
+            Reduce(rbind,lapply(seq_along(x$mod.pred), function(i){
+              data.frame(
+                time = x$mod.pred[[i]]$time,
+                group = x$mod.pred[[i]]$group,
+                pred = x$mod.pred[[i]]$pred,
+                variable = names(x$mod.pred)[[i]]
+              )
+            }))
+          }))
+  df <- aggregate(data = df, pred ~ group + time + variable, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+  df$low <- df$pred[,1]
+  df$high <- df$pred[,2]
+  df$pred <- NULL
+  colnames(df) <- c("group", "time", "variable", "low", "high")
+  df2 <- Reduce(rbind, lapply(seq_along(object$mod.pred), function(i) data.frame(
+    data.frame(
+      time = object$mod.pred[[i]]$time,
+      group = object$mod.pred[[i]]$group,
+      pred = object$mod.pred[[i]]$pred,
+      variable = names(object$mod.pred)[[i]]
+    )
+  )))
+  object$mod.pred <- NULL
+  object$mod.pred <- merge(df2, df)
   return(object)
 }
 
@@ -285,39 +327,38 @@ switchSign <- function(value, perc, PCs){
 #'
 #' @param object An ALASCA object
 #' @param variable Variable names for which models to validate (default `NA` for all)
-#' @param nSim Number of simulations
 #' @return An ALASCA object
-#' @export
-validateRegression <- function(object, variable, nSim = 500){
-  if(any(is.na(variable))){
-    variable <- unique(object$df$variable)
-  }
-  object$mod.regr.validated <- variable
-  object$mod.pred <- Reduce(rbind,lapply(variable, function(i){
-    nCol <- which(names(object$regr.model) == i)
-    merBoot <- lme4::bootMer(object$regr.model[[nCol]], predict, nsim = nSim, re.form = NA)
-    CI.lower = apply(merBoot$t, 2, function(x) as.numeric(quantile(x, probs=.025, na.rm=TRUE)))
-    CI.upper = apply(merBoot$t, 2, function(x) as.numeric(quantile(x, probs=.975, na.rm=TRUE)))
-    uGr <- unique(object$partsWithVariable[[nCol]]$group)
-    uT <- unique(object$partsWithVariable[[nCol]]$time)
-    a <- data.frame()
-    for(t in uT){
-      for(g in uGr){
-        t0 <- merBoot$t0[object$partsWithVariable[[nCol]]$group == g & object$partsWithVariable[[nCol]]$time == t]
-        CI.l <- CI.lower[object$partsWithVariable[[nCol]]$group == g & object$partsWithVariable[[nCol]]$time == t]
-        CI.u <- CI.upper[object$partsWithVariable[[nCol]]$group == g & object$partsWithVariable[[nCol]]$time == t]
-        a <- rbind(a,
-          data.frame(
-          variable = i,
-          group = g,
-          time = t,
-          high = as.numeric(quantile(CI.u, probs=.975, na.rm=TRUE)),
-          low = as.numeric(quantile(CI.l, probs=.025, na.rm=TRUE)),
-          estimate = as.numeric(quantile(t0, probs=.5, na.rm=TRUE))
-        ))
-      }
-    }
-    a
-  }))
+getRegressionPredictions <- function(object){
+  object$mod.pred <- plotPred(object, variable = unique(object$df$variable), return_data = TRUE)
   return(object)
+}
+
+#' Validate underlying regression models
+#'
+#' This function extract percentiles during validation
+#'
+#' @param object An ALASCA object
+#' @return A data frame
+getNewdataForPrediction <- function(object){
+  newdata <- object$df[,c("time", "group")]
+  newdata <- subset(newdata, !duplicated(newdata))
+  cols <- colnames(object$df)
+  covars <- object$covars
+  covars <- covars[!grepl("\\|", covars)]
+  cc <- 3
+  for(i in covars){
+    if(class(object$df[,cols == i]) == "numeric"){
+      newdata[,cc] <- mean(object$df[,cols == i], na.rm = TRUE)
+      cat("- Using mean of ", i, ": ",mean(object$df[,cols == i], na.rm = TRUE),"\n")
+    }else if(class(object$df[,cols == i]) == "factor"){
+      newdata[,cc] <- unique(object$df[,cols == i])[1]
+      cat("- Using ",unique(object$df[,cols == i])[1]," as reference\n")
+    }else if(class(object$df[,cols == i]) == "character"){
+      newdata[,cc] <- unique(object$df[,cols == i])[1]
+      cat("- Using ",unique(object$df[,cols == i])[1]," as reference\n")
+    }
+    cc <- cc + 1
+  }
+  colnames(newdata) <- c("time", "group", covars)
+  return(newdata)
 }
