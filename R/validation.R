@@ -13,7 +13,7 @@
 #' model.val <- validate(model, participantColumn = "ID")
 #' 
 #' @export
-validate <- function(object, participantColumn = FALSE, validateRegression = TRUE){
+validate <- function(object, participantColumn = FALSE, validateRegression = FALSE){
   object$validate <- TRUE
   if(validateRegression){
     object$validateRegression <- TRUE
@@ -61,7 +61,10 @@ validate <- function(object, participantColumn = FALSE, validateRegression = TRU
   }
   
   object <- getValidationPercentiles(object, objectlist = temp_object)
-  object$validation$temp_objects <- temp_object
+  if(object$keepValidationObjects){
+    object$validation$temp_objects <- temp_object
+  }
+  
   return(object)
 }
 
@@ -174,31 +177,13 @@ getValidationPercentiles <- function(object, objectlist){
 #' @inheritParams getValidationPercentiles
 #' @return An ALASCA object
 getValidationPercentilesRegression <- function(object, objectlist){
-  df <- Reduce(rbind,lapply(objectlist, function(x) {
-            Reduce(rbind,lapply(seq_along(x$mod.pred), function(i){
-              data.frame(
-                time = x$mod.pred[[i]]$time,
-                group = x$mod.pred[[i]]$group,
-                pred = x$mod.pred[[i]]$pred,
-                variable = names(x$mod.pred)[[i]]
-              )
-            }))
-          }))
+  df <- Reduce(rbind,lapply(objectlist, function(x) x$mod.pred))
   df <- aggregate(data = df, pred ~ group + time + variable, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
   df$low <- df$pred[,1]
   df$high <- df$pred[,2]
   df$pred <- NULL
   colnames(df) <- c("group", "time", "variable", "low", "high")
-  df2 <- Reduce(rbind, lapply(seq_along(object$mod.pred), function(i) data.frame(
-    data.frame(
-      time = object$mod.pred[[i]]$time,
-      group = object$mod.pred[[i]]$group,
-      pred = object$mod.pred[[i]]$pred,
-      variable = names(object$mod.pred)[[i]]
-    )
-  )))
-  object$mod.pred <- NULL
-  object$mod.pred <- merge(df2, df)
+  object$mod.pred <- merge(object$mod.pred, df)
   return(object)
 }
 
@@ -304,9 +289,9 @@ getRelevantPCs <- function(x){
 #'
 #' This function extract percentiles during validation
 #'
-#' @param value
-#' @param perc
-#' @param PCs
+#' @param value Point estimate
+#' @param perc Uncertainty
+#' @param PCs Components
 #' @return An ALASCA object
 switchSign <- function(value, perc, PCs){
   value$variable <- NULL
@@ -329,36 +314,33 @@ switchSign <- function(value, perc, PCs){
 #' @param variable Variable names for which models to validate (default `NA` for all)
 #' @return An ALASCA object
 getRegressionPredictions <- function(object){
-  object$mod.pred <- plotPred(object, variable = unique(object$df$variable), return_data = TRUE)
-  return(object)
-}
-
-#' Validate underlying regression models
-#'
-#' This function extract percentiles during validation
-#'
-#' @param object An ALASCA object
-#' @return A data frame
-getNewdataForPrediction <- function(object){
-  newdata <- object$df[,c("time", "group")]
-  newdata <- subset(newdata, !duplicated(newdata))
-  cols <- colnames(object$df)
-  covars <- object$covars
-  covars <- covars[!grepl("\\|", covars)]
-  cc <- 3
-  for(i in covars){
-    if(class(object$df[,cols == i]) == "numeric"){
-      newdata[,cc] <- mean(object$df[,cols == i], na.rm = TRUE)
-      cat("- Using mean of ", i, ": ",mean(object$df[,cols == i], na.rm = TRUE),"\n")
-    }else if(class(object$df[,cols == i]) == "factor"){
-      newdata[,cc] <- unique(object$df[,cols == i])[1]
-      cat("- Using ",unique(object$df[,cols == i])[1]," as reference\n")
-    }else if(class(object$df[,cols == i]) == "character"){
-      newdata[,cc] <- unique(object$df[,cols == i])[1]
-      cat("- Using ",unique(object$df[,cols == i])[1]," as reference\n")
-    }
-    cc <- cc + 1
+  if(!object$minimizeObject){
+    # This is not a validation run
+    cat("Calculating predictions from regression models...\n")
   }
-  colnames(newdata) <- c("time", "group", covars)
-  return(newdata)
+  newdata <- Reduce(rbind,lapply(unique(object$df$variable), function(x){
+    xi <- which(x == names(object$regr.model))
+    model <- object$regr.model[[xi]]
+    if(object$method == "LMM"){
+      data.frame(
+        pred = lme4:::predict.merMod(model, re.form=NA),
+        time = object$partsWithVariable[[xi]]$time,
+        group = object$partsWithVariable[[xi]]$group,
+        variable = x
+      )
+    }else if(object$method == "LM"){
+      data.frame(
+        pred = predict(model),
+        time = object$partsWithVariable[[xi]]$time,
+        group = object$partsWithVariable[[xi]]$group,
+        variable = x
+      )
+    }
+  }))
+  object$mod.pred <- aggregate(data = newdata, pred~time+group + variable, FUN = "mean")
+  if(!object$minimizeObject){
+    # This is not a validation run
+    cat("Finished calculating predictions from regression models!\n")
+  }
+  return(object)
 }

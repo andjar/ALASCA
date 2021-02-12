@@ -84,7 +84,7 @@
       <h1 data-toc-skip>Get Started</h1>
                         <h4 class="author">Anders H. Jarmund</h4>
             
-            <h4 class="date">2021-02-11</h4>
+            <h4 class="date">2021-02-12</h4>
       
       
       <div class="hidden name"><code>ALASCA.Rmd</code></div>
@@ -253,7 +253,7 @@ pre.plot {
 <p>Now that we have a data set, let us try the <code><a href="../reference/ALASCA.html">ALASCA()</a></code> function! First we need to decide what kind of model we want. For simplicity, let us start with a very simple model with terms for time, group and interaction.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">model.formula</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">partid</span><span class="op">)</span>
-<span class="va">res.simple</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">df</span>, formula <span class="op">=</span> <span class="va">model.formula</span><span class="op">)</span>
+<span class="va">res.simple</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">df</span>, formula <span class="op">=</span> <span class="va">model.formula</span>, validateRegression <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 <span class="co">#&gt; Will use linear mixed models!</span>
 <span class="co">#&gt; Scaling data...</span>
 <span class="co">#&gt; Calculating  LMM  coefficients...</span>
@@ -265,8 +265,9 @@ pre.plot {
 <span class="co">#&gt;   dfbetas.influence.merMod        car</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; Finished calculating regression coefficients!</span>
+<span class="co">#&gt; Calculating predictions from regression models...</span>
+<span class="co">#&gt; Finished calculating predictions from regression models!</span>
 <span class="co">#&gt; Calculating effect matrix</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span></code></pre></div>
 <div class="alert alert-info">
@@ -427,110 +428,102 @@ pre.plot {
 <span class="co">#&gt; - Run  1  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  5.61  seconds. Est. time remaining:  106.63  seconds </span>
+<span class="co">#&gt; --- Used  3.73  seconds. Est. time remaining:  70.83  seconds </span>
 <span class="co">#&gt; - Run  2  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  4.11  seconds. Est. time remaining:  87.48  seconds </span>
+<span class="co">#&gt; --- Used  3.16  seconds. Est. time remaining:  62  seconds </span>
 <span class="co">#&gt; - Run  3  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  4.67  seconds. Est. time remaining:  81.52  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  2.83  seconds. Est. time remaining:  55.06  seconds </span>
 <span class="co">#&gt; - Run  4  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  4.63  seconds. Est. time remaining:  76.08  seconds </span>
+<span class="co">#&gt; --- Used  2.84  seconds. Est. time remaining:  50.22  seconds </span>
 <span class="co">#&gt; - Run  5  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  4.49  seconds. Est. time remaining:  70.53  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  2.98  seconds. Est. time remaining:  46.6  seconds </span>
 <span class="co">#&gt; - Run  6  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  4.27  seconds. Est. time remaining:  64.83  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  2.75  seconds. Est. time remaining:  42.67  seconds </span>
 <span class="co">#&gt; - Run  7  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  4.36  seconds. Est. time remaining:  59.69  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  2.97  seconds. Est. time remaining:  39.48  seconds </span>
 <span class="co">#&gt; - Run  8  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  3.76  seconds. Est. time remaining:  53.85  seconds </span>
+<span class="co">#&gt; --- Used  3  seconds. Est. time remaining:  36.38  seconds </span>
 <span class="co">#&gt; - Run  9  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  4.41  seconds. Est. time remaining:  49.26  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  2.85  seconds. Est. time remaining:  33.13  seconds </span>
 <span class="co">#&gt; - Run  10  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  3.87  seconds. Est. time remaining:  44.17  seconds </span>
+<span class="co">#&gt; --- Used  3.47  seconds. Est. time remaining:  30.58  seconds </span>
 <span class="co">#&gt; - Run  11  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  4.29  seconds. Est. time remaining:  39.65  seconds </span>
+<span class="co">#&gt; --- Used  3.48  seconds. Est. time remaining:  27.87  seconds </span>
 <span class="co">#&gt; - Run  12  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  3.89  seconds. Est. time remaining:  34.9  seconds </span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  2.38  seconds. Est. time remaining:  24.3  seconds </span>
 <span class="co">#&gt; - Run  13  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  4.45  seconds. Est. time remaining:  30.59  seconds </span>
+<span class="co">#&gt; --- Used  2.6  seconds. Est. time remaining:  21.02  seconds </span>
 <span class="co">#&gt; - Run  14  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  3.78  seconds. Est. time remaining:  25.97  seconds </span>
+<span class="co">#&gt; --- Used  2.7  seconds. Est. time remaining:  17.89  seconds </span>
 <span class="co">#&gt; - Run  15  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  4.93  seconds. Est. time remaining:  21.84  seconds </span>
+<span class="co">#&gt; --- Used  2.6  seconds. Est. time remaining:  14.78  seconds </span>
 <span class="co">#&gt; - Run  16  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  4.75  seconds. Est. time remaining:  17.57  seconds </span>
+<span class="co">#&gt; --- Used  2.62  seconds. Est. time remaining:  11.74  seconds </span>
 <span class="co">#&gt; - Run  17  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  3.47  seconds. Est. time remaining:  13.01  seconds </span>
+<span class="co">#&gt; --- Used  2.77  seconds. Est. time remaining:  8.78  seconds </span>
 <span class="co">#&gt; - Run  18  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  3.13  seconds. Est. time remaining:  8.54  seconds </span>
+<span class="co">#&gt; --- Used  2.96  seconds. Est. time remaining:  5.85  seconds </span>
 <span class="co">#&gt; - Run  19  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  3.28  seconds. Est. time remaining:  4.22  seconds </span>
+<span class="co">#&gt; --- Used  2.95  seconds. Est. time remaining:  2.93  seconds </span>
 <span class="co">#&gt; - Run  20  of  20</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; --- Used  3.09  seconds. Est. time remaining:  0  seconds</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; --- Used  2.58  seconds. Est. time remaining:  0  seconds</span>
 
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.simple</span><span class="op">)</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/robustness-1.png" width="100%" style="display: block; margin: auto;"></p>
@@ -557,8 +550,9 @@ pre.plot {
 <span class="co">#&gt; Calculating  LMM  coefficients...</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; Finished calculating regression coefficients!</span>
+<span class="co">#&gt; Calculating predictions from regression models...</span>
+<span class="co">#&gt; Finished calculating predictions from regression models!</span>
 <span class="co">#&gt; Calculating effect matrix</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod2</span><span class="op">)</span></code></pre></div>
@@ -574,32 +568,32 @@ pre.plot {
 <span class="co">#&gt; Formula: object$formula</span>
 <span class="co">#&gt;    Data: subset(object$df, variable == i)</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; REML criterion at convergence: 2718.7</span>
+<span class="co">#&gt; REML criterion at convergence: 2710</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Scaled residuals: </span>
 <span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
-<span class="co">#&gt; -6.3662 -0.3358  0.0009  0.3360  5.7369 </span>
+<span class="co">#&gt; -5.5186 -0.3729 -0.0059  0.3560  5.3559 </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random effects:</span>
-<span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span>
-<span class="co">#&gt;  partid   (Intercept) 0.000    0.0000  </span>
-<span class="co">#&gt;  Residual             0.178    0.4219  </span>
+<span class="co">#&gt;  Groups   Name        Variance  Std.Dev.</span>
+<span class="co">#&gt;  partid   (Intercept) 0.0002288 0.01512 </span>
+<span class="co">#&gt;  Residual             0.1771179 0.42085 </span>
 <span class="co">#&gt; Number of obs: 2400, groups:  partid, 600</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Fixed effects:</span>
 <span class="co">#&gt;                        Estimate Std. Error         df t value Pr(&gt;|t|)    </span>
-<span class="co">#&gt; (Intercept)          -2.492e-01  3.119e-02  2.388e+03  -7.992 2.05e-15 ***</span>
-<span class="co">#&gt; time2                 2.677e-02  4.411e-02  2.388e+03   0.607    0.544    </span>
-<span class="co">#&gt; time3                 1.557e-02  4.411e-02  2.388e+03   0.353    0.724    </span>
-<span class="co">#&gt; time4                -1.117e-03  4.411e-02  2.388e+03  -0.025    0.980    </span>
-<span class="co">#&gt; time1:groupChocolate -1.596e-03  4.370e-02  2.388e+03  -0.037    0.971    </span>
-<span class="co">#&gt; time2:groupChocolate  7.936e-01  4.370e-02  2.388e+03  18.162  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time3:groupChocolate  1.673e+00  4.370e-02  2.388e+03  38.291  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time4:groupChocolate  2.562e+00  4.370e-02  2.388e+03  58.630  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time1:groupSalad     -6.388e-03  4.191e-02  2.388e+03  -0.152    0.879    </span>
-<span class="co">#&gt; time2:groupSalad     -4.578e-01  4.191e-02  2.388e+03 -10.923  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time3:groupSalad     -5.797e-01  4.191e-02  2.388e+03 -13.831  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time4:groupSalad     -6.377e-01  4.191e-02  2.388e+03 -15.214  &lt; 2e-16 ***</span>
+<span class="co">#&gt; (Intercept)            -0.29565    0.02948 2387.98808 -10.027   &lt;2e-16 ***</span>
+<span class="co">#&gt; time2                   0.02019    0.04167 1791.00015   0.485    0.628    </span>
+<span class="co">#&gt; time3                  -0.02752    0.04167 1791.00014  -0.660    0.509    </span>
+<span class="co">#&gt; time4                   0.01557    0.04167 1791.00014   0.374    0.709    </span>
+<span class="co">#&gt; time1:groupChocolate   -0.01043    0.04165 2387.98808  -0.251    0.802    </span>
+<span class="co">#&gt; time2:groupChocolate    0.78714    0.04165 2387.98808  18.900   &lt;2e-16 ***</span>
+<span class="co">#&gt; time3:groupChocolate    1.67418    0.04165 2387.98808  40.200   &lt;2e-16 ***</span>
+<span class="co">#&gt; time4:groupChocolate    2.52309    0.04165 2387.98808  60.583   &lt;2e-16 ***</span>
+<span class="co">#&gt; time1:groupSalad       -0.01060    0.04240 2387.98808  -0.250    0.803    </span>
+<span class="co">#&gt; time2:groupSalad       -0.43825    0.04240 2387.98808 -10.336   &lt;2e-16 ***</span>
+<span class="co">#&gt; time3:groupSalad       -0.54292    0.04240 2387.98808 -12.804   &lt;2e-16 ***</span>
+<span class="co">#&gt; time4:groupSalad       -0.65771    0.04240 2387.98808 -15.512   &lt;2e-16 ***</span>
 <span class="co">#&gt; ---</span>
 <span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span>
 <span class="co">#&gt; </span>
@@ -608,14 +602,14 @@ pre.plot {
 <span class="co">#&gt; time2       -0.707                                                        </span>
 <span class="co">#&gt; time3       -0.707  0.500                                                 </span>
 <span class="co">#&gt; time4       -0.707  0.500  0.500                                          </span>
-<span class="co">#&gt; tm1:grpChcl -0.714  0.505  0.505  0.505                                   </span>
-<span class="co">#&gt; tm2:grpChcl  0.000 -0.505  0.000  0.000  0.000                            </span>
-<span class="co">#&gt; tm3:grpChcl  0.000  0.000 -0.505  0.000  0.000  0.000                     </span>
-<span class="co">#&gt; tm4:grpChcl  0.000  0.000  0.000 -0.505  0.000  0.000  0.000              </span>
-<span class="co">#&gt; tim1:grpSld -0.744  0.526  0.526  0.526  0.531  0.000  0.000  0.000       </span>
-<span class="co">#&gt; tim2:grpSld  0.000 -0.526  0.000  0.000  0.000  0.531  0.000  0.000  0.000</span>
-<span class="co">#&gt; tim3:grpSld  0.000  0.000 -0.526  0.000  0.000  0.000  0.531  0.000  0.000</span>
-<span class="co">#&gt; tim4:grpSld  0.000  0.000  0.000 -0.526  0.000  0.000  0.000  0.531  0.000</span>
+<span class="co">#&gt; tm1:grpChcl -0.708  0.500  0.500  0.500                                   </span>
+<span class="co">#&gt; tm2:grpChcl -0.001 -0.500  0.000  0.000  0.001                            </span>
+<span class="co">#&gt; tm3:grpChcl -0.001  0.000 -0.500  0.000  0.001  0.001                     </span>
+<span class="co">#&gt; tm4:grpChcl -0.001  0.000  0.000 -0.500  0.001  0.001  0.001              </span>
+<span class="co">#&gt; tim1:grpSld -0.695  0.491  0.491  0.491  0.492  0.001  0.001  0.001       </span>
+<span class="co">#&gt; tim2:grpSld -0.001 -0.491  0.000  0.000  0.001  0.492  0.001  0.001  0.001</span>
+<span class="co">#&gt; tim3:grpSld -0.001  0.000 -0.491  0.000  0.001  0.001  0.492  0.001  0.001</span>
+<span class="co">#&gt; tim4:grpSld -0.001  0.000  0.000 -0.491  0.001  0.001  0.001  0.492  0.001</span>
 <span class="co">#&gt;             tm2:gS tm3:gS</span>
 <span class="co">#&gt; time2                    </span>
 <span class="co">#&gt; time3                    </span>
@@ -626,10 +620,8 @@ pre.plot {
 <span class="co">#&gt; tm4:grpChcl              </span>
 <span class="co">#&gt; tim1:grpSld              </span>
 <span class="co">#&gt; tim2:grpSld              </span>
-<span class="co">#&gt; tim3:grpSld  0.000       </span>
-<span class="co">#&gt; tim4:grpSld  0.000  0.000</span>
-<span class="co">#&gt; convergence code: 0</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span></code></pre></div>
+<span class="co">#&gt; tim3:grpSld  0.001       </span>
+<span class="co">#&gt; tim4:grpSld  0.001  0.001</span></code></pre></div>
 <p>And you may notice that there is an interaction term between group and the first time point. To remove it, we have to set <code>forceEqualBaseline = TRUE</code>:</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">model.formula</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">partid</span><span class="op">)</span>
@@ -637,21 +629,21 @@ pre.plot {
 <span class="co">#&gt; Will use linear mixed models!</span>
 <span class="co">#&gt; Scaling data...</span>
 <span class="co">#&gt; Calculating  LMM  coefficients...</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
+<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
+<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
+<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
+<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; Finished calculating regression coefficients!</span>
+<span class="co">#&gt; Calculating predictions from regression models...</span>
+<span class="co">#&gt; Finished calculating predictions from regression models!</span>
 <span class="co">#&gt; Calculating effect matrix</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod2b</span><span class="op">)</span></code></pre></div>
@@ -672,8 +664,9 @@ pre.plot {
 <span class="co">#&gt; Calculating  LMM  coefficients...</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; Finished calculating regression coefficients!</span>
+<span class="co">#&gt; Calculating predictions from regression models...</span>
+<span class="co">#&gt; Finished calculating predictions from regression models!</span>
 <span class="co">#&gt; Calculating effect matrix</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod3</span><span class="op">)</span></code></pre></div>
@@ -694,8 +687,9 @@ pre.plot {
 <span class="co">#&gt; Calculating  LMM  coefficients...</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; Finished calculating regression coefficients!</span>
+<span class="co">#&gt; Calculating predictions from regression models...</span>
+<span class="co">#&gt; Finished calculating predictions from regression models!</span>
 <span class="co">#&gt; Calculating effect matrix</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mods</span><span class="op">)</span></code></pre></div>
@@ -718,14 +712,13 @@ pre.plot {
 <span class="co">#&gt; Will use linear mixed models!</span>
 <span class="co">#&gt; Scaling data...</span>
 <span class="co">#&gt; Calculating  LMM  coefficients...</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; Warning in checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, :</span>
-<span class="co">#&gt; Model failed to converge with max|grad| = 27.187 (tol = 0.002, component 1)</span>
+<span class="co">#&gt; Model failed to converge with max|grad| = 1.68493 (tol = 0.002, component 1)</span>
 <span class="co">#&gt; Warning in checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, : Model is nearly unidentifiable: very large eigenvalue</span>
 <span class="co">#&gt;  - Rescale variables?</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span>
 <span class="co">#&gt; Finished calculating regression coefficients!</span>
+<span class="co">#&gt; Calculating predictions from regression models...</span>
+<span class="co">#&gt; Finished calculating predictions from regression models!</span>
 <span class="co">#&gt; Calculating effect matrix</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">res.mod4</span><span class="op">)</span></code></pre></div>
@@ -739,11 +732,7 @@ pre.plot {
   <span class="fu">ggpubr</span><span class="fu">::</span><span class="va"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span>,
   <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="../reference/plotPred.html">plotPred</a></span><span class="op">(</span><span class="va">res.mod4</span>, variable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BMI"</span>, <span class="st">"Happiness"</span>, <span class="st">"Anger"</span>, <span class="st">"HDL"</span><span class="op">)</span><span class="op">)</span>, 
                       common.legend <span class="op">=</span> <span class="cn">TRUE</span>, legend <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
-  <span class="op">)</span>
-<span class="co">#&gt; - Using mean of  age :  12.54089 </span>
-<span class="co">#&gt; - Using mean of  age :  12.54089 </span>
-<span class="co">#&gt; - Using mean of  age :  12.54089 </span>
-<span class="co">#&gt; - Using mean of  age :  12.54089</span></code></pre></div>
+  <span class="op">)</span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/ALASCA_model_4-3.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <p>We can see that age is no longer part of the output, and HDL (which was correlated with age) has no longer a strong loading. To see how age is affecting out measurements, we can use <code><a href="../reference/plotCovar.html">plotCovar()</a></code> like this</p>
@@ -767,32 +756,32 @@ pre.plot {
 <span class="co">#&gt; Formula: object$formula</span>
 <span class="co">#&gt;    Data: subset(object$df, variable == i)</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; REML criterion at convergence: 2718.7</span>
+<span class="co">#&gt; REML criterion at convergence: 2710</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Scaled residuals: </span>
 <span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
-<span class="co">#&gt; -6.3662 -0.3358  0.0009  0.3360  5.7369 </span>
+<span class="co">#&gt; -5.5186 -0.3729 -0.0059  0.3560  5.3559 </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random effects:</span>
-<span class="co">#&gt;  Groups   Name        Variance  Std.Dev. </span>
-<span class="co">#&gt;  partid   (Intercept) 2.443e-16 1.563e-08</span>
-<span class="co">#&gt;  Residual             1.780e-01 4.219e-01</span>
+<span class="co">#&gt;  Groups   Name        Variance  Std.Dev.</span>
+<span class="co">#&gt;  partid   (Intercept) 0.0002288 0.01512 </span>
+<span class="co">#&gt;  Residual             0.1771179 0.42085 </span>
 <span class="co">#&gt; Number of obs: 2400, groups:  partid, 600</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Fixed effects:</span>
 <span class="co">#&gt;                        Estimate Std. Error         df t value Pr(&gt;|t|)    </span>
-<span class="co">#&gt; (Intercept)          -2.492e-01  3.119e-02  2.388e+03  -7.992 2.05e-15 ***</span>
-<span class="co">#&gt; time2                 2.677e-02  4.411e-02  2.388e+03   0.607    0.544    </span>
-<span class="co">#&gt; time3                 1.557e-02  4.411e-02  2.388e+03   0.353    0.724    </span>
-<span class="co">#&gt; time4                -1.117e-03  4.411e-02  2.388e+03  -0.025    0.980    </span>
-<span class="co">#&gt; groupChocolate       -1.596e-03  4.370e-02  2.388e+03  -0.037    0.971    </span>
-<span class="co">#&gt; groupSalad           -6.388e-03  4.191e-02  2.388e+03  -0.152    0.879    </span>
-<span class="co">#&gt; time2:groupChocolate  7.952e-01  6.180e-02  2.388e+03  12.868  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time3:groupChocolate  1.675e+00  6.180e-02  2.388e+03  27.102  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time4:groupChocolate  2.564e+00  6.180e-02  2.388e+03  41.484  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time2:groupSalad     -4.514e-01  5.928e-02  2.388e+03  -7.616 3.75e-14 ***</span>
-<span class="co">#&gt; time3:groupSalad     -5.733e-01  5.928e-02  2.388e+03  -9.672  &lt; 2e-16 ***</span>
-<span class="co">#&gt; time4:groupSalad     -6.313e-01  5.928e-02  2.388e+03 -10.650  &lt; 2e-16 ***</span>
+<span class="co">#&gt; (Intercept)            -0.29565    0.02948 2387.98808 -10.027  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time2                   0.02019    0.04167 1790.99945   0.485    0.628    </span>
+<span class="co">#&gt; time3                  -0.02752    0.04167 1790.99946  -0.660    0.509    </span>
+<span class="co">#&gt; time4                   0.01557    0.04167 1790.99945   0.374    0.709    </span>
+<span class="co">#&gt; groupChocolate         -0.01043    0.04165 2387.98808  -0.251    0.802    </span>
+<span class="co">#&gt; groupSalad             -0.01060    0.04240 2387.98808  -0.250    0.803    </span>
+<span class="co">#&gt; time2:groupChocolate    0.79758    0.05886 1790.99948  13.551  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time3:groupChocolate    1.68461    0.05886 1790.99949  28.621  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time4:groupChocolate    2.53352    0.05886 1790.99947  43.044  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time2:groupSalad       -0.42765    0.05993 1790.99949  -7.136 1.39e-12 ***</span>
+<span class="co">#&gt; time3:groupSalad       -0.53232    0.05993 1790.99949  -8.883  &lt; 2e-16 ***</span>
+<span class="co">#&gt; time4:groupSalad       -0.64711    0.05993 1790.99949 -10.799  &lt; 2e-16 ***</span>
 <span class="co">#&gt; ---</span>
 <span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span>
 <span class="co">#&gt; </span>
@@ -801,14 +790,14 @@ pre.plot {
 <span class="co">#&gt; time2       -0.707                                                        </span>
 <span class="co">#&gt; time3       -0.707  0.500                                                 </span>
 <span class="co">#&gt; time4       -0.707  0.500  0.500                                          </span>
-<span class="co">#&gt; groupChoclt -0.714  0.505  0.505  0.505                                   </span>
-<span class="co">#&gt; groupSalad  -0.744  0.526  0.526  0.526  0.531                            </span>
-<span class="co">#&gt; tm2:grpChcl  0.505 -0.714 -0.357 -0.357 -0.707 -0.376                     </span>
-<span class="co">#&gt; tm3:grpChcl  0.505 -0.357 -0.714 -0.357 -0.707 -0.376  0.500              </span>
-<span class="co">#&gt; tm4:grpChcl  0.505 -0.357 -0.357 -0.714 -0.707 -0.376  0.500  0.500       </span>
-<span class="co">#&gt; tim2:grpSld  0.526 -0.744 -0.372 -0.372 -0.376 -0.707  0.531  0.266  0.266</span>
-<span class="co">#&gt; tim3:grpSld  0.526 -0.372 -0.744 -0.372 -0.376 -0.707  0.266  0.531  0.266</span>
-<span class="co">#&gt; tim4:grpSld  0.526 -0.372 -0.372 -0.744 -0.376 -0.707  0.266  0.266  0.531</span>
+<span class="co">#&gt; groupChoclt -0.708  0.500  0.500  0.500                                   </span>
+<span class="co">#&gt; groupSalad  -0.695  0.491  0.491  0.491  0.492                            </span>
+<span class="co">#&gt; tm2:grpChcl  0.500 -0.708 -0.354 -0.354 -0.707 -0.348                     </span>
+<span class="co">#&gt; tm3:grpChcl  0.500 -0.354 -0.708 -0.354 -0.707 -0.348  0.500              </span>
+<span class="co">#&gt; tm4:grpChcl  0.500 -0.354 -0.354 -0.708 -0.707 -0.348  0.500  0.500       </span>
+<span class="co">#&gt; tim2:grpSld  0.491 -0.695 -0.348 -0.348 -0.348 -0.707  0.492  0.246  0.246</span>
+<span class="co">#&gt; tim3:grpSld  0.491 -0.348 -0.695 -0.348 -0.348 -0.707  0.246  0.492  0.246</span>
+<span class="co">#&gt; tim4:grpSld  0.491 -0.348 -0.348 -0.695 -0.348 -0.707  0.246  0.246  0.492</span>
 <span class="co">#&gt;             tm2:gS tm3:gS</span>
 <span class="co">#&gt; time2                    </span>
 <span class="co">#&gt; time3                    </span>
@@ -820,9 +809,7 @@ pre.plot {
 <span class="co">#&gt; tm4:grpChcl              </span>
 <span class="co">#&gt; tim2:grpSld              </span>
 <span class="co">#&gt; tim3:grpSld  0.500       </span>
-<span class="co">#&gt; tim4:grpSld  0.500  0.500</span>
-<span class="co">#&gt; convergence code: 0</span>
-<span class="co">#&gt; boundary (singular) fit: see ?isSingular</span></code></pre></div>
+<span class="co">#&gt; tim4:grpSld  0.500  0.500</span></code></pre></div>
 <p>We can also assess the residuals,</p>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html">density</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">res.simple</span>, variable <span class="op">=</span> <span class="st">"BMI"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, main <span class="op">=</span> <span class="st">"BMI"</span><span class="op">)</span></code></pre></div>
@@ -842,13 +829,13 @@ pre.plot {
 <p>As you probably noticed above, you can use the <code><a href="https://rdrr.io/r/base/summary.html">summary()</a></code> function to view the p values from your LMMs, but a shortcut is</p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">res.simple</span><span class="op">$</span><span class="va">RegressionCoefficients</span><span class="op">)</span>
-<span class="co">#&gt;       estimate       pvalue covar       variable  comp</span>
-<span class="co">#&gt; 1 -0.249246025 2.048623e-15   BMI    (Intercept)  TIME</span>
-<span class="co">#&gt; 2  0.026765108 5.440147e-01   BMI          time2  TIME</span>
-<span class="co">#&gt; 3  0.015573044 7.240561e-01   BMI          time3  TIME</span>
-<span class="co">#&gt; 4 -0.001116568 9.798052e-01   BMI          time4  TIME</span>
-<span class="co">#&gt; 5 -0.001596415 9.708602e-01   BMI groupChocolate GROUP</span>
-<span class="co">#&gt; 6 -0.006388313 8.788726e-01   BMI     groupSalad GROUP</span></code></pre></div>
+<span class="co">#&gt;      estimate       pvalue covar       variable  comp</span>
+<span class="co">#&gt; 1 -0.29565102 3.305622e-23   BMI    (Intercept)  TIME</span>
+<span class="co">#&gt; 2  0.02019248 6.280391e-01   BMI          time2  TIME</span>
+<span class="co">#&gt; 3 -0.02751905 5.090868e-01   BMI          time3  TIME</span>
+<span class="co">#&gt; 4  0.01557330 7.086549e-01   BMI          time4  TIME</span>
+<span class="co">#&gt; 5 -0.01043301 8.022129e-01   BMI groupChocolate GROUP</span>
+<span class="co">#&gt; 6 -0.01060038 8.026075e-01   BMI     groupSalad GROUP</span></code></pre></div>
 </div>
 </div>
 <div id="references" class="section level2 unnumbered">

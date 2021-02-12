@@ -101,6 +101,9 @@
       <a href="../articles/metabolomics.html">Metabolomics</a>
     </li>
     <li>
+      <a href="../articles/personality.html">Personality and Aging</a>
+    </li>
+    <li>
       <a href="../articles/pregnancy.html">Early Preeclampsia</a>
     </li>
   </ul>
@@ -130,7 +133,7 @@
     <p>This function performs leave-one-out robustness testing of your ALASCA model. If you didn't specify the number of runs <code>nValRuns</code> when initializing the model (see <code><a href='ALASCA.html'>ALASCA</a></code>), you can do it by running for example <code>model$nValRuns &lt;- 100</code> prior to calling <code>validate</code>. Your dataset is divided into <code>nValFold</code> partitions, keeping group proportions, and one of these are left out. <code>nValFold</code> is set the same way as  <code>nValRuns</code>.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>validate</span><span class='op'>(</span><span class='va'>object</span>, participantColumn <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>validate</span><span class='op'>(</span><span class='va'>object</span>, participantColumn <span class='op'>=</span> <span class='cn'>FALSE</span>, validateRegression <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -143,6 +146,10 @@
       <th>participantColumn</th>
       <td><p>The name of the column containing participant identifier. Needed if not set during initialization of the model.</p></td>
     </tr>
+    <tr>
+      <th>validateRegression</th>
+      <td><p>Whether to validate regression models</p></td>
+    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
@@ -153,8 +160,7 @@
     <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/load.html'>load</a></span><span class='op'>(</span><span class='st'>"PE.Rdata"</span><span class='op'>)</span>
 <span class='va'>model</span><span class='op'>$</span><span class='va'>nValRuns</span> <span class='op'>&lt;-</span> <span class='fl'>10</span>
 <span class='va'>model.val</span> <span class='op'>&lt;-</span> <span class='fu'>validate</span><span class='op'>(</span><span class='va'>model</span>, participantColumn <span class='op'>=</span> <span class='st'>"ID"</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; Running validation...
-#&gt; - Run  1  of  10 </div><div class='output co'>#&gt; <span class='error'>Error in if (!is.na(object$method)) {    if (object$method == "LMM") {        if (!any(grepl("\\|", formulaTerms))) {            stop("The model must contain at least one random effect. Sure you wanted linear mixed models?")        }    }    else if (object$method == "LM") {        if (any(grepl("\\|", formulaTerms))) {            stop("The model contains at least one random effect. Sure you not wanted linear mixed models instead?")        }    }    else {        stop("You entered an undefined method. Use `LMM` or `LM`!")    }} else {    if (any(grepl("\\|", formulaTerms))) {        object$method &lt;- "LMM"        cat("Will use linear mixed models!\n")    }    else {        object$method &lt;- "LM"        cat("Will use linear models!\n")    }}: argument is of length zero</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='error'>Error in if (object$method == "LMM") {    if (participantColumn == FALSE) {        if (object$participantColumn == FALSE) {            stop("You need to specify the column containing participant id in `participantColumn`")        }    }    else {        object$participantColumn &lt;- participantColumn    }}: argument is of length zero</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

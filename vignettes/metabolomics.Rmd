@@ -33,6 +33,34 @@ df <- subset(df, !is.na(df$ID))
 
 # Metabolomics
 
+<script src="js/hideOutput.js"></script>
+<style>
+.showopt {
+  background-color: #004c93;
+  color: #FFFFFF; 
+  width: 150px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle !important;
+  float: left;
+  font-family: sans-serif;
+  border-radius: 8px;
+}
+
+.showopt:hover {
+    background-color: #dfe4f2;
+    color: #004c93;
+}
+
+.showopttext::before{
+  content: "Show/Hide Source"
+}
+
+pre.plot {
+  background-color: white !important;
+}
+</style>
+
 ```{r setup}
 library("ggplot2")
 library("ggpubr")
@@ -43,6 +71,7 @@ This time we will look at a small metabolomics dataset by @eucedaEvaluationMetab
 
 Let us start by having a quick look at it:
 
+<div class="fold s">
 ```{r}
 do.call(
   ggarrange,
@@ -50,9 +79,11 @@ do.call(
                       common.legend = TRUE, legend = "bottom")
   )
 ```
+</div>
 
 So there is three time points, two groups and 16 variables. @madssenRepeatedMeasuresASCA2020a state that <blockquote>All metabolite responses were log-transformed before analysis, and the effect matrix was mean-centered before PCA.</blockquote> But our data is already log-transformed, and centering is handled by `ALASCA()`. However, as instructed by the authors, we need to scale each metabolite with the standard deviation at baseline. So let us set the desired reference groups and normalize:
 
+<div class="fold s">
 ```{r}
 df$group <- relevel(df$group, ref = "Chemotherapy only")
 df$time <- relevel(df$time, ref = "TP1")
@@ -65,6 +96,7 @@ scaleFun <- function(df){
 }
 
 ```
+</div>
 
 Without any fuss, let us see what ALASCA makes out of it using the same model as @madssenRepeatedMeasuresASCA2020a. Note that we have to `forceEqualBaseline` to remove the interaction term for TP1 * treatment.
 
@@ -104,8 +136,8 @@ As we can see, it looks indeed as a very good match with the original findings.
 Let us validate our model (outside knitr, it uses about 2 seconds per run),
 
 ```{r, message=FALSE}
-mod$nValRuns = 50
-mod.val <- validate(mod, participantColumn = "ID")
+mod$nValRuns = 10
+mod.val <- validate(mod, participantColumn = "ID", validateRegression = TRUE)
 ```
 
 The result:
@@ -118,14 +150,15 @@ plot(mod.val, component = 2)
 Or if want to see the validation models instead of errorbars:
 
 ```{r}
-plotVal(mod.val)
-plotVal(mod.val, component = 2)
+#plotVal(mod.val)
+#plotVal(mod.val, component = 2)
 ```
 
 ## Comparison of result
 
 To better visualize the agreement between the ALASCA package and the published code by @madssenRepeatedMeasuresASCA2020a, I've run both and collected the loadings and scores for P1 and PC2. Although there are some variation in the robustness estimates, the two implementations seem to match reasonable well.
 
+<div class="fold s">
 ```{r, echo = FALSE}
 df <- read.csv(file = "Madssen_Jarmund_loadings.csv", header = TRUE, sep = ";")
 df$value[df$model == "Jarmund" & df$ï.. == 1] <- -df$value[df$model == "Jarmund" & df$ï.. == 1]
@@ -145,11 +178,13 @@ ggarrange(g3, g1, g4, g2,
           nrow = 2, ncol = 2,
           common.legend = TRUE)
 ```
+</div>
 
 ## Regression models
 
-Sometimes it may be difficult to interpret the ALASCA plots and you may wish to visualize the underlying regression models. The ALASCA package features two functions for that: `plotPred()` and `plotRegression()`. The first one only shows the predicted values from our main models, whereas the second is based on bootstrapping and also shows confidence intervals for the predictions. Using `plotPred()` is straight forward:
+Sometimes it may be difficult to interpret the ALASCA plots and you may wish to visualize the underlying regression models. The ALASCA package features a function for that: `plotPred()`:
 
+<div class="fold s">
 ```{r}
 do.call(
   ggpubr::ggarrange,
@@ -157,19 +192,6 @@ do.call(
                       common.legend = TRUE, legend = "bottom")
   )
 ```
-
-To use `plotRegression()` we first need to do the bootstrapping and then we can plot
-
-```{r}
-mod <- validateRegression(mod, variable = c("Glucose", "Glutathione"))
-head(mod$mod.pred)
-do.call(
-  ggpubr::ggarrange,
-  c(plotRegression(mod, variable = c("Glucose", "Glutathione")), 
-                      common.legend = TRUE, legend = "bottom")
-  )
-```
-
-Why do the outputs from `plotPred()` and `plotRegression()` differ? As mentioned above is `plotPred()` based on the fixed effects from the main models in your ALASCA model. In contrast, `plotRegression()` performs bootstrapping where new regression models are simulated from the bootstrapped data, including random effects. For each observation, we extract percentiles, and finally extract percentiles (2.5%, 50%, 97.5%) for each time and group. Note that `plotPred()` calculates predictions for the *mean* of additional covariates (other than time and group), whereas `plotRegression()` depends on the distribution in your study sample.
+</div>
 
 ## References

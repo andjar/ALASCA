@@ -340,7 +340,6 @@ plotParts <- function(object,
 #'
 #' @param object An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.
 #' @param variable List of variable names to print. If `NA`, return all (default).
-#' @param return_data Set to `TRUE` to return data instead of plot
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A list with ggplot2 objects.
 #' 
@@ -353,57 +352,32 @@ plotParts <- function(object,
 #'     common.legend = TRUE, legend = "bottom")
 #' )
 #' @export
-plotPred <- function(object, variable = NA, return_data = FALSE, myTheme = ggplot2::theme_bw()){
+plotPred <- function(object, variable = NA, myTheme = ggplot2::theme_bw()){
   if(any(is.na(variable))){
     variable <- unique(object$df$variable)
   }
-  if(!object$validateRegression){
-    gg <- lapply(variable, function(x){
-      xi <- which(x == names(object$regr.model))
-      model <- object$regr.model[[xi]]
-      newdata <- getNewdataForPrediction(object)
-      if(object$forceEqualBaseline){
-        newdata <- data.frame(
-          pred = lme4:::predict.merMod(model, re.form=NA),
-          time = object$partsWithVariable[[xi]]$time,
-          group = object$partsWithVariable[[xi]]$group
-        )
-        newdata <- aggregate(data = newdata, pred~time+group, FUN = "mean")
-      }else{
-        if(object$method == "LMM"){
-          newdata$pred <- lme4:::predict.merMod(model, newdata = newdata, re.form=NA)
-        }else if(object$method == "LM"){
-          newdata$pred <- predict(model, newdata = newdata)
-        }
-      }
-      if(return_data){
-        newdata
-      }else{
-        g <- ggplot2::ggplot(newdata, ggplot2::aes(x = time, y = pred, color = group, group = group)) +
-          ggplot2::geom_point() + ggplot2::geom_line() + myTheme + 
-          ggplot2::theme(legend.position = "bottom") +
-          ggplot2::labs(x = object$plot.xlabel, y = x)
-        g
-      }
+  if(object$validateRegression){
+    gg <- lapply(unique(variable), function(x){
+      g <- ggplot2::ggplot(subset(object$mod.pred, variable == x), ggplot2::aes(x = time, y = pred, color = group, group = group, ymin = low, ymax = high)) +
+        ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) + 
+        ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35)) + 
+        myTheme + 
+        ggplot2::theme(legend.position = "bottom") +
+        ggplot2::labs(x = object$plot.xlabel, y = x)
+      g
     })
-    names(gg) <- variable
   }else{
-    if(return_data){
-      gg <- subset(object$mod.pred, variable %in% variable)
-    }else{
-      gg <- lapply(unique(variable), function(x){
-        g <- ggplot2::ggplot(subset(object$mod.pred, variable == x), ggplot2::aes(x = time, y = pred, color = group, group = group, ymin = low, ymax = high)) +
-          ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) + 
-          ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35)) + 
-          myTheme + 
-          ggplot2::theme(legend.position = "bottom") +
-          ggplot2::labs(x = object$plot.xlabel, y = x)
-        g
-      })
-      names(gg) <- variable
-    }
+    gg <- lapply(unique(variable), function(x){
+      g <- ggplot2::ggplot(subset(object$mod.pred, variable == x), ggplot2::aes(x = time, y = pred, color = group, group = group)) +
+        ggplot2::geom_point() + 
+        ggplot2::geom_line() + 
+        myTheme + 
+        ggplot2::theme(legend.position = "bottom") +
+        ggplot2::labs(x = object$plot.xlabel, y = x)
+      g
+    })
   }
-  
+  names(gg) <- variable
   return(gg)
 }
 

@@ -20,6 +20,7 @@ ALASCA(
   doDebug = FALSE,
   nValFold = 7,
   nValRuns = 50,
+  validateRegression = FALSE,
   validationMethod = "loo",
   validationObject = NA,
   validationParticipants = NA
@@ -55,6 +56,8 @@ ALASCA(
 \item{nValFold}{Partitions when validating}
 
 \item{nValRuns}{number of validation runs}
+
+\item{validateRegression}{Whether to validate regression predictions or not (only if \code{validate} is \code{TRUE})}
 
 \item{validationMethod}{among  \code{loo} (leave-one-out, default)}
 

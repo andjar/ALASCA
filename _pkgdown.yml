@@ -27,7 +27,6 @@ reference:
   - plotCovar
   - plotParts
   - plotPred
-  - plotVal
 - title: "Diagnostics"
   desc: "Functions for checking statistical validity"
 - contents: 

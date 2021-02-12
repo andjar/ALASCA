@@ -6,6 +6,13 @@
 \usage{
 switchSign(value, perc, PCs)
 }
+\arguments{
+\item{value}{Point estimate}
+
+\item{perc}{Uncertainty}
+
+\item{PCs}{Components}
+}
 \value{
 An ALASCA object
 }

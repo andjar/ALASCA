@@ -196,7 +196,7 @@ Now that we have a data set, let us try the `ALASCA()` function! First we need t
 
 ```{r ALASCA_simple_model}
 model.formula <- value ~ time*group + (1|partid)
-res.simple <- ALASCA(df = df, formula = model.formula)
+res.simple <- ALASCA(df = df, formula = model.formula, validateRegression = TRUE)
 ```
 
 <div class="alert alert-info">

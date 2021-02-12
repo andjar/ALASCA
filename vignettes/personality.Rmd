@@ -25,6 +25,34 @@ knitr::opts_chunk$set(
 
 # Preparing the data
 
+<script src="js/hideOutput.js"></script>
+<style>
+.showopt {
+  background-color: #004c93;
+  color: #FFFFFF; 
+  width: 150px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle !important;
+  float: left;
+  font-family: sans-serif;
+  border-radius: 8px;
+}
+
+.showopt:hover {
+    background-color: #dfe4f2;
+    color: #004c93;
+}
+
+.showopttext::before{
+  content: "Show/Hide Source"
+}
+
+pre.plot {
+  background-color: white !important;
+}
+</style>
+
 ```{r setup}
 library("reshape2")
 library("ALASCA")
@@ -38,6 +66,7 @@ This is a demonstration of single measures data analyzed with `ALASCA()`, with p
 
 We will use the *Development of the Firstborn Personality Scale* data from the [Open-Source Psychometrics Project](https://openpsychometrics.org/_rawdata/). It is quite large, so we will restrict ourself to participants from Great Britain (to speed up things). Let us import and prepare the data:
 
+<div class="fold s">
 ```{r import_data}
 df <- read.csv(file = "personality.csv", header = TRUE, sep = ";")
 df$ID <- 1:nrow(df)
@@ -54,6 +83,7 @@ df$group <- ifelse(df$gender == 1, "Male", ifelse(df$gender == 2, "Female", NA))
 df <- subset(df, !is.na(group))
 head(df)
 ```
+</div>
 
 Note that the question text itself is kept in another variable for the time being,
 
@@ -69,7 +99,7 @@ Applying `ALASCA()` is quite straightforward. If we omit the random effect from 
 
 ```{r}
 model.formula <- value ~ time*group
-mod <- ALASCA(df, model.formula, validate = TRUE, participantColumn = "ID")
+mod <- ALASCA(df, model.formula, validate = TRUE, participantColumn = "ID", plot.xlabel = "Age")
 
 plot(mod)
 plot(mod, component = 2)

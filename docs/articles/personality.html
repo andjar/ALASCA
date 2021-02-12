@@ -84,7 +84,7 @@
       <h1 data-toc-skip>Personality and Aging</h1>
                         <h4 class="author">Anders H. Jarmund</h4>
             
-            <h4 class="date">2021-02-08</h4>
+            <h4 class="date">2021-02-12</h4>
       
       
       <div class="hidden name"><code>personality.Rmd</code></div>
@@ -96,6 +96,32 @@
 <div id="preparing-the-data" class="section level1">
 <h1 class="hasAnchor">
 <a href="#preparing-the-data" class="anchor"></a>Preparing the data</h1>
+<script src="js/hideOutput.js"></script><style>
+.showopt {
+  background-color: #004c93;
+  color: #FFFFFF; 
+  width: 150px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle !important;
+  float: left;
+  font-family: sans-serif;
+  border-radius: 8px;
+}
+
+.showopt:hover {
+    background-color: #dfe4f2;
+    color: #004c93;
+}
+
+.showopttext::before{
+  content: "Show/Hide Source"
+}
+
+pre.plot {
+  background-color: white !important;
+}
+</style>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/hadley/reshape">"reshape2"</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st">"ALASCA"</span><span class="op">)</span></code></pre></div>
@@ -109,6 +135,7 @@
 </li>
 </ul>
 <p>We will use the <em>Development of the Firstborn Personality Scale</em> data from the <a href="https://openpsychometrics.org/_rawdata/">Open-Source Psychometrics Project</a>. It is quite large, so we will restrict ourself to participants from Great Britain (to speed up things). Let us import and prepare the data:</p>
+<div class="fold s">
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"personality.csv"</span>, header <span class="op">=</span> <span class="cn">TRUE</span>, sep <span class="op">=</span> <span class="st">";"</span><span class="op">)</span>
 <span class="va">df</span><span class="op">$</span><span class="va">ID</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span>
@@ -145,6 +172,7 @@
 <span class="co">#&gt; 147       Q1     4 20-40 Female</span>
 <span class="co">#&gt; 157       Q1     1 40-60 Female</span>
 <span class="co">#&gt; 208       Q1     5 20-40 Female</span></code></pre></div>
+</div>
 <p>Note that the question text itself is kept in another variable for the time being,</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df.q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"personality_q.csv"</span>, header <span class="op">=</span> <span class="cn">TRUE</span>, sep <span class="op">=</span> <span class="st">";"</span><span class="op">)</span>
@@ -164,114 +192,116 @@
 <p>Applying <code><a href="../reference/ALASCA.html">ALASCA()</a></code> is quite straightforward. If we omit the random effect from our regression model, ALASCA will automatically select linear models.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">model.formula</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span>
-<span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">model.formula</span>, validate <span class="op">=</span> <span class="cn">TRUE</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span><span class="op">)</span>
+<span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">model.formula</span>, validate <span class="op">=</span> <span class="cn">TRUE</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span>, plot.xlabel <span class="op">=</span> <span class="st">"Age"</span><span class="op">)</span>
 <span class="co">#&gt; Will use linear models!</span>
 <span class="co">#&gt; Scaling data...</span>
 <span class="co">#&gt; Calculating  LM  coefficients...</span>
 <span class="co">#&gt; Finished calculating regression coefficients!</span>
+<span class="co">#&gt; Calculating predictions from regression models...</span>
+<span class="co">#&gt; Finished calculating predictions from regression models!</span>
 <span class="co">#&gt; Calculating effect matrix</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span>
 <span class="co">#&gt; Running validation...</span>
 <span class="co">#&gt; - Run  1  of  50 </span>
-<span class="co">#&gt; --- Used  1.81  seconds. Est. time remaining:  88.88  seconds </span>
+<span class="co">#&gt; --- Used  2.27  seconds. Est. time remaining:  111.04  seconds </span>
 <span class="co">#&gt; - Run  2  of  50 </span>
-<span class="co">#&gt; --- Used  2.31  seconds. Est. time remaining:  98.86  seconds </span>
+<span class="co">#&gt; --- Used  2.39  seconds. Est. time remaining:  111.77  seconds </span>
 <span class="co">#&gt; - Run  3  of  50 </span>
-<span class="co">#&gt; --- Used  1.74  seconds. Est. time remaining:  91.72  seconds </span>
+<span class="co">#&gt; --- Used  2.31  seconds. Est. time remaining:  109.19  seconds </span>
 <span class="co">#&gt; - Run  4  of  50 </span>
-<span class="co">#&gt; --- Used  1.75  seconds. Est. time remaining:  87.41  seconds </span>
+<span class="co">#&gt; --- Used  2.26  seconds. Est. time remaining:  106.13  seconds </span>
 <span class="co">#&gt; - Run  5  of  50 </span>
-<span class="co">#&gt; --- Used  1.84  seconds. Est. time remaining:  84.99  seconds </span>
+<span class="co">#&gt; --- Used  2.3  seconds. Est. time remaining:  103.75  seconds </span>
 <span class="co">#&gt; - Run  6  of  50 </span>
-<span class="co">#&gt; --- Used  1.97  seconds. Est. time remaining:  83.7  seconds </span>
+<span class="co">#&gt; --- Used  2.36  seconds. Est. time remaining:  101.82  seconds </span>
 <span class="co">#&gt; - Run  7  of  50 </span>
-<span class="co">#&gt; --- Used  1.95  seconds. Est. time remaining:  82.09  seconds </span>
+<span class="co">#&gt; --- Used  2.4  seconds. Est. time remaining:  100.05  seconds </span>
 <span class="co">#&gt; - Run  8  of  50 </span>
-<span class="co">#&gt; --- Used  2.08  seconds. Est. time remaining:  81.1  seconds </span>
+<span class="co">#&gt; --- Used  2.28  seconds. Est. time remaining:  97.49  seconds </span>
 <span class="co">#&gt; - Run  9  of  50 </span>
-<span class="co">#&gt; --- Used  2.08  seconds. Est. time remaining:  79.85  seconds </span>
+<span class="co">#&gt; --- Used  2.41  seconds. Est. time remaining:  95.56  seconds </span>
 <span class="co">#&gt; - Run  10  of  50 </span>
-<span class="co">#&gt; --- Used  2.22  seconds. Est. time remaining:  78.99  seconds </span>
+<span class="co">#&gt; --- Used  2.26  seconds. Est. time remaining:  92.96  seconds </span>
 <span class="co">#&gt; - Run  11  of  50 </span>
-<span class="co">#&gt; --- Used  2.16  seconds. Est. time remaining:  77.68  seconds </span>
+<span class="co">#&gt; --- Used  2.34  seconds. Est. time remaining:  90.7  seconds </span>
 <span class="co">#&gt; - Run  12  of  50 </span>
-<span class="co">#&gt; --- Used  2.25  seconds. Est. time remaining:  76.52  seconds </span>
+<span class="co">#&gt; --- Used  2.23  seconds. Est. time remaining:  88.07  seconds </span>
 <span class="co">#&gt; - Run  13  of  50 </span>
-<span class="co">#&gt; --- Used  2.03  seconds. Est. time remaining:  74.55  seconds </span>
+<span class="co">#&gt; --- Used  2.57  seconds. Est. time remaining:  86.48  seconds </span>
 <span class="co">#&gt; - Run  14  of  50 </span>
-<span class="co">#&gt; --- Used  2.1  seconds. Est. time remaining:  72.75  seconds </span>
+<span class="co">#&gt; --- Used  2.59  seconds. Est. time remaining:  84.79  seconds </span>
 <span class="co">#&gt; - Run  15  of  50 </span>
-<span class="co">#&gt; --- Used  2.07  seconds. Est. time remaining:  70.84  seconds </span>
+<span class="co">#&gt; --- Used  2.28  seconds. Est. time remaining:  82.25  seconds </span>
 <span class="co">#&gt; - Run  16  of  50 </span>
-<span class="co">#&gt; --- Used  2.05  seconds. Est. time remaining:  68.87  seconds </span>
+<span class="co">#&gt; --- Used  3  seconds. Est. time remaining:  81.29  seconds </span>
 <span class="co">#&gt; - Run  17  of  50 </span>
-<span class="co">#&gt; --- Used  1.83  seconds. Est. time remaining:  66.47  seconds </span>
+<span class="co">#&gt; --- Used  3  seconds. Est. time remaining:  80.08  seconds </span>
 <span class="co">#&gt; - Run  18  of  50 </span>
-<span class="co">#&gt; --- Used  1.8  seconds. Est. time remaining:  64.08  seconds </span>
+<span class="co">#&gt; --- Used  2.55  seconds. Est. time remaining:  77.87  seconds </span>
 <span class="co">#&gt; - Run  19  of  50 </span>
-<span class="co">#&gt; --- Used  1.75  seconds. Est. time remaining:  61.67  seconds </span>
+<span class="co">#&gt; --- Used  2.5  seconds. Est. time remaining:  75.54  seconds </span>
 <span class="co">#&gt; - Run  20  of  50 </span>
-<span class="co">#&gt; --- Used  1.86  seconds. Est. time remaining:  59.5  seconds </span>
+<span class="co">#&gt; --- Used  2.38  seconds. Est. time remaining:  73.02  seconds </span>
 <span class="co">#&gt; - Run  21  of  50 </span>
-<span class="co">#&gt; --- Used  2.09  seconds. Est. time remaining:  57.67  seconds </span>
+<span class="co">#&gt; --- Used  2.18  seconds. Est. time remaining:  70.24  seconds </span>
 <span class="co">#&gt; - Run  22  of  50 </span>
-<span class="co">#&gt; --- Used  1.99  seconds. Est. time remaining:  55.68  seconds </span>
+<span class="co">#&gt; --- Used  2.26  seconds. Est. time remaining:  67.6  seconds </span>
 <span class="co">#&gt; - Run  23  of  50 </span>
-<span class="co">#&gt; --- Used  2.03  seconds. Est. time remaining:  53.74  seconds </span>
+<span class="co">#&gt; --- Used  2.16  seconds. Est. time remaining:  64.89  seconds </span>
 <span class="co">#&gt; - Run  24  of  50 </span>
-<span class="co">#&gt; --- Used  2.54  seconds. Est. time remaining:  52.34  seconds </span>
+<span class="co">#&gt; --- Used  2.32  seconds. Est. time remaining:  62.39  seconds </span>
 <span class="co">#&gt; - Run  25  of  50 </span>
-<span class="co">#&gt; --- Used  1.91  seconds. Est. time remaining:  50.23  seconds </span>
+<span class="co">#&gt; --- Used  2.2  seconds. Est. time remaining:  59.8  seconds </span>
 <span class="co">#&gt; - Run  26  of  50 </span>
-<span class="co">#&gt; --- Used  2.24  seconds. Est. time remaining:  48.43  seconds </span>
+<span class="co">#&gt; --- Used  2.25  seconds. Est. time remaining:  57.28  seconds </span>
 <span class="co">#&gt; - Run  27  of  50 </span>
-<span class="co">#&gt; --- Used  2.53  seconds. Est. time remaining:  46.85  seconds </span>
+<span class="co">#&gt; --- Used  2.17  seconds. Est. time remaining:  54.7  seconds </span>
 <span class="co">#&gt; - Run  28  of  50 </span>
-<span class="co">#&gt; --- Used  1.88  seconds. Est. time remaining:  44.69  seconds </span>
+<span class="co">#&gt; --- Used  2.13  seconds. Est. time remaining:  52.13  seconds </span>
 <span class="co">#&gt; - Run  29  of  50 </span>
-<span class="co">#&gt; --- Used  1.98  seconds. Est. time remaining:  42.62  seconds </span>
+<span class="co">#&gt; --- Used  2.27  seconds. Est. time remaining:  49.69  seconds </span>
 <span class="co">#&gt; - Run  30  of  50 </span>
-<span class="co">#&gt; --- Used  2.09  seconds. Est. time remaining:  40.63  seconds </span>
+<span class="co">#&gt; --- Used  2.06  seconds. Est. time remaining:  47.12  seconds </span>
 <span class="co">#&gt; - Run  31  of  50 </span>
-<span class="co">#&gt; --- Used  1.96  seconds. Est. time remaining:  38.55  seconds </span>
+<span class="co">#&gt; --- Used  2.15  seconds. Est. time remaining:  44.63  seconds </span>
 <span class="co">#&gt; - Run  32  of  50 </span>
-<span class="co">#&gt; --- Used  1.92  seconds. Est. time remaining:  36.46  seconds </span>
+<span class="co">#&gt; --- Used  2.08  seconds. Est. time remaining:  42.13  seconds </span>
 <span class="co">#&gt; - Run  33  of  50 </span>
-<span class="co">#&gt; --- Used  1.81  seconds. Est. time remaining:  34.32  seconds </span>
+<span class="co">#&gt; --- Used  2.17  seconds. Est. time remaining:  39.7  seconds </span>
 <span class="co">#&gt; - Run  34  of  50 </span>
-<span class="co">#&gt; --- Used  1.88  seconds. Est. time remaining:  32.24  seconds </span>
+<span class="co">#&gt; --- Used  2.06  seconds. Est. time remaining:  37.24  seconds </span>
 <span class="co">#&gt; - Run  35  of  50 </span>
-<span class="co">#&gt; --- Used  1.85  seconds. Est. time remaining:  30.16  seconds </span>
+<span class="co">#&gt; --- Used  2.48  seconds. Est. time remaining:  34.98  seconds </span>
 <span class="co">#&gt; - Run  36  of  50 </span>
-<span class="co">#&gt; --- Used  1.81  seconds. Est. time remaining:  28.07  seconds </span>
+<span class="co">#&gt; --- Used  2.25  seconds. Est. time remaining:  32.61  seconds </span>
 <span class="co">#&gt; - Run  37  of  50 </span>
-<span class="co">#&gt; --- Used  1.76  seconds. Est. time remaining:  25.98  seconds </span>
+<span class="co">#&gt; --- Used  2.18  seconds. Est. time remaining:  30.23  seconds </span>
 <span class="co">#&gt; - Run  38  of  50 </span>
-<span class="co">#&gt; --- Used  1.78  seconds. Est. time remaining:  23.91  seconds </span>
+<span class="co">#&gt; --- Used  2.25  seconds. Est. time remaining:  27.88  seconds </span>
 <span class="co">#&gt; - Run  39  of  50 </span>
-<span class="co">#&gt; --- Used  1.74  seconds. Est. time remaining:  21.84  seconds </span>
+<span class="co">#&gt; --- Used  2.27  seconds. Est. time remaining:  25.54  seconds </span>
 <span class="co">#&gt; - Run  40  of  50 </span>
-<span class="co">#&gt; --- Used  1.77  seconds. Est. time remaining:  19.8  seconds </span>
+<span class="co">#&gt; --- Used  2.01  seconds. Est. time remaining:  23.14  seconds </span>
 <span class="co">#&gt; - Run  41  of  50 </span>
-<span class="co">#&gt; --- Used  1.88  seconds. Est. time remaining:  17.8  seconds </span>
+<span class="co">#&gt; --- Used  2.13  seconds. Est. time remaining:  20.79  seconds </span>
 <span class="co">#&gt; - Run  42  of  50 </span>
-<span class="co">#&gt; --- Used  1.95  seconds. Est. time remaining:  15.82  seconds </span>
+<span class="co">#&gt; --- Used  2.15  seconds. Est. time remaining:  18.45  seconds </span>
 <span class="co">#&gt; - Run  43  of  50 </span>
-<span class="co">#&gt; --- Used  1.96  seconds. Est. time remaining:  13.84  seconds </span>
+<span class="co">#&gt; --- Used  2.18  seconds. Est. time remaining:  16.12  seconds </span>
 <span class="co">#&gt; - Run  44  of  50 </span>
-<span class="co">#&gt; --- Used  1.96  seconds. Est. time remaining:  11.86  seconds </span>
+<span class="co">#&gt; --- Used  2.05  seconds. Est. time remaining:  13.78  seconds </span>
 <span class="co">#&gt; - Run  45  of  50 </span>
-<span class="co">#&gt; --- Used  1.8  seconds. Est. time remaining:  9.86  seconds </span>
+<span class="co">#&gt; --- Used  2.24  seconds. Est. time remaining:  11.48  seconds </span>
 <span class="co">#&gt; - Run  46  of  50 </span>
-<span class="co">#&gt; --- Used  1.95  seconds. Est. time remaining:  7.89  seconds </span>
+<span class="co">#&gt; --- Used  2.04  seconds. Est. time remaining:  9.16  seconds </span>
 <span class="co">#&gt; - Run  47  of  50 </span>
-<span class="co">#&gt; --- Used  1.86  seconds. Est. time remaining:  5.91  seconds </span>
+<span class="co">#&gt; --- Used  2.06  seconds. Est. time remaining:  6.86  seconds </span>
 <span class="co">#&gt; - Run  48  of  50 </span>
-<span class="co">#&gt; --- Used  1.73  seconds. Est. time remaining:  3.93  seconds </span>
+<span class="co">#&gt; --- Used  2.44  seconds. Est. time remaining:  4.58  seconds </span>
 <span class="co">#&gt; - Run  49  of  50 </span>
-<span class="co">#&gt; --- Used  1.67  seconds. Est. time remaining:  1.96  seconds </span>
+<span class="co">#&gt; --- Used  2.15  seconds. Est. time remaining:  2.29  seconds </span>
 <span class="co">#&gt; - Run  50  of  50 </span>
-<span class="co">#&gt; --- Used  1.69  seconds. Est. time remaining:  0  seconds</span>
+<span class="co">#&gt; --- Used  2.15  seconds. Est. time remaining:  0  seconds</span>
 
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></code></pre></div>
 <p><img src="personality_files/figure-html/unnamed-chunk-2-1.png" width="100%" style="display: block; margin: auto;"></p>
@@ -565,7 +595,7 @@
 <p>We can have a quick look at what out underlying linear model will estimate for the two genders for AGR4;</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotPred.html">plotPred</a></span><span class="op">(</span><span class="va">mod</span>, variable <span class="op">=</span> <span class="st">"AGR4"</span><span class="op">)</span>
-<span class="co">#&gt; [[1]]</span></code></pre></div>
+<span class="co">#&gt; $AGR4</span></code></pre></div>
 <p><img src="personality_files/figure-html/unnamed-chunk-7-1.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
   </div>

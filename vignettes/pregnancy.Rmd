@@ -2,7 +2,7 @@
 title: "Early Preeclampsia"
 author: "Anders H. Jarmund"
 date: "`r Sys.Date()`"
-bibliography: rmasca.bib
+bibliography: ALASCA.bib
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Early Preeclampsia}
@@ -27,8 +27,36 @@ somaids <- read.csv(file = "somaids.csv", header = TRUE, sep = ";")
 
 # Getting started
 
+<script src="js/hideOutput.js"></script>
+<style>
+.showopt {
+  background-color: #004c93;
+  color: #FFFFFF; 
+  width: 150px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle !important;
+  float: left;
+  font-family: sans-serif;
+  border-radius: 8px;
+}
+
+.showopt:hover {
+    background-color: #dfe4f2;
+    color: #004c93;
+}
+
+.showopttext::before{
+  content: "Show/Hide Source"
+}
+
+pre.plot {
+  background-color: white !important;
+}
+</style>
+
 ```{r setup}
-library(RMASCA)
+library(ALASCA)
 ```
 
 This is an example of RMASCA applied on **observational data**. If you are more interested in **interventional data**, have a look at [the metabolomics vignette](metabolomics.html). If you want an introduction to RMASCA, have a look at [Get Started](RMASCA.html).
@@ -68,6 +96,7 @@ All patients got their diagnosis before week 33.4, so let us limit ourselves to 
 * Time 3: Week 22.5-27.5
 * Time 4: Week 27.5-33.4
 
+<div class="fold s">
 ```{r}
 df <- subset(df, GA <= 33.4)
 df$time <- ifelse(
@@ -81,6 +110,7 @@ df$time <- ifelse(
               )
             )
 ```
+</div>
 
 As for grouping, I decided to use
 
@@ -88,12 +118,14 @@ As for grouping, I decided to use
 * Early preeclampsia with maternal vascular malperfusion (PEV)
 * Early preeclampsia withou maternal vascular malperfusion (PE)
 
+<div class="fold s">
 ```{r}
 df$group <- ifelse(
               is.na(df$GADiagnosis), "Normal",
               ifelse(df$EarlyPE_MVU == 1, "PEV", "PE")
             )
 ```
+</div>
 
 In the paper, they identified the following important proteins (I'd to look up the somaIDs myself, so errors may have occurred)
 
@@ -107,6 +139,7 @@ In the paper, they identified the following important proteins (I'd to look up t
 
 In addition, I am interested in inflammatory proteins, so let us add interleukins and interferons, and eotaxin.
 
+<div class="fold s">
 ```{r}
 df <- merge(df, somaids, by.x = "variable", by.y = "SomaId") # add protein names
 selectedVariables <- c(which(df$variable %in% c("SL000525", "SL002640", "SL005217", "SL003166", "SL003104","SL000406")),
@@ -115,9 +148,11 @@ selectedVariables <- c(which(df$variable %in% c("SL000525", "SL002640", "SL00521
 df <- df[selectedVariables,]
 df$variable <- factor(df$Target)
 ```
+</div>
 
 We can have a quick look at the data,
 
+<div class="fold s">
 ```{r}
 do.call(
   ggpubr::ggarrange,
@@ -125,6 +160,7 @@ do.call(
                       common.legend = TRUE, legend = "bottom")
   )
 ```
+</div>
 
 ## Preparing the model
 
@@ -134,12 +170,12 @@ Now we can set up our model. Since it's an observational study, we can start wit
 model.formula <- value ~ time*group + (1|ID)
 ```
 
-# Running RMASCA
+# Running ALASCA
 
-We are now ready to try `RMASCA`,
+We are now ready to try `ALASCA()`,
 
 ```{r}
-PE.mod <- RMASCA(df, model.formula)
+PE.mod <- ALASCA(df, model.formula)
 ```
 
 With a screeplot we can say something about how many components we need,
@@ -156,12 +192,14 @@ plot(PE.mod)
 
 It's a bit crowded on the x-axis of the loadings, so we will only name the five with highest/lowest loading,
 
+<div class="fold s">
 ```{r}
 plot(PE.mod, tooDense = 5)
-plot(PE.mod, component = "PC2", tooDense = 5)
-plot(PE.mod, component = "PC3", tooDense = 5)
-plot(PE.mod, component = "PC4", effect = "group", tooDense = 5) # just to demonstrate how to extract only the group effect plot
+plot(PE.mod, component = 2, tooDense = 5)
+plot(PE.mod, component = 3, tooDense = 5)
+plot(PE.mod, component = 4, effect = "group", tooDense = 5) # just to demonstrate how to extract only the group effect plot
 ```
+</div>
 
 We can also look up specific variables,
 
@@ -171,6 +209,7 @@ plot(PE.mod, highlight = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotax
 
 and also have a look at the underlying model predictions
 
+<div class="fold s">
 ```{r}
 do.call(
   ggpubr::ggarrange,
@@ -178,13 +217,26 @@ do.call(
                       common.legend = TRUE, legend = "bottom")
   )
 ```
+</div>
 
-Let us add some uncertainty estimates to our model. This may take some time, but it is extra slow when compiling this documentation; usually this model needs about 5 seconds per run.
+To see the most important loading variables for the time component, we can use `getLoadings()`,
 
+<div class="fold s">
 ```{r}
-PE.mod <- validate(PE.mod, participantColumn = "ID")
-plot(PE.mod, tooDense = 5)
-plot(PE.mod, component = "PC2", tooDense = 5)
+top_loadings <- subset(getLoadings(PE.mod)$time, PC == 1)
+top_loadings <- top_loadings[order(top_loadings$loading, decreasing = TRUE),]
+knitr::kable(top_loadings[1:5,])
 ```
+</div>
+
+Let us add some uncertainty estimates to our model. This may take some time, but it is extra slow when compiling this documentation; usually this model needs about 5 seconds per run. Since we have quite many measured variables, we will set `validateRegression = FALSE` to save some time.
+
+<div class="fold s">
+```{r}
+PE.mod <- validate(PE.mod, participantColumn = "ID", validateRegression = FALSE)
+plot(PE.mod, tooDense = 5)
+plot(PE.mod, component = 2, tooDense = 5)
+```
+</div>
 
 # References
