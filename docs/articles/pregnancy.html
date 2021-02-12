@@ -5,14 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Early Preeclampsia • RMASCA</title>
+<title>Early Preeclampsia • ALASCA</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Early Preeclampsia">
-<meta property="og:description" content="RMASCA">
+<meta property="og:description" content="ALASCA">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -30,7 +30,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">RMASCA</a>
+        <a class="navbar-link" href="../index.html">ALASCA</a>
         <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.9</span>
       </span>
     </div>
@@ -44,7 +44,7 @@
   </a>
 </li>
 <li>
-  <a href="../articles/RMASCA.html">Get started</a>
+  <a href="../articles/ALASCA.html">Get started</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
@@ -58,6 +58,9 @@
   <ul class="dropdown-menu" role="menu">
 <li>
       <a href="../articles/metabolomics.html">Metabolomics</a>
+    </li>
+    <li>
+      <a href="../articles/personality.html">Personality and Aging</a>
     </li>
     <li>
       <a href="../articles/pregnancy.html">Early Preeclampsia</a>
@@ -81,7 +84,7 @@
       <h1 data-toc-skip>Early Preeclampsia</h1>
                         <h4 class="author">Anders H. Jarmund</h4>
             
-            <h4 class="date">2021-02-06</h4>
+            <h4 class="date">2021-02-12</h4>
       
       
       <div class="hidden name"><code>pregnancy.Rmd</code></div>
@@ -93,8 +96,34 @@
 <div id="getting-started" class="section level1">
 <h1 class="hasAnchor">
 <a href="#getting-started" class="anchor"></a>Getting started</h1>
+<script src="js/hideOutput.js"></script><style>
+.showopt {
+  background-color: #004c93;
+  color: #FFFFFF; 
+  width: 150px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle !important;
+  float: left;
+  font-family: sans-serif;
+  border-radius: 8px;
+}
+
+.showopt:hover {
+    background-color: #dfe4f2;
+    color: #004c93;
+}
+
+.showopttext::before{
+  content: "Show/Hide Source"
+}
+
+pre.plot {
+  background-color: white !important;
+}
+</style>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">RMASCA</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">ALASCA</span><span class="op">)</span></code></pre></div>
 <p>This is an example of RMASCA applied on <strong>observational data</strong>. If you are more interested in <strong>interventional data</strong>, have a look at <a href="metabolomics.html">the metabolomics vignette</a>. If you want an introduction to RMASCA, have a look at <a href="RMASCA.html">Get Started</a>.</p>
 <div id="preparing-the-data" class="section level2">
 <h2 class="hasAnchor">
@@ -147,6 +176,7 @@
 <li>Time 3: Week 22.5-27.5</li>
 <li>Time 4: Week 27.5-33.4</li>
 </ul>
+<div class="fold s">
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">GA</span> <span class="op">&lt;=</span> <span class="fl">33.4</span><span class="op">)</span>
 <span class="va">df</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span>
@@ -159,17 +189,20 @@
                 <span class="op">)</span>
               <span class="op">)</span>
             <span class="op">)</span></code></pre></div>
+</div>
 <p>As for grouping, I decided to use</p>
 <ul>
 <li>Normal pregnancies (Normal)</li>
 <li>Early preeclampsia with maternal vascular malperfusion (PEV)</li>
 <li>Early preeclampsia withou maternal vascular malperfusion (PE)</li>
 </ul>
+<div class="fold s">
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df</span><span class="op">$</span><span class="va">group</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span>
               <span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">GADiagnosis</span><span class="op">)</span>, <span class="st">"Normal"</span>,
               <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">EarlyPE_MVU</span> <span class="op">==</span> <span class="fl">1</span>, <span class="st">"PEV"</span>, <span class="st">"PE"</span><span class="op">)</span>
             <span class="op">)</span></code></pre></div>
+</div>
 <p>In the paper, they identified the following important proteins (I’d to look up the somaIDs myself, so errors may have occurred)</p>
 <ul>
 <li>Matrix metalloproteinase-7 (also known as Matrilysin): SL000525</li>
@@ -181,6 +214,7 @@
 <li>Leukocyte cell adhesion molecule (ALCAM): SL003166</li>
 </ul>
 <p>In addition, I am interested in inflammatory proteins, so let us add interleukins and interferons, and eotaxin.</p>
+<div class="fold s">
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html">merge</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">somaids</span>, by.x <span class="op">=</span> <span class="st">"variable"</span>, by.y <span class="op">=</span> <span class="st">"SomaId"</span><span class="op">)</span> <span class="co"># add protein names</span>
 <span class="va">selectedVariables</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">variable</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"SL000525"</span>, <span class="st">"SL002640"</span>, <span class="st">"SL005217"</span>, <span class="st">"SL003166"</span>, <span class="st">"SL003104"</span>,<span class="st">"SL000406"</span><span class="op">)</span><span class="op">)</span>,
@@ -188,7 +222,9 @@
                        <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substr.html">substr</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">Target</span>,<span class="fl">1</span>,<span class="fl">4</span><span class="op">)</span> <span class="op">==</span> <span class="st">"IFN-"</span><span class="op">)</span><span class="op">)</span>
 <span class="va">df</span> <span class="op">&lt;-</span> <span class="va">df</span><span class="op">[</span><span class="va">selectedVariables</span>,<span class="op">]</span>
 <span class="va">df</span><span class="op">$</span><span class="va">variable</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">Target</span><span class="op">)</span></code></pre></div>
+</div>
 <p>We can have a quick look at the data,</p>
+<div class="fold s">
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span>
   <span class="fu">ggpubr</span><span class="fu">::</span><span class="va"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span>,
@@ -204,6 +240,7 @@
 <span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></code></pre></div>
 <p><img src="pregnancy_files/figure-html/unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
+</div>
 <div id="preparing-the-model" class="section level2">
 <h2 class="hasAnchor">
 <a href="#preparing-the-model" class="anchor"></a>Preparing the model</h2>
@@ -212,21 +249,25 @@
 <code class="sourceCode R"><span class="va">model.formula</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">ID</span><span class="op">)</span></code></pre></div>
 </div>
 </div>
-<div id="running-rmasca" class="section level1">
+<div id="running-alasca" class="section level1">
 <h1 class="hasAnchor">
-<a href="#running-rmasca" class="anchor"></a>Running RMASCA</h1>
-<p>We are now ready to try <code>RMASCA</code>,</p>
+<a href="#running-alasca" class="anchor"></a>Running ALASCA</h1>
+<p>We are now ready to try <code><a href="../reference/ALASCA.html">ALASCA()</a></code>,</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">PE.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RMASCA.html">RMASCA</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">model.formula</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">PE.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">model.formula</span><span class="op">)</span>
+<span class="co">#&gt; Will use linear mixed models!</span>
 <span class="co">#&gt; Scaling data...</span>
-<span class="co">#&gt; Calculating LMM coefficients...</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; Calculating  LMM  coefficients...</span>
 <span class="co">#&gt; Registered S3 methods overwritten by 'lme4':</span>
 <span class="co">#&gt;   method                          from</span>
 <span class="co">#&gt;   cooks.distance.influence.merMod car </span>
 <span class="co">#&gt;   influence.merMod                car </span>
 <span class="co">#&gt;   dfbeta.influence.merMod         car </span>
 <span class="co">#&gt;   dfbetas.influence.merMod        car</span>
-<span class="co">#&gt; Finished calculating LMM coefficients!</span>
+<span class="co">#&gt; Finished calculating regression coefficients!</span>
+<span class="co">#&gt; Calculating predictions from regression models...</span>
+<span class="co">#&gt; Finished calculating predictions from regression models!</span>
 <span class="co">#&gt; Calculating effect matrix</span>
 <span class="co">#&gt; Finished calculating effect matrix!</span></code></pre></div>
 <p>With a screeplot we can say something about how many components we need,</p>
@@ -238,23 +279,26 @@
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span><span class="op">)</span></code></pre></div>
 <p><img src="pregnancy_files/figure-html/unnamed-chunk-12-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>It’s a bit crowded on the x-axis of the loadings, so we will only name the five with highest/lowest loading,</p>
+<div class="fold s">
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
 <p><img src="pregnancy_files/figure-html/unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="st">"PC2"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="fl">2</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
 <p><img src="pregnancy_files/figure-html/unnamed-chunk-13-2.png" width="100%" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="st">"PC3"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="fl">3</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
 <p><img src="pregnancy_files/figure-html/unnamed-chunk-13-3.png" width="100%" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="st">"PC4"</span>, effect <span class="op">=</span> <span class="st">"group"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="co"># just to demonstrate how to extract only the group effect plot</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="fl">4</span>, effect <span class="op">=</span> <span class="st">"group"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="co"># just to demonstrate how to extract only the group effect plot</span></code></pre></div>
 <p><img src="pregnancy_files/figure-html/unnamed-chunk-13-4.png" width="100%" style="display: block; margin: auto;"></p>
+</div>
 <p>We can also look up specific variables,</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, highlight <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"PlGF"</span>, <span class="st">"IL-6"</span>, <span class="st">"IL-1b"</span>, <span class="st">"IFN-g"</span>, <span class="st">"Eotaxin-2"</span>, <span class="st">"Eotaxin"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p><img src="pregnancy_files/figure-html/unnamed-chunk-14-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>and also have a look at the underlying model predictions</p>
+<div class="fold s">
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span>
   <span class="fu">ggpubr</span><span class="fu">::</span><span class="va"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span>,
@@ -262,115 +306,215 @@
                       common.legend <span class="op">=</span> <span class="cn">TRUE</span>, legend <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
   <span class="op">)</span></code></pre></div>
 <p><img src="pregnancy_files/figure-html/unnamed-chunk-15-1.png" width="100%" style="display: block; margin: auto;"></p>
-<p>Let us add some uncertainty estimates to our model. This may take some time, but it is extra slow when compiling this documentation; usually this model needs about 5 seconds per run.</p>
+</div>
+<p>To see the most important loading variables for the time component, we can use <code><a href="../reference/getLoadings.html">getLoadings()</a></code>,</p>
+<div class="fold s">
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">PE.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">PE.mod</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span><span class="op">)</span>
-<span class="co">#&gt; Running validation...</span>
-<span class="co">#&gt; - Run  1  of  50 </span>
-<span class="co">#&gt; --- Used  1.01  seconds. Est. time remaining:  49.27  seconds </span>
-<span class="co">#&gt; - Run  2  of  50 </span>
-<span class="co">#&gt; --- Used  50.71  seconds. Est. time remaining:  1241.17  seconds </span>
-<span class="co">#&gt; - Run  3  of  50 </span>
-<span class="co">#&gt; --- Used  51.73  seconds. Est. time remaining:  1620.61  seconds </span>
-<span class="co">#&gt; - Run  4  of  50 </span>
-<span class="co">#&gt; --- Used  52.01  seconds. Est. time remaining:  1787.69  seconds </span>
-<span class="co">#&gt; - Run  5  of  50 </span>
-<span class="co">#&gt; --- Used  52.33  seconds. Est. time remaining:  1870.02  seconds </span>
-<span class="co">#&gt; - Run  6  of  50 </span>
-<span class="co">#&gt; --- Used  52.11  seconds. Est. time remaining:  1905.82  seconds </span>
-<span class="co">#&gt; - Run  7  of  50 </span>
-<span class="co">#&gt; --- Used  52.61  seconds. Est. time remaining:  1919.63  seconds </span>
-<span class="co">#&gt; - Run  8  of  50 </span>
-<span class="co">#&gt; --- Used  52.58  seconds. Est. time remaining:  1916.67  seconds </span>
-<span class="co">#&gt; - Run  9  of  50 </span>
-<span class="co">#&gt; --- Used  52.33  seconds. Est. time remaining:  1901.52  seconds </span>
-<span class="co">#&gt; - Run  10  of  50 </span>
-<span class="co">#&gt; --- Used  52.98  seconds. Est. time remaining:  1881.56  seconds </span>
-<span class="co">#&gt; - Run  11  of  50 </span>
-<span class="co">#&gt; --- Used  52.95  seconds. Est. time remaining:  1855.46  seconds </span>
-<span class="co">#&gt; - Run  12  of  50 </span>
-<span class="co">#&gt; --- Used  51.09  seconds. Est. time remaining:  1819  seconds </span>
-<span class="co">#&gt; - Run  13  of  50 </span>
-<span class="co">#&gt; --- Used  51.76  seconds. Est. time remaining:  1782.21  seconds </span>
-<span class="co">#&gt; - Run  14  of  50 </span>
-<span class="co">#&gt; --- Used  51.3  seconds. Est. time remaining:  1742.1  seconds </span>
-<span class="co">#&gt; - Run  15  of  50 </span>
-<span class="co">#&gt; --- Used  51.58  seconds. Est. time remaining:  1701.14  seconds </span>
-<span class="co">#&gt; - Run  16  of  50 </span>
-<span class="co">#&gt; --- Used  52.03  seconds. Est. time remaining:  1659.81  seconds </span>
-<span class="co">#&gt; - Run  17  of  50 </span>
-<span class="co">#&gt; --- Used  51.07  seconds. Est. time remaining:  1615.37  seconds </span>
-<span class="co">#&gt; - Run  18  of  50 </span>
-<span class="co">#&gt; --- Used  37.2  seconds. Est. time remaining:  1545.52  seconds </span>
-<span class="co">#&gt; - Run  19  of  50 </span>
-<span class="co">#&gt; --- Used  38.32  seconds. Est. time remaining:  1480.94  seconds </span>
-<span class="co">#&gt; - Run  20  of  50 </span>
-<span class="co">#&gt; --- Used  37.84  seconds. Est. time remaining:  1418.27  seconds </span>
-<span class="co">#&gt; - Run  21  of  50 </span>
-<span class="co">#&gt; --- Used  37.49  seconds. Est. time remaining:  1357.48  seconds </span>
-<span class="co">#&gt; - Run  22  of  50 </span>
-<span class="co">#&gt; --- Used  38.61  seconds. Est. time remaining:  1300.23  seconds </span>
-<span class="co">#&gt; - Run  23  of  50 </span>
-<span class="co">#&gt; --- Used  38.37  seconds. Est. time remaining:  1244.32  seconds </span>
-<span class="co">#&gt; - Run  24  of  50 </span>
-<span class="co">#&gt; --- Used  39.45  seconds. Est. time remaining:  1191.04  seconds </span>
-<span class="co">#&gt; - Run  25  of  50 </span>
-<span class="co">#&gt; --- Used  38.12  seconds. Est. time remaining:  1137.54  seconds </span>
-<span class="co">#&gt; - Run  26  of  50 </span>
-<span class="co">#&gt; --- Used  38.96  seconds. Est. time remaining:  1086.01  seconds </span>
-<span class="co">#&gt; - Run  27  of  50 </span>
-<span class="co">#&gt; --- Used  38.62  seconds. Est. time remaining:  1035.11  seconds </span>
-<span class="co">#&gt; - Run  28  of  50 </span>
-<span class="co">#&gt; --- Used  39.62  seconds. Est. time remaining:  985.87  seconds </span>
-<span class="co">#&gt; - Run  29  of  50 </span>
-<span class="co">#&gt; --- Used  40.27  seconds. Est. time remaining:  937.77  seconds </span>
-<span class="co">#&gt; - Run  30  of  50 </span>
-<span class="co">#&gt; --- Used  39.99  seconds. Est. time remaining:  890  seconds </span>
-<span class="co">#&gt; - Run  31  of  50 </span>
-<span class="co">#&gt; --- Used  41.92  seconds. Est. time remaining:  843.92  seconds </span>
-<span class="co">#&gt; - Run  32  of  50 </span>
-<span class="co">#&gt; --- Used  42.34  seconds. Est. time remaining:  798.34  seconds </span>
-<span class="co">#&gt; - Run  33  of  50 </span>
-<span class="co">#&gt; --- Used  42.3  seconds. Est. time remaining:  752.93  seconds </span>
-<span class="co">#&gt; - Run  34  of  50 </span>
-<span class="co">#&gt; --- Used  42.12  seconds. Est. time remaining:  707.61  seconds </span>
-<span class="co">#&gt; - Run  35  of  50 </span>
-<span class="co">#&gt; --- Used  42.89  seconds. Est. time remaining:  662.81  seconds </span>
-<span class="co">#&gt; - Run  36  of  50 </span>
-<span class="co">#&gt; --- Used  43.58  seconds. Est. time remaining:  618.39  seconds </span>
-<span class="co">#&gt; - Run  37  of  50 </span>
-<span class="co">#&gt; --- Used  43.04  seconds. Est. time remaining:  573.82  seconds </span>
-<span class="co">#&gt; - Run  38  of  50 </span>
-<span class="co">#&gt; --- Used  43.89  seconds. Est. time remaining:  529.6  seconds </span>
-<span class="co">#&gt; - Run  39  of  50 </span>
-<span class="co">#&gt; --- Used  43.55  seconds. Est. time remaining:  485.3  seconds </span>
-<span class="co">#&gt; - Run  40  of  50 </span>
-<span class="co">#&gt; --- Used  41.95  seconds. Est. time remaining:  440.64  seconds </span>
-<span class="co">#&gt; - Run  41  of  50 </span>
-<span class="co">#&gt; --- Used  32.89  seconds. Est. time remaining:  394.13  seconds </span>
-<span class="co">#&gt; - Run  42  of  50 </span>
-<span class="co">#&gt; --- Used  33.43  seconds. Est. time remaining:  348.36  seconds </span>
-<span class="co">#&gt; - Run  43  of  50 </span>
-<span class="co">#&gt; --- Used  33.15  seconds. Est. time remaining:  303.12  seconds </span>
-<span class="co">#&gt; - Run  44  of  50 </span>
-<span class="co">#&gt; --- Used  34.41  seconds. Est. time remaining:  258.61  seconds </span>
-<span class="co">#&gt; - Run  45  of  50 </span>
-<span class="co">#&gt; --- Used  33.59  seconds. Est. time remaining:  214.45  seconds </span>
-<span class="co">#&gt; - Run  46  of  50 </span>
-<span class="co">#&gt; --- Used  34.34  seconds. Est. time remaining:  170.82  seconds </span>
-<span class="co">#&gt; - Run  47  of  50 </span>
-<span class="co">#&gt; --- Used  35.69  seconds. Est. time remaining:  127.66  seconds </span>
-<span class="co">#&gt; - Run  48  of  50 </span>
-<span class="co">#&gt; --- Used  33.27  seconds. Est. time remaining:  84.72  seconds </span>
-<span class="co">#&gt; - Run  49  of  50 </span>
-<span class="co">#&gt; --- Used  34.96  seconds. Est. time remaining:  42.21  seconds </span>
-<span class="co">#&gt; - Run  50  of  50 </span>
-<span class="co">#&gt; --- Used  35.96  seconds. Est. time remaining:  0  seconds</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
-<p><img src="pregnancy_files/figure-html/unnamed-chunk-16-1.png" width="100%" style="display: block; margin: auto;"></p>
+<code class="sourceCode R"><span class="va">top_loadings</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="fu"><a href="../reference/getLoadings.html">getLoadings</a></span><span class="op">(</span><span class="va">PE.mod</span><span class="op">)</span><span class="op">$</span><span class="va">time</span>, <span class="va">PC</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span>
+<span class="va">top_loadings</span> <span class="op">&lt;-</span> <span class="va">top_loadings</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html">order</a></span><span class="op">(</span><span class="va">top_loadings</span><span class="op">$</span><span class="va">loading</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,<span class="op">]</span>
+<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">top_loadings</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>,<span class="op">]</span><span class="op">)</span></code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="left"></th>
+<th align="left">covars</th>
+<th align="right">PC</th>
+<th align="right">loading</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">64</td>
+<td align="left">PlGF</td>
+<td align="right">1</td>
+<td align="right">0.5083257</td>
+</tr>
+<tr class="even">
+<td align="left">47</td>
+<td align="left">IL-22BP</td>
+<td align="right">1</td>
+<td align="right">0.3684809</td>
+</tr>
+<tr class="odd">
+<td align="left">12</td>
+<td align="left">IL-1 sRI</td>
+<td align="right">1</td>
+<td align="right">0.3096282</td>
+</tr>
+<tr class="even">
+<td align="left">33</td>
+<td align="left">IL-18 BPa</td>
+<td align="right">1</td>
+<td align="right">0.2559541</td>
+</tr>
+<tr class="odd">
+<td align="left">56</td>
+<td align="left">IL-5</td>
+<td align="right">1</td>
+<td align="right">0.2041814</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Let us add some uncertainty estimates to our model. This may take some time, but it is extra slow when compiling this documentation; usually this model needs about 5 seconds per run. Since we have quite many measured variables, we will set <code>validateRegression = FALSE</code> to save some time.</p>
+<div class="fold s">
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="st">"PC2"</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
-<p><img src="pregnancy_files/figure-html/unnamed-chunk-16-2.png" width="100%" style="display: block; margin: auto;"></p>
+<code class="sourceCode R"><span class="va">PE.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">PE.mod</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span>, validateRegression <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+<span class="co">#&gt; Running validation...</span>
+<span class="co">#&gt; - Run  1  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  1.03  seconds. Est. time remaining:  50.3  seconds </span>
+<span class="co">#&gt; - Run  2  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  56.49  seconds. Est. time remaining:  1380.38  seconds </span>
+<span class="co">#&gt; - Run  3  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  1.08  seconds. Est. time remaining:  917.94  seconds </span>
+<span class="co">#&gt; - Run  4  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  1.06  seconds. Est. time remaining:  685.96  seconds </span>
+<span class="co">#&gt; - Run  5  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  1.13  seconds. Est. time remaining:  546.97  seconds </span>
+<span class="co">#&gt; - Run  6  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  1.18  seconds. Est. time remaining:  454.35  seconds </span>
+<span class="co">#&gt; - Run  7  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  1.43  seconds. Est. time remaining:  389.35  seconds </span>
+<span class="co">#&gt; - Run  8  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  1.36  seconds. Est. time remaining:  339.89  seconds </span>
+<span class="co">#&gt; - Run  9  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  59.16  seconds. Est. time remaining:  564.42  seconds </span>
+<span class="co">#&gt; - Run  10  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  46.68  seconds. Est. time remaining:  682.3  seconds </span>
+<span class="co">#&gt; - Run  11  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  48.97  seconds. Est. time remaining:  778.41  seconds </span>
+<span class="co">#&gt; - Run  12  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  56.45  seconds. Est. time remaining:  873.99  seconds </span>
+<span class="co">#&gt; - Run  13  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  1.11  seconds. Est. time remaining:  788.7  seconds </span>
+<span class="co">#&gt; - Run  14  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  1.02  seconds. Est. time remaining:  715.2  seconds </span>
+<span class="co">#&gt; - Run  15  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  50.53  seconds. Est. time remaining:  766.88  seconds </span>
+<span class="co">#&gt; - Run  16  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  50.23  seconds. Est. time remaining:  805.14  seconds </span>
+<span class="co">#&gt; - Run  17  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  51.36  seconds. Est. time remaining:  835.2  seconds </span>
+<span class="co">#&gt; - Run  18  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  52.46  seconds. Est. time remaining:  858.15  seconds </span>
+<span class="co">#&gt; - Run  19  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  46.11  seconds. Est. time remaining:  862.81  seconds </span>
+<span class="co">#&gt; - Run  20  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  42.83  seconds. Est. time remaining:  857.48  seconds </span>
+<span class="co">#&gt; - Run  21  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  51.89  seconds. Est. time remaining:  861.08  seconds </span>
+<span class="co">#&gt; - Run  22  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  57.22  seconds. Est. time remaining:  866.42  seconds </span>
+<span class="co">#&gt; - Run  23  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  58.14  seconds. Est. time remaining:  867.4  seconds </span>
+<span class="co">#&gt; - Run  24  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  53.57  seconds. Est. time remaining:  858.5  seconds </span>
+<span class="co">#&gt; - Run  25  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  45.21  seconds. Est. time remaining:  837.67  seconds </span>
+<span class="co">#&gt; - Run  26  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  43.99  seconds. Est. time remaining:  813.84  seconds </span>
+<span class="co">#&gt; - Run  27  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  47.27  seconds. Est. time remaining:  791.31  seconds </span>
+<span class="co">#&gt; - Run  28  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  39.25  seconds. Est. time remaining:  760.71  seconds </span>
+<span class="co">#&gt; - Run  29  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  41.8  seconds. Est. time remaining:  731.37  seconds </span>
+<span class="co">#&gt; - Run  30  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  40.95  seconds. Est. time remaining:  700.62  seconds </span>
+<span class="co">#&gt; - Run  31  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  42.41  seconds. Est. time remaining:  670.11  seconds </span>
+<span class="co">#&gt; - Run  32  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  40.18  seconds. Est. time remaining:  637.6  seconds </span>
+<span class="co">#&gt; - Run  33  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  40.2  seconds. Est. time remaining:  604.65  seconds </span>
+<span class="co">#&gt; - Run  34  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  39.27  seconds. Est. time remaining:  570.82  seconds </span>
+<span class="co">#&gt; - Run  35  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  41.68  seconds. Est. time remaining:  537.72  seconds </span>
+<span class="co">#&gt; - Run  36  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  37.34  seconds. Est. time remaining:  502.45  seconds </span>
+<span class="co">#&gt; - Run  37  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  33.77  seconds. Est. time remaining:  465.81  seconds </span>
+<span class="co">#&gt; - Run  38  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  34.93  seconds. Est. time remaining:  429.7  seconds </span>
+<span class="co">#&gt; - Run  39  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  32.82  seconds. Est. time remaining:  393.05  seconds </span>
+<span class="co">#&gt; - Run  40  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  32.72  seconds. Est. time remaining:  356.56  seconds </span>
+<span class="co">#&gt; - Run  41  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  31.62  seconds. Est. time remaining:  320.02  seconds </span>
+<span class="co">#&gt; - Run  42  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  34.59  seconds. Est. time remaining:  284.28  seconds </span>
+<span class="co">#&gt; - Run  43  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  35.11  seconds. Est. time remaining:  248.67  seconds </span>
+<span class="co">#&gt; - Run  44  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  35.33  seconds. Est. time remaining:  213.12  seconds </span>
+<span class="co">#&gt; - Run  45  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  36.16  seconds. Est. time remaining:  177.67  seconds </span>
+<span class="co">#&gt; - Run  46  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  35.91  seconds. Est. time remaining:  142.17  seconds </span>
+<span class="co">#&gt; - Run  47  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  39.12  seconds. Est. time remaining:  106.86  seconds </span>
+<span class="co">#&gt; - Run  48  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  41.98  seconds. Est. time remaining:  71.5  seconds </span>
+<span class="co">#&gt; - Run  49  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  34.59  seconds. Est. time remaining:  35.73  seconds </span>
+<span class="co">#&gt; - Run  50  of  50</span>
+<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
+<span class="co">#&gt; --- Used  29.1  seconds. Est. time remaining:  0  seconds</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
+<p><img src="pregnancy_files/figure-html/unnamed-chunk-17-1.png" width="100%" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, component <span class="op">=</span> <span class="fl">2</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
+<p><img src="pregnancy_files/figure-html/unnamed-chunk-17-2.png" width="100%" style="display: block; margin: auto;"></p>
+</div>
 </div>
 <div id="references" class="section level1 unnumbered">
 <h1 class="hasAnchor">
