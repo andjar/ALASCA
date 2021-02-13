@@ -17,6 +17,7 @@ reference:
   - getScores
   - getLoadings
   - getCovars
+  - summary.ALASCA
   - RMASCA
   - SMASCA
 - title: "Plotting"

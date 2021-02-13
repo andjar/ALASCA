@@ -3,6 +3,7 @@
 S3method(plot,ALASCA)
 S3method(residuals,ALASCA)
 S3method(screeplot,ALASCA)
+S3method(summary,ALASCA)
 export(ALASCA)
 export(RMASCA)
 export(SMASCA)

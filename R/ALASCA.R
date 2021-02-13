@@ -88,6 +88,7 @@ ALASCA <- function(df,
                    doDebug = doDebug,
                    nValFold = nValFold,
                    nValRuns = nValRuns,
+                   initTime = Sys.time(),
                    keepValidationObjects = FALSE,
                    validateRegression = ifelse(validate,validateRegression,FALSE),
                    validationMethod = validationMethod,
@@ -227,17 +228,19 @@ sanitizeObject <- function(object){
     if(!object$minimizeObject){
       cat("Scaling data with custom function...\n")
     }
-    for(i in unique(object$df$variable)){
-      object$df <- scaleFun(object$df)
-    }
+    object$df <- object$scaleFun(object$df)
   }else if(object$scaleFun == TRUE){
     if(!object$minimizeObject){
       cat("Scaling data...\n")
     }
-    for(i in unique(object$df$variable)){
-      valColumn <- which(as.character(object$formula)[2] == colnames(object$df))
-      object$df[object$df$variable == i,valColumn] <- (object$df[object$df$variable == i,valColumn] - mean(object$df[object$df$variable == i,valColumn]))/sd(object$df[object$df$variable == i,valColumn])
+    object$scaleFun <- function(df){
+      valColumn <- which(as.character(object$formula)[2] == colnames(df))
+      for(i in unique(object$df$variable)){
+        df[df$variable == i,valColumn] <- (df[df$variable == i,valColumn] - mean(df[df$variable == i,valColumn]))/sd(df[df$variable == i,valColumn])
+      }
+      return(df)
     }
+    object$df <- object$scaleFun(object$df)
   }else{
     if(!object$minimizeObject){
       warning("Not scaling data...\n")
@@ -319,4 +322,36 @@ flipIt <- function(object){
     }
   }
   return(object)
+}
+
+#' Summary
+#'
+#' Gives some general information
+#'
+#' @inheritParams ALASCA
+#' @export
+summary.ALASCA <- function(object){
+  cat("================ ALASCA ================\n")
+  cat("Model initialized ", as.character(mod$initTime), " using ",object$method," on ",length(object$regr.model)," variables. ", sep = "")
+  if(object$validate){
+    cat("The model been validated.\n")
+  }else{
+    cat("The model has *not* been validated yet.\n")
+  }
+  cat("Terms in model:\n   * ",paste(names(lme4::fixef(object$regr.model[[1]])), collapse = "\n   * "),"\n", sep = "")
+  cat("\nPCs explaining at least 5% of variation:\n   Time: ", 
+      paste(getRelevantPCs(object$pca$score$explained$time), collapse = ", "), " (",
+      paste(round(100*object$pca$score$explained$time[getRelevantPCs(object$pca$score$explained$time)], 2), collapse = "%, "), "%)", 
+         ifelse(object$separateTimeAndGroup,paste0("\n   Group: ",
+                                                   paste(getRelevantPCs(object$pca$score$explained$group), collapse = ", "), " (",
+                                                   paste(round(100*object$pca$score$explained$group[getRelevantPCs(object$pca$score$explained$group)], 2), collapse = "%, "), "%)"),"\n"), sep = "")
+  cat("\nNumber of data points (based on ",names(object$regr.model)[[1]]," measurements",ifelse(object$missingMeasurements,", some variables have more/fewer observations",""),"):\n", sep = "")
+  aggregate(data = subset(mod$df, variable == names(mod$regr.model)[[1]]), as.formula(paste(as.character(mod$formula)[[2]], " ~ group + time")), FUN = length)
+  if(is.function(object$scaleFun)){
+    cat("\nScaling function:\n")
+    object$scaleFun
+  }else{
+    cat("\nNo scaling performed.\n")
+  }
+  
 }

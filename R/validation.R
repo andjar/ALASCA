@@ -37,19 +37,19 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
   for(ii in 1:object$nValRuns){
     cat("- Run ",ii," of ",object$nValRuns,"\n")
     start.time <- Sys.time()
+    selectedParts <- data.frame()
     
     # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
-    selectedParts <- Reduce(c,lapply(unique(object$df$group), function(gr){
+    selectedParts <- lapply(unique(object$df$group), function(gr){
       selectedParts_temp_all <- unique(object$df[object$df$group == gr,partColumn])
       selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
       selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
-      selectedParts_temp <- selectedParts_temp_all[selectedParts_temp_ticket != 1]
-      selectedParts_temp
-    }))
+      selectedParts_temp_all[selectedParts_temp_ticket != 1]
+    })
     
     # Make ALASCA model from the selected subset
     temp_object[[ii]] <- ALASCA(validationObject = object,
-                                validationParticipants = object$df[,partColumn] %in% selectedParts)
+                                validationParticipants = object$df[,partColumn] %in% unlist(selectedParts))
     
     # Rotate new loadings/scores to the original model
     temp_object[[ii]] <- rotateMatrix(object = temp_object[[ii]], target = object)
@@ -259,7 +259,7 @@ getValidationPercentilesScore <- function(object, objectlist){
     # Pool time and groups effects
     
     df_time <- Reduce(rbind,lapply(objectlist, function(x) x$pca$score$time))
-    PC_time <- getRelevantPCs(object$pca$score$explained$time > 0.05)
+    PC_time <- getRelevantPCs(object$pca$score$explained$time)
     perc_time <- aggregate(data = df_time, . ~ time + group, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
     perc_time <- Reduce(rbind,lapply(3:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
                                                                                high = perc_time[[x]][,2],
