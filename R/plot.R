@@ -405,7 +405,7 @@ plotVal <- function(object, component = 1, myTheme = ggplot2::theme_bw()){
       )
     })
     )
-    gst <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score)) + 
+    gst <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = model)) + 
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
       ggplot2::labs(x = object$plot.xlabel) + myTheme
     
@@ -423,7 +423,6 @@ plotVal <- function(object, component = 1, myTheme = ggplot2::theme_bw()){
       ggplot2::geom_point(data = subset(getScores(object)$group, PC == component), group = NA, alpha = 1, color = "black") +
       ggplot2::geom_line(data = subset(getScores(object)$group, PC == component), group = subset(getScores(object)$group, PC == component)$group, alpha = 1, color = "black") +
       ggplot2::labs(x = object$plot.xlabel) + myTheme
-    
     
     # Loading plot
     ## Time
@@ -445,7 +444,7 @@ plotVal <- function(object, component = 1, myTheme = ggplot2::theme_bw()){
       )
     })
     )
-    glg <- ggplot2::ggplot(dff, ggplot2::aes_string(x = covars, y = loading)) + 
+    glg <- ggplot2::ggplot(dff, ggplot2::aes(x = covars, y = loading)) + 
       ggplot2::geom_point(alpha = 0.2, color = "black") + 
       ggplot2::geom_point(data = subset(getLoadings(object)$group, PC == component), alpha = 1, color = "red") +
       ggplot2::labs(x = "Variable") + myTheme

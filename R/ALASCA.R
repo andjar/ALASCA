@@ -89,7 +89,7 @@ ALASCA <- function(df,
                    nValFold = nValFold,
                    nValRuns = nValRuns,
                    initTime = Sys.time(),
-                   keepValidationObjects = FALSE,
+                   keepValidationObjects = TRUE,
                    validateRegression = ifelse(validate,validateRegression,FALSE),
                    validationMethod = validationMethod,
                    validationObject = validationObject,
@@ -279,15 +279,16 @@ sanitizeObject <- function(object){
   return(object)
 }
 
-#' Remove df from objectt
+#' Remove df from object
 #'
-#' This function checks that the input to an ALASCA object is as expected
+#' This function removes unnecessary data
 #'
 #' @param object An ALASCA object
 #' @return An ALASCA object
 removeEmbedded <- function(object){
   object$df <- NULL
   object$dfRaw <- NULL
+  object$parts <- NULL
   object$validationObject <- NULL
   object$regr.model <- NULL
   object$RegressionCoefficients <- NULL
