@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Remove df from object — removeEmbedded • ALASCA</title>
+<title>Plot projection of participants — plotProjection • ALASCA</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Remove df from object — removeEmbedded" />
-<meta property="og:description" content="This function removes unnecessary data" />
+<meta property="og:title" content="Plot projection of participants — plotProjection" />
+<meta property="og:description" content="This function returns a plot of..." />
 
 
 
@@ -124,16 +124,21 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Remove df from object</h1>
+    <h1>Plot projection of participants</h1>
     
-    <div class="hidden name"><code>removeEmbedded.Rd</code></div>
+    <div class="hidden name"><code>plotProjection.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This function removes unnecessary data</p>
+    <p>This function returns a plot of...</p>
     </div>
 
-    <pre class="usage"><span class='fu'>removeEmbedded</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>plotProjection</span><span class='op'>(</span>
+  <span class='va'>object</span>,
+  comp <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>2</span><span class='op'>)</span>,
+  return_data <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  myTheme <span class='op'>=</span> <span class='fu'>ggplot2</span><span class='fu'>::</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_bw</a></span><span class='op'>(</span><span class='op'>)</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -142,11 +147,23 @@
       <th>object</th>
       <td><p>An ALASCA object</p></td>
     </tr>
+    <tr>
+      <th>comp</th>
+      <td><p>Which two components to plot (default: <code>c(1, 2</code>)</p></td>
+    </tr>
+    <tr>
+      <th>return_data</th>
+      <td><p>Set to <code>TRUE</code> to return data instead of plot</p></td>
+    </tr>
+    <tr>
+      <th>myTheme</th>
+      <td><p>A ggplot2 theme to use, defaults to <code><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>ggplot2::theme_bw()</a></code></p></td>
+    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An ALASCA object</p>
+    <p>A ggplot2 objects.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

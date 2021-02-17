@@ -2,7 +2,7 @@
 % Please edit documentation in R/ALASCA.R
 \name{removeEmbedded}
 \alias{removeEmbedded}
-\title{Remove df from objectt}
+\title{Remove df from object}
 \usage{
 removeEmbedded(object)
 }
@@ -13,5 +13,5 @@ removeEmbedded(object)
 An ALASCA object
 }
 \description{
-This function checks that the input to an ALASCA object is as expected
+This function removes unnecessary data
 }

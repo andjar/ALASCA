@@ -485,12 +485,12 @@ plotVal <- function(object, component = 1, myTheme = ggplot2::theme_bw()){
   
 }
 
-#' Plot validations models
+#' Plot covariate coefficients
 #'
-#' This function returns a plot of the validation models
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
 #'
 #' @param object An ALASCA object
-#' @param component Which covariable(s) to plot (default: `NA` which prints all)
+#' @param covar Which covariable(s) to plot (default: `NA` which prints all)
 #' @param tlab Alternative names for the covariables
 #' @param return_data Set to `TRUE` to return data instead of plot
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
@@ -520,4 +520,79 @@ plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE, myThem
       myTheme + ggplot2::theme(legend.position = "bottom", legend.box="vertical", legend.margin=ggplot2::margin())
     return(g)
   }
+}
+
+
+#' Plot projection of participants
+#'
+#' This function returns a plot of...
+#'
+#' @param object An ALASCA object
+#' @param comp Which two components to plot (default: `c(1, 2`)
+#' @param return_data Set to `TRUE` to return data instead of plot
+#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
+#' @return A ggplot2 objects.
+#' 
+#' @export
+plotProjection <- function(object, comp = c(1,2), return_data = FALSE, myTheme = ggplot2::theme_bw()){
+  df <- object$df
+  df$ID <- df[, colnames(df) == object$participantColumn]
+  loadings_Time <- subset(getLoadings(object)$time, PC %in% comp)
+  loadings_Time <- reshape2::dcast(data = loadings_Time, covars ~ paste0("PC",PC), value.var = "loading")
+  df_time <- merge(df, loadings_Time, by.x = "variable", by.y = "covars")
+  if(object$separateTimeAndGroup){
+    df_time <- Reduce(rbind, lapply(unique(paste0(df_time$ID, df_time$time)), function(x){
+      data.frame(
+        part = subset(df_time, paste0(ID, time) == x)$ID,
+        pc1 = sum(subset(df_time, paste0(ID, time) == x)$PC1 * subset(df_time, paste0(ID, time) == x)$value),
+        pc2 = sum(subset(df_time, paste0(ID, time) == x)$PC2 * subset(df_time, paste0(ID, time) == x)$value),
+        time = subset(df_time, paste0(ID, time) == x)$time
+      )
+    }))
+    df_time <- df_time[!duplicated(df_time),]
+    colnames(df_time) <- c("part", paste0("PC", comp[1]), paste0("PC", comp[2]), "time")
+    if(!return_data){
+      g_t <- ggplot2::ggplot(df_time, ggplot2::aes_string(x = paste0("PC", comp[1]), y = paste0("PC", comp[2]), group = "part"))  + ggplot2::geom_point() + ggplot2::geom_line(alpha = 0.7, arrow = ggplot2::arrow(type="closed", length = ggplot2::unit(0.20,"cm"))) + myTheme
+    }
+    loadings_group <- subset(getLoadings(object)$group, PC %in% comp)
+    loadings_group <- reshape2::dcast(data = loadings_group, covars ~ paste0("PC",PC), value.var = "loading")
+    df_group <- merge(df, loadings_group, by.x = "variable", by.y = "covars")
+    df_group <- Reduce(rbind, lapply(unique(paste0(df_time$ID, df_time$time)), function(x){
+      data.frame(
+        part = subset(df_group, paste0(ID, time) == x)$ID,
+        pc1 = sum(subset(df_group, paste0(ID, time) == x)$PC1 * subset(df_group, paste0(ID, time) == x)$value),
+        pc2 = sum(subset(df_group, paste0(ID, time) == x)$PC2 * subset(df_group, paste0(ID, time) == x)$value),
+        time = subset(df_group, paste0(ID, time) == x)$time,
+        group = subset(df_group, paste0(ID, time) == x)$group
+      )
+    }))
+    df_group <- df_group[!duplicated(df_group),]
+    colnames(df_group) <- c("part", paste0("PC", comp[1]), paste0("PC", comp[2]), "time", "group")
+    if(!return_data){
+      g_g <- ggplot2::ggplot(df_group, ggplot2::aes_string(x = paste0("PC", comp[1]), y = paste0("PC", comp[2]), group = "part", color = "group"))  + ggplot2::geom_point() + ggplot2::geom_line(alpha = 0.7, arrow = ggplot2::arrow(type="closed", length = ggplot2::unit(0.20,"cm"))) + myTheme
+      g <- ggpubr::ggarrange(g_t, g_g, common.legend = TRUE, legend = "bottom")
+    }
+    g <- list(df_time, df_group)
+    names(g) <- c("time", "group")
+    return(g)
+  }else{
+    df_time <- Reduce(rbind, lapply(unique(paste0(df_time$ID, df_time$time)), function(x){
+      data.frame(
+        part = subset(df_time, paste0(ID, time) == x)$ID,
+        pc1 = sum(subset(df_time, paste0(ID, time) == x)$PC1 * subset(df_time, paste0(ID, time) == x)$value),
+        pc2 = sum(subset(df_time, paste0(ID, time) == x)$PC2 * subset(df_time, paste0(ID, time) == x)$value),
+        time = subset(df_time, paste0(ID, time) == x)$time,
+        group = subset(df_time, paste0(ID, time) == x)$group
+      )
+    }))
+    df_time <- df_time[!duplicated(df_time),]
+    colnames(df_time) <- c("part", paste0("PC", comp[1]), paste0("PC", comp[2]), "time", "group")
+    g <- ggplot2::ggplot(df_time, ggplot2::aes_string(x = paste0("PC", comp[1]), y = paste0("PC", comp[2]), group = "part", color = "group"))  + ggplot2::geom_point() + ggplot2::geom_line(alpha = 0.7, arrow = ggplot2::arrow(type="closed", length = ggplot2::unit(0.20,"cm"))) + myTheme
+    if(return_data){
+      return(df_time)
+    }else{
+      return(g)
+    }
+  }
+  
 }

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Plot validations models — plotCovar • ALASCA</title>
+<title>Plot covariate coefficients — plotCovar • ALASCA</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Plot validations models — plotCovar" />
-<meta property="og:description" content="This function returns a plot of the validation models" />
+<meta property="og:title" content="Plot covariate coefficients — plotCovar" />
+<meta property="og:description" content="This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself" />
 
 
 
@@ -124,13 +124,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Plot validations models</h1>
+    <h1>Plot covariate coefficients</h1>
     
     <div class="hidden name"><code>plotCovar.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This function returns a plot of the validation models</p>
+    <p>This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself</p>
     </div>
 
     <pre class="usage"><span class='fu'>plotCovar</span><span class='op'>(</span>
@@ -149,6 +149,10 @@
       <td><p>An ALASCA object</p></td>
     </tr>
     <tr>
+      <th>covar</th>
+      <td><p>Which covariable(s) to plot (default: <code>NA</code> which prints all)</p></td>
+    </tr>
+    <tr>
       <th>tlab</th>
       <td><p>Alternative names for the covariables</p></td>
     </tr>
@@ -159,10 +163,6 @@
     <tr>
       <th>myTheme</th>
       <td><p>A ggplot2 theme to use, defaults to <code><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>ggplot2::theme_bw()</a></code></p></td>
-    </tr>
-    <tr>
-      <th>component</th>
-      <td><p>Which covariable(s) to plot (default: <code>NA</code> which prints all)</p></td>
     </tr>
     </table>
 

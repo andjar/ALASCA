@@ -14,6 +14,9 @@
 #' 
 #' @export
 validate <- function(object, participantColumn = FALSE, validateRegression = FALSE){
+  if(object$validate){
+    stop("The object has already been validated")
+  }
   object$validate <- TRUE
   if(validateRegression){
     object$validateRegression <- TRUE
@@ -30,26 +33,16 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
   }
   
   cat("Running validation...\n")
-  partColumn <- which(colnames(object$df) == object$participantColumn)
   temp_object <- list()
   time_mean <- c()
 
   for(ii in 1:object$nValRuns){
     cat("- Run ",ii," of ",object$nValRuns,"\n")
     start.time <- Sys.time()
-    selectedParts <- data.frame()
     
-    # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
-    selectedParts <- lapply(unique(object$df$group), function(gr){
-      selectedParts_temp_all <- unique(object$df[object$df$group == gr,partColumn])
-      selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
-      selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
-      selectedParts_temp_all[selectedParts_temp_ticket != 1]
-    })
-    
-    # Make ALASCA model from the selected subset
-    temp_object[[ii]] <- ALASCA(validationObject = object,
-                                validationParticipants = object$df[,partColumn] %in% unlist(selectedParts))
+    # Make resampled model
+    temp_object[[ii]] <- prepateValidationRun(object)
+      
     
     # Rotate new loadings/scores to the original model
     temp_object[[ii]] <- rotateMatrix(object = temp_object[[ii]], target = object)
@@ -64,7 +57,6 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
   if(object$keepValidationObjects){
     object$validation$temp_objects <- temp_object
   }
-  
   return(object)
 }
 
@@ -343,4 +335,83 @@ getRegressionPredictions <- function(object){
     cat("Finished calculating predictions from regression models!\n")
   }
   return(object)
+}
+
+#' Make a single validation run
+#'
+#' This function ...
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+prepateValidationRun <- function(object){
+  partColumn <- which(colnames(object$df) == object$participantColumn)
+  if(object$validationMethod == "loo"){
+    # Use leave-one-out validation
+    selectedParts <- data.frame()
+    
+    # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
+    selectedParts <- lapply(unique(object$df$group), function(gr){
+      selectedParts_temp_all <- unique(object$df[object$df$group == gr,partColumn])
+      selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
+      selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
+      selectedParts_temp_all[selectedParts_temp_ticket != 1]
+    })
+    
+    temp_object <- ALASCA(validationObject = object,
+                          validationParticipants = object$df[,partColumn] %in% unlist(selectedParts))
+  }else if(object$validationMethod == "permutation2"){
+    # Validation by permutation
+    parts <- data.frame(
+      time = object$df$time,
+      group = object$df$group,
+      ID = object$df[,colnames(object$df) == object$participantColumn]
+    )
+    parts <- parts[!duplicated(parts),]
+    times <- parts$time
+    groups <- parts$group
+    
+    # sample id
+    parts_orig <- paste0(object$df[,partColumn], object$df$time, object$df$group)
+    u_parts_orig <- unique(parts_orig)
+    
+    temp_object <- object
+    for(i in 1:length(u_parts_orig)){
+      rIDTime <- sample(seq_along(times), 1)
+      rIDGroup <- sample(seq_along(groups), 1)
+      temp_object$dfRaw$time[parts_orig == u_parts_orig[i]] <- times[rIDTime]
+      times <- times[-rIDTime]
+      temp_object$dfRaw$group[parts_orig == u_parts_orig[i]] <- groups[rIDGroup]
+      groups <- groups[-rIDGroup]
+    }
+    temp_object <- ALASCA(validationObject = temp_object,
+                          validationParticipants = !is.na(object$df[,partColumn]))
+  }else if(object$validationMethod == "permutation"){
+    # Validation by permutation
+    parts_g <- data.frame(
+      group = object$df$group,
+      ID = object$df[,colnames(object$df) == object$participantColumn]
+    )
+    parts_g <- parts_g[!duplicated(parts_g),]
+    groups <- parts_g$group
+    
+    # sample id
+    parts_orig <- unique(paste0(object$df[,partColumn]))
+    
+    temp_object <- object
+    for(i in unique(object$df[,partColumn])){
+      rIDGroup <- sample(seq_along(groups), 1)
+      temp_object$dfRaw$group[temp_object$df[,partColumn] == i] <- groups[rIDGroup]
+      groups <- groups[-rIDGroup]
+      times <- unique(temp_object$dfRaw$time[temp_object$df[,partColumn] == i])
+      for(j in unique(temp_object$dfRaw$time[temp_object$df[,partColumn] == i])){
+        rIDTime <- sample(seq_along(times), 1)
+        temp_object$dfRaw$time[temp_object$df[,partColumn] == i & temp_object$df$time == j] <- times[rIDTime]
+        times <- times[-rIDTime]
+      }
+    }
+    temp_object <- ALASCA(validationObject = temp_object,
+                          validationParticipants = !is.na(object$df[,partColumn]))
+  }
+  
+  return(temp_object)
 }

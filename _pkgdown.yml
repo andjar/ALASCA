@@ -28,6 +28,7 @@ reference:
   - plotCovar
   - plotParts
   - plotPred
+  - plotProjection
 - title: "Diagnostics"
   desc: "Functions for checking statistical validity"
 - contents: 
