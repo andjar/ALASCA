@@ -15,6 +15,7 @@ ALASCA(
   forceEqualBaseline = FALSE,
   useSumCoding = FALSE,
   method = NA,
+  stratificationVector = NA,
   minimizeObject = FALSE,
   plot.xlabel = "Time",
   doDebug = FALSE,
@@ -46,6 +47,8 @@ ALASCA(
 \item{useSumCoding}{Set to \code{TRUE} to use sum coding instead of contrast coding for group (defaults to \code{FALSE})}
 
 \item{method}{Defaults to \code{NA} where method is either LM or LMM, depending on whether your formula contains a random effect or not}
+
+\item{stratificationVector}{Vector of same length as \code{df} that specifies stratification groups during validation. Defaults to \code{NA}, where the group column is used.}
 
 \item{minimizeObject}{Logical. If \code{TRUE}, remove unnecessary clutter, optimize for validation}
 
