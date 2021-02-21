@@ -15,6 +15,7 @@
 #' @param forceEqualBaseline Set to `TRUE` to remove interaction between group and first time point (defaults to `FALSE`)
 #' @param useSumCoding Set to `TRUE` to use sum coding instead of contrast coding for group (defaults to `FALSE`)
 #' @param plot.xlabel Defaults to "Time"
+#' @param stratificationVector Vector of same length as `df` that specifies stratification groups during validation. Defaults to `NA`, where the group column is used.
 #' @param validateRegression Whether to validate regression predictions or not (only if `validate` is `TRUE`)
 #' @param doDebug Print what happens (default: `FALSE`)
 #' @param method Defaults to `NA` where method is either LM or LMM, depending on whether your formula contains a random effect or not
@@ -40,6 +41,7 @@ ALASCA <- function(df,
                    forceEqualBaseline = FALSE,
                    useSumCoding = FALSE,
                    method = NA,
+                   stratificationVector = NA,
                    minimizeObject = FALSE,
                    plot.xlabel = "Time",
                    doDebug = FALSE,
@@ -89,6 +91,7 @@ ALASCA <- function(df,
                    nValFold = nValFold,
                    nValRuns = nValRuns,
                    initTime = Sys.time(),
+                   stratificationVector = stratificationVector,
                    keepValidationObjects = TRUE,
                    validateRegression = ifelse(validate,validateRegression,FALSE),
                    validationMethod = validationMethod,
@@ -190,6 +193,11 @@ sanitizeObject <- function(object){
   if(!("variable" %in% colnames(object$df))){
     stop("The dataframe must contain a column names 'variable'")
   }
+  
+  if(all(is.na(object$stratificationVector))){
+    object$stratificationVector <- object$df$group
+  }
+  
 
   if(object$minimizeObject){
     # This is usually a validation object
@@ -289,6 +297,7 @@ removeEmbedded <- function(object){
   object$df <- NULL
   object$dfRaw <- NULL
   object$parts <- NULL
+  object$partsWithVariable <- NULL
   object$validationObject <- NULL
   object$regr.model <- NULL
   object$RegressionCoefficients <- NULL

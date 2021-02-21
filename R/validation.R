@@ -15,7 +15,7 @@
 #' @export
 validate <- function(object, participantColumn = FALSE, validateRegression = FALSE){
   if(object$validate){
-    stop("The object has already been validated")
+    #stop("The object has already been validated")
   }
   object$validate <- TRUE
   if(validateRegression){
@@ -243,7 +243,7 @@ getValidationPercentilesScore <- function(object, objectlist){
                                                                                  PC = as.numeric(substr(names(perc_group)[x], 3, nchar(names(perc_group)[x]))), 
                                                                                  time = perc_group$time,
                                                                                  group = perc_group$group)))
-    #perc_group <- switchSign(reshape2::melt(object$pca$score$group, id.vars = c("time", "group")), perc_group)
+    #perc_group <- switchSign(reshape2::melt(object$pca$score$group, id.vars = c("time", "group")), perc_group, PC_group)
     object$validation$group$score <- subset(perc_group, PC %in% PC_group)
     names(object$validation$group$score)[names(object$validation$group$score) == 'value'] <- 'score'
     object$ALASCA$score$group <- merge(object$ALASCA$score$group, object$validation$group$score, all.x = TRUE)
@@ -350,8 +350,8 @@ prepateValidationRun <- function(object){
     selectedParts <- data.frame()
     
     # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
-    selectedParts <- lapply(unique(object$df$group), function(gr){
-      selectedParts_temp_all <- unique(object$df[object$df$group == gr,partColumn])
+    selectedParts <- lapply(unique(object$stratVec), function(gr){
+      selectedParts_temp_all <- unique(object$df[object$stratVec == gr,partColumn])
       selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
       selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
       selectedParts_temp_all[selectedParts_temp_ticket != 1]
