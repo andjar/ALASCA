@@ -350,8 +350,8 @@ prepateValidationRun <- function(object){
     selectedParts <- data.frame()
     
     # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
-    selectedParts <- lapply(unique(object$stratVec), function(gr){
-      selectedParts_temp_all <- unique(object$df[object$stratVec == gr,partColumn])
+    selectedParts <- lapply(unique(object$stratificationVector), function(gr){
+      selectedParts_temp_all <- unique(object$df[object$stratificationVector == gr,partColumn])
       selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
       selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
       selectedParts_temp_all[selectedParts_temp_ticket != 1]
