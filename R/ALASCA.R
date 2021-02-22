@@ -169,6 +169,8 @@ sanitizeObject <- function(object){
       if(any(grepl("\\|",formulaTerms))){
         stop("The model contains at least one random effect. Sure you not wanted linear mixed models instead?")
       }
+    }else if(object$method == "Rfast"){
+      cat("Will use Rfast!\n")
     }else{
       stop("You entered an undefined method. Use `LMM` or `LM`!")
     }
