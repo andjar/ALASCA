@@ -325,7 +325,7 @@ plotParts <- function(object,
     return(g)
   }
   if(any(is.na(variable))){
-    variabel <- unique(df$variable)
+    variable <- unique(df$variable)
   }
   g <- lapply(variable, function(xi){
     plotFunction(df, timeColumn, valueColumn, participantColumn, xi, addSmooth, myTheme = myTheme)
