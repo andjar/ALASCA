@@ -13,13 +13,17 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+Depends:
+  data.table
 Imports:
 	ggplot2,
 	ggpubr,
 	lme4,
 	lmerTest,
 	reshape2,
-	ggrepel
+	ggrepel,
+	Rfast,
+	data.table
 Suggests: 
     knitr,
     rmarkdown

@@ -9,7 +9,7 @@ ALASCA(
   formula,
   separateTimeAndGroup = TRUE,
   pAdjustMethod = NA,
-  participantColumn = FALSE,
+  participantColumn = "ID",
   validate = FALSE,
   scaleFun = TRUE,
   forceEqualBaseline = FALSE,
@@ -42,11 +42,11 @@ ALASCA(
 
 \item{scaleFun}{If \code{TRUE} (default), each variable is scaled to unit SD and zero mean. If \code{FALSE}, no scaling is performed. You can also provide a custom scaling function that has the data frame \code{df} as input and output}
 
-\item{forceEqualBaseline}{Set to \code{TRUE} to remove interaction between group and first time point (defaults to \code{FALSE})}
+\item{forceEqualBaseline}{Set to \code{TRUE} (default) to remove interaction between group and first time point}
 
 \item{useSumCoding}{Set to \code{TRUE} to use sum coding instead of contrast coding for group (defaults to \code{FALSE})}
 
-\item{method}{Defaults to \code{NA} where method is either LM or LMM, depending on whether your formula contains a random effect or not}
+\item{method}{Defaults to \code{NA} where method is either LM or LMM or Rfast, depending on whether your formula contains a random effect or not}
 
 \item{stratificationVector}{Vector of same length as \code{df} that specifies stratification groups during validation. Defaults to \code{NA}, where the group column is used.}
 

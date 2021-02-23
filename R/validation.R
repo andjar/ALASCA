@@ -316,15 +316,15 @@ getRegressionPredictions <- function(object){
     if(object$method == "LMM"){
       data.frame(
         pred = lme4:::predict.merMod(model, re.form=NA),
-        time = object$partsWithVariable[[xi]]$time,
-        group = object$partsWithVariable[[xi]]$group,
+        time = object$df[variable == x,time],
+        group = object$df[variable == x,group],
         variable = x
       )
     }else if(object$method == "LM"){
       data.frame(
         pred = predict(model),
-        time = object$partsWithVariable[[xi]]$time,
-        group = object$partsWithVariable[[xi]]$group,
+        time = object$df[variable == x,time],
+        group = object$df[variable == x,group],
         variable = x
       )
     }
@@ -344,21 +344,20 @@ getRegressionPredictions <- function(object){
 #' @param object An ALASCA object
 #' @return An ALASCA object
 prepateValidationRun <- function(object){
-  partColumn <- which(colnames(object$df) == object$participantColumn)
   if(object$validationMethod == "loo"){
     # Use leave-one-out validation
     selectedParts <- data.frame()
     
     # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
     selectedParts <- lapply(unique(object$stratificationVector), function(gr){
-      selectedParts_temp_all <- unique(object$df[object$stratificationVector == gr,partColumn])
+      selectedParts_temp_all <- unique(object$df[object$stratificationVector == gr,ID])
       selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
       selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
       selectedParts_temp_all[selectedParts_temp_ticket != 1]
     })
     
     temp_object <- ALASCA(validationObject = object,
-                          validationParticipants = object$df[,partColumn] %in% unlist(selectedParts))
+                          validationParticipants = object$df[,ID] %in% unlist(selectedParts))
   }else if(object$validationMethod == "permutation2"){
     # Validation by permutation
     parts <- data.frame(

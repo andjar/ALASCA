@@ -12,13 +12,13 @@
 #' @param participantColumn String. Name of the column containing participant identification
 #' @param minimizeObject Logical. If `TRUE`, remove unnecessary clutter, optimize for validation
 #' @param scaleFun If `TRUE` (default), each variable is scaled to unit SD and zero mean. If `FALSE`, no scaling is performed. You can also provide a custom scaling function that has the data frame `df` as input and output
-#' @param forceEqualBaseline Set to `TRUE` to remove interaction between group and first time point (defaults to `FALSE`)
+#' @param forceEqualBaseline Set to `TRUE` (default) to remove interaction between group and first time point
 #' @param useSumCoding Set to `TRUE` to use sum coding instead of contrast coding for group (defaults to `FALSE`)
 #' @param plot.xlabel Defaults to "Time"
 #' @param stratificationVector Vector of same length as `df` that specifies stratification groups during validation. Defaults to `NA`, where the group column is used.
 #' @param validateRegression Whether to validate regression predictions or not (only if `validate` is `TRUE`)
 #' @param doDebug Print what happens (default: `FALSE`)
-#' @param method Defaults to `NA` where method is either LM or LMM, depending on whether your formula contains a random effect or not
+#' @param method Defaults to `NA` where method is either LM or LMM or Rfast, depending on whether your formula contains a random effect or not
 #' @param nValFold Partitions when validating
 #' @param nValRuns number of validation runs
 #' @param validationMethod among  `loo` (leave-one-out, default)
@@ -35,7 +35,7 @@ ALASCA <- function(df,
                    formula,
                    separateTimeAndGroup = TRUE,
                    pAdjustMethod = NA,
-                   participantColumn = FALSE,
+                   participantColumn = "ID",
                    validate = FALSE,
                    scaleFun = TRUE,
                    forceEqualBaseline = FALSE,
@@ -75,7 +75,7 @@ ALASCA <- function(df,
     
     object$doDebug <- FALSE
   }else{
-    object <- list(df = df,
+    object <- list(df = data.table::as.data.table(df),
                    formula = formula,
                    separateTimeAndGroup = separateTimeAndGroup,
                    pAdjustMethod = pAdjustMethod,
@@ -157,55 +157,101 @@ SMASCA <- function(...){
 #' @return An ALASCA object
 sanitizeObject <- function(object){
   
-  # Check formula from user
-  formulaTerms <- colnames(attr(terms.formula(object$formula),"factors"))
-  if(!is.na(object$method)){ 
-    # The user has specified a method to use
-    if(object$method == "LMM"){
-      if(!any(grepl("\\|",formulaTerms))){
-        stop("The model must contain at least one random effect. Sure you wanted linear mixed models?")
+  if(!object$minimizeObject){
+    object$valCol <- as.character(object$formula)[2]
+    # Check formula from user
+    formulaTerms <- colnames(attr(terms.formula(object$formula),"factors"))
+    if(!is.na(object$method)){ 
+      # The user has specified a method to use
+      if(object$method == "LMM"){
+        if(!any(grepl("\\|",formulaTerms))){
+          stop("The model must contain at least one random effect. Sure you wanted linear mixed models?")
+        }
+      }else if(object$method == "LM"){
+        if(any(grepl("\\|",formulaTerms))){
+          stop("The model contains at least one random effect. Sure you not wanted linear mixed models instead?")
+        }
+      }else if(object$method == "Rfast"){
+        cat("Will use Rfast!\n")
+      }else{
+        stop("You entered an undefined method. Use `LMM` or `LM`!")
       }
-    }else if(object$method == "LM"){
+    }else{
+      # Find which default method to use
       if(any(grepl("\\|",formulaTerms))){
-        stop("The model contains at least one random effect. Sure you not wanted linear mixed models instead?")
+        object$method <- "LMM"
+        cat("Will use linear mixed models!\n")
+      }else{
+        object$method <- "LM"
+        cat("Will use linear models!\n")
       }
-    }else if(object$method == "Rfast"){
-      cat("Will use Rfast!\n")
-    }else{
-      stop("You entered an undefined method. Use `LMM` or `LM`!")
     }
-  }else{ 
-    # Find which default method to use
-    if(any(grepl("\\|",formulaTerms))){
-      object$method <- "LMM"
-      cat("Will use linear mixed models!\n")
-    }else{
-      object$method <- "LM"
-      cat("Will use linear models!\n")
+    
+    # Check that the input is as expected
+    if(!("time" %in% colnames(object$df))){
+      stop("The dataframe must contain a column names 'time'")
+    }
+    if(!("group" %in% colnames(object$df))){
+      stop("The dataframe must contain a column names 'group'")
+    }
+    if(!("variable" %in% colnames(object$df))){
+      stop("The dataframe must contain a column names 'variable'")
+    }
+  
+    if(all(is.na(object$stratificationVector))){
+      cat("Using group for stratification.\n")
+      object$stratificationVector <- object$df$group
+    }
+    
+    # Change value column if necessary
+    if(as.character(object$formula)[2] != "value"){
+      cat("Changing",as.character(object$formula)[2],"to `value`.\n")
+      object$df$value <- object$df[, get(object$valCol)]
+      object$formula <- formula(paste("value ~",
+                                      as.character(object$formula)[3]))
+    }
+  
+    if(object$method %in% c("LMM", "Rfast")){
+      if(object$participantColumn != "ID"){
+        object$df$ID <- object$df[, get(object$participantColumn)]
+      }else if(any(grepl("\\|",formulaTerms))){
+        if(sum(grepl("\\|",formulaTerms)) > 1){
+          stop("Multiple random effects, couldn't determine participant-id. Please specify `participantColumn`")
+        }else{
+          tmp <- formulaTerms[grepl("\\|",formulaTerms)]
+          tmp <- gsub(" ", "",tmp)
+          tmp <- strsplit(tmp, "\\|")
+          object$participantColumn <- tmp[[1]][2]
+          object$df$ID <- object$df[, get(object$participantColumn)]
+          tmp <- formulaTerms[!grepl("\\|",formulaTerms)]
+          object$formula <- formula(paste("value ~",
+                                          paste(tmp, collapse = "+")))
+        }
+      }else if(object$participantColumn == "ID"){
+        if(!("ID" %in% colnames(object$df))){
+          stop("Please specify participant-id in `participantColumn`")
+        }
+      }
+      
+      if(object$method == "LMM"){
+        rterms <- formulaTerms[grepl("\\|",formulaTerms)]
+        rterms <- paste0("(",rterms, ")")
+        object$newformula <- formula(paste("value ~ modmat+", paste(rterms, collapse = "+")))
+      }else if(object$method == "Rfast"){
+        rterms <- formulaTerms[!grepl("\\|",formulaTerms)]
+        object$newformula <- formula(paste("value ~ ", paste(rterms, collapse = "+")))
+      }
+      
+    }else if(object$method %in% c("LM")){
+      object$newformula <- value ~ modmat
     }
   }
   
-  # Check that the input is as expected
-  if(!("time" %in% colnames(object$df))){
-    stop("The dataframe must contain a column names 'time'")
-  }
-  if(!("group" %in% colnames(object$df))){
-    stop("The dataframe must contain a column names 'group'")
-  }
-  if(!("variable" %in% colnames(object$df))){
-    stop("The dataframe must contain a column names 'variable'")
-  }
   
-  if(all(is.na(object$stratificationVector))){
-    object$stratificationVector <- object$df$group
-  }
-  
-
   if(object$minimizeObject){
     # This is usually a validation object
-    object$df <- object$df[object$validationParticipants,]
-    partColumn <- which(colnames(object$df) == object$participantColumn)
-    object$df[,partColumn] <- factor(object$df[,partColumn])
+    object$df <- object$df[object$validationParticipants]
+    object$df$ID <- factor(object$df$ID)
   }
   
   if(object$doDebug){
@@ -220,7 +266,7 @@ sanitizeObject <- function(object){
   }
   if(any(is.na(object$df$time) | is.na(object$df$group))){
     warning("\n\n!!! -> Oh dear, at least on of your rows is missing either time or group. I have removed it/them for now, but you should check if this is a problem...\n\n")
-    object$df <- object$df[!is.na(object$df$time) & !is.na(object$df$group),]
+    object$df <- object$df[!is.na(time) & !is.na(group)]
   }
   
   # Keep a copy of unscaled data
@@ -239,51 +285,27 @@ sanitizeObject <- function(object){
       cat("Scaling data with custom function...\n")
     }
     object$df <- object$scaleFun(object$df)
+    object$df$value <- object$df[, get(object$valCol)]
   }else if(object$scaleFun == TRUE){
     if(!object$minimizeObject){
       cat("Scaling data...\n")
     }
-    object$scaleFun <- function(df){
-      valColumn <- which(as.character(object$formula)[2] == colnames(df))
-      for(i in unique(object$df$variable)){
-        df[df$variable == i,valColumn] <- (df[df$variable == i,valColumn] - mean(df[df$variable == i,valColumn]))/sd(df[df$variable == i,valColumn])
-      }
-      return(df)
-    }
-    object$df <- object$scaleFun(object$df)
+    object$df[, value := scale(value), by = variable]
   }else{
     if(!object$minimizeObject){
       warning("Not scaling data...\n")
     }
   }
-  
-  # Check if all participants have all values
-  object$partsWithVariable <- lapply(unique(object$df$variable), function(i){
-    b <- object$df[object$df$variable == i, which(!(colnames(object$df) %in% c("variable", as.character(object$formula)[2])))]
-    rownames(b) <- NULL
-    b
-  })
-  doAllParticipantsHaveSameMeasurements <- function(x) all(duplicated.default(x)[-1])
-  if( !doAllParticipantsHaveSameMeasurements(object$partsWithVariable) ){
-    warning("Some of your participants are missing measurements. This WILL slow down the rest of the script!!!\n")
-    if(any(object$participantColumn == FALSE)){
-      #stop("Some of your participants are missing measurements. To proceed, please specify participant column.")
-    }else{
-      #warning("Some of your participants are missing measurements. However, I will try to proceed.\n")
+  if(!object$minimizeObject){
+    # Check what terms that is present in formula
+    object$hasGroupTerm <- ifelse(any(formulaTerms == "group"), TRUE, FALSE)
+    object$hasInteractionTerm <- ifelse(any(formulaTerms == "group:time" | formulaTerms == "time:group"), TRUE, FALSE)
+    object$covars <- formulaTerms[!(formulaTerms %in% c("time","group","group:time","time:group"))]
+    if(object$doDebug){
+      cat(".... Group term in formula? ",object$hasGroupTerm,"\n")
+      cat(".... Interaction term in formula? ",object$hasInteractionTerm,"\n")
+      cat(".... Identified the following covariates in addition to time and troup: ",object$covars,"\n")
     }
-    object$missingMeasurements <- TRUE
-  }else{
-    object$missingMeasurements <- FALSE
-  }
-  
-  # Check what terms that is present in formula
-  object$hasGroupTerm <- ifelse(any(formulaTerms == "group"), TRUE, FALSE)
-  object$hasInteractionTerm <- ifelse(any(formulaTerms == "group:time" | formulaTerms == "time:group"), TRUE, FALSE)
-  object$covars <- formulaTerms[!(formulaTerms %in% c("time","group","group:time","time:group"))]
-  if(object$doDebug){
-    cat(".... Group term in formula? ",object$hasGroupTerm,"\n")
-    cat(".... Interaction term in formula? ",object$hasInteractionTerm,"\n")
-    cat(".... Identified the following covariates in addition to time and troup: ",object$covars,"\n")
   }
 
   return(object)
