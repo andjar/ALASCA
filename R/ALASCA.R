@@ -290,7 +290,7 @@ sanitizeObject <- function(object){
     if(!object$minimizeObject){
       cat("Scaling data...\n")
     }
-    object$df[, value := scale(value), by = variable]
+    object$df[,value:=as.double(value)][, value := scale(value), by = variable]
   }else{
     if(!object$minimizeObject){
       warning("Not scaling data...\n")

@@ -84,7 +84,7 @@
       <h1 data-toc-skip>Metabolomics</h1>
                         <h4 class="author">Anders H. Jarmund</h4>
             
-            <h4 class="date">2021-02-12</h4>
+            <h4 class="date">2021-02-23</h4>
       
       
       <div class="hidden name"><code>metabolomics.Rmd</code></div>
@@ -125,7 +125,8 @@ pre.plot {
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="http://ggplot2.tidyverse.org">"ggplot2"</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://rpkgs.datanovia.com/ggpubr/">"ggpubr"</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">ALASCA</span><span class="op">)</span></code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">ALASCA</span><span class="op">)</span>
+<span class="co">#&gt; Loading required package: data.table</span></code></pre></div>
 <p>This time we will look at a small metabolomics dataset by <span class="citation">Euceda et al. (2017)</span> and replicate the findings of <span class="citation">Madssen et al. (2020)</span>. Note that this is an example of ALASCA applied on <strong>intervention data</strong>. If you are more interested in repeated measures <strong>observational data</strong>, have a look at <a href="pregnancy.html">the preeclampsia vignette</a>. If you want an introduction to ALASCA, have a look at <a href="ALASCA.html">Get Started</a>.</p>
 <p>Let us start by having a quick look at it:</p>
 <div class="fold s">
@@ -159,6 +160,7 @@ All metabolite responses were log-transformed before analysis, and the effect ma
 <code class="sourceCode R"><span class="va">form</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">ID</span><span class="op">)</span>
 <span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">form</span>, separateTimeAndGroup <span class="op">=</span> <span class="cn">FALSE</span>, forceEqualBaseline <span class="op">=</span> <span class="cn">TRUE</span>, scaleFun <span class="op">=</span> <span class="va">scaleFun</span><span class="op">)</span>
 <span class="co">#&gt; Will use linear mixed models!</span>
+<span class="co">#&gt; Using group for stratification.</span>
 <span class="co">#&gt; Scaling data with custom function...</span>
 <span class="co">#&gt; Calculating  LMM  coefficients...</span>
 <span class="co">#&gt; Registered S3 methods overwritten by 'lme4':</span>
@@ -167,22 +169,6 @@ All metabolite responses were log-transformed before analysis, and the effect ma
 <span class="co">#&gt;   influence.merMod                car </span>
 <span class="co">#&gt;   dfbeta.influence.merMod         car </span>
 <span class="co">#&gt;   dfbetas.influence.merMod        car</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span>
 <span class="co">#&gt; Finished calculating regression coefficients!</span>
 <span class="co">#&gt; Calculating predictions from regression models...</span>
 <span class="co">#&gt; Finished calculating predictions from regression models!</span>
@@ -193,8 +179,8 @@ All metabolite responses were log-transformed before analysis, and the effect ma
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">mod</span><span class="op">$</span><span class="va">regr.model</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
 <span class="co">#&gt; Linear mixed model fit by REML. t-tests use Satterthwaite's method [</span>
 <span class="co">#&gt; lmerModLmerTest]</span>
-<span class="co">#&gt; Formula: object$newFormula</span>
-<span class="co">#&gt;    Data: subset(object$df, variable == i)</span>
+<span class="co">#&gt; Formula: object$newformula</span>
+<span class="co">#&gt;    Data: object$df[variable == x]</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; REML criterion at convergence: 761.7</span>
 <span class="co">#&gt; </span>
@@ -209,29 +195,27 @@ All metabolite responses were log-transformed before analysis, and the effect ma
 <span class="co">#&gt; Number of obs: 270, groups:  ID, 122</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Fixed effects:</span>
-<span class="co">#&gt;                                    Estimate Std. Error        df t value</span>
-<span class="co">#&gt; (Intercept)                         0.49104    0.09724 252.05390   5.050</span>
-<span class="co">#&gt; XtimeTP2                            0.37490    0.16984 211.02402   2.207</span>
-<span class="co">#&gt; XtimeTP3                            0.90964    0.17427 220.72035   5.220</span>
-<span class="co">#&gt; XtimeTP2:groupBevacizumab treated   0.40580    0.21992 256.50552   1.845</span>
-<span class="co">#&gt; XtimeTP3:groupBevacizumab treated   0.55303    0.20953 258.87566   2.639</span>
-<span class="co">#&gt;                                   Pr(&gt;|t|)    </span>
-<span class="co">#&gt; (Intercept)                       8.49e-07 ***</span>
-<span class="co">#&gt; XtimeTP2                           0.02837 *  </span>
-<span class="co">#&gt; XtimeTP3                          4.13e-07 ***</span>
-<span class="co">#&gt; XtimeTP2:groupBevacizumab treated  0.06616 .  </span>
-<span class="co">#&gt; XtimeTP3:groupBevacizumab treated  0.00881 ** </span>
+<span class="co">#&gt;                                         Estimate Std. Error        df t value</span>
+<span class="co">#&gt; (Intercept)                              0.49104    0.09724 252.05390   5.050</span>
+<span class="co">#&gt; modmattimeTP2                            0.37490    0.16984 211.02402   2.207</span>
+<span class="co">#&gt; modmattimeTP3                            0.90964    0.17427 220.72035   5.220</span>
+<span class="co">#&gt; modmattimeTP2:groupBevacizumab treated   0.40580    0.21992 256.50552   1.845</span>
+<span class="co">#&gt; modmattimeTP3:groupBevacizumab treated   0.55303    0.20953 258.87566   2.639</span>
+<span class="co">#&gt;                                        Pr(&gt;|t|)    </span>
+<span class="co">#&gt; (Intercept)                            8.49e-07 ***</span>
+<span class="co">#&gt; modmattimeTP2                           0.02837 *  </span>
+<span class="co">#&gt; modmattimeTP3                          4.13e-07 ***</span>
+<span class="co">#&gt; modmattimeTP2:groupBevacizumab treated  0.06616 .  </span>
+<span class="co">#&gt; modmattimeTP3:groupBevacizumab treated  0.00881 ** </span>
 <span class="co">#&gt; ---</span>
 <span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Correlation of Fixed Effects:</span>
-<span class="co">#&gt;             (Intr) XtmTP2 XtmTP3 XTP2:t</span>
-<span class="co">#&gt; XtimeTP2    -0.451                     </span>
-<span class="co">#&gt; XtimeTP3    -0.449  0.312              </span>
-<span class="co">#&gt; XtmTP2:grBt -0.001 -0.615 -0.084       </span>
-<span class="co">#&gt; XtmTP3:grBt  0.013 -0.096 -0.670  0.139</span>
-<span class="co">#&gt; fit warnings:</span>
-<span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></code></pre></div>
+<span class="co">#&gt;             (Intr) mdmTP2 mdmTP3 mTP2:t</span>
+<span class="co">#&gt; modmattmTP2 -0.451                     </span>
+<span class="co">#&gt; modmattmTP3 -0.449  0.312              </span>
+<span class="co">#&gt; mdmttTP2:Bt -0.001 -0.615 -0.084       </span>
+<span class="co">#&gt; mdmttTP3:Bt  0.013 -0.096 -0.670  0.139</span></code></pre></div>
 <p>And now, let us plot it:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/stats/screeplot.html">screeplot</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></code></pre></div>
@@ -252,25 +236,25 @@ All metabolite responses were log-transformed before analysis, and the effect ma
 <span class="va">mod.val</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">mod</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span>, validateRegression <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 <span class="co">#&gt; Running validation...</span>
 <span class="co">#&gt; - Run  1  of  10 </span>
-<span class="co">#&gt; --- Used  1.76  seconds. Est. time remaining:  15.85  seconds </span>
+<span class="co">#&gt; --- Used  2.38  seconds. Est. time remaining:  21.4  seconds </span>
 <span class="co">#&gt; - Run  2  of  10 </span>
-<span class="co">#&gt; --- Used  1.73  seconds. Est. time remaining:  13.95  seconds </span>
+<span class="co">#&gt; --- Used  2.19  seconds. Est. time remaining:  18.28  seconds </span>
 <span class="co">#&gt; - Run  3  of  10 </span>
-<span class="co">#&gt; --- Used  1.75  seconds. Est. time remaining:  12.22  seconds </span>
+<span class="co">#&gt; --- Used  2.08  seconds. Est. time remaining:  15.52  seconds </span>
 <span class="co">#&gt; - Run  4  of  10 </span>
-<span class="co">#&gt; --- Used  1.78  seconds. Est. time remaining:  10.53  seconds </span>
+<span class="co">#&gt; --- Used  2.05  seconds. Est. time remaining:  13.05  seconds </span>
 <span class="co">#&gt; - Run  5  of  10 </span>
-<span class="co">#&gt; --- Used  1.81  seconds. Est. time remaining:  8.83  seconds </span>
+<span class="co">#&gt; --- Used  2.41  seconds. Est. time remaining:  11.11  seconds </span>
 <span class="co">#&gt; - Run  6  of  10 </span>
-<span class="co">#&gt; --- Used  1.77  seconds. Est. time remaining:  7.07  seconds </span>
+<span class="co">#&gt; --- Used  2.3  seconds. Est. time remaining:  8.94  seconds </span>
 <span class="co">#&gt; - Run  7  of  10 </span>
-<span class="co">#&gt; --- Used  1.79  seconds. Est. time remaining:  5.31  seconds </span>
+<span class="co">#&gt; --- Used  1.95  seconds. Est. time remaining:  6.59  seconds </span>
 <span class="co">#&gt; - Run  8  of  10 </span>
-<span class="co">#&gt; --- Used  1.64  seconds. Est. time remaining:  3.51  seconds </span>
+<span class="co">#&gt; --- Used  2.23  seconds. Est. time remaining:  4.4  seconds </span>
 <span class="co">#&gt; - Run  9  of  10 </span>
-<span class="co">#&gt; --- Used  1.8  seconds. Est. time remaining:  1.76  seconds </span>
+<span class="co">#&gt; --- Used  2.27  seconds. Est. time remaining:  2.21  seconds </span>
 <span class="co">#&gt; - Run  10  of  10 </span>
-<span class="co">#&gt; --- Used  1.78  seconds. Est. time remaining:  0  seconds</span></code></pre></div>
+<span class="co">#&gt; --- Used  2.02  seconds. Est. time remaining:  0  seconds</span></code></pre></div>
 <p>The result:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">mod.val</span><span class="op">)</span></code></pre></div>
