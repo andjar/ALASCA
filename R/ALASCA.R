@@ -214,6 +214,9 @@ sanitizeObject <- function(object){
     if(object$method %in% c("LMM", "Rfast")){
       if(object$participantColumn != "ID"){
         object$df$ID <- object$df[, get(object$participantColumn)]
+        tmp <- formulaTerms[!grepl("\\|",formulaTerms)]
+        object$formula <- formula(paste("value ~",
+                                        paste(tmp, collapse = "+")))
       }else if(any(grepl("\\|",formulaTerms))){
         if(sum(grepl("\\|",formulaTerms)) > 1){
           stop("Multiple random effects, couldn't determine participant-id. Please specify `participantColumn`")
@@ -269,9 +272,6 @@ sanitizeObject <- function(object){
     object$df <- object$df[!is.na(time) & !is.na(group)]
   }
   
-  # Keep a copy of unscaled data
-  object$dfRaw <- object$df
-  
   # Use sum coding?
   if(object$useSumCoding){
     if(object$doDebug){
@@ -279,6 +279,9 @@ sanitizeObject <- function(object){
     }
     contrasts(object$df$group) <- contr.sum(length(unique(object$df$group)))
   }
+  
+  # Keep a copy of unscaled data
+  object$dfRaw <- object$df
   
   if(is.function(object$scaleFun)){
     if(!object$minimizeObject){
