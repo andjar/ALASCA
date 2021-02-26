@@ -74,8 +74,10 @@ rotateMatrix <- function(object, target){
   PCloading <- which(PCloading)
   
   
-  a <- object$pca$loading
-  b <- target$pca$loading
+  a_l <- object$pca$loading
+  b_l <- target$pca$loading
+  a_s <- object$pca$score
+  b_s <- target$pca$score
   
   procrustes <- function(loadings, target){
     s= t(loadings)%*%target
@@ -100,17 +102,18 @@ rotateMatrix <- function(object, target){
   lst <- lapply(numeric(N), function(x) vec)
   signMatrix <- as.matrix(expand.grid(lst))
   signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
-    c <- procrustes(loadings= as.matrix(a$time[,PCloading]* signMatrix[i,]),
-                    target = as.matrix(b$time[,PCloading]))
-    sum((b$time[,PCloading] - c$procrust)^2)
+    c <- procrustes(loadings= as.matrix(t(t(a_l$time[,PCloading]) * signMatrix[i,])),
+                    target = as.matrix(b_l$time[,PCloading]))
+    #sum((b_l$time[,PCloading] - c$procrust)^2)
+    sum((b_s$time[,PCloading] - as.matrix(t(t(a_s$time[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2)
   }))
   minSignVar <- which(signVar == min(signVar))[1]
-  object$pca$loading$time[,PCloading] <- object$pca$loading$time[,PCloading] * signMatrix[minSignVar,]
-  object$pca$score$time[,PCloading] <- object$pca$score$time[,PCloading] * signMatrix[minSignVar,]
-  a <- object$pca$loading
-  
-  c <- procrustes(loadings= as.matrix(a$time[,PCloading]),
-                  target = as.matrix(b$time[,PCloading]))
+  object$pca$loading$time[,PCloading] <- t(t(object$pca$loading$time[,PCloading]) * signMatrix[minSignVar,])
+  object$pca$score$time[,PCloading] <- t(t(object$pca$score$time[,PCloading]) * signMatrix[minSignVar,])
+  a_l <- object$pca$loading
+
+  c <- procrustes(loadings= as.matrix(a_l$time[,PCloading]),
+                  target = as.matrix(b_l$time[,PCloading]))
   object$pca$loading$time[,PCloading] <- c$procrust
   object$pca$score$time[,PCloading] <- as.matrix(object$pca$score$time[,PCloading]) %*% solve(c$t1)
   
@@ -126,17 +129,18 @@ rotateMatrix <- function(object, target){
     lst <- lapply(numeric(N), function(x) vec)
     signMatrix <- as.matrix(expand.grid(lst))
     signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
-      c <- procrustes(loadings= as.matrix(a$group[,PCloading]* signMatrix[i,]),
-                      target = as.matrix(b$group[,PCloading]))
-      sum((b$group[,PCloading] - c$procrust)^2)
+      c <- procrustes(loadings= as.matrix(t(t(a_l$group[,PCloading]) * signMatrix[i,])),
+                      target = as.matrix(b_l$group[,PCloading]))
+      #sum((b_l$group[,PCloading] - c$procrust)^2)
+      sum((b_s$group[,PCloading] - as.matrix(t(t(a_s$group[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2)
     }))
     minSignVar <- which(signVar == min(signVar))[1]
-    object$pca$loading$group[,PCloading] <- object$pca$loading$group[,PCloading] * signMatrix[minSignVar,]
-    object$pca$score$group[,PCloading] <- object$pca$score$group[,PCloading] * signMatrix[minSignVar,]
-    a <- object$pca$loading
-    
-    c <- procrustes(loadings= as.matrix(a$group[,PCloading]),
-                    target = as.matrix(b$group[,PCloading]))
+    object$pca$loading$group[,PCloading] <- t(t(object$pca$loading$group[,PCloading]) * signMatrix[minSignVar,])
+    object$pca$score$group[,PCloading] <- t(t(object$pca$score$group[,PCloading]) * signMatrix[minSignVar,])
+    a_l <- object$pca$loading
+
+    c <- procrustes(loadings= as.matrix(a_l$group[,PCloading]),
+                    target = as.matrix(b_l$group[,PCloading]))
     object$pca$loading$group[,PCloading] <- c$procrust
     object$pca$score$group[,PCloading] <- as.matrix(object$pca$score$group[,PCloading]) %*% solve(c$t1)
   }

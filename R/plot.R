@@ -417,7 +417,7 @@ plotVal <- function(object, component = 1, myTheme = ggplot2::theme_bw()){
       )
     })
     )
-    dff$plotGroup <- paste0(dff$model,dff$group)
+    dff$plotGroup <- paste0(dff$model,"-",dff$group)
     gsg <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group)) + 
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
       ggplot2::geom_point(data = subset(getScores(object)$group, PC == component), group = NA, alpha = 1, color = "black") +
@@ -460,7 +460,7 @@ plotVal <- function(object, component = 1, myTheme = ggplot2::theme_bw()){
       )
     })
     )
-    dff$plotGroup <- paste0(dff$model,dff$group)
+    dff$plotGroup <- paste0(dff$model,"-",dff$group)
     gs <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group)) + 
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
       ggplot2::geom_point(data = subset(getScores(object)$time, PC == component), group = NA, alpha = 1, color = "black") +
