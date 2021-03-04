@@ -498,13 +498,13 @@ plotVal <- function(object, component = 1, myTheme = ggplot2::theme_bw()){
 #' 
 #' @export
 plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE, myTheme = ggplot2::theme_bw()){
+  df <- getCovars(object)
   if(any(is.na(covar))){
-    covar <- object$covars
+    covar <- unique(df$variable)
   }
   if(any(is.na(tlab))){
     tlab <- covar
   }
-  df <- getCovars(object)
   for(i in 1:length(covar)){
     df$tlab[df$variable == covar[i]] <- tlab[i]
   }
