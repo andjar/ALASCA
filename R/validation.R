@@ -104,8 +104,9 @@ rotateMatrix <- function(object, target){
   signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
     c <- procrustes(loadings= as.matrix(t(t(a_l$time[,PCloading]) * signMatrix[i,])),
                     target = as.matrix(b_l$time[,PCloading]))
-    #sum((b_l$time[,PCloading] - c$procrust)^2)
-    sum((b_s$time[,PCloading] - as.matrix(t(t(a_s$time[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2)
+    ifelse(object$optimizeScore,
+           sum((b_s$time[,PCloading] - as.matrix(t(t(a_s$time[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2),
+           sum((b_l$time[,PCloading] - c$procrust)^2))
   }))
   minSignVar <- which(signVar == min(signVar))[1]
   object$pca$loading$time[,PCloading] <- t(t(object$pca$loading$time[,PCloading]) * signMatrix[minSignVar,])
@@ -131,8 +132,9 @@ rotateMatrix <- function(object, target){
     signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
       c <- procrustes(loadings= as.matrix(t(t(a_l$group[,PCloading]) * signMatrix[i,])),
                       target = as.matrix(b_l$group[,PCloading]))
-      #sum((b_l$group[,PCloading] - c$procrust)^2)
-      sum((b_s$group[,PCloading] - as.matrix(t(t(a_s$group[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2)
+      ifelse(object$optimizeScore,
+             sum((b_s$group[,PCloading] - as.matrix(t(t(a_s$group[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2),
+             sum((b_l$group[,PCloading] - c$procrust)^2))
     }))
     minSignVar <- which(signVar == min(signVar))[1]
     object$pca$loading$group[,PCloading] <- t(t(object$pca$loading$group[,PCloading]) * signMatrix[minSignVar,])
