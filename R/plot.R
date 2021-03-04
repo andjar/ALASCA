@@ -497,7 +497,7 @@ plotVal <- function(object, component = 1, myTheme = ggplot2::theme_bw()){
 #' @return A ggplot2 objects\.
 #' 
 #' @export
-plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE, myTheme = ggplot2::theme_bw()){
+plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE, myTheme = ggplot2::theme_bw(), pvalue = "shape"){
   df <- getCovars(object)
   if(any(is.na(covar))){
     covar <- unique(df$variable)
@@ -509,15 +509,31 @@ plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE, myThem
     df$tlab[df$variable == covar[i]] <- tlab[i]
   }
   df$pvalue_label <- ifelse(df$pvalue >= 0.05, "Not significant", ifelse(df$pvalue < 0.001, "< 0.001", ifelse(df$pvalue < 0.01, "< 0.01", "< 0.05")))
+  df$pvalue_sign <- ifelse(df$pvalue >= 0.05, "", ifelse(df$pvalue < 0.001, "***", ifelse(df$pvalue < 0.01, "**", "*")))
   df$covar <- factor(df$covar, levels = unique(df$covar[order(df$estimate)]))
   if(return_data){
     return(df)
   }else{
-    g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, shape = pvalue_label)) + 
-      ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
-      ggplot2::scale_shape_manual(values = c("Not significant"=3, "< 0.05"=15, "< 0.01"=16, "< 0.001"=17, "Baseline"=5)) +
-      ggplot2::facet_wrap(~tlab) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
-      myTheme + ggplot2::theme(legend.position = "bottom", legend.box="vertical", legend.margin=ggplot2::margin())
+    if(pvalue == "shape"){
+      g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, shape = pvalue_label)) + 
+        ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
+        ggplot2::scale_shape_manual(values = c("Not significant"=3, "< 0.05"=15, "< 0.01"=16, "< 0.001"=17, "Baseline"=5)) +
+        ggplot2::facet_wrap(~tlab) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
+        myTheme + ggplot2::theme(legend.position = "bottom", legend.box="vertical", legend.margin=ggplot2::margin())
+    }else if(pvalue == "star" | pvalue == "asterisk" | pvalue == "stars"){
+      g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, label = pvalue_sign)) + 
+        ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
+        ggplot2::geom_text(hjust = 0.5, vjust = 0) +
+        ggplot2::facet_wrap(~tlab) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
+        myTheme
+    }else{
+      g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar)) + 
+        ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
+        ggplot2::facet_wrap(~tlab) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
+        myTheme + ggplot2::theme(legend.position = "bottom", legend.box="vertical", legend.margin=ggplot2::margin())
+    }
+    
+    
     return(g)
   }
 }
