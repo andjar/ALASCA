@@ -418,16 +418,25 @@ appendModel <- function(target, object, method = "project"){
       target$ALASCA$loading$group <- rbind(target$ALASCA$loading$group, object$ALASCA$loading$group)
     }
   }else{
-    temp_df <- merge(object$mod.pred, target$ALASCA$loading$time, by.y = "covars", by.x = "variable", all = TRUE)
-    temp_df$score <- temp_df$loading * temp_df$pred
-    temp_df <- aggregate(data = temp_df, score ~ time + group + PC, FUN = sum)
-    target$ALASCA$score$time <- rbind(target$ALASCA$score$time, temp_df)
-    if(target$separateTimeAndGroup){
-      temp_df <- merge(object$mod.pred, target$ALASCA$loading$group, by.y = "covars", by.x = "variable", all = TRUE)
-      temp_df$score <- temp_df$loading * temp_df$pred
-      temp_df <- aggregate(data = temp_df, score ~ time + group + PC, FUN = sum)
-      target$ALASCA$score$group <- rbind(target$ALASCA$score$group, temp_df)
-    }
+    tmp_pca <- as.data.frame(scale(object$effect.matrix[object$effect.matrix$comp == "TIME",1:(ncol(object$effect.matrix)-1)], target$pca$time$center, target$pca$time$scale) %*% target$pca$time$rotation)
+    tmp_pca$group <- object$parts$group
+    tmp_pca$time <- object$parts$time
+    tmp_pca <- tmp_pca[!duplicated(tmp_pca),]
+    tmp_pca <- reshape2::melt(tmp_pca, id.vars = c("time","group"))
+    colnames(tmp_pca) <- c("time", "group", "PC", "score")
+    tmp_pca$PC <- as.numeric(gsub("PC","",tmp_pca$PC))
+    target$ALASCA$score$time <- rbind(target$ALASCA$score$time, tmp_pca)
+    
+    # temp_df <- merge(object$mod.pred, target$ALASCA$loading$time, by.y = "covars", by.x = "variable", all = TRUE)
+    # temp_df$score <- temp_df$loading * temp_df$pred
+    # temp_df <- aggregate(data = temp_df, score ~ time + group + PC, FUN = sum)
+    # target$ALASCA$score$time <- rbind(target$ALASCA$score$time, temp_df)
+    # if(target$separateTimeAndGroup){
+    #   temp_df <- merge(object$mod.pred, target$ALASCA$loading$group, by.y = "covars", by.x = "variable", all = TRUE)
+    #   temp_df$score <- temp_df$loading * temp_df$pred
+    #   temp_df <- aggregate(data = temp_df, score ~ time + group + PC, FUN = sum)
+    #   target$ALASCA$score$group <- rbind(target$ALASCA$score$group, temp_df)
+    # }
   }
   
   return(target)
