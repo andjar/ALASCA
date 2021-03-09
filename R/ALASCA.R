@@ -394,3 +394,26 @@ summary.ALASCA <- function(object){
   }
   
 }
+
+#' Append a new model to an existing model
+#'
+#' 
+#'
+#' @param target The existing model
+#' @param object The new model
+#' @return An ALASCA object
+#' @export
+appendModel <- function(target, object){
+  object <- rotateMatrix(object = object, target = target)
+  target$ALASCA$score$time <- rbind(target$ALASCA$score$time, object$ALASCA$score$time)
+  target$ALASCA$loading$time$model <- "Model 1"
+  object$ALASCA$loading$time$model <- "Model 2"
+  target$ALASCA$loading$time <- rbind(target$ALASCA$loading$time, object$ALASCA$loading$time)
+  if(target$separateTimeAndGroup){
+    target$ALASCA$score$group <- rbind(target$ALASCA$score$time, object$ALASCA$score$group)
+    target$ALASCA$loading$group$model <- "Model 1"
+    object$ALASCA$loading$group$model <- "Model 2"
+    target$ALASCA$loading$group <- rbind(target$ALASCA$loading$group, object$ALASCA$loading$group)
+  }
+  return(target)
+}

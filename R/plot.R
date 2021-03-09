@@ -178,11 +178,14 @@ getLoadingPlot <- function(object, component = 1, effect = "time", decreasingLoa
   if(object$validate){
     g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high)) + ggplot2::geom_pointrange(size = pointSize)
   }else{
-    g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading)) + ggplot2::geom_point()
+    if(any(colnames(loadings) == "model")){
+      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, shape = model)) + ggplot2::geom_point()
+    }else{
+      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading)) + ggplot2::geom_point()
+    }
   }
   
-  g <- g + myTheme +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust=1)) +
+  g <- g + myTheme + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust=1), legend.position = c(0.8, 0.8)) +
     ggplot2::labs(x = "Variable",
                   y = paste0("PC",component, " (", round(100*ifelse(effect == "time", object$ALASCA$loading$explained$time[component],object$ALASCA$loading$explained$group[component]),2),"%)"))
   if(!any(is.na(highlight))){
