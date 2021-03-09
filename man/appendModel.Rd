@@ -4,12 +4,14 @@
 \alias{appendModel}
 \title{Append a new model to an existing model}
 \usage{
-appendModel(target, object)
+appendModel(target, object, method = "project")
 }
 \arguments{
 \item{target}{The existing model}
 
 \item{object}{The new model}
+
+\item{method}{\code{rotate} or \code{project} (default)}
 }
 \value{
 An ALASCA object
