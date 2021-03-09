@@ -21,6 +21,7 @@ ALASCA(
   doDebug = FALSE,
   nValFold = 7,
   nValRuns = 50,
+  optimizeScore = TRUE,
   validateRegression = FALSE,
   validationMethod = "loo",
   validationObject = NA,
