@@ -223,7 +223,12 @@ getEffectMatrix <- function(object){
   }
   
   object$parts$time <- parts$time
-  object$parts$group <- parts$group
+  if(object$keepTerms != ""){
+    keepTerms <- c("group", object$keepTerms)
+    object$parts$group <- apply( parts[ , ..keepTerms ] , 1 , paste , collapse = " - " )
+  }else{
+    object$parts$group <- parts$group
+  }
   if(!object$minimizeObject){
     cat("Finished calculating effect matrix!\n")
   }

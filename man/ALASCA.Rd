@@ -21,6 +21,7 @@ ALASCA(
   doDebug = FALSE,
   nValFold = 7,
   nValRuns = 50,
+  keepTerms = c(),
   optimizeScore = TRUE,
   validateRegression = FALSE,
   validationMethod = "loo",
@@ -60,6 +61,8 @@ ALASCA(
 \item{nValFold}{Partitions when validating}
 
 \item{nValRuns}{number of validation runs}
+
+\item{keepTerms}{Additional terms to keep in the model matrix}
 
 \item{validateRegression}{Whether to validate regression predictions or not (only if \code{validate} is \code{TRUE})}
 

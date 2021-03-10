@@ -15,6 +15,7 @@
 #' @param forceEqualBaseline Set to `TRUE` (default) to remove interaction between group and first time point
 #' @param useSumCoding Set to `TRUE` to use sum coding instead of contrast coding for group (defaults to `FALSE`)
 #' @param plot.xlabel Defaults to "Time"
+#' @param keepTerms Additional terms to keep in the model matrix
 #' @param stratificationVector Vector of same length as `df` that specifies stratification groups during validation. Defaults to `NA`, where the group column is used.
 #' @param validateRegression Whether to validate regression predictions or not (only if `validate` is `TRUE`)
 #' @param doDebug Print what happens (default: `FALSE`)
@@ -47,6 +48,7 @@ ALASCA <- function(df,
                    doDebug = FALSE,
                    nValFold = 7,
                    nValRuns = 50,
+                   keepTerms = c(),
                    optimizeScore = TRUE,
                    validateRegression = FALSE,
                    validationMethod = "loo",
@@ -91,6 +93,7 @@ ALASCA <- function(df,
                    doDebug = doDebug,
                    nValFold = nValFold,
                    nValRuns = nValRuns,
+                   keepTerms = keepTerms,
                    initTime = Sys.time(),
                    optimizeScore = optimizeScore,
                    stratificationVector = stratificationVector,
@@ -305,7 +308,7 @@ sanitizeObject <- function(object){
     # Check what terms that is present in formula
     object$hasGroupTerm <- ifelse(any(formulaTerms == "group"), TRUE, FALSE)
     object$hasInteractionTerm <- ifelse(any(formulaTerms == "group:time" | formulaTerms == "time:group"), TRUE, FALSE)
-    object$covars <- formulaTerms[!(formulaTerms %in% c("time","group","group:time","time:group"))]
+    object$covars <- formulaTerms[!(formulaTerms %in% c("time","group","group:time","time:group",object$keepTerms))]
     if(object$doDebug){
       cat(".... Group term in formula? ",object$hasGroupTerm,"\n")
       cat(".... Interaction term in formula? ",object$hasInteractionTerm,"\n")
