@@ -306,7 +306,7 @@ plotParts <- function(object,
       valueColumn <- valueColumn
     }
   }else if(is(object, "ALASCA")){
-    df <- object$df
+    df <- object$dfRaw
     valueColumn <- as.character(object$formula)[2]
     if(any(participantColumn == FALSE)){
       if(any(object$participantColumn == FALSE)){
@@ -328,7 +328,7 @@ plotParts <- function(object,
     return(g)
   }
   if(any(is.na(variable))){
-    variabel <- unique(df$variable)
+    variable <- unique(df$variable)
   }
   g <- lapply(variable, function(xi){
     plotFunction(df, timeColumn, valueColumn, participantColumn, xi, addSmooth, myTheme = myTheme)
