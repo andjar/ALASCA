@@ -354,16 +354,30 @@ prepateValidationRun <- function(object){
     # Use leave-one-out validation
     selectedParts <- data.frame()
     
-    # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
-    selectedParts <- lapply(unique(object$stratificationVector), function(gr){
-      selectedParts_temp_all <- unique(object$df[object$stratificationVector == gr,ID])
-      selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
-      selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
-      selectedParts_temp_all[selectedParts_temp_ticket != 1]
-    })
-    
-    temp_object <- ALASCA(validationObject = object,
-                          validationParticipants = object$df[,ID] %in% unlist(selectedParts))
+    if(object$method %in% c("LMM", "Rfast")){
+      # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
+      selectedParts <- lapply(unique(object$stratificationVector), function(gr){
+        selectedParts_temp_all <- unique(object$df[object$stratificationVector == gr,ID])
+        selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
+        selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
+        selectedParts_temp_all[selectedParts_temp_ticket != 1]
+      })
+      
+      temp_object <- ALASCA(validationObject = object,
+                            validationParticipants = object$df[,ID] %in% unlist(selectedParts))
+    }else if(df$method == "LM"){
+      object$df$ID <- c(1:nrow(object$df))
+      # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
+      selectedParts <- lapply(unique(object$stratificationVector), function(gr){
+        selectedParts_temp_all <- unique(object$df[object$stratificationVector == gr,ID])
+        selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
+        selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
+        selectedParts_temp_all[selectedParts_temp_ticket != 1]
+      })
+      
+      temp_object <- ALASCA(validationObject = object,
+                            validationParticipants = object$df[,ID] %in% unlist(selectedParts))
+    }
   }else if(object$validationMethod == "permutation2"){
     # Validation by permutation
     parts <- data.frame(
