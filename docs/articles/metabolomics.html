@@ -84,7 +84,7 @@
       <h1 data-toc-skip>Metabolomics</h1>
                         <h4 class="author">Anders H. Jarmund</h4>
             
-            <h4 class="date">2021-02-23</h4>
+            <h4 class="date">2021-03-15</h4>
       
       
       <div class="hidden name"><code>metabolomics.Rmd</code></div>
@@ -233,28 +233,29 @@ All metabolite responses were log-transformed before analysis, and the effect ma
 <p>Let us validate our model (outside knitr, it uses about 2 seconds per run),</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod</span><span class="op">$</span><span class="va">nValRuns</span> <span class="op">=</span> <span class="fl">10</span>
-<span class="va">mod.val</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">mod</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span>, validateRegression <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
+<span class="va">mod.val</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">mod</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span>, validateRegression <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 <span class="co">#&gt; Running validation...</span>
 <span class="co">#&gt; - Run  1  of  10 </span>
-<span class="co">#&gt; --- Used  2.38  seconds. Est. time remaining:  21.4  seconds </span>
+<span class="co">#&gt; --- Used  3.12  seconds. Est. time remaining:  28.08  seconds </span>
 <span class="co">#&gt; - Run  2  of  10 </span>
-<span class="co">#&gt; --- Used  2.19  seconds. Est. time remaining:  18.28  seconds </span>
+<span class="co">#&gt; --- Used  2.49  seconds. Est. time remaining:  22.46  seconds </span>
 <span class="co">#&gt; - Run  3  of  10 </span>
-<span class="co">#&gt; --- Used  2.08  seconds. Est. time remaining:  15.52  seconds </span>
+<span class="co">#&gt; --- Used  2.56  seconds. Est. time remaining:  19.08  seconds </span>
 <span class="co">#&gt; - Run  4  of  10 </span>
-<span class="co">#&gt; --- Used  2.05  seconds. Est. time remaining:  13.05  seconds </span>
+<span class="co">#&gt; --- Used  2.74  seconds. Est. time remaining:  16.38  seconds </span>
 <span class="co">#&gt; - Run  5  of  10 </span>
-<span class="co">#&gt; --- Used  2.41  seconds. Est. time remaining:  11.11  seconds </span>
+<span class="co">#&gt; --- Used  2.69  seconds. Est. time remaining:  13.61  seconds </span>
 <span class="co">#&gt; - Run  6  of  10 </span>
-<span class="co">#&gt; --- Used  2.3  seconds. Est. time remaining:  8.94  seconds </span>
+<span class="co">#&gt; --- Used  2.75  seconds. Est. time remaining:  10.91  seconds </span>
 <span class="co">#&gt; - Run  7  of  10 </span>
-<span class="co">#&gt; --- Used  1.95  seconds. Est. time remaining:  6.59  seconds </span>
+<span class="co">#&gt; --- Used  2.87  seconds. Est. time remaining:  8.24  seconds </span>
 <span class="co">#&gt; - Run  8  of  10 </span>
-<span class="co">#&gt; --- Used  2.23  seconds. Est. time remaining:  4.4  seconds </span>
+<span class="co">#&gt; --- Used  2.7  seconds. Est. time remaining:  5.48  seconds </span>
 <span class="co">#&gt; - Run  9  of  10 </span>
-<span class="co">#&gt; --- Used  2.27  seconds. Est. time remaining:  2.21  seconds </span>
+<span class="co">#&gt; --- Used  2.68  seconds. Est. time remaining:  2.73  seconds </span>
 <span class="co">#&gt; - Run  10  of  10 </span>
-<span class="co">#&gt; --- Used  2.02  seconds. Est. time remaining:  0  seconds</span></code></pre></div>
+<span class="co">#&gt; --- Used  2.63  seconds. Est. time remaining:  0  seconds</span>
+<span class="va">mod.val</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/flipIt.html">flipIt</a></span><span class="op">(</span><span class="va">mod.val</span>, component <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></code></pre></div>
 <p>The result:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">mod.val</span><span class="op">)</span></code></pre></div>
@@ -262,16 +263,196 @@ All metabolite responses were log-transformed before analysis, and the effect ma
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">mod.val</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
 <p><img src="metabolomics_files/figure-html/unnamed-chunk-10-2.png" width="100%" style="display: block; margin: auto;"></p>
-<p>Or if want to see the validation models instead of errorbars:</p>
+<p>Or if want to see the validation models instead of error bars:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">#plotVal(mod.val)</span>
-<span class="co">#plotVal(mod.val, component = 2)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotVal.html">plotVal</a></span><span class="op">(</span><span class="va">mod.val</span><span class="op">)</span></code></pre></div>
+<p><img src="metabolomics_files/figure-html/unnamed-chunk-11-1.png" width="100%" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotVal.html">plotVal</a></span><span class="op">(</span><span class="va">mod.val</span>, component <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
+<p><img src="metabolomics_files/figure-html/unnamed-chunk-11-2.png" width="100%" style="display: block; margin: auto;"></p>
+<div id="using-rfast" class="section level3">
+<h3 class="hasAnchor">
+<a href="#using-rfast" class="anchor"></a>Using Rfast</h3>
+<p>However, there is a way to increase speed: <code>method = "Rfast"</code> will employ the <code>Rfast</code> package, which is usually much faster (in this case, we get about an order of magnitude better):</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">mod.Rfast</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">form</span>, 
+                    separateTimeAndGroup <span class="op">=</span> <span class="cn">FALSE</span>, 
+                    forceEqualBaseline <span class="op">=</span> <span class="cn">TRUE</span>, 
+                    scaleFun <span class="op">=</span> <span class="va">scaleFun</span>,
+                    validate <span class="op">=</span> <span class="cn">TRUE</span>,
+                    nValRuns <span class="op">=</span> <span class="fl">50</span>,
+                    method <span class="op">=</span> <span class="st">"Rfast"</span><span class="op">)</span>
+<span class="co">#&gt; Will use Rfast!</span>
+<span class="co">#&gt; Using group for stratification.</span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; Calculating  Rfast  coefficients...</span>
+<span class="co">#&gt; Finished calculating regression coefficients!</span>
+<span class="co">#&gt; Calculating effect matrix</span>
+<span class="co">#&gt; Finished calculating effect matrix!</span>
+<span class="co">#&gt; Running validation...</span>
+<span class="co">#&gt; - Run  1  of  50 </span>
+<span class="co">#&gt; --- Used  0.16  seconds. Est. time remaining:  7.97  seconds </span>
+<span class="co">#&gt; - Run  2  of  50 </span>
+<span class="co">#&gt; --- Used  0.15  seconds. Est. time remaining:  7.4  seconds </span>
+<span class="co">#&gt; - Run  3  of  50 </span>
+<span class="co">#&gt; --- Used  0.19  seconds. Est. time remaining:  7.84  seconds </span>
+<span class="co">#&gt; - Run  4  of  50 </span>
+<span class="co">#&gt; --- Used  0.17  seconds. Est. time remaining:  7.7  seconds </span>
+<span class="co">#&gt; - Run  5  of  50 </span>
+<span class="co">#&gt; --- Used  0.13  seconds. Est. time remaining:  7.23  seconds </span>
+<span class="co">#&gt; - Run  6  of  50 </span>
+<span class="co">#&gt; --- Used  0.18  seconds. Est. time remaining:  7.24  seconds </span>
+<span class="co">#&gt; - Run  7  of  50 </span>
+<span class="co">#&gt; --- Used  0.22  seconds. Est. time remaining:  7.45  seconds </span>
+<span class="co">#&gt; - Run  8  of  50 </span>
+<span class="co">#&gt; --- Used  0.18  seconds. Est. time remaining:  7.3  seconds </span>
+<span class="co">#&gt; - Run  9  of  50 </span>
+<span class="co">#&gt; --- Used  0.16  seconds. Est. time remaining:  7.04  seconds </span>
+<span class="co">#&gt; - Run  10  of  50 </span>
+<span class="co">#&gt; --- Used  0.15  seconds. Est. time remaining:  6.79  seconds </span>
+<span class="co">#&gt; - Run  11  of  50 </span>
+<span class="co">#&gt; --- Used  0.15  seconds. Est. time remaining:  6.55  seconds </span>
+<span class="co">#&gt; - Run  12  of  50 </span>
+<span class="co">#&gt; --- Used  0.15  seconds. Est. time remaining:  6.33  seconds </span>
+<span class="co">#&gt; - Run  13  of  50 </span>
+<span class="co">#&gt; --- Used  0.17  seconds. Est. time remaining:  6.18  seconds </span>
+<span class="co">#&gt; - Run  14  of  50 </span>
+<span class="co">#&gt; --- Used  0.15  seconds. Est. time remaining:  5.96  seconds </span>
+<span class="co">#&gt; - Run  15  of  50 </span>
+<span class="co">#&gt; --- Used  0.11  seconds. Est. time remaining:  5.67  seconds </span>
+<span class="co">#&gt; - Run  16  of  50 </span>
+<span class="co">#&gt; --- Used  0.15  seconds. Est. time remaining:  5.48  seconds </span>
+<span class="co">#&gt; - Run  17  of  50 </span>
+<span class="co">#&gt; --- Used  0.14  seconds. Est. time remaining:  5.29  seconds </span>
+<span class="co">#&gt; - Run  18  of  50 </span>
+<span class="co">#&gt; --- Used  0.13  seconds. Est. time remaining:  5.08  seconds </span>
+<span class="co">#&gt; - Run  19  of  50 </span>
+<span class="co">#&gt; --- Used  0.13  seconds. Est. time remaining:  4.88  seconds </span>
+<span class="co">#&gt; - Run  20  of  50 </span>
+<span class="co">#&gt; --- Used  0.15  seconds. Est. time remaining:  4.72  seconds </span>
+<span class="co">#&gt; - Run  21  of  50 </span>
+<span class="co">#&gt; --- Used  0.16  seconds. Est. time remaining:  4.56  seconds </span>
+<span class="co">#&gt; - Run  22  of  50 </span>
+<span class="co">#&gt; --- Used  0.17  seconds. Est. time remaining:  4.43  seconds </span>
+<span class="co">#&gt; - Run  23  of  50 </span>
+<span class="co">#&gt; --- Used  0.17  seconds. Est. time remaining:  4.28  seconds </span>
+<span class="co">#&gt; - Run  24  of  50 </span>
+<span class="co">#&gt; --- Used  0.13  seconds. Est. time remaining:  4.09  seconds </span>
+<span class="co">#&gt; - Run  25  of  50 </span>
+<span class="co">#&gt; --- Used  0.22  seconds. Est. time remaining:  4  seconds </span>
+<span class="co">#&gt; - Run  26  of  50 </span>
+<span class="co">#&gt; --- Used  0.19  seconds. Est. time remaining:  3.87  seconds </span>
+<span class="co">#&gt; - Run  27  of  50 </span>
+<span class="co">#&gt; --- Used  0.18  seconds. Est. time remaining:  3.72  seconds </span>
+<span class="co">#&gt; - Run  28  of  50 </span>
+<span class="co">#&gt; --- Used  0.16  seconds. Est. time remaining:  3.56  seconds </span>
+<span class="co">#&gt; - Run  29  of  50 </span>
+<span class="co">#&gt; --- Used  0.18  seconds. Est. time remaining:  3.41  seconds </span>
+<span class="co">#&gt; - Run  30  of  50 </span>
+<span class="co">#&gt; --- Used  0.24  seconds. Est. time remaining:  3.3  seconds </span>
+<span class="co">#&gt; - Run  31  of  50 </span>
+<span class="co">#&gt; --- Used  0.15  seconds. Est. time remaining:  3.12  seconds </span>
+<span class="co">#&gt; - Run  32  of  50 </span>
+<span class="co">#&gt; --- Used  0.14  seconds. Est. time remaining:  2.94  seconds </span>
+<span class="co">#&gt; - Run  33  of  50 </span>
+<span class="co">#&gt; --- Used  0.14  seconds. Est. time remaining:  2.77  seconds </span>
+<span class="co">#&gt; - Run  34  of  50 </span>
+<span class="co">#&gt; --- Used  0.18  seconds. Est. time remaining:  2.61  seconds </span>
+<span class="co">#&gt; - Run  35  of  50 </span>
+<span class="co">#&gt; --- Used  0.15  seconds. Est. time remaining:  2.45  seconds </span>
+<span class="co">#&gt; - Run  36  of  50 </span>
+<span class="co">#&gt; --- Used  0.15  seconds. Est. time remaining:  2.28  seconds </span>
+<span class="co">#&gt; - Run  37  of  50 </span>
+<span class="co">#&gt; --- Used  0.19  seconds. Est. time remaining:  2.12  seconds </span>
+<span class="co">#&gt; - Run  38  of  50 </span>
+<span class="co">#&gt; --- Used  0.2  seconds. Est. time remaining:  1.97  seconds </span>
+<span class="co">#&gt; - Run  39  of  50 </span>
+<span class="co">#&gt; --- Used  0.15  seconds. Est. time remaining:  1.8  seconds </span>
+<span class="co">#&gt; - Run  40  of  50 </span>
+<span class="co">#&gt; --- Used  0.19  seconds. Est. time remaining:  1.65  seconds </span>
+<span class="co">#&gt; - Run  41  of  50 </span>
+<span class="co">#&gt; --- Used  0.14  seconds. Est. time remaining:  1.48  seconds </span>
+<span class="co">#&gt; - Run  42  of  50 </span>
+<span class="co">#&gt; --- Used  0.17  seconds. Est. time remaining:  1.31  seconds </span>
+<span class="co">#&gt; - Run  43  of  50 </span>
+<span class="co">#&gt; --- Used  0.15  seconds. Est. time remaining:  1.15  seconds </span>
+<span class="co">#&gt; - Run  44  of  50 </span>
+<span class="co">#&gt; --- Used  0.13  seconds. Est. time remaining:  0.98  seconds </span>
+<span class="co">#&gt; - Run  45  of  50 </span>
+<span class="co">#&gt; --- Used  0.18  seconds. Est. time remaining:  0.82  seconds </span>
+<span class="co">#&gt; - Run  46  of  50 </span>
+<span class="co">#&gt; --- Used  0.16  seconds. Est. time remaining:  0.65  seconds </span>
+<span class="co">#&gt; - Run  47  of  50 </span>
+<span class="co">#&gt; --- Used  0.16  seconds. Est. time remaining:  0.49  seconds </span>
+<span class="co">#&gt; - Run  48  of  50 </span>
+<span class="co">#&gt; --- Used  0.13  seconds. Est. time remaining:  0.33  seconds </span>
+<span class="co">#&gt; - Run  49  of  50 </span>
+<span class="co">#&gt; --- Used  0.15  seconds. Est. time remaining:  0.16  seconds </span>
+<span class="co">#&gt; - Run  50  of  50 </span>
+<span class="co">#&gt; --- Used  0.12  seconds. Est. time remaining:  0  seconds</span>
+<span class="va">mod.Rfast</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/flipIt.html">flipIt</a></span><span class="op">(</span><span class="va">mod.Rfast</span><span class="op">)</span></code></pre></div>
+</div>
+<div id="more-interaction-term" class="section level2">
+<h2 class="hasAnchor">
+<a href="#more-interaction-term" class="anchor"></a>More interaction term</h2>
+<p>Sometimes we need mote advanced models than the one demonstrated above. For example, the dataset contains both responders and responders, and these groups may be different at baseline. Thus, we cannot simply make four groups and rerun the model above. We can add more terms to the formula, and specify that we want to keep them in the effect matrix by listing them in a vector given to <code>keepTerms</code>,</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">form</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">response</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span><span class="op">:</span><span class="va">response</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">ID</span><span class="op">)</span>
+<span class="va">mod.interaction</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">form</span>, 
+      separateTimeAndGroup <span class="op">=</span> <span class="cn">FALSE</span>, 
+      forceEqualBaseline <span class="op">=</span> <span class="cn">TRUE</span>, 
+      scaleFun <span class="op">=</span> <span class="va">scaleFun</span>, 
+      method <span class="op">=</span> <span class="st">"Rfast"</span>, 
+      validate <span class="op">=</span> <span class="cn">FALSE</span>, 
+      keepTerms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"response"</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; Will use Rfast!</span>
+<span class="co">#&gt; Using group for stratification.</span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; Calculating  Rfast  coefficients...</span>
+<span class="co">#&gt; Finished calculating regression coefficients!</span>
+<span class="co">#&gt; Calculating effect matrix</span>
+<span class="co">#&gt; Finished calculating effect matrix!</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">mod.interaction</span><span class="op">)</span></code></pre></div>
+<p><img src="metabolomics_files/figure-html/unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;"></p>
+<p>The responders start out with lower levels of glucose, but have a steeper increase - interesting!</p>
+</div>
+<div id="separating-time-and-group-effects" class="section level2">
+<h2 class="hasAnchor">
+<a href="#separating-time-and-group-effects" class="anchor"></a>Separating time and group effects</h2>
+<p>It may sometimes be illustrative to extract the general time development in the model. To do this, we use <code>separateTimeAndGroup = TRUE</code></p>
+<div class="alert alert-danger" role="alert">
+<p>There is a bug here, and this should not be used!</p>
+</div>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">form</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">response</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span><span class="op">:</span><span class="va">response</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">ID</span><span class="op">)</span>
+<span class="va">df</span><span class="op">$</span><span class="va">response</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">response</span><span class="op">)</span>
+<span class="va">df</span><span class="op">$</span><span class="va">response</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/relevel.html">relevel</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">response</span>, ref <span class="op">=</span> <span class="st">"Responder"</span><span class="op">)</span>
+<span class="va">df</span><span class="op">$</span><span class="va">group</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">group</span><span class="op">)</span>
+<span class="va">df</span><span class="op">$</span><span class="va">group</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/relevel.html">relevel</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">group</span>, ref <span class="op">=</span> <span class="st">"Bevacizumab treated"</span><span class="op">)</span>
+<span class="va">mod.interaction</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">form</span>, 
+     separateTimeAndGroup <span class="op">=</span> <span class="cn">TRUE</span>, 
+     forceEqualBaseline <span class="op">=</span> <span class="cn">TRUE</span>, 
+     scaleFun <span class="op">=</span> <span class="va">scaleFun</span>, 
+     validate <span class="op">=</span> <span class="cn">FALSE</span>, 
+     keepTerms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"response"</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; Will use linear mixed models!</span>
+<span class="co">#&gt; Using group for stratification.</span>
+<span class="co">#&gt; Scaling data with custom function...</span>
+<span class="co">#&gt; Calculating  LMM  coefficients...</span>
+<span class="co">#&gt; Finished calculating regression coefficients!</span>
+<span class="co">#&gt; Calculating predictions from regression models...</span>
+<span class="co">#&gt; Finished calculating predictions from regression models!</span>
+<span class="co">#&gt; Calculating effect matrix</span>
+<span class="co">#&gt; Finished calculating effect matrix!</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">mod.interaction</span><span class="op">)</span></code></pre></div>
+<p><img src="metabolomics_files/figure-html/unnamed-chunk-14-1.png" width="100%" style="display: block; margin: auto;"></p>
+</div>
 <div id="comparison-of-result" class="section level2">
 <h2 class="hasAnchor">
 <a href="#comparison-of-result" class="anchor"></a>Comparison of result</h2>
 <p>To better visualize the agreement between the ALASCA package and the published code by <span class="citation">Madssen et al. (2020)</span>, I’ve run both and collected the loadings and scores for P1 and PC2. Although there are some variation in the robustness estimates, the two implementations seem to match reasonable well.</p>
 <div class="fold s">
-<p><img src="metabolomics_files/figure-html/unnamed-chunk-12-1.png" width="100%" style="display: block; margin: auto;"></p>
+<p><img src="metabolomics_files/figure-html/unnamed-chunk-15-1.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div id="regression-models" class="section level2">
@@ -279,13 +460,13 @@ All metabolite responses were log-transformed before analysis, and the effect ma
 <a href="#regression-models" class="anchor"></a>Regression models</h2>
 <p>Sometimes it may be difficult to interpret the ALASCA plots and you may wish to visualize the underlying regression models. The ALASCA package features a function for that: <code><a href="../reference/plotPred.html">plotPred()</a></code>:</p>
 <div class="fold s">
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span>
   <span class="fu">ggpubr</span><span class="fu">::</span><span class="va"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html">ggarrange</a></span>,
   <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="../reference/plotPred.html">plotPred</a></span><span class="op">(</span><span class="va">mod</span>, variable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Glucose"</span>, <span class="st">"Glutathione"</span><span class="op">)</span><span class="op">)</span>, 
                       common.legend <span class="op">=</span> <span class="cn">TRUE</span>, legend <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
   <span class="op">)</span></code></pre></div>
-<p><img src="metabolomics_files/figure-html/unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;"></p>
+<p><img src="metabolomics_files/figure-html/unnamed-chunk-16-1.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div id="references" class="section level2 unnumbered">

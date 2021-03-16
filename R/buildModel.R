@@ -51,7 +51,7 @@ runRegression <- function(object){
       df <- object$df[variable == x]
       modmat <- model.matrix(object$newformula, data = df)
       if(object$forceEqualBaseline){
-        modmat <- modmat[,!grepl(paste0("time",unique(object$df$time)[1]), colnames(modmat))]
+        modmat <- modmat[,!grepl(paste0("time",levels(object$df$time)[1]), colnames(modmat))]
       }
       mod <- data.frame(
         estimate = Rfast::rint.reg(y = df[,value], 
@@ -84,8 +84,9 @@ runRegression <- function(object){
       modmat <- model.matrix(object$formula, data = object$df[variable == x])
       modmat <- modmat[,-1]
       if(object$forceEqualBaseline){
-        modmat <- modmat[,!grepl(paste0("time",unique(object$df$time)[1]), colnames(modmat))]
+        modmat <- modmat[,!grepl(paste0("time",levels(object$df$time)[1]), colnames(modmat), fixed = TRUE)]
       }
+      #modmat <- modmat[,ncol(modmat):1]
       environment(object$newformula) <- environment()
       regr.model <- lmerTest::lmer(object$newformula, data = object$df[variable == x])
       attr(regr.model, "name") <- x
@@ -156,7 +157,7 @@ separateLMECoefficients <- function(object){
   object$RegressionCoefficients$comp <- "TIME"
   if(object$separateTimeAndGroup){
     object$RegressionCoefficients$comp[!(object$RegressionCoefficients$variable == "(Intercept)" |
-                                  (substr(object$RegressionCoefficients$variable, 1, 4) == "time" & !grepl(":",object$RegressionCoefficients$variable)))
+                                  (substr(object$RegressionCoefficients$variable, 1, 4) == "time" & !grepl(":",object$RegressionCoefficients$variable, fixed = "TRUE")))
                                  ] <- "GROUP"
   }
   return(object)
@@ -173,7 +174,9 @@ getEffectMatrix <- function(object){
     cat("Calculating effect matrix\n")
   }
   parts <- object$df[variable == object$df$variable[1]]
-  Dmatrix <- modmat <- model.matrix(object$formula, data = object$df[variable == object$df$variable[1]])
+  #parts <- object$df[!duplicated(cbind(object$df$ID, object$df$time))]
+  Dmatrix <- model.matrix(object$formula, data = object$df[variable == object$df$variable[1]])
+  #Dmatrix <- Dmatrix[,ncol(Dmatrix):1]
 
   if(object$separateTimeAndGroup){
     BmatrixTime <- object$RegressionCoefficients[object$RegressionCoefficients$comp == "TIME",c("covar","estimate","variable")]

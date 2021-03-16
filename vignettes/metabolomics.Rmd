@@ -137,7 +137,8 @@ Let us validate our model (outside knitr, it uses about 2 seconds per run),
 
 ```{r, message=FALSE}
 mod$nValRuns = 10
-mod.val <- validate(mod, participantColumn = "ID", validateRegression = TRUE)
+mod.val <- validate(mod, participantColumn = "ID", validateRegression = FALSE)
+mod.val <- flipIt(mod.val, component = 1)
 ```
 
 The result:
@@ -147,11 +148,67 @@ plot(mod.val)
 plot(mod.val, component = 2)
 ```
 
-Or if want to see the validation models instead of errorbars:
+Or if want to see the validation models instead of error bars:
 
 ```{r}
-#plotVal(mod.val)
-#plotVal(mod.val, component = 2)
+plotVal(mod.val)
+plotVal(mod.val, component = 2)
+```
+
+### Using Rfast
+
+However, there is a way to increase speed: `method = "Rfast"` will employ the `Rfast` package, which is usually much faster (in this case, we get about an order of magnitude better):
+
+```{r, message=FALSE}
+mod.Rfast <- ALASCA(df, form, 
+                    separateTimeAndGroup = FALSE, 
+                    forceEqualBaseline = TRUE, 
+                    scaleFun = scaleFun,
+                    validate = TRUE,
+                    nValRuns = 50,
+                    method = "Rfast")
+mod.Rfast <- flipIt(mod.Rfast)
+```
+
+## More interaction term
+
+Sometimes we need mote advanced models than the one demonstrated above. For example, the dataset contains both responders and responders, and these groups may be different at baseline. Thus, we cannot simply make four groups and rerun the model above. We can add more terms to the formula, and specify that we want to keep them in the effect matrix by listing them in a vector given to `keepTerms`,
+
+```{r, message=FALSE}
+form <- value ~ time + response + time:group:response + (1|ID)
+mod.interaction <- ALASCA(df, form, 
+      separateTimeAndGroup = FALSE, 
+      forceEqualBaseline = TRUE, 
+      scaleFun = scaleFun, 
+      method = "Rfast", 
+      validate = FALSE, 
+      keepTerms = c("response"))
+plot(mod.interaction)
+```
+
+The responders start out with lower levels of glucose, but have a steeper increase - interesting!
+
+## Separating time and group effects
+
+It may sometimes be illustrative to extract the general time development in the model. To do this, we use `separateTimeAndGroup = TRUE`
+
+<div class="alert alert-danger" role="alert">
+There is a bug here, and this should not be used!
+</div>
+
+```{r, message=FALSE}
+form <- value ~ time + response + time:group:response + (1|ID)
+df$response <- factor(df$response)
+df$response <- relevel(df$response, ref = "Responder")
+df$group <- factor(df$group)
+df$group <- relevel(df$group, ref = "Bevacizumab treated")
+mod.interaction <- ALASCA(df, form, 
+     separateTimeAndGroup = TRUE, 
+     forceEqualBaseline = TRUE, 
+     scaleFun = scaleFun, 
+     validate = FALSE, 
+     keepTerms = c("response"))
+plot(mod.interaction)
 ```
 
 ## Comparison of result
@@ -160,19 +217,35 @@ To better visualize the agreement between the ALASCA package and the published c
 
 <div class="fold s">
 ```{r, echo = FALSE}
-df <- read.csv(file = "Madssen_Jarmund_loadings.csv", header = TRUE, sep = ";")
-df$value[df$model == "Jarmund" & df$ï.. == 1] <- -df$value[df$model == "Jarmund" & df$ï.. == 1]
-df$high[df$model == "Jarmund" & df$ï.. == 1] <- -df$high[df$model == "Jarmund" & df$ï.. == 1]
-df$low[df$model == "Jarmund" & df$ï.. == 1] <- -df$low[df$model == "Jarmund" & df$ï.. == 1]
-g1 <- ggplot(subset(df, ï..PC == 1), aes(x = covars, y = value, ymin = low, ymax = high, color = model)) + geom_pointrange(position = position_dodge(width = 0.35))
-g2 <- ggplot(subset(df, ï..PC == 2), aes(x = covars, y = value, ymin = low, ymax = high, color = model)) + geom_pointrange(position = position_dodge(width = 0.35))
+df <- read.csv(file = "Madssen_Jarmund_loadings.csv", header = TRUE, sep = ";", fileEncoding = "UTF-8-BOM")
+df <- rbind(df,
+            data.frame(
+              getLoadings(mod.val)$time,
+              model = "Jarmund"
+            ))
+df <- rbind(df,
+            data.frame(
+              getLoadings(mod.Rfast)$time,
+              model = "Jarmund Rfast"
+            ))
 
-df <- read.csv(file = "Madssen_Jarmund_scores.csv", header = TRUE, sep = ";")
-df$value[df$model == "Jarmund" & df$ï.. == 1] <- -df$value[df$model == "Jarmund" & df$ï.. == 1]
-df$high[df$model == "Jarmund" & df$ï.. == 1] <- -df$high[df$model == "Jarmund" & df$ï.. == 1]
-df$low[df$model == "Jarmund" & df$ï.. == 1] <- -df$low[df$model == "Jarmund" & df$ï.. == 1]
-g3 <- ggplot(subset(df, ï..PC == 1), aes(x = paste(time, group), y = value, ymin = low, ymax = high, color = model)) + geom_pointrange(position = position_dodge(width = 0.35))
-g4 <- ggplot(subset(df, ï..PC == 2), aes(x = paste(time, group), y = value, ymin = low, ymax = high, color = model)) + geom_pointrange(position = position_dodge(width = 0.35))
+g1 <- ggplot(subset(df, PC == 1), aes(x = covars, y = loading, ymin = low, ymax = high, color = model)) + geom_pointrange(position = position_dodge(width = 0.35)) + theme_bw()
+g2 <- ggplot(subset(df, PC == 2), aes(x = covars, y = loading, ymin = low, ymax = high, color = model)) + geom_pointrange(position = position_dodge(width = 0.35)) + theme_bw()
+
+df <- read.csv(file = "Madssen_Jarmund_scores.csv", header = TRUE, sep = ";", fileEncoding = "UTF-8-BOM")
+df <- rbind(df,
+            data.frame(
+              getScores(mod.val)$time,
+              model = "Jarmund"
+            ))
+df <- rbind(df,
+            data.frame(
+              getScores(mod.Rfast)$time,
+              model = "Jarmund Rfast"
+            ))
+
+g3 <- ggplot(subset(df, PC == 1), aes(x = paste(time, group), y = score, ymin = low, ymax = high, color = model)) + geom_pointrange(position = position_dodge(width = 0.35)) + theme_bw()
+g4 <- ggplot(subset(df, PC == 2), aes(x = paste(time, group), y = score, ymin = low, ymax = high, color = model)) + geom_pointrange(position = position_dodge(width = 0.35)) + theme_bw()
 
 ggarrange(g3, g1, g4, g2, 
           nrow = 2, ncol = 2,

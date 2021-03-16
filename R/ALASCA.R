@@ -265,10 +265,16 @@ sanitizeObject <- function(object){
   if(object$doDebug){
     cat(".... Making factors for time, group and variable\n")
   }
-  object$df$time <- factor(object$df$time)
-  object$df$group <- factor(object$df$group)
-  object$df$variable <- factor(object$df$variable)
-
+  if(!is.factor(object$df$time)){
+    object$df$time <- factor(object$df$time)
+  }
+  if(!is.factor(object$df$group)){
+    object$df$group <- factor(object$df$group)
+  }
+  if(!is.factor(object$df$variable)){
+    object$df$variable <- factor(object$df$variable)
+  }
+  
   if(object$doDebug){
     cat(".... Checking for missing information\n")
   }
@@ -342,25 +348,37 @@ removeEmbedded <- function(object){
 #' Changes the sign of loadings and scores
 #'
 #' @param object An ALASCA object
+#' @param component Components to be flipped, `NA` flips all (default)
 #' @return An ALASCA object
 #' @export
-flipIt <- function(object){
-  object$ALASCA$score$time$score <- -object$ALASCA$score$time$score
-  object$ALASCA$loading$time$loading <- -object$ALASCA$loading$time$loading
-  if(object$separateTimeAndGroup){
-    object$ALASCA$score$group$score <- -object$ALASCA$score$group$score
-    object$ALASCA$loading$group$loading <- -object$ALASCA$loading$group$loading
+flipIt <- function(object, component = NA){
+  if(any(is.na(component))){
+    component <- unique(object$ALASCA$score$time$PC)
   }
-  if(object$validate){
-    object$ALASCA$score$time$high <- -object$ALASCA$score$time$high
-    object$ALASCA$loading$time$high <- -object$ALASCA$loading$time$high
-    object$ALASCA$score$time$low <- -object$ALASCA$score$time$low
-    object$ALASCA$loading$time$low <- -object$ALASCA$loading$time$low
+  for(i in component){
+    object$ALASCA$score$time$score[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$score[object$ALASCA$score$time$PC == i]
+    object$ALASCA$loading$time$loading[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$loading[object$ALASCA$loading$time$PC == i]
     if(object$separateTimeAndGroup){
-      object$ALASCA$score$group$high <- -object$ALASCA$score$group$high
-      object$ALASCA$loading$group$high <- -object$ALASCA$loading$group$high
-      object$ALASCA$score$group$low <- -object$ALASCA$score$group$low
-      object$ALASCA$loading$group$low <- -object$ALASCA$loading$group$low
+      object$ALASCA$score$group$score[object$ALASCA$score$group$PC == i] <- -object$ALASCA$score$group$score[object$ALASCA$score$group$PC == i]
+      object$ALASCA$loading$group$loading[object$ALASCA$loading$group$PC == i] <- -object$ALASCA$loading$group$loading[object$ALASCA$loading$group$PC == i]
+    }
+    if(object$validate){
+      object$ALASCA$score$time$high[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$high[object$ALASCA$score$time$PC == i]
+      object$ALASCA$loading$time$high[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$high[object$ALASCA$loading$time$PC == i]
+      object$ALASCA$score$time$low[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$low[object$ALASCA$score$time$PC == i]
+      object$ALASCA$loading$time$low[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$low[object$ALASCA$loading$time$PC == i]
+      if(object$separateTimeAndGroup){
+        object$ALASCA$score$group$high[object$ALASCA$score$group$PC == i] <- -object$ALASCA$score$group$high
+        object$ALASCA$loading$group$high[object$ALASCA$loading$group$PC == i] <- -object$ALASCA$loading$group$high[object$ALASCA$loading$group$PC == i]
+        object$ALASCA$score$group$low[object$ALASCA$score$group$PC == i] <- -object$ALASCA$score$group$low[object$ALASCA$score$group$PC == i]
+        object$ALASCA$loading$group$low[object$ALASCA$loading$group$PC == i] <- -object$ALASCA$loading$group$low[object$ALASCA$loading$group$PC == i]
+      }
+    }
+  }
+  
+  if(object$validate == TRUE){
+    for(i in seq_along(object$validation$temp_objects)){
+      object$validation$temp_objects[[i]] <- flipIt(object$validation$temp_objects[[i]], component = component)
     }
   }
   return(object)

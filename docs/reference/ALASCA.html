@@ -150,6 +150,8 @@
   doDebug <span class='op'>=</span> <span class='cn'>FALSE</span>,
   nValFold <span class='op'>=</span> <span class='fl'>7</span>,
   nValRuns <span class='op'>=</span> <span class='fl'>50</span>,
+  keepTerms <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>""</span><span class='op'>)</span>,
+  optimizeScore <span class='op'>=</span> <span class='cn'>TRUE</span>,
   validateRegression <span class='op'>=</span> <span class='cn'>FALSE</span>,
   validationMethod <span class='op'>=</span> <span class='st'>"loo"</span>,
   validationObject <span class='op'>=</span> <span class='cn'>NA</span>,
@@ -222,6 +224,10 @@
     <tr>
       <th>nValRuns</th>
       <td><p>number of validation runs</p></td>
+    </tr>
+    <tr>
+      <th>keepTerms</th>
+      <td><p>Additional terms to keep in the model matrix</p></td>
     </tr>
     <tr>
       <th>validateRegression</th>

@@ -21,7 +21,7 @@ ALASCA(
   doDebug = FALSE,
   nValFold = 7,
   nValRuns = 50,
-  keepTerms = c(),
+  keepTerms = c(""),
   optimizeScore = TRUE,
   validateRegression = FALSE,
   validationMethod = "loo",

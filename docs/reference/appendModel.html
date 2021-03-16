@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Plot covariate coefficients — plotCovar • ALASCA</title>
+<title>Append a new model to an existing model — appendModel • ALASCA</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Plot covariate coefficients — plotCovar" />
-<meta property="og:description" content="This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself" />
+<meta property="og:title" content="Append a new model to an existing model — appendModel" />
+<meta property="og:description" content="Append a new model to an existing model" />
 
 
 
@@ -124,52 +124,37 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Plot covariate coefficients</h1>
+    <h1>Append a new model to an existing model</h1>
     
-    <div class="hidden name"><code>plotCovar.Rd</code></div>
+    <div class="hidden name"><code>appendModel.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself</p>
+    <p>Append a new model to an existing model</p>
     </div>
 
-    <pre class="usage"><span class='fu'>plotCovar</span><span class='op'>(</span>
-  <span class='va'>object</span>,
-  covar <span class='op'>=</span> <span class='cn'>NA</span>,
-  tlab <span class='op'>=</span> <span class='cn'>NA</span>,
-  return_data <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  myTheme <span class='op'>=</span> <span class='fu'>ggplot2</span><span class='fu'>::</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_bw</a></span><span class='op'>(</span><span class='op'>)</span>,
-  pvalue <span class='op'>=</span> <span class='st'>"shape"</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>appendModel</span><span class='op'>(</span><span class='va'>target</span>, <span class='va'>object</span>, method <span class='op'>=</span> <span class='st'>"project"</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
+      <th>target</th>
+      <td><p>The existing model</p></td>
+    </tr>
+    <tr>
       <th>object</th>
-      <td><p>An ALASCA object</p></td>
+      <td><p>The new model</p></td>
     </tr>
     <tr>
-      <th>covar</th>
-      <td><p>Which covariable(s) to plot (default: <code>NA</code> which prints all)</p></td>
-    </tr>
-    <tr>
-      <th>tlab</th>
-      <td><p>Alternative names for the covariables</p></td>
-    </tr>
-    <tr>
-      <th>return_data</th>
-      <td><p>Set to <code>TRUE</code> to return data instead of plot</p></td>
-    </tr>
-    <tr>
-      <th>myTheme</th>
-      <td><p>A ggplot2 theme to use, defaults to <code><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>ggplot2::theme_bw()</a></code></p></td>
+      <th>method</th>
+      <td><p><code>rotate</code> or <code>project</code> (default)</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A ggplot2 objects\.</p>
+    <p>An ALASCA object</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
