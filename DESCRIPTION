@@ -8,6 +8,7 @@ Authors@R:
            email = "anders.h.jarmund@ntnu.no",
            comment = c(ORCID = "0000-0002-3923-1637"))
 Description: Perform ASCA with various underlying models
+URL: https://github.com/andjar/ALASCA
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
