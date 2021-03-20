@@ -4,10 +4,12 @@
 \alias{flipIt}
 \title{Flip an ALASCA object}
 \usage{
-flipIt(object)
+flipIt(object, component = NA)
 }
 \arguments{
 \item{object}{An ALASCA object}
+
+\item{component}{Components to be flipped, \code{NA} flips all (default)}
 }
 \value{
 An ALASCA object

@@ -178,11 +178,14 @@ getLoadingPlot <- function(object, component = 1, effect = "time", decreasingLoa
   if(object$validate){
     g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high)) + ggplot2::geom_pointrange(size = pointSize)
   }else{
-    g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading)) + ggplot2::geom_point()
+    if(any(colnames(loadings) == "model")){
+      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, shape = model)) + ggplot2::geom_point()
+    }else{
+      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading)) + ggplot2::geom_point()
+    }
   }
   
-  g <- g + myTheme +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust=1)) +
+  g <- g + myTheme + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust=1), legend.position = c(0.8, 0.8)) +
     ggplot2::labs(x = "Variable",
                   y = paste0("PC",component, " (", round(100*ifelse(effect == "time", object$ALASCA$loading$explained$time[component],object$ALASCA$loading$explained$group[component]),2),"%)"))
   if(!any(is.na(highlight))){
@@ -303,7 +306,7 @@ plotParts <- function(object,
       valueColumn <- valueColumn
     }
   }else if(is(object, "ALASCA")){
-    df <- object$df
+    df <- object$dfRaw
     valueColumn <- as.character(object$formula)[2]
     if(any(participantColumn == FALSE)){
       if(any(object$participantColumn == FALSE)){
@@ -417,7 +420,7 @@ plotVal <- function(object, component = 1, myTheme = ggplot2::theme_bw()){
       )
     })
     )
-    dff$plotGroup <- paste0(dff$model,dff$group)
+    dff$plotGroup <- paste0(dff$model,"-",dff$group)
     gsg <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group)) + 
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
       ggplot2::geom_point(data = subset(getScores(object)$group, PC == component), group = NA, alpha = 1, color = "black") +
@@ -460,7 +463,7 @@ plotVal <- function(object, component = 1, myTheme = ggplot2::theme_bw()){
       )
     })
     )
-    dff$plotGroup <- paste0(dff$model,dff$group)
+    dff$plotGroup <- paste0(dff$model,"-",dff$group)
     gs <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group)) + 
       ggplot2::geom_point(alpha = 0.2) + ggplot2::geom_line(alpha = 0.2) +
       ggplot2::geom_point(data = subset(getScores(object)$time, PC == component), group = NA, alpha = 1, color = "black") +
@@ -497,27 +500,43 @@ plotVal <- function(object, component = 1, myTheme = ggplot2::theme_bw()){
 #' @return A ggplot2 objects\.
 #' 
 #' @export
-plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE, myTheme = ggplot2::theme_bw()){
+plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE, myTheme = ggplot2::theme_bw(), pvalue = "shape"){
+  df <- getCovars(object)
   if(any(is.na(covar))){
-    covar <- object$covars
+    covar <- unique(df$variable)
   }
   if(any(is.na(tlab))){
     tlab <- covar
   }
-  df <- getCovars(object)
   for(i in 1:length(covar)){
     df$tlab[df$variable == covar[i]] <- tlab[i]
   }
   df$pvalue_label <- ifelse(df$pvalue >= 0.05, "Not significant", ifelse(df$pvalue < 0.001, "< 0.001", ifelse(df$pvalue < 0.01, "< 0.01", "< 0.05")))
+  df$pvalue_sign <- ifelse(df$pvalue >= 0.05, "", ifelse(df$pvalue < 0.001, "***", ifelse(df$pvalue < 0.01, "**", "*")))
   df$covar <- factor(df$covar, levels = unique(df$covar[order(df$estimate)]))
   if(return_data){
     return(df)
   }else{
-    g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, shape = pvalue_label)) + 
-      ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
-      ggplot2::scale_shape_manual(values = c("Not significant"=3, "< 0.05"=15, "< 0.01"=16, "< 0.001"=17, "Baseline"=5)) +
-      ggplot2::facet_wrap(~tlab) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
-      myTheme + ggplot2::theme(legend.position = "bottom", legend.box="vertical", legend.margin=ggplot2::margin())
+    if(pvalue == "shape"){
+      g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, shape = pvalue_label)) + 
+        ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
+        ggplot2::scale_shape_manual(values = c("Not significant"=3, "< 0.05"=15, "< 0.01"=16, "< 0.001"=17, "Baseline"=5)) +
+        ggplot2::facet_wrap(~tlab) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
+        myTheme + ggplot2::theme(legend.position = "bottom", legend.box="vertical", legend.margin=ggplot2::margin())
+    }else if(pvalue == "star" | pvalue == "asterisk" | pvalue == "stars"){
+      g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, label = pvalue_sign)) + 
+        ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
+        ggplot2::geom_text(hjust = 0.5, vjust = 0) +
+        ggplot2::facet_wrap(~tlab) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
+        myTheme
+    }else{
+      g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar)) + 
+        ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
+        ggplot2::facet_wrap(~tlab) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
+        myTheme + ggplot2::theme(legend.position = "bottom", legend.box="vertical", legend.margin=ggplot2::margin())
+    }
+    
+    
     return(g)
   }
 }
@@ -536,7 +555,7 @@ plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE, myThem
 #' @export
 plotProjection <- function(object, comp = c(1,2), return_data = FALSE, myTheme = ggplot2::theme_bw()){
   df <- object$df
-  df$ID <- df[, colnames(df) == object$participantColumn]
+  df$ID <- df[, ID]
   loadings_Time <- subset(getLoadings(object)$time, PC %in% comp)
   loadings_Time <- reshape2::dcast(data = loadings_Time, covars ~ paste0("PC",PC), value.var = "loading")
   df_time <- merge(df, loadings_Time, by.x = "variable", by.y = "covars")
@@ -587,7 +606,8 @@ plotProjection <- function(object, comp = c(1,2), return_data = FALSE, myTheme =
     }))
     df_time <- df_time[!duplicated(df_time),]
     colnames(df_time) <- c("part", paste0("PC", comp[1]), paste0("PC", comp[2]), "time", "group")
-    g <- ggplot2::ggplot(df_time, ggplot2::aes_string(x = paste0("PC", comp[1]), y = paste0("PC", comp[2]), group = "part", color = "group"))  + ggplot2::geom_point() + ggplot2::geom_line(alpha = 0.7, arrow = ggplot2::arrow(type="closed", length = ggplot2::unit(0.20,"cm"))) + myTheme
+    g <- ggplot2::ggplot(df_time, ggplot2::aes_string(x = paste0("PC", comp[1]), y = paste0("PC", comp[2]), group = "part", color = "group"))  + 
+      ggplot2::geom_point() + ggplot2::geom_line(alpha = 0.7, arrow = ggplot2::arrow(type="closed", length = ggplot2::unit(0.20,"cm"))) + myTheme
     if(return_data){
       return(df_time)
     }else{

@@ -74,8 +74,10 @@ rotateMatrix <- function(object, target){
   PCloading <- which(PCloading)
   
   
-  a <- object$pca$loading
-  b <- target$pca$loading
+  a_l <- object$pca$loading
+  b_l <- target$pca$loading
+  a_s <- object$pca$score
+  b_s <- target$pca$score
   
   procrustes <- function(loadings, target){
     s= t(loadings)%*%target
@@ -100,17 +102,19 @@ rotateMatrix <- function(object, target){
   lst <- lapply(numeric(N), function(x) vec)
   signMatrix <- as.matrix(expand.grid(lst))
   signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
-    c <- procrustes(loadings= as.matrix(a$time[,PCloading]* signMatrix[i,]),
-                    target = as.matrix(b$time[,PCloading]))
-    sum((b$time[,PCloading] - c$procrust)^2)
+    c <- procrustes(loadings= as.matrix(t(t(a_l$time[,PCloading]) * signMatrix[i,])),
+                    target = as.matrix(b_l$time[,PCloading]))
+    ifelse(object$optimizeScore,
+           sum((b_s$time[,PCloading] - as.matrix(t(t(a_s$time[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2),
+           sum((b_l$time[,PCloading] - c$procrust)^2))
   }))
   minSignVar <- which(signVar == min(signVar))[1]
-  object$pca$loading$time[,PCloading] <- object$pca$loading$time[,PCloading] * signMatrix[minSignVar,]
-  object$pca$score$time[,PCloading] <- object$pca$score$time[,PCloading] * signMatrix[minSignVar,]
-  a <- object$pca$loading
-  
-  c <- procrustes(loadings= as.matrix(a$time[,PCloading]),
-                  target = as.matrix(b$time[,PCloading]))
+  object$pca$loading$time[,PCloading] <- t(t(object$pca$loading$time[,PCloading]) * signMatrix[minSignVar,])
+  object$pca$score$time[,PCloading] <- t(t(object$pca$score$time[,PCloading]) * signMatrix[minSignVar,])
+  a_l <- object$pca$loading
+
+  c <- procrustes(loadings= as.matrix(a_l$time[,PCloading]),
+                  target = as.matrix(b_l$time[,PCloading]))
   object$pca$loading$time[,PCloading] <- c$procrust
   object$pca$score$time[,PCloading] <- as.matrix(object$pca$score$time[,PCloading]) %*% solve(c$t1)
   
@@ -126,17 +130,19 @@ rotateMatrix <- function(object, target){
     lst <- lapply(numeric(N), function(x) vec)
     signMatrix <- as.matrix(expand.grid(lst))
     signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
-      c <- procrustes(loadings= as.matrix(a$group[,PCloading]* signMatrix[i,]),
-                      target = as.matrix(b$group[,PCloading]))
-      sum((b$group[,PCloading] - c$procrust)^2)
+      c <- procrustes(loadings= as.matrix(t(t(a_l$group[,PCloading]) * signMatrix[i,])),
+                      target = as.matrix(b_l$group[,PCloading]))
+      ifelse(object$optimizeScore,
+             sum((b_s$group[,PCloading] - as.matrix(t(t(a_s$group[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2),
+             sum((b_l$group[,PCloading] - c$procrust)^2))
     }))
     minSignVar <- which(signVar == min(signVar))[1]
-    object$pca$loading$group[,PCloading] <- object$pca$loading$group[,PCloading] * signMatrix[minSignVar,]
-    object$pca$score$group[,PCloading] <- object$pca$score$group[,PCloading] * signMatrix[minSignVar,]
-    a <- object$pca$loading
-    
-    c <- procrustes(loadings= as.matrix(a$group[,PCloading]),
-                    target = as.matrix(b$group[,PCloading]))
+    object$pca$loading$group[,PCloading] <- t(t(object$pca$loading$group[,PCloading]) * signMatrix[minSignVar,])
+    object$pca$score$group[,PCloading] <- t(t(object$pca$score$group[,PCloading]) * signMatrix[minSignVar,])
+    a_l <- object$pca$loading
+
+    c <- procrustes(loadings= as.matrix(a_l$group[,PCloading]),
+                    target = as.matrix(b_l$group[,PCloading]))
     object$pca$loading$group[,PCloading] <- c$procrust
     object$pca$score$group[,PCloading] <- as.matrix(object$pca$score$group[,PCloading]) %*% solve(c$t1)
   }
@@ -316,15 +322,15 @@ getRegressionPredictions <- function(object){
     if(object$method == "LMM"){
       data.frame(
         pred = lme4:::predict.merMod(model, re.form=NA),
-        time = object$partsWithVariable[[xi]]$time,
-        group = object$partsWithVariable[[xi]]$group,
+        time = object$df[variable == x,time],
+        group = object$df[variable == x,group],
         variable = x
       )
     }else if(object$method == "LM"){
       data.frame(
         pred = predict(model),
-        time = object$partsWithVariable[[xi]]$time,
-        group = object$partsWithVariable[[xi]]$group,
+        time = object$df[variable == x,time],
+        group = object$df[variable == x,group],
         variable = x
       )
     }
@@ -344,21 +350,34 @@ getRegressionPredictions <- function(object){
 #' @param object An ALASCA object
 #' @return An ALASCA object
 prepateValidationRun <- function(object){
-  partColumn <- which(colnames(object$df) == object$participantColumn)
   if(object$validationMethod == "loo"){
     # Use leave-one-out validation
     selectedParts <- data.frame()
     
-    # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
-    selectedParts <- lapply(unique(object$stratificationVector), function(gr){
-      selectedParts_temp_all <- unique(object$df[object$stratificationVector == gr,partColumn])
-      selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
-      selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
-      selectedParts_temp_all[selectedParts_temp_ticket != 1]
-    })
-    
-    temp_object <- ALASCA(validationObject = object,
-                          validationParticipants = object$df[,partColumn] %in% unlist(selectedParts))
+    if(object$method %in% c("LMM", "Rfast")){
+      # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
+      selectedParts <- lapply(unique(object$stratificationVector), function(gr){
+        selectedParts_temp_all <- unique(object$df[object$stratificationVector == gr,ID])
+        selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
+        selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
+        selectedParts_temp_all[selectedParts_temp_ticket != 1]
+      })
+      
+      temp_object <- ALASCA(validationObject = object,
+                            validationParticipants = object$df[,ID] %in% unlist(selectedParts))
+    }else if(df$method == "LM"){
+      object$df$ID <- c(1:nrow(object$df))
+      # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
+      selectedParts <- lapply(unique(object$stratificationVector), function(gr){
+        selectedParts_temp_all <- unique(object$df[object$stratificationVector == gr,ID])
+        selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
+        selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
+        selectedParts_temp_all[selectedParts_temp_ticket != 1]
+      })
+      
+      temp_object <- ALASCA(validationObject = object,
+                            validationParticipants = object$df[,ID] %in% unlist(selectedParts))
+    }
   }else if(object$validationMethod == "permutation2"){
     # Validation by permutation
     parts <- data.frame(

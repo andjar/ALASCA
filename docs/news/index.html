@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Plot covariate coefficients — plotCovar • ALASCA</title>
+<title>Changelog • ALASCA</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,7 @@
 
 
 
-<meta property="og:title" content="Plot covariate coefficients — plotCovar" />
-<meta property="og:description" content="This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself" />
+<meta property="og:title" content="Changelog" />
 
 
 
@@ -59,7 +58,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-reference-topic">
+    <div class="container template-news">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -108,9 +107,17 @@
     </li>
   </ul>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/andjar/ALASCA/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -124,59 +131,31 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Plot covariate coefficients</h1>
-    
-    <div class="hidden name"><code>plotCovar.Rd</code></div>
+      <h1 data-toc-skip>Changelog <small></small></h1>
+      <small>Source: <a href='https://github.com/andjar/ALASCA/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div class="ref-description">
-    <p>This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself</p>
-    </div>
-
-    <pre class="usage"><span class='fu'>plotCovar</span><span class='op'>(</span>
-  <span class='va'>object</span>,
-  covar <span class='op'>=</span> <span class='cn'>NA</span>,
-  tlab <span class='op'>=</span> <span class='cn'>NA</span>,
-  return_data <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  myTheme <span class='op'>=</span> <span class='fu'>ggplot2</span><span class='fu'>::</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_bw</a></span><span class='op'>(</span><span class='op'>)</span>,
-  pvalue <span class='op'>=</span> <span class='st'>"shape"</span>
-<span class='op'>)</span></pre>
-
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>object</th>
-      <td><p>An ALASCA object</p></td>
-    </tr>
-    <tr>
-      <th>covar</th>
-      <td><p>Which covariable(s) to plot (default: <code>NA</code> which prints all)</p></td>
-    </tr>
-    <tr>
-      <th>tlab</th>
-      <td><p>Alternative names for the covariables</p></td>
-    </tr>
-    <tr>
-      <th>return_data</th>
-      <td><p>Set to <code>TRUE</code> to return data instead of plot</p></td>
-    </tr>
-    <tr>
-      <th>myTheme</th>
-      <td><p>A ggplot2 theme to use, defaults to <code><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>ggplot2::theme_bw()</a></code></p></td>
-    </tr>
-    </table>
-
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>A ggplot2 objects\.</p>
-
+    <div id="alasca-0009" class="section level1">
+<h1 class="page-header" data-toc-text="0.0.0.9">
+<a href="#alasca-0009" class="anchor"></a>ALASCA 0.0.0.9</h1>
+<div id="known-bugs" class="section level2">
+<h2 class="hasAnchor">
+<a href="#known-bugs" class="anchor"></a>Known bugs</h2>
+<ul>
+<li>Reference level cannot be set when using multiple interactions</li>
+<li>
+<code>plotPart()</code> sometimes fails to provide more than a blank plot</li>
+</ul>
+</div>
+</div>
   </div>
+
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
       <h2 data-toc-skip>Contents</h2>
     </nav>
   </div>
+
 </div>
 
 

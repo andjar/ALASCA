@@ -11,6 +11,7 @@ buildModel <- function(object){
   }
   object <- runRegression(object)
   if(object$method != "Rfast"){
+    # With Rfast, we've already got the coefficients
     object <- getRegressionCoefficients(object)
   }
   
@@ -44,117 +45,55 @@ buildModel <- function(object){
 #' @return An ALASCA object
 runRegression <- function(object){
   
-  regr.model <- list()
-  fdf <- data.frame()
-  cyts <- unique(object$df$variable)
-  cc <- 1
-  ccc <- 1
-  
   if(object$method == "Rfast"){
     object$RegressionCoefficients <- Reduce(rbind,lapply(unique(object$df$variable), function(x){
-      start.time <- Sys.time()
-      df <- subset(object$df, variable == x)
-      ust <- unique(df$studyno)
-      for(i in 1:length(ust)){
-        df$studyno2[df$studyno == ust[i]] <- i
+      #start.time <- Sys.time()
+      df <- object$df[variable == x]
+      modmat <- model.matrix(object$newformula, data = df)
+      if(object$forceEqualBaseline){
+        modmat <- modmat[,!grepl(paste0("time",levels(object$df$time)[1]), colnames(modmat))]
       }
-      modmat <- model.matrix(object$formula, data = df)
       mod <- data.frame(
-        estimate = Rfast::rint.reg(y = df$estimate, x = as.matrix(modmat[,2:ncol(modmat)]), id = df$studyno2, ranef = FALSE)$be,
+        estimate = Rfast::rint.reg(y = df[,value], 
+                                   x = modmat[,2:ncol(modmat)], 
+                                   id = as.numeric(factor(df[,ID])), 
+                                   ranef = FALSE)$be,
         pvalue = 1,
         covar = as.character(x),
         variable = colnames(modmat)
       )
-      end.time <- Sys.time()
-      cat("\n\n",end.time - start.time,"\n")
+      #end.time <- Sys.time()
+      #cat("\n\n",end.time - start.time,"\n")
       mod
     }))
-    
+    return(object)
+  }else if(object$method == "LM"){
+        object$regr.model <- lapply(unique(object$df$variable), function(x){
+          modmat <- model.matrix(object$formula, data = object$df[variable == x])
+          modmat <- modmat[,-1]
+          if(object$forceEqualBaseline){
+            modmat <- modmat[,!grepl(paste0("time",unique(object$df$time)[1]), colnames(modmat))]
+          }
+          environment(object$newformula) <- environment()
+          regr.model <- lm(object$newformula, data = object$df[variable == x])
+          attr(regr.model, "name") <- x
+          regr.model
+        })
   }else{
-    makeX <- function(object, regr.model){
-      X <- model.matrix(regr.model)
-      baselineLabel <- paste0("time", unique(object$df$time)[1])
-      if(object$doDebug){
-        cat(".... Baseline found to be: ",baselineLabel,"\n")
-        cat(".... Column names of X: ",colnames(X),"\n")
-      }
-      X <- X[, substr(colnames(X),1,nchar(baselineLabel)) != baselineLabel]
-      newFormula <- as.character(object$formula)
-      newFormulaPred <- strsplit(as.character(newFormula[3]), "\\+")[[1]]
-      newFormulaPred <- newFormulaPred[Reduce(cbind,lapply(newFormulaPred, function (x) grepl("\\(",x)))]
-      newFormula <- paste(newFormula[2],"~","X +",newFormulaPred, collapse = " ")
-      object$newFormula <- formula(newFormula)
-      if(object$doDebug){
-        cat(".... Old formula (given as ~ `outcome` `predictors`): ",as.character(object$formula),"\n")
-        cat(".... New formula (given as ~ `outcome` `predictors`): ",as.character(object$newFormula),"\n")
-        cat(".... Column names of X: ",colnames(X),"\n")
-        cat(".... Size of X (rowsxcols): ",nrow(X),"x",ncol(X),"\n")
-      }
-      object$X <- X
-      return(object)
-    }
-    
-    if(object$forceEqualBaseline){
-      if(object$doDebug){
-        cat(".... Starts removing interaction between groups and first time point\n")
-      }
-      # Remove interaction between group and first time point
-      if(!object$missingMeasurements){
-        if(object$method == "LM"){
-          regr.model <- lm(object$formula, data = subset(object$df, variable == unique(object$df$variable)[1]))
-        }else{
-          regr.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == unique(object$df$variable)[1]))
-        }
-        object <- makeX(object, regr.model)
-      }
-    }
-    
-    if(object$doDebug){
-      cat(".. Beginning regression\n")
-    }
-    object$regr.model <- lapply(unique(object$df$variable), function(i){
-      if(object$doDebug){
-        cat(".... Variable: ",i," (",levels(object$df$variable)[i],")\n")
-        cat(".... Number of rows in subset: ",nrow(subset(object$df, variable == i)),"\n")
-      }
+    object$regr.model <- lapply(unique(object$df$variable), function(x){
+      modmat <- model.matrix(object$formula, data = object$df[variable == x])
+      modmat <- modmat[,-1]
       if(object$forceEqualBaseline){
-        if(!object$missingMeasurements){
-          if(object$method == "LM"){
-            regr.model <- lm(object$newFormula, data = subset(object$df, variable == i))
-          }else{
-            regr.model <- lmerTest::lmer(object$newFormula, data = subset(object$df, variable == i))
-          }
-        }else{
-          
-          if(object$method == "LM"){
-            regr.model <- lm(object$formula, data = subset(object$df, variable == i))
-          }else{
-            regr.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
-          }
-          
-          object <- makeX(object, regr.model)
-          
-          if(object$method == "LM"){
-            regr.model <- lm(object$newFormula, data = subset(object$df, variable == i))
-          }else{
-            regr.model <- lmerTest::lmer(object$newFormula, data = subset(object$df, variable == i))
-          }
-        }
-      }else{
-        if(object$method == "LM"){
-          regr.model <- lm(object$formula, data = subset(object$df, variable == i))
-        }else{
-          regr.model <- lmerTest::lmer(object$formula, data = subset(object$df, variable == i))
-        }
+        modmat <- modmat[,!grepl(paste0("time",levels(object$df$time)[1]), colnames(modmat), fixed = TRUE)]
       }
-      attr(regr.model, "name") <- i
+      #modmat <- modmat[,ncol(modmat):1]
+      environment(object$newformula) <- environment()
+      regr.model <- lmerTest::lmer(object$newformula, data = object$df[variable == x])
+      attr(regr.model, "name") <- x
       regr.model
-    }
-    )
-    
-    names(object$regr.model) <- unique(object$df$variable)
+    })
   }
-  
+  names(object$regr.model) <- unique(object$df$variable)
   return(object)
 }
 
@@ -178,9 +117,7 @@ getRegressionCoefficients <- function(object){
       rownames(a) <- NULL
       a
     }))
-    if(object$forceEqualBaseline){
-      fdf$variable[substr(fdf$variable,1,1) == "X"] <- substr(fdf$variable[substr(fdf$variable,1,1) == "X"],2,nchar(fdf$variable[substr(fdf$variable,1,1) == "X"]))
-    }
+    fdf$variable <- gsub("modmat","",fdf$variable, fixed = TRUE)
     
     colnames(fdf) <- c("estimate", "pvalue", "covar", "variable")
     
@@ -220,7 +157,7 @@ separateLMECoefficients <- function(object){
   object$RegressionCoefficients$comp <- "TIME"
   if(object$separateTimeAndGroup){
     object$RegressionCoefficients$comp[!(object$RegressionCoefficients$variable == "(Intercept)" |
-                                  (substr(object$RegressionCoefficients$variable, 1, 4) == "time" & !grepl(":",object$RegressionCoefficients$variable)))
+                                  (substr(object$RegressionCoefficients$variable, 1, 4) == "time" & !grepl(":",object$RegressionCoefficients$variable, fixed = "TRUE")))
                                  ] <- "GROUP"
   }
   return(object)
@@ -236,22 +173,11 @@ getEffectMatrix <- function(object){
   if(!object$minimizeObject){
     cat("Calculating effect matrix\n")
   }
-  parts <- subset(object$df, variable == object$df$variable[1])
-  if(object$method == "LM"){
-    Dmatrix <- model.matrix(object$regr.model[[1]],"X")
-  }else if(object$method == "LMM"){
-    Dmatrix <- lme4::getME(object$regr.model[[1]],"X")
-  }else if(object$method == "Rfast"){
-    
-    df <- subset(object$df, variable == object$df$variable[1])
+  parts <- object$df[variable == object$df$variable[1]]
+  #parts <- object$df[!duplicated(cbind(object$df$ID, object$df$time))]
+  Dmatrix <- model.matrix(object$formula, data = object$df[variable == object$df$variable[1]])
+  #Dmatrix <- Dmatrix[,ncol(Dmatrix):1]
 
-    Dmatrix <- model.matrix(object$formula, data = df)
-    
-  }
-  
-  if(object$forceEqualBaseline){
-    colnames(Dmatrix)[substr(colnames(Dmatrix),1,1) == "X"] <- substr(colnames(Dmatrix)[substr(colnames(Dmatrix),1,1) == "X"],2,nchar(colnames(Dmatrix)[substr(colnames(Dmatrix),1,1) == "X"]))
-  }
   if(object$separateTimeAndGroup){
     BmatrixTime <- object$RegressionCoefficients[object$RegressionCoefficients$comp == "TIME",c("covar","estimate","variable")]
     BmatrixTime <- reshape2::dcast(BmatrixTime, formula = variable~covar, value.var = "estimate")
@@ -300,7 +226,12 @@ getEffectMatrix <- function(object){
   }
   
   object$parts$time <- parts$time
-  object$parts$group <- parts$group
+  if(object$keepTerms != ""){
+    keepTerms <- c("group", object$keepTerms)
+    object$parts$group <- apply( parts[ , ..keepTerms ] , 1 , paste , collapse = " - " )
+  }else{
+    object$parts$group <- parts$group
+  }
   if(!object$minimizeObject){
     cat("Finished calculating effect matrix!\n")
   }
