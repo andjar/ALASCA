@@ -9,7 +9,8 @@ plotCovar(
   covar = NA,
   tlab = NA,
   return_data = FALSE,
-  myTheme = ggplot2::theme_bw()
+  myTheme = ggplot2::theme_bw(),
+  pvalue = "shape"
 )
 }
 \arguments{

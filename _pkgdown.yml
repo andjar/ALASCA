@@ -20,11 +20,13 @@ reference:
   - summary.ALASCA
   - RMASCA
   - SMASCA
+  - appendModel
 - title: "Plotting"
   desc: "Functions for visualizing results"
 - contents: 
   - plot.ALASCA
   - screeplot.ALASCA
+  - flipIt
   - plotCovar
   - plotParts
   - plotPred
