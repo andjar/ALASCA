@@ -253,6 +253,19 @@ ggarrange(g3, g1, g4, g2,
 ```
 </div>
 
+## Permutation testing
+
+We have implemented a simple permutation test for getting P values.
+
+<div class="fold s">
+```{r}
+mod.perm <- ALASCA(df, form, separateTimeAndGroup = FALSE, forceEqualBaseline = TRUE, 
+                   scaleFun = scaleFun, method = "Rfast", validate = TRUE, 
+                   validationMethod = "permutation", nValRuns = 1000)
+mod.perm$pvals
+```
+</div>
+
 ## Regression models
 
 Sometimes it may be difficult to interpret the ALASCA plots and you may wish to visualize the underlying regression models. The ALASCA package features a function for that: `plotPred()`:

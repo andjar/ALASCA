@@ -223,23 +223,44 @@ getLoadingPlot <- function(object, component = 1, effect = "time", decreasingLoa
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A ggplot object
 getScorePlot <- function(object, component = 1, effect = "time", myTheme = ggplot2::theme_bw()){
-  pointSize <- 0.4
+  pointSize <- 2
   if(effect == "time"){
     if(object$separateTimeAndGroup){
       score <- subset(getScores(object)$time, PC == component)
       if(object$validate){
-        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = NA, ymin = low, ymax = high)) +
-          ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35), size = pointSize) +
-          ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+        if(grepl("permutation", object$validationMethod)){
+          pvals <- object$pvals
+          score <- merge(score, pvals, by.x = "time", by.y = "effect", all.x=TRUE, all.y=FALSE)
+          score$p.value.str <- ifelse(score$p.value > .05, "", ifelse(score$p.value < .001, "***", ifelse(score$p.value < .01, "**", "*")))
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = NA, label=p.value.str)) +
+            ggplot2::geom_point(position = ggplot2::position_dodge(width = 0.5), size = pointSize) +
+            ggplot2::geom_text(vjust = 0, hjust = 0.5, position = ggplot2::position_dodge(width = 0.5), show.legend = FALSE)+
+            ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.5))
+        }else{
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = NA, ymin = low, ymax = high)) +
+            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35), size = pointSize) +
+            ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+        }
       }else{
         g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = NA)) + ggplot2::geom_point() + ggplot2::geom_line()
       }
     }else{
       score <- subset(getScores(object)$time, PC == component)
       if(object$validate){
-        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
-          ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35), size = pointSize) +
-          ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+        if(grepl("permutation", object$validationMethod)){
+          pvals <- object$pvals
+          score$effect <- paste(score$time, score$group)
+          score <- merge(score, pvals, by.x = "effect", by.y = "effect", all.x=TRUE, all.y=FALSE)
+          score$p.value.str <- ifelse(score$p.value > .05, "", ifelse(score$p.value < .001, "***", ifelse(score$p.value < .01, "**", "*")))
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, label = p.value.str)) +
+            ggplot2::geom_point(position = ggplot2::position_dodge(width = 0.5), size = pointSize) +
+            geom_text(vjust = 0, hjust = 0.5, position = ggplot2::position_dodge(width = 0.5), show.legend = FALSE) +
+            ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.5))
+        }else{
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
+            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35), size = pointSize) +
+            ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+        }
       }else{
         g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group)) +
           ggplot2::geom_point() + ggplot2::geom_line()
@@ -251,9 +272,20 @@ getScorePlot <- function(object, component = 1, effect = "time", myTheme = ggplo
   }else{
     score <- subset(getScores(object)$group, PC == component)
     if(object$validate){
-      g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
-        ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35), size = pointSize) +
-        ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+      if(grepl("permutation", object$validationMethod)){
+        pvals <- object$pvals
+        score$effect <- paste(score$time, score$group)
+        score <- merge(score, pvals, by.x = "effect", by.y = "effect", all.x=TRUE, all.y=FALSE)
+        score$p.value.str <- ifelse(score$p.value > .05, "", ifelse(score$p.value < .001, "***", ifelse(score$p.value < .01, "**", "*")))
+        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, label = p.value.str)) +
+          ggplot2::geom_point(position = ggplot2::position_dodge(width = 0.5), size = pointSize) +
+          geom_text(vjust = 0, hjust = 0.5, position = ggplot2::position_dodge(width = 0.5), show.legend = FALSE) +
+          ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.5))
+      }else{
+        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
+          ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35), size = pointSize) +
+          ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+      }
     }else{
       g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group)) +
         ggplot2::geom_point() + ggplot2::geom_line()
