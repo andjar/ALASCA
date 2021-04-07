@@ -440,6 +440,31 @@ prepareValidationRun <- function(object){
     }
     temp_object <- ALASCA(validationObject = temp_object,
                           validationParticipants = !is.na(object$df[,ID]))
+  }else if(object$validationMethod == "bootstrap"){
+    # Use bootstrap validation
+    bootobject <- object
+    bootdf_temp <- object$dfRaw
+    bootdf <- data.frame()
+    cc_id <- 1
+    
+    if(object$method %in% c("LMM", "Rfast")){
+      for(i in unique(object$stratificationVector)){
+        selectedParts_temp_all <- unique(object$df[object$stratificationVector == i,ID])
+        selectedParts_temp_selected <- sample(selectedParts_temp_all, length(selectedParts_temp_all), replace = TRUE)
+        bootdf <- rbind(bootdf,Reduce(rbind,lapply(selectedParts_temp_selected, function(x){
+                          seldf <- bootdf_temp[bootdf_temp$ID == x,]
+                          seldf$ID <- cc_id
+                          cc_id <- cc_id + 1
+                          seldf
+                        })))
+      }
+      bootobject$dfRaw <- bootdf
+      
+      temp_object <- ALASCA(validationObject = bootobject,
+                            validationParticipants = rep(TRUE,nrow(bootobject$dfRaw)))
+    }else if(df$method == "LM"){
+      stop("Bootstrapping not implemented for LMs yet")
+    }
   }
   
   return(temp_object)

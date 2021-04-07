@@ -170,6 +170,21 @@ mod.Rfast <- ALASCA(df, form,
 mod.Rfast <- flipIt(mod.Rfast)
 ```
 
+### Using Bootstrapping
+
+However, there is a way to increase speed: `method = "Rfast"` will employ the `Rfast` package, which is usually much faster (in this case, we get about an order of magnitude better):
+
+```{r, message=FALSE}
+mod.Rfast.bootstrap <- ALASCA(df, form, 
+                    separateTimeAndGroup = FALSE, 
+                    forceEqualBaseline = TRUE, 
+                    scaleFun = scaleFun,
+                    validate = TRUE,
+                    nValRuns = 50,
+                    method = "Rfast", validationMethod = "bootstrap")
+mod.Rfast.bootstrap <- flipIt(mod.Rfast.bootstrap)
+```
+
 ## More interaction term
 
 Sometimes we need mote advanced models than the one demonstrated above. For example, the dataset contains both responders and responders, and these groups may be different at baseline. Thus, we cannot simply make four groups and rerun the model above. We can add more terms to the formula, and specify that we want to keep them in the effect matrix by listing them in a vector given to `keepTerms`,
@@ -228,6 +243,11 @@ df <- rbind(df,
               getLoadings(mod.Rfast)$time,
               model = "Jarmund Rfast"
             ))
+df <- rbind(df,
+            data.frame(
+              getLoadings(mod.Rfast.bootstrap)$time,
+              model = "Jarmund bootstrap"
+            ))
 
 g1 <- ggplot(subset(df, PC == 1), aes(x = covars, y = loading, ymin = low, ymax = high, color = model)) + geom_pointrange(position = position_dodge(width = 0.35)) + theme_bw()
 g2 <- ggplot(subset(df, PC == 2), aes(x = covars, y = loading, ymin = low, ymax = high, color = model)) + geom_pointrange(position = position_dodge(width = 0.35)) + theme_bw()
@@ -242,6 +262,11 @@ df <- rbind(df,
             data.frame(
               getScores(mod.Rfast)$time,
               model = "Jarmund Rfast"
+            ))
+df <- rbind(df,
+            data.frame(
+              getScores(mod.Rfast.bootstrap)$time,
+              model = "Jarmund bootstrap"
             ))
 
 g3 <- ggplot(subset(df, PC == 1), aes(x = paste(time, group), y = score, ymin = low, ymax = high, color = model)) + geom_pointrange(position = position_dodge(width = 0.35)) + theme_bw()
