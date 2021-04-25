@@ -6,7 +6,7 @@ $(document).ready(function() {
 
     // add button to source code chunks
     if ( $(this).hasClass('s') ) {
-      $('pre.r', this).prepend("<div class=\"showopt\">Show Source</div><br style=\"line-height:22px;\"/>");
+      $('pre.r', this).prepend("<div class=\"showopttext\"></div><br style=\"line-height:22px;\"/>");
       $('pre.r', this).children('code').attr('class', 'folded');
     }
 
