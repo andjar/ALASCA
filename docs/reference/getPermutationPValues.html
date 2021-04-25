@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Get LMM coefficients — getLMECoefficients • RMASCA</title>
+<title>Get P values — getPermutationPValues • ALASCA</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Get LMM coefficients — getLMECoefficients" />
-<meta property="og:description" content="This function calculates the LMM coefficients for the RMASCA-model" />
+<meta property="og:title" content="Get P values — getPermutationPValues" />
+<meta property="og:description" content="This function calculates P values" />
 
 
 
@@ -71,8 +71,8 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">RMASCA</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.9</span>
+        <a class="navbar-link" href="../index.html">ALASCA</a>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.91</span>
       </span>
     </div>
 
@@ -85,7 +85,7 @@
   </a>
 </li>
 <li>
-  <a href="../articles/RMASCA.html">Get started</a>
+  <a href="../articles/ALASCA.html">Get started</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
@@ -101,13 +101,24 @@
       <a href="../articles/metabolomics.html">Metabolomics</a>
     </li>
     <li>
+      <a href="../articles/personality.html">Personality and Aging</a>
+    </li>
+    <li>
       <a href="../articles/pregnancy.html">Early Preeclampsia</a>
     </li>
   </ul>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/andjar/ALASCA/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -121,29 +132,33 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Get LMM coefficients</h1>
-    
-    <div class="hidden name"><code>getLMECoefficients.Rd</code></div>
+    <h1>Get P values</h1>
+    <small class="dont-index">Source: <a href='https://github.com/andjar/ALASCA/blob/master/R/validation.R'><code>R/validation.R</code></a></small>
+    <div class="hidden name"><code>getPermutationPValues.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This function calculates the LMM coefficients for the RMASCA-model</p>
+    <p>This function calculates P values</p>
     </div>
 
-    <pre class="usage"><span class='fu'>getLMECoefficients</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>getPermutationPValues</span><span class='op'>(</span><span class='va'>target</span>, <span class='va'>objectlist</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>object</th>
-      <td><p>An RMASCA object to be sanitized</p></td>
+      <th>target</th>
+      <td><p>The full-model ALASCA object</p></td>
+    </tr>
+    <tr>
+      <th>objectlist</th>
+      <td><p>List of permutated ALASCA objects</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An RMASCA object</p>
+    <p>An ALASCA object</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

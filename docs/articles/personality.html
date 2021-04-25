@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.9</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.91</span>
       </span>
     </div>
 
@@ -67,8 +67,18 @@
     </li>
   </ul>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/andjar/ALASCA/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -78,15 +88,16 @@
 
       
 
-      </header><script src="personality_files/header-attrs-2.6/header-attrs.js"></script><div class="row">
+      </header><script src="personality_files/header-attrs-2.6/header-attrs.js"></script><script src="personality_files/kePrint-0.0.1/kePrint.js"></script><link href="personality_files/lightable-0.0.1/lightable.css" rel="stylesheet">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Personality and Aging</h1>
                         <h4 class="author">Anders H. Jarmund</h4>
             
-            <h4 class="date">2021-02-23</h4>
+            <h4 class="date">2021-04-25</h4>
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/andjar/ALASCA/blob/master/vignettes/personality.Rmd"><code>vignettes/personality.Rmd</code></a></small>
       <div class="hidden name"><code>personality.Rmd</code></div>
 
     </div>
@@ -124,7 +135,7 @@ pre.plot {
 </style>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/hadley/reshape">"reshape2"</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st">"ALASCA"</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/andjar/ALASCA">"ALASCA"</a></span><span class="op">)</span>
 <span class="co">#&gt; Loading required package: data.table</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Attaching package: 'data.table'</span>
@@ -217,105 +228,106 @@ pre.plot {
 <span class="co">#&gt; Finished calculating effect matrix!</span>
 <span class="co">#&gt; Running validation...</span>
 <span class="co">#&gt; - Run  1  of  50 </span>
-<span class="co">#&gt; --- Used  1.27  seconds. Est. time remaining:  62.13  seconds </span>
+<span class="co">#&gt; --- Used  1.28  seconds. Est. time remaining:  62.5  seconds </span>
 <span class="co">#&gt; - Run  2  of  50 </span>
-<span class="co">#&gt; --- Used  1.32  seconds. Est. time remaining:  61.99  seconds </span>
+<span class="co">#&gt; --- Used  1.39  seconds. Est. time remaining:  64.07  seconds </span>
 <span class="co">#&gt; - Run  3  of  50 </span>
-<span class="co">#&gt; --- Used  1.26  seconds. Est. time remaining:  60.27  seconds </span>
+<span class="co">#&gt; --- Used  1.6  seconds. Est. time remaining:  66.96  seconds </span>
 <span class="co">#&gt; - Run  4  of  50 </span>
-<span class="co">#&gt; --- Used  1.2  seconds. Est. time remaining:  58.03  seconds </span>
+<span class="co">#&gt; --- Used  1.34  seconds. Est. time remaining:  64.6  seconds </span>
 <span class="co">#&gt; - Run  5  of  50 </span>
-<span class="co">#&gt; --- Used  1.24  seconds. Est. time remaining:  56.55  seconds </span>
+<span class="co">#&gt; --- Used  1.38  seconds. Est. time remaining:  63  seconds </span>
 <span class="co">#&gt; - Run  6  of  50 </span>
-<span class="co">#&gt; --- Used  1.26  seconds. Est. time remaining:  55.31  seconds </span>
+<span class="co">#&gt; --- Used  1.41  seconds. Est. time remaining:  61.69  seconds </span>
 <span class="co">#&gt; - Run  7  of  50 </span>
-<span class="co">#&gt; --- Used  1.28  seconds. Est. time remaining:  54.22  seconds </span>
+<span class="co">#&gt; --- Used  1.91  seconds. Est. time remaining:  63.42  seconds </span>
 <span class="co">#&gt; - Run  8  of  50 </span>
-<span class="co">#&gt; --- Used  1.23  seconds. Est. time remaining:  52.82  seconds </span>
+<span class="co">#&gt; --- Used  1.49  seconds. Est. time remaining:  62.04  seconds </span>
 <span class="co">#&gt; - Run  9  of  50 </span>
-<span class="co">#&gt; --- Used  1.23  seconds. Est. time remaining:  51.46  seconds </span>
+<span class="co">#&gt; --- Used  1.57  seconds. Est. time remaining:  61  seconds </span>
 <span class="co">#&gt; - Run  10  of  50 </span>
-<span class="co">#&gt; --- Used  1.27  seconds. Est. time remaining:  50.26  seconds </span>
+<span class="co">#&gt; --- Used  1.92  seconds. Est. time remaining:  61.23  seconds </span>
 <span class="co">#&gt; - Run  11  of  50 </span>
-<span class="co">#&gt; --- Used  1.29  seconds. Est. time remaining:  49.14  seconds </span>
+<span class="co">#&gt; --- Used  2.33  seconds. Est. time remaining:  62.53  seconds </span>
 <span class="co">#&gt; - Run  12  of  50 </span>
-<span class="co">#&gt; --- Used  1.27  seconds. Est. time remaining:  47.91  seconds </span>
+<span class="co">#&gt; --- Used  2.3  seconds. Est. time remaining:  63.13  seconds </span>
 <span class="co">#&gt; - Run  13  of  50 </span>
-<span class="co">#&gt; --- Used  1.29  seconds. Est. time remaining:  46.74  seconds </span>
+<span class="co">#&gt; --- Used  1.83  seconds. Est. time remaining:  61.95  seconds </span>
 <span class="co">#&gt; - Run  14  of  50 </span>
-<span class="co">#&gt; --- Used  1.21  seconds. Est. time remaining:  45.35  seconds </span>
+<span class="co">#&gt; --- Used  1.73  seconds. Est. time remaining:  60.42  seconds </span>
 <span class="co">#&gt; - Run  15  of  50 </span>
-<span class="co">#&gt; --- Used  1.22  seconds. Est. time remaining:  44  seconds </span>
+<span class="co">#&gt; --- Used  1.77  seconds. Est. time remaining:  58.94  seconds </span>
 <span class="co">#&gt; - Run  16  of  50 </span>
-<span class="co">#&gt; --- Used  1.34  seconds. Est. time remaining:  42.92  seconds </span>
+<span class="co">#&gt; --- Used  1.74  seconds. Est. time remaining:  57.37  seconds </span>
 <span class="co">#&gt; - Run  17  of  50 </span>
-<span class="co">#&gt; --- Used  1.23  seconds. Est. time remaining:  41.6  seconds </span>
+<span class="co">#&gt; --- Used  1.84  seconds. Est. time remaining:  55.99  seconds </span>
 <span class="co">#&gt; - Run  18  of  50 </span>
-<span class="co">#&gt; --- Used  1.3  seconds. Est. time remaining:  40.4  seconds </span>
+<span class="co">#&gt; --- Used  1.4  seconds. Est. time remaining:  53.77  seconds </span>
 <span class="co">#&gt; - Run  19  of  50 </span>
-<span class="co">#&gt; --- Used  1.26  seconds. Est. time remaining:  39.14  seconds </span>
+<span class="co">#&gt; --- Used  1.44  seconds. Est. time remaining:  51.69  seconds </span>
 <span class="co">#&gt; - Run  20  of  50 </span>
-<span class="co">#&gt; --- Used  1.21  seconds. Est. time remaining:  37.8  seconds </span>
+<span class="co">#&gt; --- Used  1.31  seconds. Est. time remaining:  49.48  seconds </span>
 <span class="co">#&gt; - Run  21  of  50 </span>
-<span class="co">#&gt; --- Used  1.21  seconds. Est. time remaining:  36.47  seconds </span>
+<span class="co">#&gt; --- Used  1.33  seconds. Est. time remaining:  47.39  seconds </span>
 <span class="co">#&gt; - Run  22  of  50 </span>
-<span class="co">#&gt; --- Used  1.3  seconds. Est. time remaining:  35.27  seconds </span>
+<span class="co">#&gt; --- Used  1.45  seconds. Est. time remaining:  45.51  seconds </span>
 <span class="co">#&gt; - Run  23  of  50 </span>
-<span class="co">#&gt; --- Used  1.22  seconds. Est. time remaining:  33.96  seconds </span>
+<span class="co">#&gt; --- Used  1.58  seconds. Est. time remaining:  43.83  seconds </span>
 <span class="co">#&gt; - Run  24  of  50 </span>
-<span class="co">#&gt; --- Used  1.27  seconds. Est. time remaining:  32.72  seconds </span>
+<span class="co">#&gt; --- Used  1.44  seconds. Est. time remaining:  42.01  seconds </span>
 <span class="co">#&gt; - Run  25  of  50 </span>
-<span class="co">#&gt; --- Used  1.21  seconds. Est. time remaining:  31.42  seconds </span>
+<span class="co">#&gt; --- Used  1.64  seconds. Est. time remaining:  40.42  seconds </span>
 <span class="co">#&gt; - Run  26  of  50 </span>
-<span class="co">#&gt; --- Used  1.42  seconds. Est. time remaining:  30.31  seconds </span>
+<span class="co">#&gt; --- Used  1.62  seconds. Est. time remaining:  38.8  seconds </span>
 <span class="co">#&gt; - Run  27  of  50 </span>
-<span class="co">#&gt; --- Used  1.3  seconds. Est. time remaining:  29.08  seconds </span>
+<span class="co">#&gt; --- Used  1.38  seconds. Est. time remaining:  36.99  seconds </span>
 <span class="co">#&gt; - Run  28  of  50 </span>
-<span class="co">#&gt; --- Used  1.21  seconds. Est. time remaining:  27.77  seconds </span>
+<span class="co">#&gt; --- Used  1.43  seconds. Est. time remaining:  35.24  seconds </span>
 <span class="co">#&gt; - Run  29  of  50 </span>
-<span class="co">#&gt; --- Used  1.31  seconds. Est. time remaining:  26.54  seconds </span>
+<span class="co">#&gt; --- Used  1.63  seconds. Est. time remaining:  33.66  seconds </span>
 <span class="co">#&gt; - Run  30  of  50 </span>
-<span class="co">#&gt; --- Used  1.25  seconds. Est. time remaining:  25.27  seconds </span>
+<span class="co">#&gt; --- Used  1.52  seconds. Est. time remaining:  32.01  seconds </span>
 <span class="co">#&gt; - Run  31  of  50 </span>
-<span class="co">#&gt; --- Used  1.27  seconds. Est. time remaining:  24.01  seconds </span>
+<span class="co">#&gt; --- Used  1.58  seconds. Est. time remaining:  30.4  seconds </span>
 <span class="co">#&gt; - Run  32  of  50 </span>
-<span class="co">#&gt; --- Used  1.24  seconds. Est. time remaining:  22.73  seconds </span>
+<span class="co">#&gt; --- Used  1.58  seconds. Est. time remaining:  28.78  seconds </span>
 <span class="co">#&gt; - Run  33  of  50 </span>
-<span class="co">#&gt; --- Used  1.33  seconds. Est. time remaining:  21.5  seconds </span>
+<span class="co">#&gt; --- Used  1.42  seconds. Est. time remaining:  27.09  seconds </span>
 <span class="co">#&gt; - Run  34  of  50 </span>
-<span class="co">#&gt; --- Used  1.26  seconds. Est. time remaining:  20.24  seconds </span>
+<span class="co">#&gt; --- Used  1.36  seconds. Est. time remaining:  25.39  seconds </span>
 <span class="co">#&gt; - Run  35  of  50 </span>
-<span class="co">#&gt; --- Used  1.36  seconds. Est. time remaining:  19.01  seconds </span>
+<span class="co">#&gt; --- Used  1.43  seconds. Est. time remaining:  23.73  seconds </span>
 <span class="co">#&gt; - Run  36  of  50 </span>
-<span class="co">#&gt; --- Used  1.29  seconds. Est. time remaining:  17.76  seconds </span>
+<span class="co">#&gt; --- Used  1.45  seconds. Est. time remaining:  22.1  seconds </span>
 <span class="co">#&gt; - Run  37  of  50 </span>
-<span class="co">#&gt; --- Used  1.44  seconds. Est. time remaining:  16.55  seconds </span>
+<span class="co">#&gt; --- Used  1.35  seconds. Est. time remaining:  20.44  seconds </span>
 <span class="co">#&gt; - Run  38  of  50 </span>
-<span class="co">#&gt; --- Used  1.34  seconds. Est. time remaining:  15.3  seconds </span>
+<span class="co">#&gt; --- Used  1.62  seconds. Est. time remaining:  18.89  seconds </span>
 <span class="co">#&gt; - Run  39  of  50 </span>
-<span class="co">#&gt; --- Used  1.33  seconds. Est. time remaining:  14.04  seconds </span>
+<span class="co">#&gt; --- Used  1.36  seconds. Est. time remaining:  17.25  seconds </span>
 <span class="co">#&gt; - Run  40  of  50 </span>
-<span class="co">#&gt; --- Used  1.28  seconds. Est. time remaining:  12.76  seconds </span>
+<span class="co">#&gt; --- Used  1.35  seconds. Est. time remaining:  15.63  seconds </span>
 <span class="co">#&gt; - Run  41  of  50 </span>
-<span class="co">#&gt; --- Used  1.41  seconds. Est. time remaining:  11.52  seconds </span>
+<span class="co">#&gt; --- Used  1.42  seconds. Est. time remaining:  14.03  seconds </span>
 <span class="co">#&gt; - Run  42  of  50 </span>
-<span class="co">#&gt; --- Used  1.33  seconds. Est. time remaining:  10.25  seconds </span>
+<span class="co">#&gt; --- Used  1.49  seconds. Est. time remaining:  12.46  seconds </span>
 <span class="co">#&gt; - Run  43  of  50 </span>
-<span class="co">#&gt; --- Used  1.33  seconds. Est. time remaining:  8.97  seconds </span>
+<span class="co">#&gt; --- Used  1.47  seconds. Est. time remaining:  10.89  seconds </span>
 <span class="co">#&gt; - Run  44  of  50 </span>
-<span class="co">#&gt; --- Used  1.52  seconds. Est. time remaining:  7.72  seconds </span>
+<span class="co">#&gt; --- Used  1.41  seconds. Est. time remaining:  9.31  seconds </span>
 <span class="co">#&gt; - Run  45  of  50 </span>
-<span class="co">#&gt; --- Used  1.58  seconds. Est. time remaining:  6.47  seconds </span>
+<span class="co">#&gt; --- Used  1.41  seconds. Est. time remaining:  7.75  seconds </span>
 <span class="co">#&gt; - Run  46  of  50 </span>
-<span class="co">#&gt; --- Used  1.36  seconds. Est. time remaining:  5.18  seconds </span>
+<span class="co">#&gt; --- Used  1.49  seconds. Est. time remaining:  6.19  seconds </span>
 <span class="co">#&gt; - Run  47  of  50 </span>
-<span class="co">#&gt; --- Used  1.38  seconds. Est. time remaining:  3.89  seconds </span>
+<span class="co">#&gt; --- Used  1.62  seconds. Est. time remaining:  4.65  seconds </span>
 <span class="co">#&gt; - Run  48  of  50 </span>
-<span class="co">#&gt; --- Used  1.33  seconds. Est. time remaining:  2.6  seconds </span>
+<span class="co">#&gt; --- Used  1.54  seconds. Est. time remaining:  3.1  seconds </span>
 <span class="co">#&gt; - Run  49  of  50 </span>
-<span class="co">#&gt; --- Used  1.29  seconds. Est. time remaining:  1.3  seconds </span>
+<span class="co">#&gt; --- Used  1.87  seconds. Est. time remaining:  1.56  seconds </span>
 <span class="co">#&gt; - Run  50  of  50 </span>
-<span class="co">#&gt; --- Used  1.32  seconds. Est. time remaining:  0  seconds</span>
+<span class="co">#&gt; --- Used  1.59  seconds. Est. time remaining:  0  seconds </span>
+<span class="co">#&gt; - Calculates percentiles for score and loading...</span>
 
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></code></pre></div>
 <p><img src="personality_files/figure-html/unnamed-chunk-2-1.png" width="100%" style="display: block; margin: auto;"></p>
@@ -327,126 +339,258 @@ pre.plot {
 <code class="sourceCode R"><span class="va">l_PC1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="fu"><a href="../reference/getLoadings.html">getLoadings</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span><span class="op">$</span><span class="va">time</span>, <span class="va">PC</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># Get PC1 for time effect</span>
 <span class="va">l_PC1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html">merge</a></span><span class="op">(</span><span class="va">l_PC1</span>, <span class="va">df.q</span>, by.x <span class="op">=</span> <span class="st">"covars"</span>, by.y <span class="op">=</span> <span class="st">"code"</span>, all.x <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="co"># attach question</span>
 <span class="va">l_PC1</span> <span class="op">&lt;-</span> <span class="va">l_PC1</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html">order</a></span><span class="op">(</span><span class="va">l_PC1</span><span class="op">$</span><span class="va">loading</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,<span class="op">]</span> <span class="co"># Order them after loading</span>
-<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">l_PC1</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"loading"</span>,<span class="st">"question"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="left"></th>
-<th align="right">loading</th>
-<th align="left">question</th>
+<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">l_PC1</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"loading"</span>,<span class="st">"question"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">kable_material</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"striped"</span>, <span class="st">"hover"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<table class="table  lightable-material lightable-striped lightable-hover">
+<thead><tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+loading
+</th>
+<th style="text-align:left;">
+question
+</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
-<td align="left">62</td>
-<td align="right">0.2499614</td>
-<td align="left">I have traveled alone in a foreign country.</td>
+<tr>
+<td style="text-align:left;">
+62
+</td>
+<td style="text-align:right;">
+0.2499614
+</td>
+<td style="text-align:left;">
+I have traveled alone in a foreign country.
+</td>
 </tr>
-<tr class="even">
-<td align="left">2</td>
-<td align="right">0.1696101</td>
-<td align="left">I make people feel at ease.</td>
+<tr>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:right;">
+0.1696101
+</td>
+<td style="text-align:left;">
+I make people feel at ease.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">41</td>
-<td align="right">0.1576493</td>
-<td align="left">I have a rich vocabulary.</td>
+<tr>
+<td style="text-align:left;">
+41
+</td>
+<td style="text-align:right;">
+0.1576493
+</td>
+<td style="text-align:left;">
+I have a rich vocabulary.
+</td>
 </tr>
-<tr class="even">
-<td align="left">20</td>
-<td align="right">0.1550006</td>
-<td align="left">I follow a schedule.</td>
+<tr>
+<td style="text-align:left;">
+20
+</td>
+<td style="text-align:right;">
+0.1550006
+</td>
+<td style="text-align:left;">
+I follow a schedule.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">11</td>
-<td align="right">0.1472809</td>
-<td align="left">I am always prepared.</td>
+<tr>
+<td style="text-align:left;">
+11
+</td>
+<td style="text-align:right;">
+0.1472809
+</td>
+<td style="text-align:left;">
+I am always prepared.
+</td>
 </tr>
-<tr class="even">
-<td align="left">36</td>
-<td align="right">0.1441014</td>
-<td align="left">I start conversations.</td>
+<tr>
+<td style="text-align:left;">
+36
+</td>
+<td style="text-align:right;">
+0.1441014
+</td>
+<td style="text-align:left;">
+I start conversations.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">75</td>
-<td align="right">0.1415864</td>
-<td align="left">I have a rich vocabulary.</td>
+<tr>
+<td style="text-align:left;">
+75
+</td>
+<td style="text-align:right;">
+0.1415864
+</td>
+<td style="text-align:left;">
+I have a rich vocabulary.
+</td>
 </tr>
-<tr class="even">
-<td align="left">10</td>
-<td align="right">0.1384822</td>
-<td align="left">I feel others’ emotions.</td>
+<tr>
+<td style="text-align:left;">
+10
+</td>
+<td style="text-align:right;">
+0.1384822
+</td>
+<td style="text-align:left;">
+I feel others’ emotions.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">46</td>
-<td align="right">0.1372529</td>
-<td align="left">I have excellent ideas.</td>
+<tr>
+<td style="text-align:left;">
+46
+</td>
+<td style="text-align:right;">
+0.1372529
+</td>
+<td style="text-align:left;">
+I have excellent ideas.
+</td>
 </tr>
-<tr class="even">
-<td align="left">59</td>
-<td align="right">0.1367973</td>
-<td align="left">I would want a dog that bit me put down.</td>
+<tr>
+<td style="text-align:left;">
+59
+</td>
+<td style="text-align:right;">
+0.1367973
+</td>
+<td style="text-align:left;">
+I would want a dog that bit me put down.
+</td>
 </tr>
 </tbody>
 </table>
 <p>And in the other end (in this case, older women score lower on these items):</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">l_PC1</span> <span class="op">&lt;-</span> <span class="va">l_PC1</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html">order</a></span><span class="op">(</span><span class="va">l_PC1</span><span class="op">$</span><span class="va">loading</span>, decreasing <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,<span class="op">]</span> <span class="co"># Order them after loading</span>
-<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">l_PC1</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"loading"</span>,<span class="st">"question"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="left"></th>
-<th align="right">loading</th>
-<th align="left">question</th>
+<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">l_PC1</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"loading"</span>,<span class="st">"question"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">kable_material</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"striped"</span>, <span class="st">"hover"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<table class="table  lightable-material lightable-striped lightable-hover">
+<thead><tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+loading
+</th>
+<th style="text-align:left;">
+question
+</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
-<td align="left">19</td>
-<td align="right">-0.2376010</td>
-<td align="left">I shirk my duties.</td>
+<tr>
+<td style="text-align:left;">
+19
+</td>
+<td style="text-align:right;">
+-0.2376010
+</td>
+<td style="text-align:left;">
+I shirk my duties.
+</td>
 </tr>
-<tr class="even">
-<td align="left">4</td>
-<td align="right">-0.2318434</td>
-<td align="left">I insult people.</td>
+<tr>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:right;">
+-0.2318434
+</td>
+<td style="text-align:left;">
+I insult people.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">15</td>
-<td align="right">-0.2192750</td>
-<td align="left">I make a mess of things.</td>
+<tr>
+<td style="text-align:left;">
+15
+</td>
+<td style="text-align:right;">
+-0.2192750
+</td>
+<td style="text-align:left;">
+I make a mess of things.
+</td>
 </tr>
-<tr class="even">
-<td align="left">28</td>
-<td align="right">-0.1907806</td>
-<td align="left">I change my mood a lot.</td>
+<tr>
+<td style="text-align:left;">
+28
+</td>
+<td style="text-align:right;">
+-0.1907806
+</td>
+<td style="text-align:left;">
+I change my mood a lot.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">29</td>
-<td align="right">-0.1745142</td>
-<td align="left">I have frequent mood swings.</td>
+<tr>
+<td style="text-align:left;">
+29
+</td>
+<td style="text-align:right;">
+-0.1745142
+</td>
+<td style="text-align:left;">
+I have frequent mood swings.
+</td>
 </tr>
-<tr class="even">
-<td align="left">60</td>
-<td align="right">-0.1735805</td>
-<td align="left">I miss my childhood.</td>
+<tr>
+<td style="text-align:left;">
+60
+</td>
+<td style="text-align:right;">
+-0.1735805
+</td>
+<td style="text-align:left;">
+I miss my childhood.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">68</td>
-<td align="right">-0.1661132</td>
-<td align="left">I sometimes ruin my jokes by laughing in the middle of them.</td>
+<tr>
+<td style="text-align:left;">
+68
+</td>
+<td style="text-align:right;">
+-0.1661132
+</td>
+<td style="text-align:left;">
+I sometimes ruin my jokes by laughing in the middle of them.
+</td>
 </tr>
-<tr class="even">
-<td align="left">1</td>
-<td align="right">-0.1644788</td>
-<td align="left">I feel little concern for others.</td>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:right;">
+-0.1644788
+</td>
+<td style="text-align:left;">
+I feel little concern for others.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">30</td>
-<td align="right">-0.1634739</td>
-<td align="left">I get irritated easily.</td>
+<tr>
+<td style="text-align:left;">
+30
+</td>
+<td style="text-align:right;">
+-0.1634739
+</td>
+<td style="text-align:left;">
+I get irritated easily.
+</td>
 </tr>
-<tr class="even">
-<td align="left">32</td>
-<td align="right">-0.1501188</td>
-<td align="left">I am quiet around strangers.</td>
+<tr>
+<td style="text-align:left;">
+32
+</td>
+<td style="text-align:right;">
+-0.1501188
+</td>
+<td style="text-align:left;">
+I am quiet around strangers.
+</td>
 </tr>
 </tbody>
 </table>
@@ -455,154 +599,324 @@ pre.plot {
 <code class="sourceCode R"><span class="va">l_PC1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="fu"><a href="../reference/getLoadings.html">getLoadings</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span><span class="op">$</span><span class="va">group</span>, <span class="va">PC</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># Get PC1 for time effect</span>
 <span class="va">l_PC1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html">merge</a></span><span class="op">(</span><span class="va">l_PC1</span>, <span class="va">df.q</span>, by.x <span class="op">=</span> <span class="st">"covars"</span>, by.y <span class="op">=</span> <span class="st">"code"</span>, all.x <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="co"># attach question</span>
 <span class="va">l_PC1</span> <span class="op">&lt;-</span> <span class="va">l_PC1</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html">order</a></span><span class="op">(</span><span class="va">l_PC1</span><span class="op">$</span><span class="va">loading</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,<span class="op">]</span> <span class="co"># Order them after loading</span>
-<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">l_PC1</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"covars"</span>,<span class="st">"loading"</span>,<span class="st">"question"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="left"></th>
-<th align="left">covars</th>
-<th align="right">loading</th>
-<th align="left">question</th>
+<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">l_PC1</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"covars"</span>,<span class="st">"loading"</span>,<span class="st">"question"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">kable_material</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"striped"</span>, <span class="st">"hover"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<table class="table  lightable-material lightable-striped lightable-hover">
+<thead><tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+covars
+</th>
+<th style="text-align:right;">
+loading
+</th>
+<th style="text-align:left;">
+question
+</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
-<td align="left">67</td>
-<td align="left">Q24</td>
-<td align="right">0.2522973</td>
-<td align="left">I am interested in economics.</td>
+<tr>
+<td style="text-align:left;">
+67
+</td>
+<td style="text-align:left;">
+Q24
+</td>
+<td style="text-align:right;">
+0.2522973
+</td>
+<td style="text-align:left;">
+I am interested in economics.
+</td>
 </tr>
-<tr class="even">
-<td align="left">54</td>
-<td align="left">Q12</td>
-<td align="right">0.2056172</td>
-<td align="left">I like science fiction.</td>
+<tr>
+<td style="text-align:left;">
+54
+</td>
+<td style="text-align:left;">
+Q12
+</td>
+<td style="text-align:right;">
+0.2056172
+</td>
+<td style="text-align:left;">
+I like science fiction.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">63</td>
-<td align="left">Q20</td>
-<td align="right">0.1905220</td>
-<td align="left">I do not need others praise.</td>
+<tr>
+<td style="text-align:left;">
+63
+</td>
+<td style="text-align:left;">
+Q20
+</td>
+<td style="text-align:right;">
+0.1905220
+</td>
+<td style="text-align:left;">
+I do not need others praise.
+</td>
 </tr>
-<tr class="even">
-<td align="left">71</td>
-<td align="left">Q4</td>
-<td align="right">0.1882017</td>
-<td align="left">I follow politics.</td>
+<tr>
+<td style="text-align:left;">
+71
+</td>
+<td style="text-align:left;">
+Q4
+</td>
+<td style="text-align:right;">
+0.1882017
+</td>
+<td style="text-align:left;">
+I follow politics.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">69</td>
-<td align="left">Q26</td>
-<td align="right">0.1839563</td>
-<td align="left">I wanted to be an astronaut at one point.</td>
+<tr>
+<td style="text-align:left;">
+69
+</td>
+<td style="text-align:left;">
+Q26
+</td>
+<td style="text-align:right;">
+0.1839563
+</td>
+<td style="text-align:left;">
+I wanted to be an astronaut at one point.
+</td>
 </tr>
-<tr class="even">
-<td align="left">8</td>
-<td align="left">AGR7</td>
-<td align="right">0.1797766</td>
-<td align="left">I am not really interested in others.</td>
+<tr>
+<td style="text-align:left;">
+8
+</td>
+<td style="text-align:left;">
+AGR7
+</td>
+<td style="text-align:right;">
+0.1797766
+</td>
+<td style="text-align:left;">
+I am not really interested in others.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">6</td>
-<td align="left">AGR5</td>
-<td align="right">0.1719491</td>
-<td align="left">I am not interested in other people’s problems.</td>
+<tr>
+<td style="text-align:left;">
+6
+</td>
+<td style="text-align:left;">
+AGR5
+</td>
+<td style="text-align:right;">
+0.1719491
+</td>
+<td style="text-align:left;">
+I am not interested in other people’s problems.
+</td>
 </tr>
-<tr class="even">
-<td align="left">4</td>
-<td align="left">AGR3</td>
-<td align="right">0.1621876</td>
-<td align="left">I insult people.</td>
+<tr>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+AGR3
+</td>
+<td style="text-align:right;">
+0.1621876
+</td>
+<td style="text-align:left;">
+I insult people.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">23</td>
-<td align="left">EST2</td>
-<td align="right">0.1563438</td>
-<td align="left">I am relaxed most of the time.</td>
+<tr>
+<td style="text-align:left;">
+23
+</td>
+<td style="text-align:left;">
+EST2
+</td>
+<td style="text-align:right;">
+0.1563438
+</td>
+<td style="text-align:left;">
+I am relaxed most of the time.
+</td>
 </tr>
-<tr class="even">
-<td align="left">61</td>
-<td align="left">Q19</td>
-<td align="right">0.1462892</td>
-<td align="left">I try to outdo others.</td>
+<tr>
+<td style="text-align:left;">
+61
+</td>
+<td style="text-align:left;">
+Q19
+</td>
+<td style="text-align:right;">
+0.1462892
+</td>
+<td style="text-align:left;">
+I try to outdo others.
+</td>
 </tr>
 </tbody>
 </table>
 <p>and lower on these</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">l_PC1</span> <span class="op">&lt;-</span> <span class="va">l_PC1</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html">order</a></span><span class="op">(</span><span class="va">l_PC1</span><span class="op">$</span><span class="va">loading</span>, decreasing <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,<span class="op">]</span> <span class="co"># Order them after loading</span>
-<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">l_PC1</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"covars"</span>,<span class="st">"loading"</span>,<span class="st">"question"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<table class="table">
-<colgroup>
-<col width="3%">
-<col width="8%">
-<col width="13%">
-<col width="74%">
-</colgroup>
-<thead><tr class="header">
-<th align="left"></th>
-<th align="left">covars</th>
-<th align="right">loading</th>
-<th align="left">question</th>
+<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">l_PC1</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"covars"</span>,<span class="st">"loading"</span>,<span class="st">"question"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">kable_material</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"striped"</span>, <span class="st">"hover"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<table class="table  lightable-material lightable-striped lightable-hover">
+<thead><tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+covars
+</th>
+<th style="text-align:right;">
+loading
+</th>
+<th style="text-align:left;">
+question
+</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
-<td align="left">5</td>
-<td align="left">AGR4</td>
-<td align="right">-0.2141545</td>
-<td align="left">I sympathize with others’ feelings.</td>
+<tr>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:left;">
+AGR4
+</td>
+<td style="text-align:right;">
+-0.2141545
+</td>
+<td style="text-align:left;">
+I sympathize with others’ feelings.
+</td>
 </tr>
-<tr class="even">
-<td align="left">10</td>
-<td align="left">AGR9</td>
-<td align="right">-0.2065917</td>
-<td align="left">I feel others’ emotions.</td>
+<tr>
+<td style="text-align:left;">
+10
+</td>
+<td style="text-align:left;">
+AGR9
+</td>
+<td style="text-align:right;">
+-0.2065917
+</td>
+<td style="text-align:left;">
+I feel others’ emotions.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">27</td>
-<td align="left">EST6</td>
-<td align="right">-0.2017516</td>
-<td align="left">I get upset easily.</td>
+<tr>
+<td style="text-align:left;">
+27
+</td>
+<td style="text-align:left;">
+EST6
+</td>
+<td style="text-align:right;">
+-0.2017516
+</td>
+<td style="text-align:left;">
+I get upset easily.
+</td>
 </tr>
-<tr class="even">
-<td align="left">21</td>
-<td align="left">EST1</td>
-<td align="right">-0.1814093</td>
-<td align="left">I get stressed out easily.</td>
+<tr>
+<td style="text-align:left;">
+21
+</td>
+<td style="text-align:left;">
+EST1
+</td>
+<td style="text-align:right;">
+-0.1814093
+</td>
+<td style="text-align:left;">
+I get stressed out easily.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">9</td>
-<td align="left">AGR8</td>
-<td align="right">-0.1635060</td>
-<td align="left">I take time out for others.</td>
+<tr>
+<td style="text-align:left;">
+9
+</td>
+<td style="text-align:left;">
+AGR8
+</td>
+<td style="text-align:right;">
+-0.1635060
+</td>
+<td style="text-align:left;">
+I take time out for others.
+</td>
 </tr>
-<tr class="even">
-<td align="left">68</td>
-<td align="left">Q25</td>
-<td align="right">-0.1603272</td>
-<td align="left">I sometimes ruin my jokes by laughing in the middle of them.</td>
+<tr>
+<td style="text-align:left;">
+68
+</td>
+<td style="text-align:left;">
+Q25
+</td>
+<td style="text-align:right;">
+-0.1603272
+</td>
+<td style="text-align:left;">
+I sometimes ruin my jokes by laughing in the middle of them.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">3</td>
-<td align="left">AGR2</td>
-<td align="right">-0.1542754</td>
-<td align="left">I am interested in people.</td>
+<tr>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+AGR2
+</td>
+<td style="text-align:right;">
+-0.1542754
+</td>
+<td style="text-align:left;">
+I am interested in people.
+</td>
 </tr>
-<tr class="even">
-<td align="left">7</td>
-<td align="left">AGR6</td>
-<td align="right">-0.1495271</td>
-<td align="left">I have a soft heart.</td>
+<tr>
+<td style="text-align:left;">
+7
+</td>
+<td style="text-align:left;">
+AGR6
+</td>
+<td style="text-align:right;">
+-0.1495271
+</td>
+<td style="text-align:left;">
+I have a soft heart.
+</td>
 </tr>
-<tr class="odd">
-<td align="left">64</td>
-<td align="left">Q21</td>
-<td align="right">-0.1459710</td>
-<td align="left">I find too much thinking exhausting.</td>
+<tr>
+<td style="text-align:left;">
+64
+</td>
+<td style="text-align:left;">
+Q21
+</td>
+<td style="text-align:right;">
+-0.1459710
+</td>
+<td style="text-align:left;">
+I find too much thinking exhausting.
+</td>
 </tr>
-<tr class="even">
-<td align="left">24</td>
-<td align="left">EST3</td>
-<td align="right">-0.1375190</td>
-<td align="left">I worry about things.</td>
+<tr>
+<td style="text-align:left;">
+24
+</td>
+<td style="text-align:left;">
+EST3
+</td>
+<td style="text-align:right;">
+-0.1375190
+</td>
+<td style="text-align:left;">
+I worry about things.
+</td>
 </tr>
 </tbody>
 </table>

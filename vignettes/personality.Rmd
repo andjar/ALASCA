@@ -21,6 +21,7 @@ knitr::opts_chunk$set(
   cache = FALSE,
   external = FALSE
 )
+library("kableExtra")
 ```
 
 # Preparing the data
@@ -111,14 +112,16 @@ We can see that women (reference group) has an increasing trend of *something*. 
 l_PC1 <- subset(getLoadings(mod)$time, PC == 1) # Get PC1 for time effect
 l_PC1 <- merge(l_PC1, df.q, by.x = "covars", by.y = "code", all.x = TRUE) # attach question
 l_PC1 <- l_PC1[order(l_PC1$loading, decreasing = TRUE),] # Order them after loading
-knitr::kable(l_PC1[1:10, c("loading","question")])
+knitr::kable(l_PC1[1:10, c("loading","question")]) %>%
+  kable_material(c("striped", "hover"))
 ```
 
 And in the other end (in this case, older women score lower on these items):
 
 ```{r}
 l_PC1 <- l_PC1[order(l_PC1$loading, decreasing = FALSE),] # Order them after loading
-knitr::kable(l_PC1[1:10, c("loading","question")])
+knitr::kable(l_PC1[1:10, c("loading","question")]) %>%
+  kable_material(c("striped", "hover"))
 ```
 
 Which features distinguish men from the women? From the plots above, it seems that PC1 indicates a stable difference that do not vary much with age; we do as above; men score higher on these items:
@@ -127,14 +130,16 @@ Which features distinguish men from the women? From the plots above, it seems th
 l_PC1 <- subset(getLoadings(mod)$group, PC == 1) # Get PC1 for time effect
 l_PC1 <- merge(l_PC1, df.q, by.x = "covars", by.y = "code", all.x = TRUE) # attach question
 l_PC1 <- l_PC1[order(l_PC1$loading, decreasing = TRUE),] # Order them after loading
-knitr::kable(l_PC1[1:10, c("covars","loading","question")])
+knitr::kable(l_PC1[1:10, c("covars","loading","question")]) %>%
+  kable_material(c("striped", "hover"))
 ```
 
 and lower on these
 
 ```{r}
 l_PC1 <- l_PC1[order(l_PC1$loading, decreasing = FALSE),] # Order them after loading
-knitr::kable(l_PC1[1:10, c("covars","loading","question")])
+knitr::kable(l_PC1[1:10, c("covars","loading","question")]) %>%
+  kable_material(c("striped", "hover"))
 ```
 
 We can have a quick look at what out underlying linear model will estimate for the two genders for AGR4;

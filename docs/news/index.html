@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.9</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.91</span>
       </span>
     </div>
 
@@ -135,6 +135,27 @@
       <small>Source: <a href='https://github.com/andjar/ALASCA/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
+    <div id="alasca-00091" class="section level1">
+<h1 class="page-header" data-toc-text="0.0.0.91">
+<a href="#alasca-00091" class="anchor"></a>ALASCA 0.0.0.91</h1>
+<div id="new-features" class="section level2">
+<h2 class="hasAnchor">
+<a href="#new-features" class="anchor"></a>New features</h2>
+<ul>
+<li>
+<code>validationMethod = "permutation"</code> now produces actual P values.
+<ul>
+<li>P values are kept in <code>$pvals</code>
+</li>
+<li>The lowest P values will be set to 1/nValRuns, so it may be wise to use eg. <code>nValRuns=1001</code> to be able to detect P&lt;.001</li>
+<li>Plotting this model adds asterisks indicating significance</li>
+</ul>
+</li>
+<li>
+<code>validationMethod = "bootstrap"</code> is now functional</li>
+</ul>
+</div>
+</div>
     <div id="alasca-0009" class="section level1">
 <h1 class="page-header" data-toc-text="0.0.0.9">
 <a href="#alasca-0009" class="anchor"></a>ALASCA 0.0.0.9</h1>

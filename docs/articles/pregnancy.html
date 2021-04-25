@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.9</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.91</span>
       </span>
     </div>
 
@@ -67,8 +67,18 @@
     </li>
   </ul>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/andjar/ALASCA/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -84,9 +94,9 @@
       <h1 data-toc-skip>Early Preeclampsia</h1>
                         <h4 class="author">Anders H. Jarmund</h4>
             
-            <h4 class="date">2021-02-12</h4>
+            <h4 class="date">2021-04-25</h4>
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/andjar/ALASCA/blob/master/vignettes/pregnancy.Rmd"><code>vignettes/pregnancy.Rmd</code></a></small>
       <div class="hidden name"><code>pregnancy.Rmd</code></div>
 
     </div>
@@ -123,7 +133,8 @@ pre.plot {
 }
 </style>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">ALASCA</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/andjar/ALASCA">ALASCA</a></span><span class="op">)</span>
+<span class="co">#&gt; Loading required package: data.table</span></code></pre></div>
 <p>This is an example of RMASCA applied on <strong>observational data</strong>. If you are more interested in <strong>interventional data</strong>, have a look at <a href="metabolomics.html">the metabolomics vignette</a>. If you want an introduction to RMASCA, have a look at <a href="RMASCA.html">Get Started</a>.</p>
 <div id="preparing-the-data" class="section level2">
 <h2 class="hasAnchor">
@@ -256,8 +267,8 @@ pre.plot {
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">PE.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">model.formula</span><span class="op">)</span>
 <span class="co">#&gt; Will use linear mixed models!</span>
+<span class="co">#&gt; Using group for stratification.</span>
 <span class="co">#&gt; Scaling data...</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
 <span class="co">#&gt; Calculating  LMM  coefficients...</span>
 <span class="co">#&gt; Registered S3 methods overwritten by 'lme4':</span>
 <span class="co">#&gt;   method                          from</span>
@@ -359,156 +370,107 @@ pre.plot {
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">PE.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">PE.mod</span>, participantColumn <span class="op">=</span> <span class="st">"ID"</span>, validateRegression <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 <span class="co">#&gt; Running validation...</span>
-<span class="co">#&gt; - Run  1  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  1.03  seconds. Est. time remaining:  50.3  seconds </span>
-<span class="co">#&gt; - Run  2  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  56.49  seconds. Est. time remaining:  1380.38  seconds </span>
-<span class="co">#&gt; - Run  3  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  1.08  seconds. Est. time remaining:  917.94  seconds </span>
-<span class="co">#&gt; - Run  4  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  1.06  seconds. Est. time remaining:  685.96  seconds </span>
-<span class="co">#&gt; - Run  5  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  1.13  seconds. Est. time remaining:  546.97  seconds </span>
-<span class="co">#&gt; - Run  6  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  1.18  seconds. Est. time remaining:  454.35  seconds </span>
-<span class="co">#&gt; - Run  7  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  1.43  seconds. Est. time remaining:  389.35  seconds </span>
-<span class="co">#&gt; - Run  8  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  1.36  seconds. Est. time remaining:  339.89  seconds </span>
-<span class="co">#&gt; - Run  9  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  59.16  seconds. Est. time remaining:  564.42  seconds </span>
-<span class="co">#&gt; - Run  10  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  46.68  seconds. Est. time remaining:  682.3  seconds </span>
-<span class="co">#&gt; - Run  11  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  48.97  seconds. Est. time remaining:  778.41  seconds </span>
-<span class="co">#&gt; - Run  12  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  56.45  seconds. Est. time remaining:  873.99  seconds </span>
-<span class="co">#&gt; - Run  13  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  1.11  seconds. Est. time remaining:  788.7  seconds </span>
-<span class="co">#&gt; - Run  14  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  1.02  seconds. Est. time remaining:  715.2  seconds </span>
-<span class="co">#&gt; - Run  15  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  50.53  seconds. Est. time remaining:  766.88  seconds </span>
-<span class="co">#&gt; - Run  16  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  50.23  seconds. Est. time remaining:  805.14  seconds </span>
-<span class="co">#&gt; - Run  17  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  51.36  seconds. Est. time remaining:  835.2  seconds </span>
-<span class="co">#&gt; - Run  18  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  52.46  seconds. Est. time remaining:  858.15  seconds </span>
-<span class="co">#&gt; - Run  19  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  46.11  seconds. Est. time remaining:  862.81  seconds </span>
-<span class="co">#&gt; - Run  20  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  42.83  seconds. Est. time remaining:  857.48  seconds </span>
-<span class="co">#&gt; - Run  21  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  51.89  seconds. Est. time remaining:  861.08  seconds </span>
-<span class="co">#&gt; - Run  22  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  57.22  seconds. Est. time remaining:  866.42  seconds </span>
-<span class="co">#&gt; - Run  23  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  58.14  seconds. Est. time remaining:  867.4  seconds </span>
-<span class="co">#&gt; - Run  24  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  53.57  seconds. Est. time remaining:  858.5  seconds </span>
-<span class="co">#&gt; - Run  25  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  45.21  seconds. Est. time remaining:  837.67  seconds </span>
-<span class="co">#&gt; - Run  26  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  43.99  seconds. Est. time remaining:  813.84  seconds </span>
-<span class="co">#&gt; - Run  27  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  47.27  seconds. Est. time remaining:  791.31  seconds </span>
-<span class="co">#&gt; - Run  28  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  39.25  seconds. Est. time remaining:  760.71  seconds </span>
-<span class="co">#&gt; - Run  29  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  41.8  seconds. Est. time remaining:  731.37  seconds </span>
-<span class="co">#&gt; - Run  30  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  40.95  seconds. Est. time remaining:  700.62  seconds </span>
-<span class="co">#&gt; - Run  31  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  42.41  seconds. Est. time remaining:  670.11  seconds </span>
-<span class="co">#&gt; - Run  32  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  40.18  seconds. Est. time remaining:  637.6  seconds </span>
-<span class="co">#&gt; - Run  33  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  40.2  seconds. Est. time remaining:  604.65  seconds </span>
-<span class="co">#&gt; - Run  34  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  39.27  seconds. Est. time remaining:  570.82  seconds </span>
-<span class="co">#&gt; - Run  35  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  41.68  seconds. Est. time remaining:  537.72  seconds </span>
-<span class="co">#&gt; - Run  36  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  37.34  seconds. Est. time remaining:  502.45  seconds </span>
-<span class="co">#&gt; - Run  37  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  33.77  seconds. Est. time remaining:  465.81  seconds </span>
-<span class="co">#&gt; - Run  38  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  34.93  seconds. Est. time remaining:  429.7  seconds </span>
-<span class="co">#&gt; - Run  39  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  32.82  seconds. Est. time remaining:  393.05  seconds </span>
-<span class="co">#&gt; - Run  40  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  32.72  seconds. Est. time remaining:  356.56  seconds </span>
-<span class="co">#&gt; - Run  41  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  31.62  seconds. Est. time remaining:  320.02  seconds </span>
-<span class="co">#&gt; - Run  42  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  34.59  seconds. Est. time remaining:  284.28  seconds </span>
-<span class="co">#&gt; - Run  43  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  35.11  seconds. Est. time remaining:  248.67  seconds </span>
-<span class="co">#&gt; - Run  44  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  35.33  seconds. Est. time remaining:  213.12  seconds </span>
-<span class="co">#&gt; - Run  45  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  36.16  seconds. Est. time remaining:  177.67  seconds </span>
-<span class="co">#&gt; - Run  46  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  35.91  seconds. Est. time remaining:  142.17  seconds </span>
-<span class="co">#&gt; - Run  47  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  39.12  seconds. Est. time remaining:  106.86  seconds </span>
-<span class="co">#&gt; - Run  48  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  41.98  seconds. Est. time remaining:  71.5  seconds </span>
-<span class="co">#&gt; - Run  49  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  34.59  seconds. Est. time remaining:  35.73  seconds </span>
-<span class="co">#&gt; - Run  50  of  50</span>
-<span class="co">#&gt; Warning in sanitizeObject(object): Some of your participants are missing measurements. This WILL slow down the rest of the script!!!</span>
-<span class="co">#&gt; --- Used  29.1  seconds. Est. time remaining:  0  seconds</span>
+<span class="co">#&gt; - Run  1  of  50 </span>
+<span class="co">#&gt; --- Used  1  seconds. Est. time remaining:  49.06  seconds </span>
+<span class="co">#&gt; - Run  2  of  50 </span>
+<span class="co">#&gt; --- Used  50.77  seconds. Est. time remaining:  1242.48  seconds </span>
+<span class="co">#&gt; - Run  3  of  50 </span>
+<span class="co">#&gt; --- Used  49.95  seconds. Est. time remaining:  1593.68  seconds </span>
+<span class="co">#&gt; - Run  4  of  50 </span>
+<span class="co">#&gt; --- Used  51.49  seconds. Est. time remaining:  1761.97  seconds </span>
+<span class="co">#&gt; - Run  5  of  50 </span>
+<span class="co">#&gt; --- Used  51.88  seconds. Est. time remaining:  1845.81  seconds </span>
+<span class="co">#&gt; - Run  6  of  50 </span>
+<span class="co">#&gt; --- Used  53.78  seconds. Est. time remaining:  1898.37  seconds </span>
+<span class="co">#&gt; - Run  7  of  50 </span>
+<span class="co">#&gt; --- Used  52.38  seconds. Est. time remaining:  1911.96  seconds </span>
+<span class="co">#&gt; - Run  8  of  50 </span>
+<span class="co">#&gt; --- Used  53.03  seconds. Est. time remaining:  1912.48  seconds </span>
+<span class="co">#&gt; - Run  9  of  50 </span>
+<span class="co">#&gt; --- Used  54.63  seconds. Est. time remaining:  1908.36  seconds </span>
+<span class="co">#&gt; - Run  10  of  50 </span>
+<span class="co">#&gt; --- Used  58.16  seconds. Est. time remaining:  1908.27  seconds </span>
+<span class="co">#&gt; - Run  11  of  50 </span>
+<span class="co">#&gt; --- Used  1.01  seconds. Est. time remaining:  1695.02  seconds </span>
+<span class="co">#&gt; - Run  12  of  50 </span>
+<span class="co">#&gt; --- Used  43.23  seconds. Est. time remaining:  1650.81  seconds </span>
+<span class="co">#&gt; - Run  13  of  50 </span>
+<span class="co">#&gt; --- Used  48.21  seconds. Est. time remaining:  1620.93  seconds </span>
+<span class="co">#&gt; - Run  14  of  50 </span>
+<span class="co">#&gt; --- Used  43.91  seconds. Est. time remaining:  1577.38  seconds </span>
+<span class="co">#&gt; - Run  15  of  50 </span>
+<span class="co">#&gt; --- Used  43.18  seconds. Est. time remaining:  1532.09  seconds </span>
+<span class="co">#&gt; - Run  16  of  50 </span>
+<span class="co">#&gt; --- Used  44.22  seconds. Est. time remaining:  1489.26  seconds </span>
+<span class="co">#&gt; - Run  17  of  50 </span>
+<span class="co">#&gt; --- Used  45.39  seconds. Est. time remaining:  1448.55  seconds </span>
+<span class="co">#&gt; - Run  18  of  50 </span>
+<span class="co">#&gt; --- Used  44.36  seconds. Est. time remaining:  1405.48  seconds </span>
+<span class="co">#&gt; - Run  19  of  50 </span>
+<span class="co">#&gt; --- Used  43.86  seconds. Est. time remaining:  1361.47  seconds </span>
+<span class="co">#&gt; - Run  20  of  50 </span>
+<span class="co">#&gt; --- Used  44.53  seconds. Est. time remaining:  1318.46  seconds </span>
+<span class="co">#&gt; - Run  21  of  50 </span>
+<span class="co">#&gt; --- Used  45.43  seconds. Est. time remaining:  1276.56  seconds </span>
+<span class="co">#&gt; - Run  22  of  50 </span>
+<span class="co">#&gt; --- Used  46.88  seconds. Est. time remaining:  1236.18  seconds </span>
+<span class="co">#&gt; - Run  23  of  50 </span>
+<span class="co">#&gt; --- Used  53.33  seconds. Est. time remaining:  1202.8  seconds </span>
+<span class="co">#&gt; - Run  24  of  50 </span>
+<span class="co">#&gt; --- Used  44.95  seconds. Est. time remaining:  1158.7  seconds </span>
+<span class="co">#&gt; - Run  25  of  50 </span>
+<span class="co">#&gt; --- Used  48.49  seconds. Est. time remaining:  1118.05  seconds </span>
+<span class="co">#&gt; - Run  26  of  50 </span>
+<span class="co">#&gt; --- Used  51.28  seconds. Est. time remaining:  1079.38  seconds </span>
+<span class="co">#&gt; - Run  27  of  50 </span>
+<span class="co">#&gt; --- Used  52.94  seconds. Est. time remaining:  1041.2  seconds </span>
+<span class="co">#&gt; - Run  28  of  50 </span>
+<span class="co">#&gt; --- Used  55.59  seconds. Est. time remaining:  1004.04  seconds </span>
+<span class="co">#&gt; - Run  29  of  50 </span>
+<span class="co">#&gt; --- Used  48.34  seconds. Est. time remaining:  960.36  seconds </span>
+<span class="co">#&gt; - Run  30  of  50 </span>
+<span class="co">#&gt; --- Used  45.72  seconds. Est. time remaining:  914.62  seconds </span>
+<span class="co">#&gt; - Run  31  of  50 </span>
+<span class="co">#&gt; --- Used  36.84  seconds. Est. time remaining:  863.44  seconds </span>
+<span class="co">#&gt; - Run  32  of  50 </span>
+<span class="co">#&gt; --- Used  37.32  seconds. Est. time remaining:  813.43  seconds </span>
+<span class="co">#&gt; - Run  33  of  50 </span>
+<span class="co">#&gt; --- Used  37.29  seconds. Est. time remaining:  764.17  seconds </span>
+<span class="co">#&gt; - Run  34  of  50 </span>
+<span class="co">#&gt; --- Used  37.23  seconds. Est. time remaining:  715.58  seconds </span>
+<span class="co">#&gt; - Run  35  of  50 </span>
+<span class="co">#&gt; --- Used  39.66  seconds. Est. time remaining:  668.69  seconds </span>
+<span class="co">#&gt; - Run  36  of  50 </span>
+<span class="co">#&gt; --- Used  42.88  seconds. Est. time remaining:  623.45  seconds </span>
+<span class="co">#&gt; - Run  37  of  50 </span>
+<span class="co">#&gt; --- Used  40.03  seconds. Est. time remaining:  577.33  seconds </span>
+<span class="co">#&gt; - Run  38  of  50 </span>
+<span class="co">#&gt; --- Used  40.9  seconds. Est. time remaining:  531.82  seconds </span>
+<span class="co">#&gt; - Run  39  of  50 </span>
+<span class="co">#&gt; --- Used  38.94  seconds. Est. time remaining:  485.98  seconds </span>
+<span class="co">#&gt; - Run  40  of  50 </span>
+<span class="co">#&gt; --- Used  38.5  seconds. Est. time remaining:  440.38  seconds </span>
+<span class="co">#&gt; - Run  41  of  50 </span>
+<span class="co">#&gt; --- Used  38.99  seconds. Est. time remaining:  395.23  seconds </span>
+<span class="co">#&gt; - Run  42  of  50 </span>
+<span class="co">#&gt; --- Used  39.05  seconds. Est. time remaining:  350.39  seconds </span>
+<span class="co">#&gt; - Run  43  of  50 </span>
+<span class="co">#&gt; --- Used  43.45  seconds. Est. time remaining:  306.54  seconds </span>
+<span class="co">#&gt; - Run  44  of  50 </span>
+<span class="co">#&gt; --- Used  44.59  seconds. Est. time remaining:  262.85  seconds </span>
+<span class="co">#&gt; - Run  45  of  50 </span>
+<span class="co">#&gt; --- Used  43.71  seconds. Est. time remaining:  219.03  seconds </span>
+<span class="co">#&gt; - Run  46  of  50 </span>
+<span class="co">#&gt; --- Used  45.57  seconds. Est. time remaining:  175.38  seconds </span>
+<span class="co">#&gt; - Run  47  of  50 </span>
+<span class="co">#&gt; --- Used  44.6  seconds. Est. time remaining:  131.58  seconds </span>
+<span class="co">#&gt; - Run  48  of  50 </span>
+<span class="co">#&gt; --- Used  43.62  seconds. Est. time remaining:  87.71  seconds </span>
+<span class="co">#&gt; - Run  49  of  50 </span>
+<span class="co">#&gt; --- Used  42.4  seconds. Est. time remaining:  43.83  seconds </span>
+<span class="co">#&gt; - Run  50  of  50 </span>
+<span class="co">#&gt; --- Used  43.48  seconds. Est. time remaining:  0  seconds </span>
+<span class="co">#&gt; - Calculates percentiles for score and loading...</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">PE.mod</span>, tooDense <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
 <p><img src="pregnancy_files/figure-html/unnamed-chunk-17-1.png" width="100%" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">

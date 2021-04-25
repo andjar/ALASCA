@@ -64,7 +64,7 @@ pre.plot {
 ```{r setup}
 library("ggplot2")
 library("ggpubr")
-library(ALASCA)
+library("ALASCA")
 ```
 
 This time we will look at a small metabolomics dataset by @eucedaEvaluationMetabolomicChanges2017 and replicate the findings of @madssenRepeatedMeasuresASCA2020a. Note that this is an example of ALASCA applied on **intervention data**. If you are more interested in repeated measures **observational data**, have a look at [the preeclampsia vignette](pregnancy.html). If you want an introduction to ALASCA, have a look at [Get Started](ALASCA.html).
@@ -180,7 +180,7 @@ mod.Rfast.bootstrap <- ALASCA(df, form,
                     forceEqualBaseline = TRUE, 
                     scaleFun = scaleFun,
                     validate = TRUE,
-                    nValRuns = 50,
+                    nValRuns = 100,
                     method = "Rfast", validationMethod = "bootstrap")
 mod.Rfast.bootstrap <- flipIt(mod.Rfast.bootstrap)
 ```
@@ -225,6 +225,19 @@ mod.interaction <- ALASCA(df, form,
      keepTerms = c("response"))
 plot(mod.interaction)
 ```
+
+## Permutation testing
+
+We have implemented a simple permutation test for getting P values.
+
+<div class="fold s">
+```{r}
+mod.perm <- ALASCA(df, form, separateTimeAndGroup = FALSE, forceEqualBaseline = TRUE, 
+                   scaleFun = scaleFun, method = "Rfast", validate = TRUE, 
+                   validationMethod = "permutation", nValRuns = 1000)
+mod.perm$pvals
+```
+</div>
 
 ## Comparison of result
 
@@ -275,19 +288,6 @@ g4 <- ggplot(subset(df, PC == 2), aes(x = paste(time, group), y = score, ymin = 
 ggarrange(g3, g1, g4, g2, 
           nrow = 2, ncol = 2,
           common.legend = TRUE)
-```
-</div>
-
-## Permutation testing
-
-We have implemented a simple permutation test for getting P values.
-
-<div class="fold s">
-```{r}
-mod.perm <- ALASCA(df, form, separateTimeAndGroup = FALSE, forceEqualBaseline = TRUE, 
-                   scaleFun = scaleFun, method = "Rfast", validate = TRUE, 
-                   validationMethod = "permutation", nValRuns = 1000)
-mod.perm$pvals
 ```
 </div>
 

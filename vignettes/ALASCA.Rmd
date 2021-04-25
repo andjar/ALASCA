@@ -54,8 +54,8 @@ pre.plot {
 </style>
 
 ```{r setup}
-library(ALASCA)
-library(ggplot2)
+library("ALASCA")
+library("ggplot2")
 ```
 
 This vignette demonstrates the basic functionality of the [ALASCA package](https://andjar.github.io/ALASCA), with **repeated measures** (`RMASCA()`). For more detailed case studies, see

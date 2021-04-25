@@ -372,7 +372,7 @@ prepareValidationRun <- function(object){
       
       temp_object <- ALASCA(validationObject = object,
                             validationParticipants = object$df[,ID] %in% unlist(selectedParts))
-    }else if(df$method == "LM"){
+    }else if(object$method == "LM"){
       object$df$ID <- c(1:nrow(object$df))
       # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
       selectedParts <- lapply(unique(object$stratificationVector), function(gr){
