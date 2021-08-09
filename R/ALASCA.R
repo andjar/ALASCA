@@ -368,7 +368,7 @@ flipIt <- function(object, component = NA){
       object$ALASCA$score$time$low[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$low[object$ALASCA$score$time$PC == i]
       object$ALASCA$loading$time$low[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$low[object$ALASCA$loading$time$PC == i]
       if(object$separateTimeAndGroup){
-        object$ALASCA$score$group$high[object$ALASCA$score$group$PC == i] <- -object$ALASCA$score$group$high
+        object$ALASCA$score$group$high[object$ALASCA$score$group$PC == i] <- -object$ALASCA$score$group$high[object$ALASCA$score$group$PC == i]
         object$ALASCA$loading$group$high[object$ALASCA$loading$group$PC == i] <- -object$ALASCA$loading$group$high[object$ALASCA$loading$group$PC == i]
         object$ALASCA$score$group$low[object$ALASCA$score$group$PC == i] <- -object$ALASCA$score$group$low[object$ALASCA$score$group$PC == i]
         object$ALASCA$loading$group$low[object$ALASCA$loading$group$PC == i] <- -object$ALASCA$loading$group$low[object$ALASCA$loading$group$PC == i]

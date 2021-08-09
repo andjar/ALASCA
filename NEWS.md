@@ -1,3 +1,9 @@
+# ALASCA 0.0.0.92
+
+## Bux fix
+
+* Fixed: `flipIt()` did not flip the upper limit for score of the group effect correctly
+
 # ALASCA 0.0.0.91
 
 ## New features
