@@ -178,6 +178,9 @@ sanitizeObject <- function(object){
         }
       }else if(object$method == "Rfast"){
         cat("Will use Rfast!\n")
+        
+        # Validation of regression only works for LMs at the moment
+        object$validateRegression <- FALSE
       }else{
         stop("You entered an undefined method. Use `LMM` or `LM`!")
       }
