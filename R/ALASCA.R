@@ -101,8 +101,12 @@ ALASCA <- function(df,
                    validateRegression = ifelse(validate,validateRegression,FALSE),
                    validationMethod = validationMethod,
                    validationObject = validationObject,
-                   validationParticipants = validationParticipants
+                   validationParticipants = validationParticipants,
+                   ALASCA.version = "0.0.0.92",
+                   ALASCA.version.date = "2021-08-10"
     )
+    cat("\n\n====== ALASCA ======\n\n")
+    cat(paste0("v.", object$ALASCA.version," (", object$ALASCA.version.date ,")", "\n\n"))
   }
   class(object) <- "ALASCA"
   if(object$doDebug){
