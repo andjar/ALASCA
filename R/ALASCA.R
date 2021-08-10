@@ -418,7 +418,7 @@ flipIt <- function(object, component = NA){
 #' @export
 summary.ALASCA <- function(object){
   cat("================ ALASCA ================\n")
-  cat("Model initialized ", as.character(mod$initTime), " using ",object$method," on ",length(object$regr.model)," variables. ", sep = "")
+  cat("Model initialized ", as.character(object$initTime), " using ",object$method," on ",length(object$regr.model)," variables. ", sep = "")
   if(object$validate){
     cat("The model been validated.\n")
   }else{
@@ -432,14 +432,13 @@ summary.ALASCA <- function(object){
                                                    paste(getRelevantPCs(object$pca$score$explained$group), collapse = ", "), " (",
                                                    paste(round(100*object$pca$score$explained$group[getRelevantPCs(object$pca$score$explained$group)], 2), collapse = "%, "), "%)"),"\n"), sep = "")
   cat("\nNumber of data points (based on ",names(object$regr.model)[[1]]," measurements",ifelse(object$missingMeasurements,", some variables have more/fewer observations",""),"):\n", sep = "")
-  aggregate(data = subset(mod$df, variable == names(mod$regr.model)[[1]]), as.formula(paste(as.character(mod$formula)[[2]], " ~ group + time")), FUN = length)
+  aggregate(data = subset(object$df, variable == names(object$regr.model)[[1]]), as.formula(paste(as.character(object$formula)[[2]], " ~ group + time")), FUN = length)
   if(is.function(object$scaleFun)){
     cat("\nScaling function:\n")
     object$scaleFun
   }else{
     cat("\nNo scaling performed.\n")
   }
-  
 }
 
 #' Save ALASCA object
