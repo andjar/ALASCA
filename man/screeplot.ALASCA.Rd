@@ -4,12 +4,22 @@
 \alias{screeplot.ALASCA}
 \title{Get screeplot}
 \usage{
-\method{screeplot}{ALASCA}(object, effect = "both", myTheme = ggplot2::theme_bw())
+\method{screeplot}{ALASCA}(
+  object,
+  effect = "both",
+  filetypes = "png",
+  figsize = c(12, 8, 300),
+  myTheme = ggplot2::theme_bw()
+)
 }
 \arguments{
 \item{object}{An ALASCA object}
 
 \item{effect}{String stating which effect to return; \code{time}, \code{group}, \code{both} (default)}
+
+\item{filetypes}{Which filetypes you want to save the figure to}
+
+\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
 
 \item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }

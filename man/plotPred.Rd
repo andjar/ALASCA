@@ -4,12 +4,22 @@
 \alias{plotPred}
 \title{Plot model predictions}
 \usage{
-plotPred(object, variable = NA, myTheme = ggplot2::theme_bw())
+plotPred(
+  object,
+  variable = NA,
+  filetypes = "png",
+  figsize = c(12, 8, 300),
+  myTheme = ggplot2::theme_bw()
+)
 }
 \arguments{
 \item{object}{An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.}
 
 \item{variable}{List of variable names to print. If \code{NA}, return all (default).}
+
+\item{filetypes}{Which filetypes you want to save the figure to}
+
+\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
 
 \item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }

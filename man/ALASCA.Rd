@@ -22,6 +22,9 @@ ALASCA(
   nValFold = 7,
   nValRuns = 50,
   keepTerms = c(""),
+  save = FALSE,
+  filename = NA,
+  filepath = NA,
   optimizeScore = TRUE,
   validateRegression = FALSE,
   validationMethod = "loo",
@@ -63,6 +66,10 @@ ALASCA(
 \item{nValRuns}{number of validation runs}
 
 \item{keepTerms}{Additional terms to keep in the model matrix}
+
+\item{save}{Save models and plots automatically (default: \code{FALSE})}
+
+\item{filename}{Filename to save model and plots (when \code{save = TRUE})}
 
 \item{validateRegression}{Whether to validate regression predictions or not (only if \code{validate} is \code{TRUE})}
 

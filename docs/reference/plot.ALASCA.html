@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.91</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.93</span>
       </span>
     </div>
 
@@ -152,6 +152,8 @@
   tooDense <span class='op'>=</span> <span class='cn'>NA</span>,
   highlight <span class='op'>=</span> <span class='cn'>NA</span>,
   xlabel <span class='op'>=</span> <span class='cn'>NA</span>,
+  filetypes <span class='op'>=</span> <span class='st'>"png"</span>,
+  figsize <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>12</span>, <span class='fl'>8</span>, <span class='fl'>300</span><span class='op'>)</span>,
   myTheme <span class='op'>=</span> <span class='fu'>ggplot2</span><span class='fu'>::</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_bw</a></span><span class='op'>(</span><span class='op'>)</span>
 <span class='op'>)</span></pre>
 
@@ -193,6 +195,14 @@
     <tr>
       <th>xlabel</th>
       <td><p>Defaults to "Time" if not specified during model setup</p></td>
+    </tr>
+    <tr>
+      <th>filetypes</th>
+      <td><p>Which filetypes you want to save the figure to</p></td>
+    </tr>
+    <tr>
+      <th>figsize</th>
+      <td><p>A vector containing <code><a href='https://rdrr.io/r/base/c.html'>c(widht,height,dpi)</a></code> (default: <code><a href='https://rdrr.io/r/base/c.html'>c(12, 8, 300)</a></code>)</p></td>
     </tr>
     <tr>
       <th>myTheme</th>

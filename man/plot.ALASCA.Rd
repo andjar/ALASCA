@@ -14,6 +14,8 @@
   tooDense = NA,
   highlight = NA,
   xlabel = NA,
+  filetypes = "png",
+  figsize = c(12, 8, 300),
   myTheme = ggplot2::theme_bw()
 )
 }
@@ -35,6 +37,10 @@
 \item{highlight}{Vector of strings with variables to highlight in the loadings plot}
 
 \item{xlabel}{Defaults to "Time" if not specified during model setup}
+
+\item{filetypes}{Which filetypes you want to save the figure to}
+
+\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
 
 \item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }

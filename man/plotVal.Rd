@@ -4,12 +4,22 @@
 \alias{plotVal}
 \title{Plot validations models}
 \usage{
-plotVal(object, component = 1, myTheme = ggplot2::theme_bw())
+plotVal(
+  object,
+  component = 1,
+  filetypes = "png",
+  figsize = c(12, 8, 300),
+  myTheme = ggplot2::theme_bw()
+)
 }
 \arguments{
 \item{object}{A validated ALASCA object}
 
 \item{component}{Which component to plot (default: 1)}
+
+\item{filetypes}{Which filetypes you want to save the figure to}
+
+\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
 
 \item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }

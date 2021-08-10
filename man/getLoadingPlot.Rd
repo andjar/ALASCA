@@ -11,6 +11,8 @@ getLoadingPlot(
   decreasingLoadings = TRUE,
   tooDense = NA,
   highlight = NA,
+  filetypes = "png",
+  figsize = c(12, 8, 300),
   myTheme = ggplot2::theme_bw()
 )
 }
@@ -22,6 +24,10 @@ getLoadingPlot(
 \item{effect}{Plot time or group}
 
 \item{decreasingLoadings}{Logical. Should loading sbe sorted in decreasing order?}
+
+\item{filetypes}{Which filetypes you want to save the figure to}
+
+\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
 
 \item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }

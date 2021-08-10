@@ -8,6 +8,8 @@ getScorePlot(
   object,
   component = 1,
   effect = "time",
+  filetypes = "png",
+  figsize = c(12, 8, 300),
   myTheme = ggplot2::theme_bw()
 )
 }
@@ -17,6 +19,10 @@ getScorePlot(
 \item{component}{Which component to plot?}
 
 \item{effect}{Plot time or group}
+
+\item{filetypes}{Which filetypes you want to save the figure to}
+
+\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
 
 \item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }

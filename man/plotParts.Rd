@@ -11,6 +11,8 @@ plotParts(
   valueColumn = FALSE,
   timeColumn = "time",
   addSmooth = "loess",
+  filetypes = "png",
+  figsize = c(12, 8, 300),
   myTheme = ggplot2::theme_bw()
 )
 }
@@ -24,6 +26,10 @@ plotParts(
 \item{valueColumn}{Specify column with values (y axis). Not necessary to provide if you are plotting an ALASCA object.}
 
 \item{timeColumn}{Specify column with times (x axis). Defaults to \code{time}.}
+
+\item{filetypes}{Which filetypes you want to save the figure to}
+
+\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
 
 \item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 
