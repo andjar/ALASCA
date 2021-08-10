@@ -172,7 +172,8 @@ Let us see how it looks at group level
 ```{r data_dummy_plot}
 ggplot(data = df, aes(x = factor(time), y = value, color = group)) +
   geom_boxplot() +
-  facet_wrap(~variable, scales = "free_y") +
+  facet_wrap(~variable, scales = "free_y") + 
+  theme_bw()
   theme(legend.position = "bottom") +
   labs(x = "Time", y = "Value", color = "Group")
 ```
