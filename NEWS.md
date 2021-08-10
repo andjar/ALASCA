@@ -1,3 +1,13 @@
+# ALASCA 0.0.0.93
+
+## New features
+
+* Set `save = TRUE` when running `ALASCA()` to automatically save the model and the plots you make. (Only tested on Windows)
+
+## Bux fix
+
+* Fixed: `ALASCA::summary()` is now working
+
 # ALASCA 0.0.0.92
 
 ## Bux fix
