@@ -19,6 +19,8 @@
 #' @param stratificationVector Vector of same length as `df` that specifies stratification groups during validation. Defaults to `NA`, where the group column is used.
 #' @param validateRegression Whether to validate regression predictions or not (only if `validate` is `TRUE`)
 #' @param doDebug Print what happens (default: `FALSE`)
+#' @param save Save models and plots automatically (default: `FALSE`)
+#' @param filename Filename to save model and plots (when `save = TRUE`)
 #' @param method Defaults to `NA` where method is either LM or LMM or Rfast, depending on whether your formula contains a random effect or not
 #' @param nValFold Partitions when validating
 #' @param nValRuns number of validation runs
@@ -49,6 +51,9 @@ ALASCA <- function(df,
                    nValFold = 7,
                    nValRuns = 50,
                    keepTerms = c(""),
+                   save = FALSE,
+                   filename = NA,
+                   filepath = NA,
                    optimizeScore = TRUE,
                    validateRegression = FALSE,
                    validationMethod = "loo",
@@ -95,6 +100,9 @@ ALASCA <- function(df,
                    nValRuns = nValRuns,
                    keepTerms = keepTerms,
                    initTime = Sys.time(),
+                   save = save,
+                   filename = filename,
+                   filepath = filepath,
                    optimizeScore = optimizeScore,
                    stratificationVector = stratificationVector,
                    keepValidationObjects = TRUE,
@@ -129,6 +137,9 @@ ALASCA <- function(df,
       cat(".. You chose to validate the model. Starting validation\n")
     }
     object <- validate(object)
+  }
+  if(object$save){
+    saveALASCAModel(object)
   }
 
   return(object)
@@ -267,6 +278,14 @@ sanitizeObject <- function(object){
     # This is usually a validation object
     object$df <- object$df[object$validationParticipants]
     object$df$ID <- factor(object$df$ID)
+  }
+  
+  if(any(is.na(object$filepath))){
+    object$filepath <- paste0("ALASCA/",strftime(object$initTime, format = "%Y%m%d_%H%M%S"),"/")
+  }
+  
+  if(any(is.na(object$filename))){
+    object$filename <- "ALASCA"
   }
   
   if(object$doDebug){
@@ -421,6 +440,25 @@ summary.ALASCA <- function(object){
     cat("\nNo scaling performed.\n")
   }
   
+}
+
+#' Save ALASCA object
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+#' @export
+saveALASCAModel <- function(object){
+  if(!dir.exists(object$filepath)){
+    dir.create(object$filepath, recursive = TRUE)
+  }
+  fname <- paste0(object$filepath,object$filename,".Rdata")
+  cnt <- 1
+  while(file.exists(fname)){
+    fname <- paste0(object$filepath,object$filename,"_",cnt,".Rdata")
+    cnt <- cnt + 1
+  }
+  save(object, file=fname)
+  cat(paste0("- Saved model to ", fname,"\n"))
 }
 
 #' Append a new model to an existing model

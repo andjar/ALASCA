@@ -10,6 +10,8 @@
 #' @param enlist Logical. If TRUE, the plots are returned as a list and not as a composed figure (default)
 #' @param tooDense Integer, If > 0, only name this number of covariables
 #' @param xlabel Defaults to "Time" if not specified during model setup
+#' @param filetypes Which filetypes you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
 #' @param highlight Vector of strings with variables to highlight in the loadings plot
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return An ggplot2 object (or a list og ggplot objects)
@@ -32,6 +34,8 @@ plot.ALASCA <- function(object,
                         tooDense = NA, 
                         highlight = NA, 
                         xlabel = NA,
+                        filetypes = "png",
+                        figsize = c(12, 8, 300),
                         myTheme = ggplot2::theme_bw()){
   if(!(effect %in% c("both","time","group"))){
     stop("`effect` has to be `both`, `time` or `group`")
@@ -79,6 +83,9 @@ plot.ALASCA <- function(object,
       }
     }
   }
+  if(object$save){
+    saveALASCAPlot(object,g,filetypes,figsize)
+  }
   return(g)
 }
 
@@ -88,6 +95,8 @@ plot.ALASCA <- function(object,
 #'
 #' @param object An ALASCA object
 #' @param effect String stating which effect to return; `time`, `group`, `both` (default)
+#' @param filetypes Which filetypes you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return An ggplot2 object (or a list og ggplot objects)
 #' 
@@ -96,7 +105,11 @@ plot.ALASCA <- function(object,
 #' screeplot(model)
 #' 
 #' @export
-screeplot.ALASCA <- function(object, effect = "both", myTheme = ggplot2::theme_bw()){
+screeplot.ALASCA <- function(object,
+                             effect = "both",
+                             filetypes = "png",
+                             figsize = c(12, 8, 300),
+                             myTheme = ggplot2::theme_bw()){
   explained <- as.data.frame(getScores(object)$explained)
   explained$component <- 1:nrow(explained)
   g <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = time, group = NA)) +
@@ -115,8 +128,14 @@ screeplot.ALASCA <- function(object, effect = "both", myTheme = ggplot2::theme_b
     }
   }
   if(effect == "group"){
+    if(object$save){
+      saveALASCAPlot(object,gg,filetypes,figsize)
+    }
     return(gg)
   }else{
+    if(object$save){
+      saveALASCAPlot(object,g,filetypes,figsize)
+    }
     return(g)
   }
 }
@@ -646,5 +665,25 @@ plotProjection <- function(object, comp = c(1,2), return_data = FALSE, myTheme =
       return(g)
     }
   }
-  
+}
+
+#' Save figure
+#'
+#' @param g ggplot-object
+#' @return A ggplot2 objects.
+#' 
+#' @export
+saveALASCAPlot <- function(object, g, figuretypes = "png", figsize = c(12, 8, 300)){
+  if(!dir.exists(paste0(object$filepath, "plot/"))){
+    dir.create(paste0(object$filepath, "plot/"))
+  }
+  fname <- paste0(object$filepath,"plot/",strftime(Sys.time(), format = "%Y%m%d_%H%M%S"))
+  cnt <- 1
+  for(i in figuretypes){
+    while(file.exists(paste0(fname,".",i))){
+      fname <- paste0(object$filepath,"plot/",strftime(Sys.time(), format = "%Y%m%d_%H%M%S"),"_",cnt)
+      cnt <- cnt + 1
+    }
+    ggplot2::ggsave(plot = g, filename = paste0(fname,".",i), width = figsize[1], height = figsize[2], dpi = figsize[3])
+  }
 }
