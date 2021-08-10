@@ -84,7 +84,7 @@ plot.ALASCA <- function(object,
     }
   }
   if(object$save){
-    saveALASCAPlot(object,g,filetypes,figsize)
+    saveALASCAPlot(object = object,g = g,filetypes = filetypes,figsize = figsize)
   }
   return(g)
 }
@@ -184,9 +184,19 @@ getCovars <- function(object){
 #' @param component Which component to plot?
 #' @param effect Plot time or group
 #' @param decreasingLoadings Logical. Should loading sbe sorted in decreasing order?
+#' @param filetypes Which filetypes you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A ggplot object
-getLoadingPlot <- function(object, component = 1, effect = "time", decreasingLoadings = TRUE, tooDense = NA, highlight = NA, myTheme = ggplot2::theme_bw()){
+getLoadingPlot <- function(object,
+                           component = 1,
+                           effect = "time",
+                           decreasingLoadings = TRUE,
+                           tooDense = NA,
+                           highlight = NA,
+                           filetypes = "png",
+                           figsize = c(12, 8, 300),
+                           myTheme = ggplot2::theme_bw()){
   pointSize <- 0.4
   if(effect == "time"){
     loadings <- subset(getLoadings(object)$time, PC == component)
@@ -226,6 +236,9 @@ getLoadingPlot <- function(object, component = 1, effect = "time", decreasingLoa
                      axis.ticks.x=ggplot2::element_blank(),
                      legend.position = "none")
   }
+  if(object$save){
+    saveALASCAPlot(object = object,g = g, filetypes = filetypes, figsize = figsize, suffix = "loading")
+  }
   return(g)
 }
 
@@ -239,9 +252,16 @@ getLoadingPlot <- function(object, component = 1, effect = "time", decreasingLoa
 #' @param object An ALASCA object
 #' @param component Which component to plot?
 #' @param effect Plot time or group
+#' @param filetypes Which filetypes you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A ggplot object
-getScorePlot <- function(object, component = 1, effect = "time", myTheme = ggplot2::theme_bw()){
+getScorePlot <- function(object,
+                         component = 1,
+                         effect = "time",
+                         filetypes = "png",
+                         figsize = c(12, 8, 300),
+                         myTheme = ggplot2::theme_bw()){
   pointSize <- 2
   if(effect == "time"){
     if(object$separateTimeAndGroup){
@@ -313,6 +333,9 @@ getScorePlot <- function(object, component = 1, effect = "time", myTheme = ggplo
       ggplot2::theme(legend.position = "bottom") +
       ggplot2::labs(x = object$plot.xlabel, y = paste0("PC",component, " (",round(100*object$ALASCA$score$explained$group[component],2),"%)"))
   }
+  if(object$save){
+    saveALASCAPlot(object = object,g = g,filetypes = filetypes, figsize = figsize, suffix = "score")
+  }
   return(g)
 }
 
@@ -325,6 +348,8 @@ getScorePlot <- function(object, component = 1, effect = "time", myTheme = ggplo
 #' @param participantColumn Specify the column with participant identifier. Not necessary if you have already provided it to the ALASCA object
 #' @param valueColumn Specify column with values (y axis). Not necessary to provide if you are plotting an ALASCA object.
 #' @param timeColumn Specify column with times (x axis). Defaults to `time`.
+#' @param filetypes Which filetypes you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
 #' @param addSmooth. Specify which geom_smooth model you want to apply, eg. `lm`, `glm`, `gam`, `loess` (default). Set to `NA` to remove.
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A list with ggplot2 objects.
@@ -346,7 +371,9 @@ plotParts <- function(object,
                       participantColumn = FALSE, 
                       valueColumn = FALSE, 
                       timeColumn = "time", 
-                      addSmooth = "loess", 
+                      addSmooth = "loess",
+                      filetypes = "png",
+                      figsize = c(12, 8, 300),
                       myTheme = ggplot2::theme_bw()){
   if(is.data.frame(object)){
     df <- object
@@ -385,6 +412,11 @@ plotParts <- function(object,
     plotFunction(df, timeColumn, valueColumn, participantColumn, xi, addSmooth, myTheme = myTheme)
   })
   names(g) <- variable
+  if(object$save){
+    for(i in seq_along(g)){
+      saveALASCAPlot(object = object, g = g[[i]],filetypes = filetypes, figsize = figsize, suffix = names(g)[i])
+    }
+  }
   return(g)
 }
 
@@ -395,6 +427,8 @@ plotParts <- function(object,
 #' @param object An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.
 #' @param variable List of variable names to print. If `NA`, return all (default).
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
+#' @param filetypes Which filetypes you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
 #' @return A list with ggplot2 objects.
 #' 
 #' @examples
@@ -406,7 +440,11 @@ plotParts <- function(object,
 #'     common.legend = TRUE, legend = "bottom")
 #' )
 #' @export
-plotPred <- function(object, variable = NA, myTheme = ggplot2::theme_bw()){
+plotPred <- function(object, 
+                     variable = NA, 
+                     filetypes = "png",
+                     figsize = c(12, 8, 300),
+                     myTheme = ggplot2::theme_bw()){
   if(any(is.na(variable))){
     variable <- unique(object$df$variable)
   }
@@ -432,6 +470,11 @@ plotPred <- function(object, variable = NA, myTheme = ggplot2::theme_bw()){
     })
   }
   names(gg) <- variable
+  if(object$save){
+    for(i in seq_along(gg)){
+      saveALASCAPlot(object = object, g = gg[[i]],filetypes = filetypes, figsize = figsize, suffix = names(gg)[i])
+    }
+  }
   return(gg)
 }
 
@@ -441,11 +484,17 @@ plotPred <- function(object, variable = NA, myTheme = ggplot2::theme_bw()){
 #'
 #' @param object A validated ALASCA object
 #' @param component Which component to plot (default: 1)
+#' @param filetypes Which filetypes you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A list with ggplot2 objects.
 #' 
 #' @export
-plotVal <- function(object, component = 1, myTheme = ggplot2::theme_bw()){
+plotVal <- function(object,
+                    component = 1,
+                    filetypes = "png",
+                    figsize = c(12, 8, 300),
+                    myTheme = ggplot2::theme_bw()){
   if(!object$validate){
     stop("You must validate the model first.")
   }
@@ -535,6 +584,9 @@ plotVal <- function(object, component = 1, myTheme = ggplot2::theme_bw()){
     
     g <- ggpubr::ggarrange(gs, gl, nrow = 1, ncol = 2, widths = c(1,2))
   }
+  if(object$save){
+    saveALASCAPlot(object = object,g = g,filetypes = filetypes, figsize = figsize)
+  }
   return(g)
   
 }
@@ -546,12 +598,21 @@ plotVal <- function(object, component = 1, myTheme = ggplot2::theme_bw()){
 #' @param object An ALASCA object
 #' @param covar Which covariable(s) to plot (default: `NA` which prints all)
 #' @param tlab Alternative names for the covariables
+#' @param filetypes Which filetypes you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
 #' @param return_data Set to `TRUE` to return data instead of plot
+#' 
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A ggplot2 objects\.
 #' 
 #' @export
-plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE, myTheme = ggplot2::theme_bw(), pvalue = "shape"){
+plotCovar <- function(object,
+                      covar = NA,
+                      tlab = NA, return_data = FALSE,
+                      filetypes = "png",
+                      figsize = c(12, 8, 300),
+                      myTheme = ggplot2::theme_bw(),
+                      pvalue = "shape"){
   df <- getCovars(object)
   if(any(is.na(covar))){
     covar <- unique(df$variable)
@@ -587,7 +648,9 @@ plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE, myThem
         myTheme + ggplot2::theme(legend.position = "bottom", legend.box="vertical", legend.margin=ggplot2::margin())
     }
     
-    
+    if(object$save){
+      saveALASCAPlot(object = object,g = g,filetypes = filetypes, figsize = figsize)
+    }
     return(g)
   }
 }
@@ -600,11 +663,18 @@ plotCovar <- function(object, covar = NA, tlab = NA, return_data = FALSE, myThem
 #' @param object An ALASCA object
 #' @param comp Which two components to plot (default: `c(1, 2`)
 #' @param return_data Set to `TRUE` to return data instead of plot
+#' @param filetypes Which filetypes you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A ggplot2 objects.
 #' 
 #' @export
-plotProjection <- function(object, comp = c(1,2), return_data = FALSE, myTheme = ggplot2::theme_bw()){
+plotProjection <- function(object,
+                           comp = c(1,2),
+                           return_data = FALSE,
+                           filetypes = "png",
+                           figsize = c(12, 8, 300),
+                           myTheme = ggplot2::theme_bw()){
   df <- object$df
   df$ID <- df[, ID]
   loadings_Time <- subset(getLoadings(object)$time, PC %in% comp)
@@ -644,6 +714,11 @@ plotProjection <- function(object, comp = c(1,2), return_data = FALSE, myTheme =
     }
     g <- list(df_time, df_group)
     names(g) <- c("time", "group")
+    if(object$save){
+      for(i in seq_along(g)){
+        saveALASCAPlot(object = object, g = g[[i]],filetypes = filetypes, figsize = figsize, suffix = names(g)[i])
+      }
+    }
     return(g)
   }else{
     df_time <- Reduce(rbind, lapply(unique(paste0(df_time$ID, df_time$time)), function(x){
@@ -662,6 +737,9 @@ plotProjection <- function(object, comp = c(1,2), return_data = FALSE, myTheme =
     if(return_data){
       return(df_time)
     }else{
+      if(object$save){
+        saveALASCAPlot(object = object,g = g,filetypes = filetypes, figsize = figsize)
+      }
       return(g)
     }
   }
@@ -673,17 +751,18 @@ plotProjection <- function(object, comp = c(1,2), return_data = FALSE, myTheme =
 #' @return A ggplot2 objects.
 #' 
 #' @export
-saveALASCAPlot <- function(object, g, figuretypes = "png", figsize = c(12, 8, 300)){
+saveALASCAPlot <- function(object, g, filetypes = "png", figsize = c(12, 8, 300), suffix = ""){
   if(!dir.exists(paste0(object$filepath, "plot/"))){
     dir.create(paste0(object$filepath, "plot/"))
   }
-  fname <- paste0(object$filepath,"plot/",strftime(Sys.time(), format = "%Y%m%d_%H%M%S"))
+  fname <- paste0(object$filepath,"plot/",strftime(Sys.time(), format = "%Y%m%d_%H%M%S"),ifelse(suffix == "", "", paste0("_",suffix)))
   cnt <- 1
-  for(i in figuretypes){
+  for(i in filetypes){
     while(file.exists(paste0(fname,".",i))){
-      fname <- paste0(object$filepath,"plot/",strftime(Sys.time(), format = "%Y%m%d_%H%M%S"),"_",cnt)
+      fname <- paste0(object$filepath,"plot/",strftime(Sys.time(), format = "%Y%m%d_%H%M%S"),ifelse(suffix == "", "", paste0("_",suffix)),"_",cnt)
       cnt <- cnt + 1
     }
     ggplot2::ggsave(plot = g, filename = paste0(fname,".",i), width = figsize[1], height = figsize[2], dpi = figsize[3])
+    cat(paste0("- Saved ",fname,".",i,"\n"))
   }
 }
