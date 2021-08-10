@@ -49,29 +49,24 @@ cleanPCA <- function(object){
   return(object)
 }
 
-#' Clean an ALASCA model
-#'
-#' This function reformats some data frames
-#'
-#' @param object An ALASCA object to be sanitized
-#' @return An ALASCA object
 cleanALASCA<- function(object){
   # Clean up a copy
-  ## Time effect
-  object$ALASCA$loading$time <- object$pca$loading$time[!duplicated(object$pca$loading$time),]
-  object$ALASCA$loading$time <- reshape2::melt(object$ALASCA$loading$time, id.vars = "covars")
-  colnames(object$ALASCA$loading$time) <- c("covars","PC","loading")
-  object$ALASCA$loading$time$PC <- as.numeric(gsub("PC","", object$ALASCA$loading$time$PC))
-  
-  object$ALASCA$score$time <- object$pca$score$time[!duplicated(object$pca$score$time),]
-  object$ALASCA$score$time <- reshape2::melt(object$ALASCA$score$time, id.vars = c("time","group"))
-  colnames(object$ALASCA$score$time) <- c("time","group","PC","score")
-  object$ALASCA$score$time$PC <- as.numeric(gsub("PC","", object$ALASCA$score$time$PC))
-  
-  object$ALASCA$score$explained$time <- object$pca$score$explained$time
-  object$ALASCA$loading$explained$time <- object$pca$loading$explained$time
   if(object$separateTimeAndGroup){
-    ## Group effect
+    # Time effect
+    object$ALASCA$loading$time <- object$pca$loading$time[!duplicated(object$pca$loading$time),]
+    object$ALASCA$loading$time <- reshape2::melt(object$ALASCA$loading$time, id.vars = "covars")
+    colnames(object$ALASCA$loading$time) <- c("covars","PC","loading")
+    object$ALASCA$loading$time$PC <- as.numeric(gsub("PC","", object$ALASCA$loading$time$PC))
+    
+    object$ALASCA$score$time <- object$pca$score$time[!duplicated(object$pca$score$time),]
+    object$ALASCA$score$time <- reshape2::melt(object$ALASCA$score$time, id.vars = c("time"))
+    colnames(object$ALASCA$score$time) <- c("time","PC","score")
+    object$ALASCA$score$time$PC <- as.numeric(gsub("PC","", object$ALASCA$score$time$PC))
+    
+    object$ALASCA$score$explained$time <- object$pca$score$explained$time
+    object$ALASCA$loading$explained$time <- object$pca$loading$explained$time
+    
+    # Group effect
     object$ALASCA$loading$group <- object$pca$loading$group[!duplicated(object$pca$loading$group),]
     object$ALASCA$loading$group <- reshape2::melt(object$ALASCA$loading$group, id.vars = "covars")
     colnames(object$ALASCA$loading$group) <- c("covars","PC","loading")
@@ -84,6 +79,19 @@ cleanALASCA<- function(object){
     
     object$ALASCA$score$explained$group <- object$pca$score$explained$group
     object$ALASCA$loading$explained$group <- object$pca$loading$explained$group
+  }else{
+    object$ALASCA$loading$time <- object$pca$loading$time[!duplicated(object$pca$loading$time),]
+    object$ALASCA$loading$time <- reshape2::melt(object$ALASCA$loading$time, id.vars = "covars")
+    colnames(object$ALASCA$loading$time) <- c("covars","PC","loading")
+    object$ALASCA$loading$time$PC <- as.numeric(gsub("PC","", object$ALASCA$loading$time$PC))
+    
+    object$ALASCA$score$time <- object$pca$score$time[!duplicated(object$pca$score$time),]
+    object$ALASCA$score$time <- reshape2::melt(object$ALASCA$score$time, id.vars = c("time","group"))
+    colnames(object$ALASCA$score$time) <- c("time","group","PC","score")
+    object$ALASCA$score$time$PC <- as.numeric(gsub("PC","", object$ALASCA$score$time$PC))
+    
+    object$ALASCA$score$explained$time <- object$pca$score$explained$time
+    object$ALASCA$loading$explained$time <- object$pca$loading$explained$time
   }
   return(object)
 }
