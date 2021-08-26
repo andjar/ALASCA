@@ -110,8 +110,8 @@ ALASCA <- function(df,
                    validationMethod = validationMethod,
                    validationObject = validationObject,
                    validationParticipants = validationParticipants,
-                   ALASCA.version = "0.0.0.93",
-                   ALASCA.version.date = "2021-08-10"
+                   ALASCA.version = "0.0.0.94",
+                   ALASCA.version.date = "2021-08-26"
     )
     cat("\n\n====== ALASCA ======\n\n")
     cat(paste0("v.", object$ALASCA.version," (", object$ALASCA.version.date ,")", "\n\n"))
@@ -375,25 +375,30 @@ removeEmbedded <- function(object){
 #'
 #' @param object An ALASCA object
 #' @param component Components to be flipped, `NA` flips all (default)
+#' @param effect Specify `time` or `group` to only flip subplot
 #' @return An ALASCA object
 #' @export
-flipIt <- function(object, component = NA){
+flipIt <- function(object, component = NA, effect = "both"){
   if(any(is.na(component))){
     component <- unique(object$ALASCA$score$time$PC)
   }
   for(i in component){
-    object$ALASCA$score$time$score[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$score[object$ALASCA$score$time$PC == i]
-    object$ALASCA$loading$time$loading[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$loading[object$ALASCA$loading$time$PC == i]
-    if(object$separateTimeAndGroup){
+    if(effect %in% c("both", "time")){
+      object$ALASCA$score$time$score[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$score[object$ALASCA$score$time$PC == i]
+      object$ALASCA$loading$time$loading[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$loading[object$ALASCA$loading$time$PC == i]
+    }
+    if(object$separateTimeAndGroup & effect %in% c("both", "group")){
       object$ALASCA$score$group$score[object$ALASCA$score$group$PC == i] <- -object$ALASCA$score$group$score[object$ALASCA$score$group$PC == i]
       object$ALASCA$loading$group$loading[object$ALASCA$loading$group$PC == i] <- -object$ALASCA$loading$group$loading[object$ALASCA$loading$group$PC == i]
     }
     if(object$validate){
-      object$ALASCA$score$time$high[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$high[object$ALASCA$score$time$PC == i]
-      object$ALASCA$loading$time$high[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$high[object$ALASCA$loading$time$PC == i]
-      object$ALASCA$score$time$low[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$low[object$ALASCA$score$time$PC == i]
-      object$ALASCA$loading$time$low[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$low[object$ALASCA$loading$time$PC == i]
-      if(object$separateTimeAndGroup){
+      if(effect %in% c("both", "time")){
+        object$ALASCA$score$time$high[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$high[object$ALASCA$score$time$PC == i]
+        object$ALASCA$loading$time$high[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$high[object$ALASCA$loading$time$PC == i]
+        object$ALASCA$score$time$low[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$low[object$ALASCA$score$time$PC == i]
+        object$ALASCA$loading$time$low[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$low[object$ALASCA$loading$time$PC == i]
+      }
+      if(object$separateTimeAndGroup & effect %in% c("both", "group")){
         object$ALASCA$score$group$high[object$ALASCA$score$group$PC == i] <- -object$ALASCA$score$group$high[object$ALASCA$score$group$PC == i]
         object$ALASCA$loading$group$high[object$ALASCA$loading$group$PC == i] <- -object$ALASCA$loading$group$high[object$ALASCA$loading$group$PC == i]
         object$ALASCA$score$group$low[object$ALASCA$score$group$PC == i] <- -object$ALASCA$score$group$low[object$ALASCA$score$group$PC == i]
@@ -404,7 +409,7 @@ flipIt <- function(object, component = NA){
   
   if(object$validate == TRUE){
     for(i in seq_along(object$validation$temp_objects)){
-      object$validation$temp_objects[[i]] <- flipIt(object$validation$temp_objects[[i]], component = component)
+      object$validation$temp_objects[[i]] <- flipIt(object$validation$temp_objects[[i]], component = component, effect = effect)
     }
   }
   return(object)

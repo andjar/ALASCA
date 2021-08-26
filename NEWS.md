@@ -1,3 +1,9 @@
+# ALASCA 0.0.0.94
+
+## New features
+
+* `flipIt()` can now selectively flip either time or group by specifying `effect = "time"` or `effect = "group"` (default: `effect = "both"`)
+
 # ALASCA 0.0.0.93
 
 ## New features
