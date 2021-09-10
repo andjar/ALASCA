@@ -110,8 +110,8 @@ ALASCA <- function(df,
                    validationMethod = validationMethod,
                    validationObject = validationObject,
                    validationParticipants = validationParticipants,
-                   ALASCA.version = "0.0.0.94",
-                   ALASCA.version.date = "2021-08-26"
+                   ALASCA.version = "0.0.0.95",
+                   ALASCA.version.date = "2021-09-10"
     )
     cat("\n\n====== ALASCA ======\n\n")
     cat(paste0("v.", object$ALASCA.version," (", object$ALASCA.version.date ,")", "\n\n"))

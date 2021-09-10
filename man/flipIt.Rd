@@ -4,12 +4,14 @@
 \alias{flipIt}
 \title{Flip an ALASCA object}
 \usage{
-flipIt(object, component = NA)
+flipIt(object, component = NA, effect = "both")
 }
 \arguments{
 \item{object}{An ALASCA object}
 
 \item{component}{Components to be flipped, \code{NA} flips all (default)}
+
+\item{effect}{Specify \code{time} or \code{group} to only flip subplot}
 }
 \value{
 An ALASCA object

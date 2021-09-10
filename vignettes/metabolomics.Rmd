@@ -102,7 +102,7 @@ Without any fuss, let us see what ALASCA makes out of it using the same model as
 
 ```{r}
 form <- value ~ time + time:group + (1|ID)
-mod <- ALASCA(df, form, separateTimeAndGroup = FALSE, forceEqualBaseline = TRUE, scaleFun = scaleFun)
+mod <- ALASCA(df, form, separateTimeAndGroup = FALSE, forceEqualBaseline = TRUE, scaleFun = scaleFun, method = "LMM")
 ```
 
 Let us check that our model is as expected:
@@ -132,6 +132,13 @@ plot(mod, component = 2)
 ```
 
 As we can see, it looks indeed as a very good match with the original findings.
+
+We can also assess the pair-wise differences for each variable;
+
+```{r}
+assessGroupDifferences(mod)
+```
+
 
 Let us validate our model (outside knitr, it uses about 2 seconds per run),
 

@@ -766,3 +766,81 @@ saveALASCAPlot <- function(object, g, filetypes = "png", figsize = c(12, 8, 300)
     cat(paste0("- Saved ",fname,".",i,"\n"))
   }
 }
+
+#' Assess group differences
+#'
+#' @param object An ALASCA object
+#' @param variables Return these variables, defaults to all
+#' @param doPlot Set to `FALSE` to return data frames instead of plot
+#' @param rawOut Set to `TRUE` to return emmeans plot or object
+#' @return A plot or an emmeans object
+#' 
+#' @export
+assessGroupDifferences <- function(object, variables = NA, doPlot = TRUE, filetypes = "png", figsize = c(12, 8, 300), rawOut = FALSE){
+  if(is.na(variables)){
+    variables <- unique(object$df$variable)
+  }
+  if(object$method != "LMM"){
+    stop("Sorry, only works for LMM at the moment!")
+  }
+  mods <- lapply(unique(variables), function(x){
+    mod.em <- emmeans::emmeans(
+      lme4::lmer(
+        formula(paste0("value ~ ", as.character(object$formula)[3] ," + (1|ID)")), 
+        data = subset(object$dfRaw, variable == x)),
+      list(pairwise ~ group),
+      adjust = "tukey"
+    )
+    if(rawOut){
+      if(doPlot){
+        g <- plot(mod.em) + ggplot2::theme_bw()
+        if(object$save){
+          saveALASCAPlot(object = object, g = g, filetypes = filetypes, figsize = figsize, suffix = paste0("_groupdiff_", x, "_"))
+        }
+        g
+      }else{
+        mod.em
+      }
+    }else{
+      a <- summary(mod.em[[1]])
+      a$G <- paste(a$group,a$time)
+      b <- summary(mod.em[[2]])
+      tmp <- data.frame(
+        G1 = unlist(strsplit(b$contrast, " - "))[seq(1,2*nrow(b),2)],
+        G2 = unlist(strsplit(b$contrast, " - "))[seq(2,2*nrow(b),2)],
+        diff = b$estimate,
+        diff.SE = b$SE,
+        diff.p = b$p.value,
+        variable = x
+      )
+      for(i in 1:nrow(tmp)){
+        tmp$G1.estimate[i] <- a$emmean[a$G == tmp$G1[i]]
+        tmp$G2.estimate[i] <- a$emmean[a$G == tmp$G2[i]]
+        tmp$G1.SE[i] <- a$SE[a$G == tmp$G1[i]]
+        tmp$G2.SE[i] <- a$SE[a$G == tmp$G2[i]]
+      }
+      tmp$diff.p.sign <- ifelse(
+        tmp$diff.p > .05, "", ifelse(
+          tmp$diff.p < .001, "***", ifelse(
+            tmp$diff.p < .01, "**", "*"
+          )
+        )
+      )
+      tmp
+    }
+  })
+  names(mods) <- unique(variables)
+  if(rawOut == FALSE){
+    mods <- Reduce(rbind, mods)
+    if(doPlot == TRUE){
+      mods <- ggplot(mods, aes(x = G1, y = G2)) + 
+        geom_raster(aes(fill=diff)) + 
+        geom_text(aes(label = diff.p.sign), color = "white") + 
+        facet_wrap(~variable) + theme_bw() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+    }
+  }
+  return(mods)
+}
+
+
+
