@@ -27,6 +27,7 @@ reference:
   - plot.ALASCA
   - screeplot.ALASCA
   - flipIt
+  - assessGroupDifferences
   - plotCovar
   - plotParts
   - plotPred

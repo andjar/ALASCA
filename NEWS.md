@@ -1,3 +1,9 @@
+# ALASCA 0.0.0.95
+
+## New features
+
+* `assessGroupDifferences` applies `emmeans::emmeans()` to calculate pairwise group differences
+
 # ALASCA 0.0.0.94
 
 ## New features

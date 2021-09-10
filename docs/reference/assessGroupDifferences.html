@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Changelog • ALASCA</title>
+<title>Assess group differences — assessGroupDifferences • ALASCA</title>
 
 
 <!-- jquery -->
@@ -39,7 +39,8 @@
 
 
 
-<meta property="og:title" content="Changelog" />
+<meta property="og:title" content="Assess group differences — assessGroupDifferences" />
+<meta property="og:description" content="Assess group differences" />
 
 
 
@@ -58,7 +59,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-news">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -131,105 +132,55 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-      <h1 data-toc-skip>Changelog <small></small></h1>
-      <small>Source: <a href='https://github.com/andjar/ALASCA/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
+    <h1>Assess group differences</h1>
+    <small class="dont-index">Source: <a href='https://github.com/andjar/ALASCA/blob/master/R/plot.R'><code>R/plot.R</code></a></small>
+    <div class="hidden name"><code>assessGroupDifferences.Rd</code></div>
     </div>
 
-    <div id="alasca-00095" class="section level1">
-<h1 class="page-header" data-toc-text="0.0.0.95">
-<a href="#alasca-00095" class="anchor"></a>ALASCA 0.0.0.95</h1>
-<div id="new-features" class="section level2">
-<h2 class="hasAnchor">
-<a href="#new-features" class="anchor"></a>New features</h2>
-<ul>
-<li>
-<code>assessGroupDifferences</code> applies <code><a href="https://rdrr.io/pkg/emmeans/man/emmeans.html">emmeans::emmeans()</a></code> to calculate pairwise group differences</li>
-</ul>
-</div>
-</div>
-    <div id="alasca-00094" class="section level1">
-<h1 class="page-header" data-toc-text="0.0.0.94">
-<a href="#alasca-00094" class="anchor"></a>ALASCA 0.0.0.94</h1>
-<div id="new-features-1" class="section level2">
-<h2 class="hasAnchor">
-<a href="#new-features-1" class="anchor"></a>New features</h2>
-<ul>
-<li>
-<code><a href="../reference/flipIt.html">flipIt()</a></code> can now selectively flip either time or group by specifying <code>effect = "time"</code> or <code>effect = "group"</code> (default: <code>effect = "both"</code>)</li>
-</ul>
-</div>
-</div>
-    <div id="alasca-00093" class="section level1">
-<h1 class="page-header" data-toc-text="0.0.0.93">
-<a href="#alasca-00093" class="anchor"></a>ALASCA 0.0.0.93</h1>
-<div id="new-features-2" class="section level2">
-<h2 class="hasAnchor">
-<a href="#new-features-2" class="anchor"></a>New features</h2>
-<ul>
-<li>Set <code>save = TRUE</code> when running <code><a href="../reference/ALASCA.html">ALASCA()</a></code> to automatically save the model and the plots you make. (Only tested on Windows)</li>
-</ul>
-</div>
-<div id="bux-fix" class="section level2">
-<h2 class="hasAnchor">
-<a href="#bux-fix" class="anchor"></a>Bux fix</h2>
-<ul>
-<li>Fixed: <code><a href="https://rdrr.io/r/base/summary.html">ALASCA::summary()</a></code> is now working</li>
-</ul>
-</div>
-</div>
-    <div id="alasca-00092" class="section level1">
-<h1 class="page-header" data-toc-text="0.0.0.92">
-<a href="#alasca-00092" class="anchor"></a>ALASCA 0.0.0.92</h1>
-<div id="bux-fix-1" class="section level2">
-<h2 class="hasAnchor">
-<a href="#bux-fix-1" class="anchor"></a>Bux fix</h2>
-<ul>
-<li>Fixed: <code><a href="../reference/flipIt.html">flipIt()</a></code> did not flip the upper limit for score of the group effect correctly</li>
-</ul>
-</div>
-</div>
-    <div id="alasca-00091" class="section level1">
-<h1 class="page-header" data-toc-text="0.0.0.91">
-<a href="#alasca-00091" class="anchor"></a>ALASCA 0.0.0.91</h1>
-<div id="new-features-3" class="section level2">
-<h2 class="hasAnchor">
-<a href="#new-features-3" class="anchor"></a>New features</h2>
-<ul>
-<li>
-<code>validationMethod = "permutation"</code> now produces actual P values.
-<ul>
-<li>P values are kept in <code>$pvals</code>
-</li>
-<li>The lowest P values will be set to 1/nValRuns, so it may be wise to use eg. <code>nValRuns=1001</code> to be able to detect P&lt;.001</li>
-<li>Plotting this model adds asterisks indicating significance</li>
-</ul>
-</li>
-<li>
-<code>validationMethod = "bootstrap"</code> is now functional</li>
-</ul>
-</div>
-</div>
-    <div id="alasca-0009" class="section level1">
-<h1 class="page-header" data-toc-text="0.0.0.9">
-<a href="#alasca-0009" class="anchor"></a>ALASCA 0.0.0.9</h1>
-<div id="known-bugs" class="section level2">
-<h2 class="hasAnchor">
-<a href="#known-bugs" class="anchor"></a>Known bugs</h2>
-<ul>
-<li>Reference level cannot be set when using multiple interactions</li>
-<li>
-<code>plotPart()</code> sometimes fails to provide more than a blank plot</li>
-</ul>
-</div>
-</div>
-  </div>
+    <div class="ref-description">
+    <p>Assess group differences</p>
+    </div>
 
+    <pre class="usage"><span class='fu'>assessGroupDifferences</span><span class='op'>(</span>
+  <span class='va'>object</span>,
+  variables <span class='op'>=</span> <span class='cn'>NA</span>,
+  doPlot <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  filetypes <span class='op'>=</span> <span class='st'>"png"</span>,
+  figsize <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>12</span>, <span class='fl'>8</span>, <span class='fl'>300</span><span class='op'>)</span>,
+  rawOut <span class='op'>=</span> <span class='cn'>FALSE</span>
+<span class='op'>)</span></pre>
+
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>object</th>
+      <td><p>An ALASCA object</p></td>
+    </tr>
+    <tr>
+      <th>variables</th>
+      <td><p>Return these variables, defaults to all</p></td>
+    </tr>
+    <tr>
+      <th>doPlot</th>
+      <td><p>Set to <code>FALSE</code> to return data frames instead of plot</p></td>
+    </tr>
+    <tr>
+      <th>rawOut</th>
+      <td><p>Set to <code>TRUE</code> to return emmeans plot or object</p></td>
+    </tr>
+    </table>
+
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>A plot or an emmeans object</p>
+
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
       <h2 data-toc-skip>Contents</h2>
     </nav>
   </div>
-
 </div>
 
 
