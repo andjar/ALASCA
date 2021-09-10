@@ -181,6 +181,7 @@ sanitizeObject <- function(object){
     object$valCol <- as.character(object$formula)[2]
     # Check formula from user
     formulaTerms <- colnames(attr(terms.formula(object$formula),"factors"))
+    object$formulaTerms <- formulaTerms
     if(!is.na(object$method)){ 
       # The user has specified a method to use
       if(object$method == "LMM"){

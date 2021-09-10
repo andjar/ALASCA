@@ -788,7 +788,7 @@ assessGroupDifferences <- function(object, variables = NA, doPlot = TRUE, filety
       lme4::lmer(
         formula(paste0("value ~ ", as.character(object$formula)[3] ," + (1|ID)")), 
         data = subset(object$dfRaw, variable == x)),
-      list(pairwise ~ group),
+      list(formula(paste0("pairwise ~ ", paste(mod$formulaTerms[grepl("time|group", mod$formulaTerms)], collapse = "+")))),
       adjust = "tukey"
     )
     if(rawOut){
@@ -833,10 +833,14 @@ assessGroupDifferences <- function(object, variables = NA, doPlot = TRUE, filety
   if(rawOut == FALSE){
     mods <- Reduce(rbind, mods)
     if(doPlot == TRUE){
-      mods <- ggplot(mods, aes(x = G1, y = G2)) + 
-        geom_raster(aes(fill=diff)) + 
-        geom_text(aes(label = diff.p.sign), color = "white") + 
-        facet_wrap(~variable) + theme_bw() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+      mods <- ggplot2::ggplot(mods, ggplot2::aes(x = G1, y = G2)) + 
+        ggplot2::geom_raster(ggplot2::aes(fill=diff)) + 
+        ggplot2::geom_text(ggplot2::aes(label = diff.p.sign), color = "white") + 
+        ggplot2::facet_wrap(~variable) + 
+        ggplot2::theme_bw() + 
+        ggplot2::theme(axis.text.x = 
+                         ggplot2::element_text(angle = 45, vjust = 1, hjust=1)) +
+        ggplot2::labs(fill = "G1-G2")
     }
   }
   return(mods)
