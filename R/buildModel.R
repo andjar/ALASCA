@@ -10,7 +10,7 @@ buildModel <- function(object){
     cat("Calculating ",object$method," coefficients...\n")
   }
   object <- runRegression(object)
-  if(object$method != "Rfast"){
+  if(!object$useRfast){
     # With Rfast, we've already got the coefficients
     object <- getRegressionCoefficients(object)
   }
@@ -19,7 +19,7 @@ buildModel <- function(object){
     # This is not a validation run
     cat("Finished calculating regression coefficients!\n")
   }
-  if(object$method != "Rfast"){
+  if(!object$useRfast & object$method %in% c("LM", "LMM")){
     if(object$minimizeObject){
       if(object$validateRegression){
         object <- getRegressionPredictions(object)
@@ -45,13 +45,16 @@ buildModel <- function(object){
 #' @return An ALASCA object
 runRegression <- function(object){
   
-  if(object$method == "Rfast"){
+  if(object$useRfast & object$method == "LMM"){
     object$RegressionCoefficients <- Reduce(rbind,lapply(unique(object$df$variable), function(x){
       #start.time <- Sys.time()
       df <- object$df[variable == x]
       modmat <- model.matrix(object$newformula, data = df)
       if(object$forceEqualBaseline){
         modmat <- modmat[,!grepl(paste0("time",levels(object$df$time)[1]), colnames(modmat))]
+      }
+      if(sum(is.na(df[,value])) > 0){
+        stop("Rfast does NOT like NA's! Check your scaling function or value column.")
       }
       mod <- data.frame(
         estimate = Rfast::rint.reg(y = df[,value], 
@@ -79,7 +82,7 @@ runRegression <- function(object){
           attr(regr.model, "name") <- x
           regr.model
         })
-  }else{
+  }else if(object$method == "LMM"){
     object$regr.model <- lapply(unique(object$df$variable), function(x){
       modmat <- model.matrix(object$formula, data = object$df[variable == x])
       modmat <- modmat[,-1]
@@ -89,6 +92,22 @@ runRegression <- function(object){
       #modmat <- modmat[,ncol(modmat):1]
       environment(object$newformula) <- environment()
       regr.model <- lmerTest::lmer(object$newformula, data = object$df[variable == x])
+      attr(regr.model, "name") <- x
+      regr.model
+    })
+  }else if(object$method == "KM"){
+    object$regr.model <- lapply(unique(object$df$variable), function(x){
+      regr.model <- survival::coxph(
+        formula(paste("survival::Surv(value, ifelse(belowLowerLimit, 0, 1)) ~", as.character(object$formula)[3])),
+                                    data = subset(object$df, variable == x))
+      attr(regr.model, "name") <- x
+      regr.model
+    })
+  }else if(object$method == "KMM"){
+    object$regr.model <- lapply(unique(object$df$variable), function(x){
+      regr.model <- coxme::coxme(
+        formula(paste("survival::Surv(value, ifelse(belowLowerLimit, 0, 1)) ~", as.character(object$formula)[3], "+ (1|ID)")),
+        data = subset(object$df, variable == x))
       attr(regr.model, "name") <- x
       regr.model
     })
@@ -104,6 +123,25 @@ runRegression <- function(object){
 #' @param object An ALASCA object
 #' @return An ALASCA object
 getRegressionCoefficients <- function(object){
+  if(object$method %in% c("KM", "KMM")){
+    fdf <- Reduce(rbind,lapply(object$regr.model, function(y){
+      sc <- as.data.frame(y$coefficients)
+      sc$variable <- rownames(sc)
+      colnames(sc) <- c("estimate", "variable")
+      sc$covar <- attr(y, "name")
+      sc$pvalue <- ifelse(object$method == "KM", summary(y)[["coefficients"]][,5], NA)
+      rownames(sc) <- NULL
+      rbind(
+        sc,
+        data.frame(
+          estimate = 0,
+          variable = "(Intercept)",
+          pvalue = NA,
+          covar = attr(y, "name")
+        )
+       )
+    }))
+  }else{
     fdf <- Reduce(rbind,lapply(object$regr.model, function(y){
       if(object$method == "LM"){
         tmp_ef <- coef(y)
@@ -118,8 +156,8 @@ getRegressionCoefficients <- function(object){
       a
     }))
     fdf$variable <- gsub("modmat","",fdf$variable, fixed = TRUE)
-    
     colnames(fdf) <- c("estimate", "pvalue", "covar", "variable")
+  }
     
     if(!is.na(object$pAdjustMethod)){
       cat("Adjusting p values...\n")

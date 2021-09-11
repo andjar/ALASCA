@@ -15,6 +15,7 @@ ALASCA(
   forceEqualBaseline = FALSE,
   useSumCoding = FALSE,
   method = NA,
+  useRfast = TRUE,
   stratificationVector = NA,
   minimizeObject = FALSE,
   plot.xlabel = "Time",
@@ -25,6 +26,7 @@ ALASCA(
   save = FALSE,
   filename = NA,
   filepath = NA,
+  lowerLimit = NA,
   optimizeScore = TRUE,
   validateRegression = FALSE,
   validationMethod = "loo",
@@ -51,7 +53,9 @@ ALASCA(
 
 \item{useSumCoding}{Set to \code{TRUE} to use sum coding instead of contrast coding for group (defaults to \code{FALSE})}
 
-\item{method}{Defaults to \code{NA} where method is either LM or LMM or Rfast, depending on whether your formula contains a random effect or not}
+\item{method}{Defaults to \code{NA} where method is either LM or LMM, depending on whether your formula contains a random effect or not. Set to KM or KMM for survival analysis}
+
+\item{useRfast}{Boolean. Defaults to \code{TRUE}}
 
 \item{stratificationVector}{Vector of same length as \code{df} that specifies stratification groups during validation. Defaults to \code{NA}, where the group column is used.}
 
@@ -69,7 +73,9 @@ ALASCA(
 
 \item{save}{Save models and plots automatically (default: \code{FALSE})}
 
-\item{filename}{Filename to save model and plots (when \code{save = TRUE})}
+\item{filename}{File name to save model and plots (when \code{save = TRUE})}
+
+\item{lowerLimit}{A data frame with lower limits for every variable}
 
 \item{validateRegression}{Whether to validate regression predictions or not (only if \code{validate} is \code{TRUE})}
 

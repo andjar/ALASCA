@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.93</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.96</span>
       </span>
     </div>
 
@@ -152,6 +152,7 @@
   forceEqualBaseline <span class='op'>=</span> <span class='cn'>FALSE</span>,
   useSumCoding <span class='op'>=</span> <span class='cn'>FALSE</span>,
   method <span class='op'>=</span> <span class='cn'>NA</span>,
+  useRfast <span class='op'>=</span> <span class='cn'>TRUE</span>,
   stratificationVector <span class='op'>=</span> <span class='cn'>NA</span>,
   minimizeObject <span class='op'>=</span> <span class='cn'>FALSE</span>,
   plot.xlabel <span class='op'>=</span> <span class='st'>"Time"</span>,
@@ -162,6 +163,7 @@
   save <span class='op'>=</span> <span class='cn'>FALSE</span>,
   filename <span class='op'>=</span> <span class='cn'>NA</span>,
   filepath <span class='op'>=</span> <span class='cn'>NA</span>,
+  lowerLimit <span class='op'>=</span> <span class='cn'>NA</span>,
   optimizeScore <span class='op'>=</span> <span class='cn'>TRUE</span>,
   validateRegression <span class='op'>=</span> <span class='cn'>FALSE</span>,
   validationMethod <span class='op'>=</span> <span class='st'>"loo"</span>,
@@ -210,7 +212,11 @@
     </tr>
     <tr>
       <th>method</th>
-      <td><p>Defaults to <code>NA</code> where method is either LM or LMM or Rfast, depending on whether your formula contains a random effect or not</p></td>
+      <td><p>Defaults to <code>NA</code> where method is either LM or LMM, depending on whether your formula contains a random effect or not. Set to KM or KMM for survival analysis</p></td>
+    </tr>
+    <tr>
+      <th>useRfast</th>
+      <td><p>Boolean. Defaults to <code>TRUE</code></p></td>
     </tr>
     <tr>
       <th>stratificationVector</th>
@@ -246,7 +252,11 @@
     </tr>
     <tr>
       <th>filename</th>
-      <td><p>Filename to save model and plots (when <code>save = TRUE</code>)</p></td>
+      <td><p>File name to save model and plots (when <code>save = TRUE</code>)</p></td>
+    </tr>
+    <tr>
+      <th>lowerLimit</th>
+      <td><p>A data frame with lower limits for every variable</p></td>
     </tr>
     <tr>
       <th>validateRegression</th>
@@ -280,10 +290,15 @@
 #&gt; 
 #&gt; ====== ALASCA ======
 #&gt; 
-#&gt; v.0.0.0.93 (2021-08-10)
+#&gt; v.0.0.0.96 (2021-09-11)
 #&gt; 
 #&gt; Will use linear mixed models!
-#&gt; Using group for stratification.</div><div class='output co'>#&gt; <span class='error'>Error in get(object$participantColumn): object 'ID' not found</span></div><div class='input'>
+#&gt; Using group for stratification.
+#&gt; Scaling data...
+#&gt; Calculating  LMM  coefficients...
+#&gt; Finished calculating regression coefficients!
+#&gt; Calculating effect matrix
+#&gt; Finished calculating effect matrix!</div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

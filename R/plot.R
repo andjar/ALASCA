@@ -780,17 +780,25 @@ assessGroupDifferences <- function(object, variables = NA, doPlot = TRUE, filety
   if(is.na(variables)){
     variables <- unique(object$df$variable)
   }
-  if(object$method != "LMM"){
-    stop("Sorry, only works for LMM at the moment!")
-  }
   mods <- lapply(unique(variables), function(x){
-    mod.em <- emmeans::emmeans(
-      lme4::lmer(
-        formula(paste0("value ~ ", as.character(object$formula)[3] ," + (1|ID)")), 
-        data = subset(object$dfRaw, variable == x)),
-      list(formula(paste0("pairwise ~ ", paste(mod$formulaTerms[grepl("time|group", mod$formulaTerms)], collapse = "+")))),
-      adjust = "tukey"
-    )
+    if(object$method %in% c("LMM")){
+      mod.em <- emmeans::emmeans(
+        lme4::lmer(
+          formula(paste0("value ~ ", as.character(object$formula)[3] ," + (1|ID)")), 
+          data = subset(object$dfRaw, variable == x)),
+        list(formula(paste0("pairwise ~ ", paste(mod$formulaTerms[grepl("time|group", mod$formulaTerms)], collapse = "+")))),
+        adjust = "tukey"
+      )
+    }else{
+      mod.em <- emmeans::emmeans(
+        lm(
+          formula(paste0("value ~ ", as.character(object$formula)[3])), 
+          data = subset(object$dfRaw, variable == x)),
+        list(formula(paste0("pairwise ~ ", paste(mod$formulaTerms[grepl("time|group", mod$formulaTerms)], collapse = "+")))),
+        adjust = "tukey"
+      )
+    }
+    
     if(rawOut){
       if(doPlot){
         g <- plot(mod.em) + ggplot2::theme_bw()

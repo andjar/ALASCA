@@ -20,8 +20,10 @@
 #' @param validateRegression Whether to validate regression predictions or not (only if `validate` is `TRUE`)
 #' @param doDebug Print what happens (default: `FALSE`)
 #' @param save Save models and plots automatically (default: `FALSE`)
-#' @param filename Filename to save model and plots (when `save = TRUE`)
-#' @param method Defaults to `NA` where method is either LM or LMM or Rfast, depending on whether your formula contains a random effect or not
+#' @param lowerLimit A data frame with lower limits for every variable
+#' @param filename File name to save model and plots (when `save = TRUE`)
+#' @param method Defaults to `NA` where method is either LM or LMM, depending on whether your formula contains a random effect or not. Set to KM or KMM for survival analysis
+#' @param useRfast Boolean. Defaults to `TRUE`
 #' @param nValFold Partitions when validating
 #' @param nValRuns number of validation runs
 #' @param validationMethod among  `loo` (leave-one-out, default)
@@ -44,6 +46,7 @@ ALASCA <- function(df,
                    forceEqualBaseline = FALSE,
                    useSumCoding = FALSE,
                    method = NA,
+                   useRfast = TRUE,
                    stratificationVector = NA,
                    minimizeObject = FALSE,
                    plot.xlabel = "Time",
@@ -54,6 +57,7 @@ ALASCA <- function(df,
                    save = FALSE,
                    filename = NA,
                    filepath = NA,
+                   lowerLimit = NA,
                    optimizeScore = TRUE,
                    validateRegression = FALSE,
                    validationMethod = "loo",
@@ -98,9 +102,11 @@ ALASCA <- function(df,
                    doDebug = doDebug,
                    nValFold = nValFold,
                    nValRuns = nValRuns,
+                   useRfast = useRfast,
                    keepTerms = keepTerms,
                    initTime = Sys.time(),
                    save = save,
+                   lowerLimit = lowerLimit,
                    filename = filename,
                    filepath = filepath,
                    optimizeScore = optimizeScore,
@@ -110,8 +116,8 @@ ALASCA <- function(df,
                    validationMethod = validationMethod,
                    validationObject = validationObject,
                    validationParticipants = validationParticipants,
-                   ALASCA.version = "0.0.0.95",
-                   ALASCA.version.date = "2021-09-10"
+                   ALASCA.version = "0.0.0.96",
+                   ALASCA.version.date = "2021-09-11"
     )
     cat("\n\n====== ALASCA ======\n\n")
     cat(paste0("v.", object$ALASCA.version," (", object$ALASCA.version.date ,")", "\n\n"))
@@ -192,13 +198,16 @@ sanitizeObject <- function(object){
         if(any(grepl("\\|",formulaTerms))){
           stop("The model contains at least one random effect. Sure you not wanted linear mixed models instead?")
         }
-      }else if(object$method == "Rfast"){
+      }else if(object$method %in% c("KM", "KMM")){
+        
+      }else{
+        stop("You entered an undefined method. Use `LMM` or `LM`!")
+      }
+      if(object$useRfast){
         cat("Will use Rfast!\n")
         
         # Validation of regression only works for LMs at the moment
         object$validateRegression <- FALSE
-      }else{
-        stop("You entered an undefined method. Use `LMM` or `LM`!")
       }
     }else{
       # Find which default method to use
@@ -226,6 +235,17 @@ sanitizeObject <- function(object){
       cat("Using group for stratification.\n")
       object$stratificationVector <- object$df$group
     }
+    if(object$method %in% c("KM", "KMM")){
+      if(!is.data.frame(object$lowerLimit) | any(!(unique(object$df$variable) %in% unique(object$lowerLimit$variable) ))){
+        stop("Some lower limits are not specified!")
+      }
+      for(i in unique(object$df$variable)){
+        maxValue <- max(object$df$value[object$df$variable == i])
+        object$df$value[object$df$variable == i] <- maxValue-object$df$value[object$df$variable == i]
+        object$lowerLimit$value[object$lowerLimit$variable == i] <- maxValue-object$lowerLimit$value[object$lowerLimit$variable == i]
+        object$df$belowLowerLimit[object$df$variable == i] <- object$df$value[df$variable == i] > object$lowerLimit$value[object$lowerLimit$variable == i]
+      }
+    }
     
     # Change value column if necessary
     if(as.character(object$formula)[2] != "value"){
@@ -235,7 +255,7 @@ sanitizeObject <- function(object){
                                       as.character(object$formula)[3]))
     }
   
-    if(object$method %in% c("LMM", "Rfast")){
+    if(object$method %in% c("LMM")){
       if(object$participantColumn != "ID"){
         object$df$ID <- object$df[, get(object$participantColumn)]
         tmp <- formulaTerms[!grepl("\\|",formulaTerms)]
@@ -261,14 +281,17 @@ sanitizeObject <- function(object){
       }
       
       if(object$method == "LMM"){
-        rterms <- formulaTerms[grepl("\\|",formulaTerms)]
-        rterms <- paste0("(",rterms, ")")
-        object$newformula <- formula(paste("value ~ modmat+", paste(rterms, collapse = "+")))
-      }else if(object$method == "Rfast"){
-        rterms <- formulaTerms[!grepl("\\|",formulaTerms)]
-        object$newformula <- formula(paste("value ~ ", paste(rterms, collapse = "+")))
+        if(object$useRfast){
+          # Using Rfast
+          rterms <- formulaTerms[!grepl("\\|",formulaTerms)]
+          object$newformula <- formula(paste("value ~ ", paste(rterms, collapse = "+")))
+        }else{
+          #Using lme4
+          rterms <- formulaTerms[grepl("\\|",formulaTerms)]
+          rterms <- paste0("(",rterms, ")")
+          object$newformula <- formula(paste("value ~ modmat+", paste(rterms, collapse = "+")))
+        }
       }
-      
     }else if(object$method %in% c("LM")){
       object$newformula <- value ~ modmat
     }

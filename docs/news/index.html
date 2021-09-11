@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.95</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Under development">0.0.0.96</span>
       </span>
     </div>
 
@@ -135,24 +135,49 @@
       <small>Source: <a href='https://github.com/andjar/ALASCA/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="alasca-00095" class="section level1">
-<h1 class="page-header" data-toc-text="0.0.0.95">
-<a href="#alasca-00095" class="anchor"></a>ALASCA 0.0.0.95</h1>
+    <div id="alasca-00096" class="section level1">
+<h1 class="page-header" data-toc-text="0.0.0.96">
+<a href="#alasca-00096" class="anchor"></a>ALASCA 0.0.0.96</h1>
 <div id="new-features" class="section level2">
 <h2 class="hasAnchor">
 <a href="#new-features" class="anchor"></a>New features</h2>
 <ul>
 <li>
-<code>assessGroupDifferences</code> applies <code><a href="https://rdrr.io/pkg/emmeans/man/emmeans.html">emmeans::emmeans()</a></code> to calculate pairwise group differences</li>
+<code><a href="../reference/assessGroupDifferences.html">assessGroupDifferences()</a></code> now supports <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code>
+</li>
+<li>One can now use Cox regression to take limits of detection into account. To do this, specify <code>method = "KM"</code> (using <code><a href="https://rdrr.io/pkg/survival/man/coxph.html">survival::coxph()</a></code>) for ASCA or <code>method = "KMM"</code> (using <code><a href="https://rdrr.io/pkg/coxme/man/coxme.html">coxme::coxme()</a></code>) for RM-ASCA. You should be careful with scaling; <code>scaleFun &lt;- function(x){return(x)}</code> is an alternative. Next, you need to make a data frame and provide it to the function <code>lowerLimit = lowerLimit</code>. <code>lowerLimit</code> should have a column <code>value</code> with the lower cutoff values, and <code>variable</code> for the variable names (must correspond to the variables in <code>df</code>!)
+<ul>
+<li>Note: This function is in alpha and has not been thoroughly tested!</li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="breaking-changes" class="section level2">
+<h2 class="hasAnchor">
+<a href="#breaking-changes" class="anchor"></a>Breaking changes</h2>
+<ul>
+<li>The choice to use <code>Rfast</code> is now moved to a separate parameter: <code>useRfast</code> which defaults to <code>TRUE</code>. The goal is to implement <code>Rfast</code> for linear models as well.</li>
+</ul>
+</div>
+</div>
+    <div id="alasca-00095" class="section level1">
+<h1 class="page-header" data-toc-text="0.0.0.95">
+<a href="#alasca-00095" class="anchor"></a>ALASCA 0.0.0.95</h1>
+<div id="new-features-1" class="section level2">
+<h2 class="hasAnchor">
+<a href="#new-features-1" class="anchor"></a>New features</h2>
+<ul>
+<li>
+<code><a href="../reference/assessGroupDifferences.html">assessGroupDifferences()</a></code> applies <code><a href="https://rdrr.io/pkg/emmeans/man/emmeans.html">emmeans::emmeans()</a></code> to calculate pairwise group differences</li>
 </ul>
 </div>
 </div>
     <div id="alasca-00094" class="section level1">
 <h1 class="page-header" data-toc-text="0.0.0.94">
 <a href="#alasca-00094" class="anchor"></a>ALASCA 0.0.0.94</h1>
-<div id="new-features-1" class="section level2">
+<div id="new-features-2" class="section level2">
 <h2 class="hasAnchor">
-<a href="#new-features-1" class="anchor"></a>New features</h2>
+<a href="#new-features-2" class="anchor"></a>New features</h2>
 <ul>
 <li>
 <code><a href="../reference/flipIt.html">flipIt()</a></code> can now selectively flip either time or group by specifying <code>effect = "time"</code> or <code>effect = "group"</code> (default: <code>effect = "both"</code>)</li>
@@ -162,9 +187,9 @@
     <div id="alasca-00093" class="section level1">
 <h1 class="page-header" data-toc-text="0.0.0.93">
 <a href="#alasca-00093" class="anchor"></a>ALASCA 0.0.0.93</h1>
-<div id="new-features-2" class="section level2">
+<div id="new-features-3" class="section level2">
 <h2 class="hasAnchor">
-<a href="#new-features-2" class="anchor"></a>New features</h2>
+<a href="#new-features-3" class="anchor"></a>New features</h2>
 <ul>
 <li>Set <code>save = TRUE</code> when running <code><a href="../reference/ALASCA.html">ALASCA()</a></code> to automatically save the model and the plots you make. (Only tested on Windows)</li>
 </ul>
@@ -191,9 +216,9 @@
     <div id="alasca-00091" class="section level1">
 <h1 class="page-header" data-toc-text="0.0.0.91">
 <a href="#alasca-00091" class="anchor"></a>ALASCA 0.0.0.91</h1>
-<div id="new-features-3" class="section level2">
+<div id="new-features-4" class="section level2">
 <h2 class="hasAnchor">
-<a href="#new-features-3" class="anchor"></a>New features</h2>
+<a href="#new-features-4" class="anchor"></a>New features</h2>
 <ul>
 <li>
 <code>validationMethod = "permutation"</code> now produces actual P values.
