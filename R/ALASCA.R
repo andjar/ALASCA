@@ -243,7 +243,7 @@ sanitizeObject <- function(object){
         maxValue <- max(object$df$value[object$df$variable == i])
         object$df$value[object$df$variable == i] <- maxValue-object$df$value[object$df$variable == i]
         object$lowerLimit$value[object$lowerLimit$variable == i] <- maxValue-object$lowerLimit$value[object$lowerLimit$variable == i]
-        object$df$belowLowerLimit[object$df$variable == i] <- object$df$value[df$variable == i] > object$lowerLimit$value[object$lowerLimit$variable == i]
+        object$df$belowLowerLimit[object$df$variable == i] <- object$df$value[object$df$variable == i] > object$lowerLimit$value[object$lowerLimit$variable == i]
       }
     }
     
