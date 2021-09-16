@@ -116,8 +116,8 @@ ALASCA <- function(df,
                    validationMethod = validationMethod,
                    validationObject = validationObject,
                    validationParticipants = validationParticipants,
-                   ALASCA.version = "0.0.0.96",
-                   ALASCA.version.date = "2021-09-11"
+                   ALASCA.version = "0.0.0.96b",
+                   ALASCA.version.date = "2021-09-16"
     )
     cat("\n\n====== ALASCA ======\n\n")
     cat(paste0("v.", object$ALASCA.version," (", object$ALASCA.version.date ,")", "\n\n"))
@@ -244,6 +244,7 @@ sanitizeObject <- function(object){
         object$df$value[object$df$variable == i] <- maxValue-object$df$value[object$df$variable == i]
         object$lowerLimit$value[object$lowerLimit$variable == i] <- maxValue-object$lowerLimit$value[object$lowerLimit$variable == i]
         object$df$belowLowerLimit[object$df$variable == i] <- object$df$value[object$df$variable == i] > object$lowerLimit$value[object$lowerLimit$variable == i]
+        object$df$value[object$df$variable == i & object$df$belowLowerLimit[object$df$variable == i]] <- object$lowerLimit$value[object$lowerLimit$variable == i]
       }
     }
     
@@ -506,7 +507,7 @@ appendModel <- function(target, object, method = "project"){
     object$ALASCA$loading$time$model <- "Model 2"
     target$ALASCA$loading$time <- rbind(target$ALASCA$loading$time, object$ALASCA$loading$time)
     if(target$separateTimeAndGroup){
-      target$ALASCA$score$group <- rbind(target$ALASCA$score$time, object$ALASCA$score$group)
+      target$ALASCA$score$group <- rbind(target$ALASCA$score$group, object$ALASCA$score$group)
       target$ALASCA$loading$group$model <- "Model 1"
       object$ALASCA$loading$group$model <- "Model 2"
       target$ALASCA$loading$group <- rbind(target$ALASCA$loading$group, object$ALASCA$loading$group)
