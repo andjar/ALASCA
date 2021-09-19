@@ -71,7 +71,15 @@ plot.ALASCA <- function(object,
       if(enlist){
         g <- list(g_score_time, g_loading_time, g_score_group, g_loading_group)
       }else{
-        g <- ggpubr::ggarrange(g_score_time, g_loading_time, g_score_group, g_loading_group, nrow = 2, ncol = 2, widths = c(1,2,1,2), align = "hv", common.legend = TRUE, legend = "bottom")
+        g <- ggpubr::ggarrange(g_score_time,
+                               g_loading_time,
+                               g_score_group,
+                               g_loading_group,
+                               nrow = 2, ncol = 2,
+                               widths = c(1,2,1,2),align = "hv",
+                               common.legend = TRUE,
+                               legend.grob = ggpubr::get_legend(g_score_group),
+                               legend = "bottom")
       }
     }else{
       g_loading <- getLoadingPlot(object, component = component, effect = effect, decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight, myTheme = myTheme)
@@ -281,7 +289,11 @@ getScorePlot <- function(object,
             ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
         }
       }else{
-        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = NA)) + ggplot2::geom_point() + ggplot2::geom_line()
+        if(any(colnames(score) == "model")){
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = model, linetype = model)) + ggplot2::geom_point() + ggplot2::geom_line()
+        }else{
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = NA)) + ggplot2::geom_point() + ggplot2::geom_line()
+        }
       }
     }else{
       score <- subset(getScores(object)$time, PC == component)
@@ -301,8 +313,13 @@ getScorePlot <- function(object,
             ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
         }
       }else{
-        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group)) +
-          ggplot2::geom_point() + ggplot2::geom_line()
+        if(any(colnames(score) == "model")){
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = model)) +
+            ggplot2::geom_point() + ggplot2::geom_line()
+        }else{
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group)) +
+            ggplot2::geom_point() + ggplot2::geom_line()
+        }
       }
     }
     g <- g + myTheme +
@@ -326,8 +343,13 @@ getScorePlot <- function(object,
           ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
       }
     }else{
-      g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group)) +
-        ggplot2::geom_point() + ggplot2::geom_line()
+      if(any(colnames(score) == "model")){
+        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = model)) +
+          ggplot2::geom_point() + ggplot2::geom_line()
+      }else{
+        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group)) +
+          ggplot2::geom_point() + ggplot2::geom_line()
+      }
     }
     g <- g + myTheme +
       ggplot2::theme(legend.position = "bottom") +
