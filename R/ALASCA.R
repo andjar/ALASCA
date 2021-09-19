@@ -116,11 +116,10 @@ ALASCA <- function(df,
                    validationMethod = validationMethod,
                    validationObject = validationObject,
                    validationParticipants = validationParticipants,
-                   ALASCA.version = "0.0.0.96b",
-                   ALASCA.version.date = "2021-09-16"
+                   ALASCA.version = printVer(get = "version"),
+                   ALASCA.version.date = printVer(get = "date")
     )
-    cat("\n\n====== ALASCA ======\n\n")
-    cat(paste0("v.", object$ALASCA.version," (", object$ALASCA.version.date ,")", "\n\n"))
+    printVer()
   }
   class(object) <- "ALASCA"
   if(object$doDebug){
@@ -161,6 +160,31 @@ ALASCA <- function(df,
 RMASCA <- function(...){
   object <- ALASCA(..., method = "LMM")
   return(object)
+}
+
+#' Print ALASCA version
+#'
+#' @return String
+#' @export
+printVer <- function(object = FALSE, get = NA, print = TRUE){
+  ALASCA.version <- "0.0.0.96c"
+  ALASCA.version.date <- "2021-09-19"
+  if(is.list(object)){
+    ALASCA.version <- object$ALASCA.version
+    ALASCA.version.date <- object$ALASCA.version.date
+  }
+  if(is.na(get)){
+    if(print){
+      cat("\n\n====== ALASCA ======\n\n")
+      cat(paste0(ALASCA.version, " (", ALASCA.version.date, ")\n\n"))
+    }
+  }else{
+    if(get == "date"){
+      return(ALASCA.version.date)
+    }else{
+      return(ALASCA.version)
+    }
+  }
 }
 
 #' Run SMASCA
@@ -501,19 +525,27 @@ saveALASCAModel <- function(object){
 #' @export
 appendModel <- function(target, object, method = "project"){
   if(method == "rotate"){
-    object <- rotateMatrix(object = object, target = target)
+    target$ALASCA$score$time$model <- "Model 1"
+    object$ALASCA$score$time$model <- "Model 2"
+    object <- ALASCA:::rotateMatrix(object = object, target = target)
     target$ALASCA$score$time <- rbind(target$ALASCA$score$time, object$ALASCA$score$time)
     target$ALASCA$loading$time$model <- "Model 1"
     object$ALASCA$loading$time$model <- "Model 2"
     target$ALASCA$loading$time <- rbind(target$ALASCA$loading$time, object$ALASCA$loading$time)
     if(target$separateTimeAndGroup){
+      target$ALASCA$score$group$model <- "Model 1"
+      object$ALASCA$score$group$model <- "Model 2"
       target$ALASCA$score$group <- rbind(target$ALASCA$score$group, object$ALASCA$score$group)
       target$ALASCA$loading$group$model <- "Model 1"
       object$ALASCA$loading$group$model <- "Model 2"
       target$ALASCA$loading$group <- rbind(target$ALASCA$loading$group, object$ALASCA$loading$group)
     }
   }else{
-    tmp_pca <- as.data.frame(scale(object$effect.matrix[object$effect.matrix$comp == "TIME",1:(ncol(object$effect.matrix)-1)], target$pca$time$center, target$pca$time$scale) %*% target$pca$time$rotation)
+    tmp_pca <- as.data.frame(
+      scale(object$effect.matrix[object$effect.matrix$comp == "TIME",1:(ncol(object$effect.matrix)-1)],
+            target$pca$time$center,
+            target$pca$time$scale) %*% target$pca$time$rotation
+      )
     tmp_pca$group <- object$parts$group
     tmp_pca$time <- object$parts$time
     tmp_pca <- tmp_pca[!duplicated(tmp_pca),]

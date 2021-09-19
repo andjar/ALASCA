@@ -21,6 +21,7 @@ reference:
   - RMASCA
   - SMASCA
   - appendModel
+  - printVer
 - title: "Plotting"
   desc: "Functions for visualizing results"
 - contents: 
