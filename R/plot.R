@@ -213,7 +213,12 @@ getLoadingPlot <- function(object,
   }
   loadings$covars = factor(loadings$covars, levels = unique(loadings$covars[order(loadings$loading, decreasing = decreasingLoadings)]))
   if(object$validate){
-    g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high)) + ggplot2::geom_pointrange(size = pointSize)
+    if(any(colnames(loadings) == "model")){
+      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high, shape = model)) + ggplot2::geom_pointrange(size = pointSize)
+    }else{
+      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high)) + ggplot2::geom_pointrange(size = pointSize)
+    }
+    
   }else{
     if(any(colnames(loadings) == "model")){
       g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, shape = model)) + ggplot2::geom_point()
@@ -284,9 +289,15 @@ getScorePlot <- function(object,
             ggplot2::geom_text(vjust = 0, hjust = 0.5, position = ggplot2::position_dodge(width = 0.5), show.legend = FALSE)+
             ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.5))
         }else{
-          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = NA, ymin = low, ymax = high)) +
-            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
-            ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+          if(any(colnames(score) == "model")){
+            g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = model, linetype = model, shape = model, ymin = low, ymax = high)) +
+              ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
+              ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+          }else{
+            g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = NA, ymin = low, ymax = high)) +
+              ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
+              ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+          }
         }
       }else{
         if(any(colnames(score) == "model")){
@@ -338,9 +349,16 @@ getScorePlot <- function(object,
           geom_text(vjust = 0, hjust = 0.5, position = ggplot2::position_dodge(width = 0.5), show.legend = FALSE) +
           ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.5))
       }else{
-        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
-          ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
-          ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+        if(any(colnames(score) == "model")){
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, linetype = model, shape = model, color = group, ymin = low, ymax = high)) +
+            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
+            ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+        }else{
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
+            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
+            ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+        }
+        
       }
     }else{
       if(any(colnames(score) == "model")){
