@@ -826,7 +826,7 @@ assessGroupDifferences <- function(object, variables = NA, doPlot = TRUE, filety
         lme4::lmer(
           formula(paste0("value ~ ", as.character(object$formula)[3] ," + (1|ID)")), 
           data = subset(object$dfRaw, variable == x)),
-        list(formula(paste0("pairwise ~ ", paste(mod$formulaTerms[grepl("time|group", mod$formulaTerms)], collapse = "+")))),
+        list(formula(paste0("pairwise ~ ", paste(object$formulaTerms[grepl("time|group", object$formulaTerms)], collapse = "+")))),
         adjust = "tukey"
       )
     }else{
@@ -834,7 +834,7 @@ assessGroupDifferences <- function(object, variables = NA, doPlot = TRUE, filety
         lm(
           formula(paste0("value ~ ", as.character(object$formula)[3])), 
           data = subset(object$dfRaw, variable == x)),
-        list(formula(paste0("pairwise ~ ", paste(mod$formulaTerms[grepl("time|group", mod$formulaTerms)], collapse = "+")))),
+        list(formula(paste0("pairwise ~ ", paste(object$formulaTerms[grepl("time|group", object$formulaTerms)], collapse = "+")))),
         adjust = "tukey"
       )
     }
