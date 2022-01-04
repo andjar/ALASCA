@@ -8,9 +8,9 @@ plotProjection(
   object,
   comp = c(1, 2),
   return_data = FALSE,
-  filetype = "png",
-  figsize = c(120, 80, 300),
-  figunit = "mm",
+  filetype = NA,
+  figsize = NA,
+  figunit = NA,
   myTheme = ggplot2::theme_bw()
 )
 }

@@ -7,9 +7,9 @@
 plotVal(
   object,
   component = 1,
-  filetype = "png",
-  figsize = c(120, 80, 300),
-  figunit = "mm",
+  filetype = NA,
+  figsize = NA,
+  figunit = NA,
   myTheme = ggplot2::theme_bw()
 )
 }

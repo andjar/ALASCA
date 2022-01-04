@@ -11,7 +11,7 @@ getScorePlot(
   filetype = NA,
   figsize = NA,
   figunit = NA,
-  myTheme = list(ggplot2::scale_color_viridis_d(end = 0.8), ggplot2::theme_bw())
+  myTheme = ggplot2::theme_bw()
 )
 }
 \arguments{

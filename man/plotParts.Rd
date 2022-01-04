@@ -15,8 +15,7 @@ plotParts(
   addSmooth = "loess",
   filetype = "png",
   figsize = c(12, 8, 300),
-  myTheme = list(ggplot2::scale_color_viridis_d(end = 0.8),
-    ggplot2::scale_fill_viridis_d(end = 0.8), ggplot2::theme_bw())
+  myTheme = ggplot2::theme_bw()
 )
 }
 \arguments{

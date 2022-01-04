@@ -1,3 +1,10 @@
+# ALASCA 0.0.0.98
+
+## New features
+
+* `plot.ALASCA()` will now plot components if `component` is a vector with more than one value
+* `plotComponents()` plots two components against each other
+
 # ALASCA 0.0.0.97
 
 ## Improvements

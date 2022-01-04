@@ -7,8 +7,9 @@
 plotPred(
   object,
   variable = NA,
-  filetype = "png",
-  figsize = c(120, 80, 300),
+  filetype = NA,
+  figsize = NA,
+  figunit = NA,
   myTheme = ggplot2::theme_bw()
 )
 }
@@ -19,8 +20,9 @@ plotPred(
 
 \item{filetype}{Which filetype you want to save the figure to}
 
-\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(120, 80, 300)})
-figunit = "mm",}
+\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(120, 80, 300)})}
+
+\item{figunit}{= "mm",}
 
 \item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }

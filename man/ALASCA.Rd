@@ -23,6 +23,7 @@ ALASCA(
   plot.figsize = c(12, 8, 300),
   plot.figunit = "mm",
   plot.filetype = "png",
+  plot.palette = NA,
   doDebug = FALSE,
   nValFold = 7,
   nValRuns = 50,
@@ -74,6 +75,8 @@ ALASCA(
 \item{plot.figunit}{Defaults to "mm"}
 
 \item{plot.filetype}{Which filetype you want to save the figure to (default: \code{png})}
+
+\item{plot.palette}{List of colors, named by group}
 
 \item{doDebug}{Print what happens (default: \code{FALSE})}
 

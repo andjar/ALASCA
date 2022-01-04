@@ -4,57 +4,12 @@
 \alias{plot.ALASCA}
 \title{Get an ALASCA object}
 \usage{
-\method{plot}{ALASCA}(
-  object,
-  component = 1,
-  effect = "both",
-  decreasingLoadings = TRUE,
-  only = "both",
-  enlist = FALSE,
-  tooDense = NA,
-  highlight = NA,
-  xlabel = NA,
-  grouplabel = NA,
-  flipaxes = TRUE,
-  plotzeroline = TRUE,
-  filetype = NA,
-  figsize = NA,
-  figunit = NA,
-  myTheme = list(ggplot2::scale_color_viridis_d(end = 0.8), ggplot2::theme_bw())
-)
+\method{plot}{ALASCA}(object, component = 1, ...)
 }
 \arguments{
 \item{object}{An \code{\link[=ALASCA]{ALASCA()}} object}
 
 \item{component}{Integer stating which component to return (1 is default)}
-
-\item{effect}{String stating which effect to return; \code{time}, \code{group}, \code{both} (default)}
-
-\item{decreasingLoadings}{Sort the loadings in decreasing (\code{TRUE}, default) or increasing order (\code{FALSE})}
-
-\item{only}{String stating which plot to return; \code{both} (default), \code{score} or \code{loading}}
-
-\item{enlist}{Logical. If \code{TRUE}, the plots are returned as a list and not as a composed figure (default)}
-
-\item{tooDense}{Integer, If > 0, only name this number of covariables}
-
-\item{highlight}{Vector of strings with variables to highlight in the loadings plot}
-
-\item{xlabel}{Defaults to "Time" if not specified here or during model setup}
-
-\item{grouplabel}{Defaults to "Group" if not specified here or  during model setup}
-
-\item{flipaxes}{When \code{TRUE} (default), list the variable loadings vertical instead of horizontal}
-
-\item{plotzeroline}{When \code{TRUE} (default), plot a zero line in the loading plot}
-
-\item{filetype}{Which file type you want to save the figure to (default: \code{png})}
-
-\item{figsize}{A vector containing \code{c(width,height,dpi)} (default: \code{c(120, 80, 300)})}
-
-\item{figunit}{Unit for figure size (default: \code{mm})}
-
-\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }
 \value{
 An ggplot2 object (or a list og ggplot objects)

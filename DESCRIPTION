@@ -1,6 +1,6 @@
 Package: ALASCA
 Title: Assorted, Linear ASCA Functions
-Version: 0.0.0.97
+Version: 0.0.0.98
 Authors@R: 
     person(given = "Anders H.",
            family = "Jarmund",
@@ -24,7 +24,8 @@ Imports:
 	reshape2,
 	ggrepel,
 	Rfast,
-	data.table
+	data.table,
+	scales
 Suggests: 
     knitr,
     rmarkdown
