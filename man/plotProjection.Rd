@@ -8,8 +8,9 @@ plotProjection(
   object,
   comp = c(1, 2),
   return_data = FALSE,
-  filetypes = "png",
-  figsize = c(12, 8, 300),
+  filetype = "png",
+  figsize = c(120, 80, 300),
+  figunit = "mm",
   myTheme = ggplot2::theme_bw()
 )
 }
@@ -20,7 +21,7 @@ plotProjection(
 
 \item{return_data}{Set to \code{TRUE} to return data instead of plot}
 
-\item{filetypes}{Which filetypes you want to save the figure to}
+\item{filetype}{Which filetype you want to save the figure to}
 
 \item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
 

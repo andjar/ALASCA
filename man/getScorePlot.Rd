@@ -8,9 +8,10 @@ getScorePlot(
   object,
   component = 1,
   effect = "time",
-  filetypes = "png",
-  figsize = c(12, 8, 300),
-  myTheme = ggplot2::theme_bw()
+  filetype = NA,
+  figsize = NA,
+  figunit = NA,
+  myTheme = list(ggplot2::scale_color_viridis_d(end = 0.8), ggplot2::theme_bw())
 )
 }
 \arguments{
@@ -20,11 +21,11 @@ getScorePlot(
 
 \item{effect}{Plot time or group}
 
-\item{filetypes}{Which filetypes you want to save the figure to}
+\item{filetype}{Which filetype you want to save the figure to}
 
-\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
+\item{figsize}{A vector containing \code{c(width,height,dpi)} (default: \code{c(120, 80, 300)})}
 
-\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
+\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::scale_color_viridis_d(end = 0.9) + ggplot2::theme_bw()}}
 }
 \value{
 A ggplot object

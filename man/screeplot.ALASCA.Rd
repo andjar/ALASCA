@@ -7,8 +7,9 @@
 \method{screeplot}{ALASCA}(
   object,
   effect = "both",
-  filetypes = "png",
-  figsize = c(12, 8, 300),
+  filetype = NA,
+  figsize = NA,
+  figunit = NA,
   myTheme = ggplot2::theme_bw()
 )
 }
@@ -17,7 +18,7 @@
 
 \item{effect}{String stating which effect to return; \code{time}, \code{group}, \code{both} (default)}
 
-\item{filetypes}{Which filetypes you want to save the figure to}
+\item{filetype}{Which filetype you want to save the figure to}
 
 \item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
 

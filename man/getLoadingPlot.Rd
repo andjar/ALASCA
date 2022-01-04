@@ -11,8 +11,11 @@ getLoadingPlot(
   decreasingLoadings = TRUE,
   tooDense = NA,
   highlight = NA,
-  filetypes = "png",
-  figsize = c(12, 8, 300),
+  filetype = NA,
+  flipaxes = TRUE,
+  plotzeroline = TRUE,
+  figsize = NA,
+  figunit = NA,
   myTheme = ggplot2::theme_bw()
 )
 }
@@ -23,9 +26,13 @@ getLoadingPlot(
 
 \item{effect}{Plot time or group}
 
-\item{decreasingLoadings}{Logical. Should loading sbe sorted in decreasing order?}
+\item{decreasingLoadings}{Logical. Should loadings be sorted in decreasing order?}
 
-\item{filetypes}{Which filetypes you want to save the figure to}
+\item{filetype}{Which filetype you want to save the figure to}
+
+\item{flipaxes}{When \code{TRUE} (default), list the variable loadings vertical instead of horizontal}
+
+\item{plotzeroline}{When \code{TRUE} (default), plot a zero line in the loading plot}
 
 \item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
 

@@ -8,7 +8,7 @@ assessGroupDifferences(
   object,
   variables = NA,
   doPlot = TRUE,
-  filetypes = "png",
+  filetype = "png",
   figsize = c(12, 8, 300),
   rawOut = FALSE
 )

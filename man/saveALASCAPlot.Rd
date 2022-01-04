@@ -7,9 +7,10 @@
 saveALASCAPlot(
   object,
   g,
-  filetypes = "png",
-  figsize = c(12, 8, 300),
-  suffix = ""
+  filetype = NA,
+  figsize = NA,
+  suffix = "",
+  figunit = NA
 )
 }
 \arguments{

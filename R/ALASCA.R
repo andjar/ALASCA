@@ -15,6 +15,10 @@
 #' @param forceEqualBaseline Set to `TRUE` (default) to remove interaction between group and first time point
 #' @param useSumCoding Set to `TRUE` to use sum coding instead of contrast coding for group (defaults to `FALSE`)
 #' @param plot.xlabel Defaults to "Time"
+#' @param plot.grouplabel Defaults to "Group"
+#' @param plot.figsize A vector containing `c(width,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param plot.figunit Defaults to "mm"
+#' @param plot.filetype Which filetype you want to save the figure to (default: `png`)
 #' @param keepTerms Additional terms to keep in the model matrix
 #' @param stratificationVector Vector of same length as `df` that specifies stratification groups during validation. Defaults to `NA`, where the group column is used.
 #' @param validateRegression Whether to validate regression predictions or not (only if `validate` is `TRUE`)
@@ -50,6 +54,10 @@ ALASCA <- function(df,
                    stratificationVector = NA,
                    minimizeObject = FALSE,
                    plot.xlabel = "Time",
+                   plot.grouplabel = "Group",
+                   plot.figsize = c(12, 8, 300),
+                   plot.figunit = "mm",
+                   plot.filetype = "png",
                    doDebug = FALSE,
                    nValFold = 7,
                    nValRuns = 50,
@@ -98,6 +106,10 @@ ALASCA <- function(df,
                    useSumCoding = FALSE,
                    method = method,
                    plot.xlabel = plot.xlabel,
+                   plot.grouplabel = plot.grouplabel,
+                   plot.figsize = plot.figsize,
+                   plot.figunit = plot.figunit,
+                   plot.filetype = plot.filetype,
                    minimizeObject = minimizeObject,
                    doDebug = doDebug,
                    nValFold = nValFold,
@@ -167,8 +179,8 @@ RMASCA <- function(...){
 #' @return String
 #' @export
 printVer <- function(object = FALSE, get = NA, print = TRUE){
-  ALASCA.version <- "0.0.0.96d"
-  ALASCA.version.date <- "2021-09-20"
+  ALASCA.version <- "0.0.0.97"
+  ALASCA.version.date <- "2022-01-04"
   if(is.list(object)){
     ALASCA.version <- object$ALASCA.version
     ALASCA.version.date <- object$ALASCA.version.date

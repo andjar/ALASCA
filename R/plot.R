@@ -5,13 +5,17 @@
 #' @param object An [ALASCA()] object
 #' @param component Integer stating which component to return (1 is default)
 #' @param effect String stating which effect to return; `time`, `group`, `both` (default)
-#' @param decreasingLoadings Sort the loadings in decreasing (default) or increasing order
+#' @param decreasingLoadings Sort the loadings in decreasing (`TRUE`, default) or increasing order (`FALSE`)
 #' @param only String stating which plot to return; `both` (default), `score` or `loading`
-#' @param enlist Logical. If TRUE, the plots are returned as a list and not as a composed figure (default)
+#' @param enlist Logical. If `TRUE`, the plots are returned as a list and not as a composed figure (default)
 #' @param tooDense Integer, If > 0, only name this number of covariables
-#' @param xlabel Defaults to "Time" if not specified during model setup
-#' @param filetypes Which filetypes you want to save the figure to
-#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
+#' @param xlabel Defaults to "Time" if not specified here or during model setup
+#' @param grouplabel Defaults to "Group" if not specified here or  during model setup
+#' @param flipaxes When `TRUE` (default), list the variable loadings vertical instead of horizontal
+#' @param plotzeroline When `TRUE` (default), plot a zero line in the loading plot
+#' @param filetype Which file type you want to save the figure to (default: `png`)
+#' @param figsize A vector containing `c(width,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param figunit Unit for figure size (default: `mm`)
 #' @param highlight Vector of strings with variables to highlight in the loadings plot
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return An ggplot2 object (or a list og ggplot objects)
@@ -34,9 +38,13 @@ plot.ALASCA <- function(object,
                         tooDense = NA, 
                         highlight = NA, 
                         xlabel = NA,
-                        filetypes = "png",
-                        figsize = c(12, 8, 300),
-                        myTheme = ggplot2::theme_bw()){
+                        grouplabel = NA,
+                        flipaxes = TRUE,
+                        plotzeroline = TRUE,
+                        filetype = NA,
+                        figsize = NA,
+                        figunit = NA,
+                        myTheme = list(ggplot2::scale_color_viridis_d(end = 0.8), ggplot2::theme_bw())){
   if(!(effect %in% c("both","time","group"))){
     stop("`effect` has to be `both`, `time` or `group`")
   }
@@ -45,6 +53,26 @@ plot.ALASCA <- function(object,
   }
   if(!is.na(xlabel)){
     object$plot.xlabel <- xlabel
+  }
+  if(!is.na(grouplabel)){
+    object$plot.grouplabel <- grouplabel
+  }
+  if(!is.na(filetype)){
+    object$plot.filetype <- filetype
+  }
+  if(!is.na(figsize)){
+    object$plot.figsize <- figsize
+  }
+  if(!is.na(figunit)){
+    object$plot.figunit <- figunit
+  }
+  if(flipaxes){
+    plotwidths <- c(2,3,2,3)
+    plotalign <- "h"
+    decreasingLoadings <- !decreasingLoadings
+  }else{
+    plotwidths <- c(1,2,1,2)
+    plotalign <- "hv"
   }
   if(only == "score"){
     if(effect == "both"){
@@ -56,16 +84,55 @@ plot.ALASCA <- function(object,
     }
   }else if(only == "loading"){
     if(effect == "both"){
-      g_loading_time <- getLoadingPlot(object, component = component, effect = "time", decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight, myTheme = myTheme)
-      g_loading_group <- getLoadingPlot(object, component = component, effect = "group", decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight, myTheme = myTheme)
+      g_loading_time <- getLoadingPlot(object,
+                                       component = component, 
+                                       effect = "time", 
+                                       decreasingLoadings = decreasingLoadings, 
+                                       flipaxes = flipaxes, 
+                                       plotzeroline = plotzeroline, 
+                                       tooDense = tooDense, 
+                                       highlight = highlight, 
+                                       myTheme = myTheme)
+      g_loading_group <- getLoadingPlot(object,
+                                        component = component, 
+                                        effect = "group", 
+                                        decreasingLoadings = decreasingLoadings, 
+                                        flipaxes = flipaxes, 
+                                        plotzeroline = plotzeroline, 
+                                        tooDense = tooDense, 
+                                        highlight = highlight, 
+                                        myTheme = myTheme)
       g <- list(g_loading_time, g_loading_group)
     }else{
-      g <- getLoadingPlot(object, component = component, effect = effect, decreasingLoadings = decreasingLoadings, tooDense = tooDense, myTheme = myTheme)
+      g <- getLoadingPlot(object,
+                          component = component,
+                          effect = effect,
+                          decreasingLoadings = decreasingLoadings,
+                          flipaxes = flipaxes, 
+                          plotzeroline = plotzeroline, 
+                          tooDense = tooDense,
+                          myTheme = myTheme)
     }
   }else{
     if(effect == "both"){
-      g_loading_time <- getLoadingPlot(object, component = component, effect = "time", decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight, myTheme = myTheme)
-      g_loading_group <- getLoadingPlot(object, component = component, effect = "group", decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight, myTheme = myTheme)
+      g_loading_time <- getLoadingPlot(object,
+                                       component = component,
+                                       effect = "time",
+                                       decreasingLoadings = decreasingLoadings,
+                                       flipaxes = flipaxes, 
+                                       plotzeroline = plotzeroline,
+                                       tooDense = tooDense,
+                                       highlight = highlight,
+                                       myTheme = myTheme)
+      g_loading_group <- getLoadingPlot(object,
+                                        component = component,
+                                        effect = "group",
+                                        decreasingLoadings = decreasingLoadings,
+                                        flipaxes = flipaxes, 
+                                        plotzeroline = plotzeroline,
+                                        tooDense = tooDense,
+                                        highlight = highlight,
+                                        myTheme = myTheme)
       g_score_time <- getScorePlot(object, component = component, effect = "time", myTheme = myTheme)
       g_score_group <- getScorePlot(object, component = component, effect = "group", myTheme = myTheme)
       if(enlist){
@@ -76,23 +143,39 @@ plot.ALASCA <- function(object,
                                g_score_group,
                                g_loading_group,
                                nrow = 2, ncol = 2,
-                               widths = c(1,2,1,2),align = "hv",
+                               widths = plotwidths,
+                               align = plotalign,
                                common.legend = TRUE,
                                legend.grob = ggpubr::get_legend(g_score_group),
                                legend = "bottom")
       }
     }else{
-      g_loading <- getLoadingPlot(object, component = component, effect = effect, decreasingLoadings = decreasingLoadings, tooDense = tooDense, highlight = highlight, myTheme = myTheme)
+      g_loading <- getLoadingPlot(object,
+                                  component = component,
+                                  effect = effect,
+                                  decreasingLoadings = decreasingLoadings,
+                                  flipaxes = flipaxes, 
+                                  plotzeroline = plotzeroline,
+                                  tooDense = tooDense,
+                                  highlight = highlight,
+                                  myTheme = myTheme)
       g_score <- getScorePlot(object, component = component, effect = effect, myTheme = myTheme)
       if(enlist){
         g <- list(g_score, g_loading)
       }else{
-        g <- ggpubr::ggarrange(g_score, g_loading, nrow = 1, ncol = 2, widths = c(1,2,1,2), align = "hv", common.legend = TRUE, legend = "bottom")
+        g <- ggpubr::ggarrange(g_score,
+                               g_loading,
+                               nrow = 1,
+                               ncol = 2,
+                               widths = plotwidths,
+                               align = plotalign,
+                               common.legend = TRUE,
+                               legend = "bottom")
       }
     }
   }
   if(object$save){
-    saveALASCAPlot(object = object,g = g,filetypes = filetypes,figsize = figsize)
+    saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
   }
   return(g)
 }
@@ -103,7 +186,7 @@ plot.ALASCA <- function(object,
 #'
 #' @param object An ALASCA object
 #' @param effect String stating which effect to return; `time`, `group`, `both` (default)
-#' @param filetypes Which filetypes you want to save the figure to
+#' @param filetype Which filetype you want to save the figure to
 #' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return An ggplot2 object (or a list og ggplot objects)
@@ -115,9 +198,19 @@ plot.ALASCA <- function(object,
 #' @export
 screeplot.ALASCA <- function(object,
                              effect = "both",
-                             filetypes = "png",
-                             figsize = c(12, 8, 300),
+                             filetype = NA,
+                             figsize = NA,
+                             figunit = NA,
                              myTheme = ggplot2::theme_bw()){
+  if(!is.na(filetype)){
+    object$plot.filetype <- filetype
+  }
+  if(!is.na(figsize)){
+    object$plot.figsize <- figsize
+  }
+  if(!is.na(figunit)){
+    object$plot.figunit <- figunit
+  }
   explained <- as.data.frame(getScores(object)$explained)
   explained$component <- 1:nrow(explained)
   g <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = time, group = NA)) +
@@ -137,12 +230,12 @@ screeplot.ALASCA <- function(object,
   }
   if(effect == "group"){
     if(object$save){
-      saveALASCAPlot(object,gg,filetypes,figsize)
+      saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
     }
     return(gg)
   }else{
     if(object$save){
-      saveALASCAPlot(object,g,filetypes,figsize)
+      saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
     }
     return(g)
   }
@@ -191,8 +284,10 @@ getCovars <- function(object){
 #' @param object An ALASCA object
 #' @param component Which component to plot?
 #' @param effect Plot time or group
-#' @param decreasingLoadings Logical. Should loading sbe sorted in decreasing order?
-#' @param filetypes Which filetypes you want to save the figure to
+#' @param decreasingLoadings Logical. Should loadings be sorted in decreasing order?
+#' @param flipaxes When `TRUE` (default), list the variable loadings vertical instead of horizontal
+#' @param plotzeroline When `TRUE` (default), plot a zero line in the loading plot
+#' @param filetype Which filetype you want to save the figure to
 #' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A ggplot object
@@ -202,9 +297,21 @@ getLoadingPlot <- function(object,
                            decreasingLoadings = TRUE,
                            tooDense = NA,
                            highlight = NA,
-                           filetypes = "png",
-                           figsize = c(12, 8, 300),
+                           filetype = NA,
+                           flipaxes = TRUE,
+                           plotzeroline = TRUE,
+                           figsize = NA,
+                           figunit = NA,
                            myTheme = ggplot2::theme_bw()){
+  if(!is.na(filetype)){
+    object$plot.filetype <- filetype
+  }
+  if(!is.na(figsize)){
+    object$plot.figsize <- figsize
+  }
+  if(!is.na(figunit)){
+    object$plot.figunit <- figunit
+  }
   pointSize <- 0.4
   if(effect == "time"){
     loadings <- subset(getLoadings(object)$time, PC == component)
@@ -214,22 +321,32 @@ getLoadingPlot <- function(object,
   loadings$covars = factor(loadings$covars, levels = unique(loadings$covars[order(loadings$loading, decreasing = decreasingLoadings)]))
   if(object$validate){
     if(any(colnames(loadings) == "model")){
-      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high, shape = model)) + ggplot2::geom_pointrange(size = pointSize)
+      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high, shape = model)) + 
+        ggplot2::geom_pointrange(size = pointSize)
     }else{
-      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high)) + ggplot2::geom_pointrange(size = pointSize)
+      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high)) + 
+        ggplot2::geom_pointrange(size = pointSize)
     }
-    
   }else{
     if(any(colnames(loadings) == "model")){
-      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, shape = model)) + ggplot2::geom_point()
+      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, shape = model)) + 
+        ggplot2::geom_point()
     }else{
-      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading)) + ggplot2::geom_point()
+      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading)) + 
+        ggplot2::geom_point()
     }
   }
-  
-  g <- g + myTheme + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust=1), legend.position = c(0.8, 0.8)) +
+  g <- g + myTheme +
     ggplot2::labs(x = "Variable",
-                  y = paste0("PC",component, " (", round(100*ifelse(effect == "time", object$ALASCA$loading$explained$time[component],object$ALASCA$loading$explained$group[component]),2),"%)"))
+                  y = paste0("Loading PC",component, " (", round(100*ifelse(effect == "time", object$ALASCA$loading$explained$time[component],object$ALASCA$loading$explained$group[component]),2),"%)"))
+  if(plotzeroline){
+    g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
+  }
+  if(flipaxes){
+    g <- g + ggplot2::coord_flip()
+  }else{
+    g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust=1), legend.position = c(0.8, 0.8))
+  }
   if(!any(is.na(highlight))){
     g <- g + ggplot2::geom_point(color = ifelse(loadings$covars %in% highlight, "red", "grey")) +
       ggrepel::geom_text_repel(data = subset(loadings, covars %in% highlight), ggplot2::aes(label=covars), max.iter	= 5000) +
@@ -250,7 +367,7 @@ getLoadingPlot <- function(object,
                      legend.position = "none")
   }
   if(object$save){
-    saveALASCAPlot(object = object,g = g, filetypes = filetypes, figsize = figsize, suffix = "loading")
+    saveALASCAPlot(object = object,g = g, filetype = filetype, figsize = figsize, figunit = figunit, suffix = "loading")
   }
   return(g)
 }
@@ -265,16 +382,26 @@ getLoadingPlot <- function(object,
 #' @param object An ALASCA object
 #' @param component Which component to plot?
 #' @param effect Plot time or group
-#' @param filetypes Which filetypes you want to save the figure to
-#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
-#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(width,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::scale_color_viridis_d(end = 0.9) + ggplot2::theme_bw()`
 #' @return A ggplot object
 getScorePlot <- function(object,
                          component = 1,
                          effect = "time",
-                         filetypes = "png",
-                         figsize = c(12, 8, 300),
-                         myTheme = ggplot2::theme_bw()){
+                         filetype = NA,
+                         figsize = NA,
+                         figunit = NA,
+                         myTheme = list(ggplot2::scale_color_viridis_d(end = 0.8), ggplot2::theme_bw())){
+  if(!is.na(filetype)){
+    object$plot.filetype <- filetype
+  }
+  if(!is.na(figsize)){
+    object$plot.figsize <- figsize
+  }
+  if(!is.na(figunit)){
+    object$plot.figunit <- figunit
+  }
   pointSize <- 2
   if(effect == "time"){
     if(object$separateTimeAndGroup){
@@ -314,12 +441,12 @@ getScorePlot <- function(object,
           score$effect <- paste(score$time, score$group)
           score <- merge(score, pvals, by.x = "effect", by.y = "effect", all.x=TRUE, all.y=FALSE)
           score$p.value.str <- ifelse(score$p.value > .05, "", ifelse(score$p.value < .001, "***", ifelse(score$p.value < .01, "**", "*")))
-          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, label = p.value.str)) +
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group, label = p.value.str)) +
             ggplot2::geom_point(position = ggplot2::position_dodge(width = 0.5)) +
             geom_text(vjust = 0, hjust = 0.5, position = ggplot2::position_dodge(width = 0.5), show.legend = FALSE) +
             ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.5))
         }else{
-          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group, ymin = low, ymax = high)) +
             ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
             ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
         }
@@ -328,14 +455,16 @@ getScorePlot <- function(object,
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = model)) +
             ggplot2::geom_point() + ggplot2::geom_line()
         }else{
-          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group)) +
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group)) +
             ggplot2::geom_point() + ggplot2::geom_line()
         }
       }
     }
     g <- g + myTheme +
       ggplot2::theme(legend.position = "bottom") +
-      ggplot2::labs(x = object$plot.xlabel, y = paste0("PC",component, " (",round(100*object$ALASCA$score$explained$time[component],2),"%)"))
+      ggplot2::labs(x = object$plot.xlabel,
+                    group = object$plot.grouplabel, color = object$plot.grouplabel, linetype = object$plot.grouplabel,
+                    y = paste0("Score PC",component, " (",round(100*object$ALASCA$score$explained$time[component],2),"%)"))
   }else{
     score <- subset(getScores(object)$group, PC == component)
     if(object$validate){
@@ -344,7 +473,7 @@ getScorePlot <- function(object,
         score$effect <- paste(score$time, score$group)
         score <- merge(score, pvals, by.x = "effect", by.y = "effect", all.x=TRUE, all.y=FALSE)
         score$p.value.str <- ifelse(score$p.value > .05, "", ifelse(score$p.value < .001, "***", ifelse(score$p.value < .01, "**", "*")))
-        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, label = p.value.str)) +
+        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group, label = p.value.str)) +
           ggplot2::geom_point(position = ggplot2::position_dodge(width = 0.5)) +
           geom_text(vjust = 0, hjust = 0.5, position = ggplot2::position_dodge(width = 0.5), show.legend = FALSE) +
           ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.5))
@@ -354,7 +483,7 @@ getScorePlot <- function(object,
             ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
             ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
         }else{
-          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group, ymin = low, ymax = high)) +
             ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
             ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
         }
@@ -365,16 +494,18 @@ getScorePlot <- function(object,
         g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = model)) +
           ggplot2::geom_point() + ggplot2::geom_line()
       }else{
-        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group)) +
+        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group)) +
           ggplot2::geom_point() + ggplot2::geom_line()
       }
     }
     g <- g + myTheme +
       ggplot2::theme(legend.position = "bottom") +
-      ggplot2::labs(x = object$plot.xlabel, y = paste0("PC",component, " (",round(100*object$ALASCA$score$explained$group[component],2),"%)"))
+      ggplot2::labs(x = object$plot.xlabel,
+                    group = object$plot.grouplabel, color = object$plot.grouplabel, linetype = object$plot.grouplabel,
+                    y = paste0("Score PC",component, " (",round(100*object$ALASCA$score$explained$group[component],2),"%)"))
   }
   if(object$save){
-    saveALASCAPlot(object = object,g = g,filetypes = filetypes, figsize = figsize, suffix = "score")
+    saveALASCAPlot(object = object,g = g,filetype = filetype, figsize = figsize, figunit = figunit, suffix = "score")
   }
   return(g)
 }
@@ -388,7 +519,7 @@ getScorePlot <- function(object,
 #' @param participantColumn Specify the column with participant identifier. Not necessary if you have already provided it to the ALASCA object
 #' @param valueColumn Specify column with values (y axis). Not necessary to provide if you are plotting an ALASCA object.
 #' @param timeColumn Specify column with times (x axis). Defaults to `time`.
-#' @param filetypes Which filetypes you want to save the figure to
+#' @param filetype Which filetype you want to save the figure to
 #' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
 #' @param addSmooth. Specify which geom_smooth model you want to apply, eg. `lm`, `glm`, `gam`, `loess` (default). Set to `NA` to remove.
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
@@ -408,13 +539,15 @@ getScorePlot <- function(object,
 #' @export
 plotParts <- function(object, 
                       variable = NA, 
-                      participantColumn = FALSE, 
+                      participantColumn = FALSE,
+                      xlabel = NA,
+                      grouplabel = NA,
                       valueColumn = FALSE, 
                       timeColumn = "time", 
                       addSmooth = "loess",
-                      filetypes = "png",
+                      filetype = "png",
                       figsize = c(12, 8, 300),
-                      myTheme = ggplot2::theme_bw()){
+                      myTheme = list(ggplot2::scale_color_viridis_d(end = 0.8),ggplot2::scale_fill_viridis_d(end = 0.8), ggplot2::theme_bw())){
   if(is.data.frame(object)){
     df <- object
     if(any(participantColumn == FALSE) | any(valueColumn == FALSE)){
@@ -422,6 +555,12 @@ plotParts <- function(object,
     }else{
       participantColumn <- participantColumn
       valueColumn <- valueColumn
+    }
+    if(is.na(xlabel)){
+      xlabel <- "Time"
+    }
+    if(is.na(grouplabel)){
+      grouplabel <- "Group"
     }
   }else if(is(object, "ALASCA")){
     df <- object$dfRaw
@@ -433,15 +572,21 @@ plotParts <- function(object,
         participantColumn <- object$participantColumn
       }
     }
+    if(is.na(xlabel)){
+      xlabel <- object$plot.xlabel
+    }
+    if(is.na(grouplabel)){
+      grouplabel <- object$plot.grouplabel
+    }
   }else{
     stop("Wrong input object: must be a ALASCA model or a data frame")
   }
-  plotFunction <- function(df, timeColumn, valueColumn, participantColumn, xi, addSmooth, myTheme){
+  plotFunction <- function(df, timeColumn, valueColumn, participantColumn, xi, addSmooth, xlabel, grouplabel, myTheme){
     g <- ggplot2::ggplot(subset(df, variable == xi), ggplot2::aes_string(x = timeColumn, y = valueColumn, color = "group", group = participantColumn)) + 
       ggplot2::geom_point(alpha = 0.7) + ggplot2::geom_line(alpha = 0.3)  + myTheme +
-      ggplot2::theme(legend.position = "bottom") + ggplot2::labs(x = "Time", y = xi)
+      ggplot2::theme(legend.position = "bottom") + ggplot2::labs(x = xlabel, y = xi, color = grouplabel, fill = grouplabel)
     if(!any(is.na(addSmooth))){
-      g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group), se = TRUE)
+      g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group, fill = group), se = TRUE)
     }
     return(g)
   }
@@ -449,12 +594,12 @@ plotParts <- function(object,
     variable <- unique(df$variable)
   }
   g <- lapply(variable, function(xi){
-    plotFunction(df, timeColumn, valueColumn, participantColumn, xi, addSmooth, myTheme = myTheme)
+    plotFunction(df, timeColumn, valueColumn, participantColumn, xi, addSmooth, xlabel = xlabel, grouplabel = grouplabel, myTheme = myTheme)
   })
   names(g) <- variable
   if(object$save){
     for(i in seq_along(g)){
-      saveALASCAPlot(object = object, g = g[[i]],filetypes = filetypes, figsize = figsize, suffix = names(g)[i])
+      saveALASCAPlot(object = object, g = g[[i]],filetype = filetype, figsize = figsize, figunit = figunit, suffix = names(g)[i])
     }
   }
   return(g)
@@ -467,8 +612,9 @@ plotParts <- function(object,
 #' @param object An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.
 #' @param variable List of variable names to print. If `NA`, return all (default).
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
-#' @param filetypes Which filetypes you want to save the figure to
-#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(120, 80, 300)`)
+#' figunit = "mm",
 #' @return A list with ggplot2 objects.
 #' 
 #' @examples
@@ -482,8 +628,8 @@ plotParts <- function(object,
 #' @export
 plotPred <- function(object, 
                      variable = NA, 
-                     filetypes = "png",
-                     figsize = c(12, 8, 300),
+                     filetype = "png",
+                     figsize = c(120, 80, 300),
                      myTheme = ggplot2::theme_bw()){
   if(any(is.na(variable))){
     variable <- unique(object$df$variable)
@@ -495,7 +641,7 @@ plotPred <- function(object,
         ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35)) + 
         myTheme + 
         ggplot2::theme(legend.position = "bottom") +
-        ggplot2::labs(x = object$plot.xlabel, y = x)
+        ggplot2::labs(x = object$plot.xlabel, y = x, color = object$plot.grouplabel)
       g
     })
   }else{
@@ -505,14 +651,14 @@ plotPred <- function(object,
         ggplot2::geom_line() + 
         myTheme + 
         ggplot2::theme(legend.position = "bottom") +
-        ggplot2::labs(x = object$plot.xlabel, y = x)
+        ggplot2::labs(x = object$plot.xlabel, y = x, color = object$plot.grouplabel)
       g
     })
   }
   names(gg) <- variable
   if(object$save){
     for(i in seq_along(gg)){
-      saveALASCAPlot(object = object, g = gg[[i]],filetypes = filetypes, figsize = figsize, suffix = names(gg)[i])
+      saveALASCAPlot(object = object, g = gg[[i]],filetype = filetype, figsize = figsize, figunit = figunit, suffix = names(gg)[i])
     }
   }
   return(gg)
@@ -524,16 +670,17 @@ plotPred <- function(object,
 #'
 #' @param object A validated ALASCA object
 #' @param component Which component to plot (default: 1)
-#' @param filetypes Which filetypes you want to save the figure to
-#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(120, 80, 300)`)
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A list with ggplot2 objects.
 #' 
 #' @export
 plotVal <- function(object,
                     component = 1,
-                    filetypes = "png",
-                    figsize = c(12, 8, 300),
+                    filetype = "png",
+                    figsize = c(120, 80, 300),
+                    figunit = "mm",
                     myTheme = ggplot2::theme_bw()){
   if(!object$validate){
     stop("You must validate the model first.")
@@ -625,7 +772,7 @@ plotVal <- function(object,
     g <- ggpubr::ggarrange(gs, gl, nrow = 1, ncol = 2, widths = c(1,2))
   }
   if(object$save){
-    saveALASCAPlot(object = object,g = g,filetypes = filetypes, figsize = figsize)
+    saveALASCAPlot(object = object,g = g,filetype = filetype, figsize = figsize, figunit = figunit)
   }
   return(g)
   
@@ -638,8 +785,9 @@ plotVal <- function(object,
 #' @param object An ALASCA object
 #' @param covar Which covariable(s) to plot (default: `NA` which prints all)
 #' @param tlab Alternative names for the covariables
-#' @param filetypes Which filetypes you want to save the figure to
-#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(120, 80, 300)`)
+#' figunit = "mm",
 #' @param return_data Set to `TRUE` to return data instead of plot
 #' 
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
@@ -649,8 +797,8 @@ plotVal <- function(object,
 plotCovar <- function(object,
                       covar = NA,
                       tlab = NA, return_data = FALSE,
-                      filetypes = "png",
-                      figsize = c(12, 8, 300),
+                      filetype = "png",
+                      figsize = c(120, 80, 300),
                       myTheme = ggplot2::theme_bw(),
                       pvalue = "shape"){
   df <- getCovars(object)
@@ -689,7 +837,7 @@ plotCovar <- function(object,
     }
     
     if(object$save){
-      saveALASCAPlot(object = object,g = g,filetypes = filetypes, figsize = figsize)
+      saveALASCAPlot(object = object,g = g,filetype = filetype, figsize = figsize, figunit = figunit)
     }
     return(g)
   }
@@ -703,7 +851,7 @@ plotCovar <- function(object,
 #' @param object An ALASCA object
 #' @param comp Which two components to plot (default: `c(1, 2`)
 #' @param return_data Set to `TRUE` to return data instead of plot
-#' @param filetypes Which filetypes you want to save the figure to
+#' @param filetype Which filetype you want to save the figure to
 #' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A ggplot2 objects.
@@ -712,8 +860,9 @@ plotCovar <- function(object,
 plotProjection <- function(object,
                            comp = c(1,2),
                            return_data = FALSE,
-                           filetypes = "png",
-                           figsize = c(12, 8, 300),
+                           filetype = "png",
+                           figsize = c(120, 80, 300),
+                           figunit = "mm",
                            myTheme = ggplot2::theme_bw()){
   df <- object$df
   df$ID <- df[, ID]
@@ -756,7 +905,7 @@ plotProjection <- function(object,
     names(g) <- c("time", "group")
     if(object$save){
       for(i in seq_along(g)){
-        saveALASCAPlot(object = object, g = g[[i]],filetypes = filetypes, figsize = figsize, suffix = names(g)[i])
+        saveALASCAPlot(object = object, g = g[[i]],filetype = filetype, figsize = figsize, figunit = figunit, suffix = names(g)[i])
       }
     }
     return(g)
@@ -778,7 +927,7 @@ plotProjection <- function(object,
       return(df_time)
     }else{
       if(object$save){
-        saveALASCAPlot(object = object,g = g,filetypes = filetypes, figsize = figsize)
+        saveALASCAPlot(object = object,g = g,filetype = filetype, figsize = figsize, figunit = figunit)
       }
       return(g)
     }
@@ -791,18 +940,27 @@ plotProjection <- function(object,
 #' @return A ggplot2 objects.
 #' 
 #' @export
-saveALASCAPlot <- function(object, g, filetypes = "png", figsize = c(12, 8, 300), suffix = ""){
+saveALASCAPlot <- function(object, g, filetype = NA, figsize = NA, suffix = "", figunit = NA){
+  if(is.na(filetype)){
+    filetype <- object$plot.filetype
+  }
+  if(is.na(figsize)){
+    figsize <- object$plot.figsize
+  }
+  if(is.na(figunit)){
+    figunit <- object$plot.figunit
+  }
   if(!dir.exists(paste0(object$filepath, "plot/"))){
     dir.create(paste0(object$filepath, "plot/"))
   }
   fname <- paste0(object$filepath,"plot/",strftime(Sys.time(), format = "%Y%m%d_%H%M%S"),ifelse(suffix == "", "", paste0("_",suffix)))
   cnt <- 1
-  for(i in filetypes){
+  for(i in filetype){
     while(file.exists(paste0(fname,".",i))){
       fname <- paste0(object$filepath,"plot/",strftime(Sys.time(), format = "%Y%m%d_%H%M%S"),ifelse(suffix == "", "", paste0("_",suffix)),"_",cnt)
       cnt <- cnt + 1
     }
-    ggplot2::ggsave(plot = g, filename = paste0(fname,".",i), width = figsize[1], height = figsize[2], dpi = figsize[3])
+    ggplot2::ggsave(plot = g, filename = paste0(fname,".",i), width = figsize[1], height = figsize[2], dpi = figsize[3], unit = figunit)
     cat(paste0("- Saved ",fname,".",i,"\n"))
   }
 }
@@ -816,7 +974,7 @@ saveALASCAPlot <- function(object, g, filetypes = "png", figsize = c(12, 8, 300)
 #' @return A plot or an emmeans object
 #' 
 #' @export
-assessGroupDifferences <- function(object, variables = NA, doPlot = TRUE, filetypes = "png", figsize = c(12, 8, 300), rawOut = FALSE){
+assessGroupDifferences <- function(object, variables = NA, doPlot = TRUE, filetype = "png", figsize = c(12, 8, 300), rawOut = FALSE){
   if(is.na(variables)){
     variables <- unique(object$df$variable)
   }
@@ -843,7 +1001,7 @@ assessGroupDifferences <- function(object, variables = NA, doPlot = TRUE, filety
       if(doPlot){
         g <- plot(mod.em) + ggplot2::theme_bw()
         if(object$save){
-          saveALASCAPlot(object = object, g = g, filetypes = filetypes, figsize = figsize, suffix = paste0("_groupdiff_", x, "_"))
+          saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, suffix = paste0("_groupdiff_", x, "_"))
         }
         g
       }else{

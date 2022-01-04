@@ -1,3 +1,13 @@
+# ALASCA 0.0.0.97
+
+## Improvements
+
+* Better plotting with the `viridis()` palette, different line types, and inherited plot settings from the ALASCA object
+
+## Bug fixes
+
+* `assessGroupDifferences()` should now be working
+
 # ALASCA 0.0.0.96
 
 ## New features

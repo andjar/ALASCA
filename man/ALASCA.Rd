@@ -19,6 +19,10 @@ ALASCA(
   stratificationVector = NA,
   minimizeObject = FALSE,
   plot.xlabel = "Time",
+  plot.grouplabel = "Group",
+  plot.figsize = c(12, 8, 300),
+  plot.figunit = "mm",
+  plot.filetype = "png",
   doDebug = FALSE,
   nValFold = 7,
   nValRuns = 50,
@@ -62,6 +66,14 @@ ALASCA(
 \item{minimizeObject}{Logical. If \code{TRUE}, remove unnecessary clutter, optimize for validation}
 
 \item{plot.xlabel}{Defaults to "Time"}
+
+\item{plot.grouplabel}{Defaults to "Group"}
+
+\item{plot.figsize}{A vector containing \code{c(width,height,dpi)} (default: \code{c(120, 80, 300)})}
+
+\item{plot.figunit}{Defaults to "mm"}
+
+\item{plot.filetype}{Which filetype you want to save the figure to (default: \code{png})}
 
 \item{doDebug}{Print what happens (default: \code{FALSE})}
 

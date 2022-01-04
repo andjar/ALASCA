@@ -9,8 +9,8 @@ plotCovar(
   covar = NA,
   tlab = NA,
   return_data = FALSE,
-  filetypes = "png",
-  figsize = c(12, 8, 300),
+  filetype = "png",
+  figsize = c(120, 80, 300),
   myTheme = ggplot2::theme_bw(),
   pvalue = "shape"
 )
@@ -24,9 +24,10 @@ plotCovar(
 
 \item{return_data}{Set to \code{TRUE} to return data instead of plot}
 
-\item{filetypes}{Which filetypes you want to save the figure to}
+\item{filetype}{Which filetype you want to save the figure to}
 
-\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
+\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(120, 80, 300)})
+figunit = "mm",}
 
 \item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }

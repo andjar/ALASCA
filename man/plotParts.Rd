@@ -8,12 +8,15 @@ plotParts(
   object,
   variable = NA,
   participantColumn = FALSE,
+  xlabel = NA,
+  grouplabel = NA,
   valueColumn = FALSE,
   timeColumn = "time",
   addSmooth = "loess",
-  filetypes = "png",
+  filetype = "png",
   figsize = c(12, 8, 300),
-  myTheme = ggplot2::theme_bw()
+  myTheme = list(ggplot2::scale_color_viridis_d(end = 0.8),
+    ggplot2::scale_fill_viridis_d(end = 0.8), ggplot2::theme_bw())
 )
 }
 \arguments{
@@ -27,7 +30,7 @@ plotParts(
 
 \item{timeColumn}{Specify column with times (x axis). Defaults to \code{time}.}
 
-\item{filetypes}{Which filetypes you want to save the figure to}
+\item{filetype}{Which filetype you want to save the figure to}
 
 \item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
 
