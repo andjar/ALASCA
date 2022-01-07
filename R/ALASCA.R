@@ -98,7 +98,7 @@ ALASCA <- function(df,
     
     object$doDebug <- FALSE
   }else{
-    object <- list(df = data.table::as.data.table(df),
+    object <- list(df = data.table::setDT(df),
                    formula = formula,
                    separateTimeAndGroup = separateTimeAndGroup,
                    pAdjustMethod = pAdjustMethod,
@@ -133,6 +133,7 @@ ALASCA <- function(df,
                    validationMethod = validationMethod,
                    validationObject = validationObject,
                    validationParticipants = validationParticipants,
+                   variablelist = unique(df$variable),
                    ALASCA.version = printVer(get = "version"),
                    ALASCA.version.date = printVer(get = "date")
     )

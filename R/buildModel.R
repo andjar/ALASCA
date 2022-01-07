@@ -9,7 +9,10 @@ buildModel <- function(object){
     # This is not a validation run
     cat("Calculating ",object$method," coefficients...\n")
   }
+  
+  #currentTs <- Sys.time()
   object <- runRegression(object)
+  #cat("runRegression:",Sys.time()-currentTs,"\n")
   if(!object$useRfast){
     # With Rfast, we've already got the coefficients
     object <- getRegressionCoefficients(object)
@@ -28,12 +31,25 @@ buildModel <- function(object){
       object <- getRegressionPredictions(object)
     }
   }
+  #currentTs <- Sys.time()
   object <- removeCovars(object)
+  #cat("removeCovars:",Sys.time()-currentTs,"\n")
+  #currentTs <- Sys.time()
   object <- separateLMECoefficients(object)
+  #cat("separateLMECoefficients:",Sys.time()-currentTs,"\n")
+  #currentTs <- Sys.time()
   object <- getEffectMatrix(object)
+  #cat("getEffectMatrix:",Sys.time()-currentTs,"\n")
+  #currentTs <- Sys.time()
   object <- doPCA(object)
+  #cat("doPCA:",Sys.time()-currentTs,"\n")
+  #currentTs <- Sys.time()
   object <- cleanPCA(object)
+  #cat("cleanPCA:",Sys.time()-currentTs,"\n")
+  #currentTs <- Sys.time()
   object <- cleanALASCA(object)
+  #cat("cleanALASCA:",Sys.time()-currentTs,"\n")
+  
   return(object)
 }
 
@@ -46,32 +62,32 @@ buildModel <- function(object){
 runRegression <- function(object){
   
   if(object$useRfast & object$method == "LMM"){
-    object$RegressionCoefficients <- Reduce(rbind,lapply(unique(object$df$variable), function(x){
-      #start.time <- Sys.time()
-      df <- object$df[variable == x]
-      modmat <- model.matrix(object$newformula, data = df)
-      if(object$forceEqualBaseline){
-        modmat <- modmat[,!grepl(paste0("time",levels(object$df$time)[1]), colnames(modmat))]
-      }
-      if(sum(is.na(df[,value])) > 0){
-        stop("Rfast does NOT like NA's! Check your scaling function or value column.")
-      }
-      mod <- data.frame(
-        estimate = Rfast::rint.reg(y = df[,value], 
-                                   x = modmat[,2:ncol(modmat)], 
-                                   id = as.numeric(factor(df[,ID])), 
-                                   ranef = FALSE)$be,
-        pvalue = 1,
-        covar = as.character(x),
-        variable = colnames(modmat)
-      )
-      #end.time <- Sys.time()
-      #cat("\n\n",end.time - start.time,"\n")
-      mod
-    }))
+    start.time <- Sys.time()
+    object$RegressionCoefficients <- data.table::rbindlist(
+      lapply(object$variablelist, function(x){
+        df <- object$df[variable == x]
+        modmat <- model.matrix(object$newformula, data = df)
+        if(object$forceEqualBaseline){
+          modmat <- modmat[,!grepl(paste0("time",levels(object$df$time)[1]), colnames(modmat))]
+        }
+        if(sum(is.na(df[,value])) > 0){
+          stop("Rfast does NOT like NA's! Check your scaling function or value column.")
+        }
+        data.frame(
+          estimate = Rfast::rint.reg(y = df[,value], 
+                                     x = modmat[,2:ncol(modmat)], 
+                                     id = as.numeric(factor(df[,ID])), 
+                                     ranef = FALSE)$be,
+          pvalue = 1,
+          covar = as.character(x),
+          variable = colnames(modmat)
+        )
+      }))
+    end.time <- Sys.time()
+    cat("\n\n",end.time - start.time,"\n")
     return(object)
   }else if(object$method == "LM"){
-        object$regr.model <- lapply(unique(object$df$variable), function(x){
+        object$regr.model <- lapply(object$variablelist, function(x){
           modmat <- model.matrix(object$formula, data = object$df[variable == x])
           modmat <- modmat[,-1]
           if(object$forceEqualBaseline){
@@ -83,7 +99,7 @@ runRegression <- function(object){
           regr.model
         })
   }else if(object$method == "LMM"){
-    object$regr.model <- lapply(unique(object$df$variable), function(x){
+    object$regr.model <- lapply(object$variablelist, function(x){
       modmat <- model.matrix(object$formula, data = object$df[variable == x])
       modmat <- modmat[,-1]
       if(object$forceEqualBaseline){
@@ -96,7 +112,7 @@ runRegression <- function(object){
       regr.model
     })
   }else if(object$method == "KM"){
-    object$regr.model <- lapply(unique(object$df$variable), function(x){
+    object$regr.model <- lapply(object$variablelist, function(x){
       regr.model <- survival::coxph(
         formula(paste("survival::Surv(value, ifelse(belowLowerLimit, 0, 1)) ~", as.character(object$formula)[3])),
                                     data = subset(object$df, variable == x))
@@ -104,7 +120,7 @@ runRegression <- function(object){
       regr.model
     })
   }else if(object$method == "KMM"){
-    object$regr.model <- lapply(unique(object$df$variable), function(x){
+    object$regr.model <- lapply(object$variablelist, function(x){
       regr.model <- coxme::coxme(
         formula(paste("survival::Surv(value, ifelse(belowLowerLimit, 0, 1)) ~", as.character(object$formula)[3], "+ (1|ID)")),
         data = subset(object$df, variable == x))
@@ -112,7 +128,7 @@ runRegression <- function(object){
       regr.model
     })
   }
-  names(object$regr.model) <- unique(object$df$variable)
+  names(object$regr.model) <- object$variablelist
   return(object)
 }
 
@@ -124,7 +140,7 @@ runRegression <- function(object){
 #' @return An ALASCA object
 getRegressionCoefficients <- function(object){
   if(object$method %in% c("KM", "KMM")){
-    fdf <- Reduce(rbind,lapply(object$regr.model, function(y){
+    fdf <- data.table::rbindlist(lapply(object$regr.model, function(y){
       sc <- as.data.frame(y$coefficients)
       sc$variable <- rownames(sc)
       colnames(sc) <- c("estimate", "variable")
@@ -142,7 +158,7 @@ getRegressionCoefficients <- function(object){
        )
     }))
   }else{
-    fdf <- Reduce(rbind,lapply(object$regr.model, function(y){
+    fdf <- data.table::rbindlist(lapply(object$regr.model, function(y){
       if(object$method == "LM"){
         tmp_ef <- coef(y)
         a <- as.data.frame(summary(y)[["coefficients"]][,c(1,4)])

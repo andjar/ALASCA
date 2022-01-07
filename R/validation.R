@@ -36,22 +36,25 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
   temp_object <- list()
   time_mean <- c()
 
-  for(ii in 1:object$nValRuns){
+  start.time.all <- Sys.time()
+  temp_object <- lapply(1:object$nValRuns, function(ii){
     cat("- Run ",ii," of ",object$nValRuns,"\n")
-    start.time <- Sys.time()
+    start.time.this <- Sys.time()
     
     # Make resampled model
-    temp_object[[ii]] <- prepareValidationRun(object)
+    temp_object <- prepareValidationRun(object)
       
     
     # Rotate new loadings/scores to the original model
-    temp_object[[ii]] <- rotateMatrix(object = temp_object[[ii]], target = object)
-    temp_object[[ii]] <- cleanALASCA(temp_object[[ii]])
+    temp_object <- rotateMatrix(object = temp_object, target = object)
+    temp_object <- cleanALASCA(temp_object)
     
     end.time <- Sys.time()
-    time_mean[ii] <- end.time - start.time
-    cat("--- Used ",round(time_mean[ii],2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*mean(time_mean),2)," seconds \n")
-  }
+    time_this <- end.time - start.time.this
+    time_all <- (end.time - start.time.all)/ii
+    cat("--- Used ",round(time_this,2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*time_all,2)," seconds \n")
+    temp_object
+  })
   
   if(grepl("permutation",object$validationMethod)){
     cat("- Calculates P values...\n")
@@ -182,7 +185,7 @@ getValidationPercentiles <- function(object, objectlist){
 #' @inheritParams getValidationPercentiles
 #' @return An ALASCA object
 getValidationPercentilesRegression <- function(object, objectlist){
-  df <- Reduce(rbind,lapply(objectlist, function(x) x$mod.pred))
+  df <- data.table::rbindlist(lapply(objectlist, function(x) x$mod.pred))
   df <- aggregate(data = df, pred ~ group + time + variable, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
   df$low <- df$pred[,1]
   df$high <- df$pred[,2]
@@ -199,10 +202,10 @@ getValidationPercentilesRegression <- function(object, objectlist){
 #' @inheritParams getValidationPercentiles
 #' @return An ALASCA object
 getValidationPercentilesLoading <- function(object, objectlist){
-  df_time <- Reduce(rbind,lapply(objectlist, function(x) x$pca$loading$time))
+  df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$loading$time))
   PC_time <- getRelevantPCs(object$pca$loading$explained$time)
   perc_time <- aggregate(data = df_time, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-  perc_time <- Reduce(rbind,lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
+  perc_time <- data.table::rbindlist(lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
                                                                              high = perc_time[[x]][,2],
                                                                              PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
                                                                              covars = perc_time$covars)))
@@ -212,10 +215,10 @@ getValidationPercentilesLoading <- function(object, objectlist){
   object$ALASCA$loading$time <- merge(object$ALASCA$loading$time, object$validation$time$loading, all.x = TRUE)
   
   if(object$separateTimeAndGroup){
-    df_group <- Reduce(rbind,lapply(objectlist, function(x) x$pca$loading$group))
+    df_group <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$loading$group))
     PC_group <- getRelevantPCs(object$pca$loading$explained$group)
     perc_group <- aggregate(data = df_group, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-    perc_group <- Reduce(rbind,lapply(2:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
+    perc_group <- data.table::rbindlist(lapply(2:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
                                                                                  high = perc_group[[x]][,2],
                                                                                  PC = as.numeric(substr(names(perc_group)[x], 3, nchar(names(perc_group)[x]))), 
                                                                                  covars = perc_group$covars)))
@@ -236,10 +239,10 @@ getValidationPercentilesScore <- function(object, objectlist){
   if(object$separateTimeAndGroup){
     # Separate time and group effects
     
-    df_time <- Reduce(rbind,lapply(objectlist, function(x) x$pca$score$time))
+    df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$score$time))
     PC_time <- getRelevantPCs(object$pca$score$explained$time)
     perc_time <- aggregate(data = df_time, . ~ time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-    perc_time <- Reduce(rbind,lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
+    perc_time <- data.table::rbindlist(lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
                                                                                high = perc_time[[x]][,2],
                                                                                PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
                                                                                time = perc_time$time)))
@@ -248,10 +251,10 @@ getValidationPercentilesScore <- function(object, objectlist){
     names(object$validation$time$score)[names(object$validation$time$score) == 'value'] <- 'score'
     object$ALASCA$score$time <- merge(object$ALASCA$score$time, object$validation$time$score, all.x = TRUE)
     
-    df_group <- Reduce(rbind,lapply(objectlist, function(x) x$pca$score$group))
+    df_group <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$score$group))
     PC_group <- getRelevantPCs(object$pca$score$explained$group)
     perc_group <- aggregate(data = df_group, . ~ group + time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-    perc_group <- Reduce(rbind,lapply(3:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
+    perc_group <- data.table::rbindlist(lapply(3:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
                                                                                  high = perc_group[[x]][,2],
                                                                                  PC = as.numeric(substr(names(perc_group)[x], 3, nchar(names(perc_group)[x]))), 
                                                                                  time = perc_group$time,
@@ -263,10 +266,10 @@ getValidationPercentilesScore <- function(object, objectlist){
   }else{
     # Pool time and groups effects
     
-    df_time <- Reduce(rbind,lapply(objectlist, function(x) x$pca$score$time))
+    df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$score$time))
     PC_time <- getRelevantPCs(object$pca$score$explained$time)
     perc_time <- aggregate(data = df_time, . ~ time + group, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-    perc_time <- Reduce(rbind,lapply(3:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
+    perc_time <- data.table::rbindlist(lapply(3:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
                                                                                high = perc_time[[x]][,2],
                                                                                PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
                                                                                time = perc_time$time,
@@ -323,7 +326,7 @@ getRegressionPredictions <- function(object){
     # This is not a validation run
     cat("Calculating predictions from regression models...\n")
   }
-  newdata <- Reduce(rbind,lapply(unique(object$df$variable), function(x){
+  newdata <- data.table::rbindlist(lapply(unique(object$df$variable), function(x){
     xi <- which(x == names(object$regr.model))
     model <- object$regr.model[[xi]]
     if(object$method == "LMM"){
@@ -454,7 +457,7 @@ prepareValidationRun <- function(object){
         selectedParts_temp_all <- unique(object$df[object$stratificationVector == i,ID])
         selectedParts_temp_selected <- sample(selectedParts_temp_all, length(selectedParts_temp_all), replace = TRUE)
         bootdf <- rbind(bootdf,
-                          Reduce(rbind,
+                          data.table::rbindlist(
                                  lapply(selectedParts_temp_selected, function(x){
                                         seldf <- bootdf_temp[bootdf_temp$ID == x,]
                                         seldf$ID <- cc_id
@@ -487,34 +490,34 @@ getPermutationPValues <- function(target, objectlist){
   
   if(target$separateTimeAndGroup){
     # Calculate the Frobenius sum squares of the first l principal components
-    SS_f_time <- Reduce(rbind,lapply(seq_along(objectlist), function(i){
+    SS_f_time <- data.table::rbindlist(lapply(seq_along(objectlist), function(i){
       tmp <- reshape2::melt(objectlist[[i]]$pca$score$time, id.vars = c("time"))
       tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
       tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(objectlist[[i]]$pca$loading$explained$time),], value~time, FUN = function(x) sum(x^2))
       tmp2$model <- i
       tmp2
     }))
-    SS_time <- Reduce(rbind,lapply(1, function(i){
+    SS_time <- data.table::rbindlist(lapply(1, function(i){
       tmp <- reshape2::melt(target$pca$score$time, id.vars = c("time"))
       tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
       tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(target$pca$loading$explained$time),], value~time, FUN = function(x) sum(x^2))
       tmp2
     }))
-    SS_f_group <- Reduce(rbind,lapply(seq_along(objectlist), function(i){
+    SS_f_group <- data.table::rbindlist(lapply(seq_along(objectlist), function(i){
       tmp <- reshape2::melt(objectlist[[i]]$pca$score$group, id.vars = c("time","group"))
       tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
       tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(objectlist[[i]]$pca$loading$explained$group),], value~group+time, FUN = function(x) sum(x^2))
       tmp2$model <- i
       tmp2
     }))
-    SS_group <- Reduce(rbind,lapply(1, function(i){
+    SS_group <- data.table::rbindlist(lapply(1, function(i){
       tmp <- reshape2::melt(target$pca$score$group, id.vars = c("time","group"))
       tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
       tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(target$pca$loading$explained$group),], value~group+time, FUN = function(x) sum(x^2))
       tmp2
     }))
     
-    pvals_time <- Reduce(rbind,lapply(unique(SS_time$time), function(x){
+    pvals_time <- data.table::rbindlist(lapply(unique(SS_time$time), function(x){
       data.frame(
         p.value = sum( SS_f_time$value[SS_f_time$time == x] >= SS_time$value[SS_time$time == x] ) / sum(SS_f_time$time == x),
         effect = x,
@@ -522,7 +525,7 @@ getPermutationPValues <- function(target, objectlist){
       )
     }))
     
-    pvals_group <- Reduce(rbind,lapply(unique(paste(SS_group$time,SS_group$group)), function(x){
+    pvals_group <- data.table::rbindlist(lapply(unique(paste(SS_group$time,SS_group$group)), function(x){
       data.frame(
         p.value = sum( SS_f_group$value[paste(SS_f_group$time,SS_f_group$group) == x] >= SS_group$value[paste(SS_group$time,SS_group$group) == x] ) / sum(paste(SS_f_group$time,SS_f_group$group) == x),
         effect = x,
@@ -534,20 +537,20 @@ getPermutationPValues <- function(target, objectlist){
     
   }else{
     # Calculate the Frobenius sum squares of the first l principal components
-    SS_f <- Reduce(rbind,lapply(seq_along(objectlist), function(i){
+    SS_f <- data.table::rbindlist(lapply(seq_along(objectlist), function(i){
       tmp <- reshape2::melt(objectlist[[i]]$pca$score$time, id.vars = c("time","group"))
       tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
       tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(objectlist[[i]]$pca$loading$explained$time),], value~group+time, FUN = function(x) sum(x^2))
       tmp2$model <- i
       tmp2
     }))
-    SS <- Reduce(rbind,lapply(1, function(i){
+    SS <- data.table::rbindlist(lapply(1, function(i){
       tmp <- reshape2::melt(target$pca$score$time, id.vars = c("time","group"))
       tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
       tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(target$pca$loading$explained$time),], value~group+time, FUN = function(x) sum(x^2))
       tmp2
     }))
-    pvals <- Reduce(rbind,lapply(unique(paste(SS$time,SS$group)), function(x){
+    pvals <- data.table::rbindlist(lapply(unique(paste(SS$time,SS$group)), function(x){
       data.frame(
         p.value = sum( SS_f$value[paste(SS_f$time,SS_f$group) == x] >= SS$value[paste(SS$time,SS$group) == x] ) / sum(paste(SS_f$time,SS_f$group) == x),
         effect = x,
