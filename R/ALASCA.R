@@ -60,6 +60,7 @@ ALASCA <- function(df,
                    plot.figunit = "mm",
                    plot.filetype = "png",
                    plot.palette = NA,
+                   plot.loadinggroupcolumn = NA,
                    doDebug = FALSE,
                    nValFold = 7,
                    nValRuns = 50,
@@ -113,6 +114,7 @@ ALASCA <- function(df,
                    plot.figunit = plot.figunit,
                    plot.filetype = plot.filetype,
                    plot.palette = plot.palette,
+                   plot.loadinggroupcolumn = plot.loadinggroupcolumn,
                    minimizeObject = minimizeObject,
                    doDebug = doDebug,
                    nValFold = nValFold,
@@ -487,7 +489,7 @@ flipIt <- function(object, component = NA, effect = "both"){
 #' @export
 summary.ALASCA <- function(object){
   cat("================ ALASCA ================\n")
-  cat("Model initialized ", as.character(object$initTime), " using ",object$method," on ",length(object$regr.model)," variables. ", sep = "")
+  cat("Model initialized ", as.character(object$initTime), " using ",object$method," on ",length(unique(mod$RegressionCoefficients$covar))," variables. ", sep = "")
   if(object$validate){
     cat("The model been validated.\n")
   }else{

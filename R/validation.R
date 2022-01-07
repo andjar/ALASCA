@@ -357,7 +357,7 @@ getRegressionPredictions <- function(object){
 #' @param object An ALASCA object
 #' @return An ALASCA object
 prepareValidationRun <- function(object){
-  if(object$validationMethod == "loo"){
+  if(object$validationMethod %in% c("loo", "jack-knife", "jackknife")){
     # Use leave-one-out validation
     selectedParts <- data.frame()
     
@@ -442,21 +442,27 @@ prepareValidationRun <- function(object){
                           validationParticipants = !is.na(object$df[,ID]))
   }else if(object$validationMethod == "bootstrap"){
     # Use bootstrap validation
+    # When using bootstrapping, we resample participants with replacement
     bootobject <- object
     bootdf_temp <- object$dfRaw
     bootdf <- data.frame()
-    cc_id <- 1
+    cc_id <- 1 # Will become the new participant ID
     
     if(object$method %in% c("LMM", "Rfast")){
+      # Loop through all the groups
       for(i in unique(object$stratificationVector)){
         selectedParts_temp_all <- unique(object$df[object$stratificationVector == i,ID])
         selectedParts_temp_selected <- sample(selectedParts_temp_all, length(selectedParts_temp_all), replace = TRUE)
-        bootdf <- rbind(bootdf,Reduce(rbind,lapply(selectedParts_temp_selected, function(x){
-                          seldf <- bootdf_temp[bootdf_temp$ID == x,]
-                          seldf$ID <- cc_id
-                          cc_id <- cc_id + 1
-                          seldf
-                        })))
+        bootdf <- rbind(bootdf,
+                          Reduce(rbind,
+                                 lapply(selectedParts_temp_selected, function(x){
+                                        seldf <- bootdf_temp[bootdf_temp$ID == x,]
+                                        seldf$ID <- cc_id
+                                        cc_id <- cc_id + 1
+                                        seldf
+                                      })
+                              )
+                          )
       }
       bootobject$dfRaw <- bootdf
       
