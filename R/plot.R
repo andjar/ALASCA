@@ -75,6 +75,7 @@ plot.ALASCA <- function(object,
                           filetype = NA,
                           figsize = NA,
                           figunit = NA,
+                          plotribbon = TRUE,
                           loadinggroup = NA,
                           sortbyloadinggroup = TRUE,
                           myTheme = ggplot2::theme_classic()){
@@ -109,11 +110,11 @@ plot.ALASCA <- function(object,
   }
   if(only == "score"){
     if(effect == "both"){
-      g_score_time <- getScorePlot(object, component = component, effect = "time", myTheme = myTheme)
-      g_score_group <- getScorePlot(object, component = component, effect = "group", myTheme = myTheme)
+      g_score_time <- getScorePlot(object, component = component, effect = "time", plotribbon = plotribbon, myTheme = myTheme)
+      g_score_group <- getScorePlot(object, component = component, effect = "group", plotribbon = plotribbon, myTheme = myTheme)
       g <- list(g_score_time, g_score_group)
     }else{
-      g <- getScorePlot(object, component = component, effect = effect)
+      g <- getScorePlot(object, component = component, effect = effect, plotribbon = plotribbon, myTheme = myTheme)
     }
   }else if(only == "loading"){
     if(effect == "both"){
@@ -176,8 +177,8 @@ plot.ALASCA <- function(object,
                                         loadinggroup = loadinggroup,
                                         sortbyloadinggroup = sortbyloadinggroup,
                                         myTheme = myTheme)
-      g_score_time <- getScorePlot(object, component = component, effect = "time", myTheme = myTheme)
-      g_score_group <- getScorePlot(object, component = component, effect = "group", myTheme = myTheme)
+      g_score_time <- getScorePlot(object, component = component, effect = "time", plotribbon = plotribbon, myTheme = myTheme)
+      g_score_group <- getScorePlot(object, component = component, effect = "group", plotribbon = plotribbon, myTheme = myTheme)
       if(enlist){
         g <- list(g_score_time, g_loading_time, g_score_group, g_loading_group)
       }else{
@@ -214,7 +215,7 @@ plot.ALASCA <- function(object,
                                   loadinggroup = loadinggroup,
                                   sortbyloadinggroup = sortbyloadinggroup,
                                   myTheme = myTheme)
-      g_score <- getScorePlot(object, component = component, effect = effect, myTheme = myTheme)
+      g_score <- getScorePlot(object, component = component, effect = effect, plotribbon = plotribbon, myTheme = myTheme)
       if(enlist){
         g <- list(g_score, g_loading)
       }else{
