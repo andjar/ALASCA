@@ -77,7 +77,7 @@ plot.ALASCA <- function(object,
                           figunit = NA,
                           loadinggroup = NA,
                           sortbyloadinggroup = TRUE,
-                          myTheme = ggplot2::theme_bw()){
+                          myTheme = ggplot2::theme_classic()){
   if(!(effect %in% c("both","time","group"))){
     stop("`effect` has to be `both`, `time` or `group`")
   }
