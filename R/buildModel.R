@@ -10,9 +10,9 @@ buildModel <- function(object){
     cat("Calculating ",object$method," coefficients...\n")
   }
   
-  #currentTs <- Sys.time()
+  if(object$doDebug) currentTs <- Sys.time()
   object <- runRegression(object)
-  #cat("runRegression:",Sys.time()-currentTs,"\n")
+  if(object$doDebug) cat("* runRegression:",Sys.time()-currentTs,"s\n")
   if(!object$useRfast){
     # With Rfast, we've already got the coefficients
     object <- getRegressionCoefficients(object)
@@ -31,24 +31,24 @@ buildModel <- function(object){
       object <- getRegressionPredictions(object)
     }
   }
-  #currentTs <- Sys.time()
+  if(object$doDebug) currentTs <- Sys.time()
   object <- removeCovars(object)
-  #cat("removeCovars:",Sys.time()-currentTs,"\n")
-  #currentTs <- Sys.time()
+  if(object$doDebug) cat("* removeCovars:",Sys.time()-currentTs,"s\n")
+  if(object$doDebug) currentTs <- Sys.time()
   object <- separateLMECoefficients(object)
-  #cat("separateLMECoefficients:",Sys.time()-currentTs,"\n")
-  #currentTs <- Sys.time()
+  if(object$doDebug) cat("* separateLMECoefficients:",Sys.time()-currentTs,"s\n")
+  if(object$doDebug) currentTs <- Sys.time()
   object <- getEffectMatrix(object)
-  #cat("getEffectMatrix:",Sys.time()-currentTs,"\n")
-  #currentTs <- Sys.time()
+  if(object$doDebug) cat("* getEffectMatrix:",Sys.time()-currentTs,"s\n")
+  if(object$doDebug) currentTs <- Sys.time()
   object <- doPCA(object)
-  #cat("doPCA:",Sys.time()-currentTs,"\n")
-  #currentTs <- Sys.time()
+  if(object$doDebug) cat("* doPCA:",Sys.time()-currentTs,"s\n")
+  if(object$doDebug) currentTs <- Sys.time()
   object <- cleanPCA(object)
-  #cat("cleanPCA:",Sys.time()-currentTs,"\n")
-  #currentTs <- Sys.time()
+  if(object$doDebug) cat("* cleanPCA:",Sys.time()-currentTs,"s\n")
+  if(object$doDebug) currentTs <- Sys.time()
   object <- cleanALASCA(object)
-  #cat("cleanALASCA:",Sys.time()-currentTs,"\n")
+  if(object$doDebug) cat("* cleanALASCA:",Sys.time()-currentTs,"s\n")
   
   return(object)
 }
@@ -60,18 +60,17 @@ buildModel <- function(object){
 #' @param object An ALASCA object
 #' @return An ALASCA object
 runRegression <- function(object){
-  
   if(object$useRfast & object$method == "LMM"){
-    start.time <- Sys.time()
+    #start.time <- Sys.time()
+    if(any(is.na(object$df[,value]))){
+      stop("Rfast does NOT like NA's! Check your scaling function or value column.")
+    }
     object$RegressionCoefficients <- data.table::rbindlist(
       lapply(object$variablelist, function(x){
         df <- object$df[variable == x]
         modmat <- model.matrix(object$newformula, data = df)
         if(object$forceEqualBaseline){
           modmat <- modmat[,!grepl(paste0("time",levels(object$df$time)[1]), colnames(modmat))]
-        }
-        if(sum(is.na(df[,value])) > 0){
-          stop("Rfast does NOT like NA's! Check your scaling function or value column.")
         }
         data.frame(
           estimate = Rfast::rint.reg(y = df[,value], 
@@ -83,8 +82,8 @@ runRegression <- function(object){
           variable = colnames(modmat)
         )
       }))
-    end.time <- Sys.time()
-    cat("\n\n",end.time - start.time,"\n")
+    #end.time <- Sys.time()
+    #cat("\n\n",end.time - start.time,"\n")
     return(object)
   }else if(object$method == "LM"){
         object$regr.model <- lapply(object$variablelist, function(x){

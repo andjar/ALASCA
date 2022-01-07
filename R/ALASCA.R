@@ -161,6 +161,7 @@ ALASCA <- function(df,
     }
     object <- validate(object)
   }
+  object$runtime <- Sys.time() - object$initTime
   if(object$save){
     saveALASCAModel(object)
   }
@@ -185,8 +186,8 @@ RMASCA <- function(...){
 #' @return String
 #' @export
 printVer <- function(object = FALSE, get = NA, print = TRUE){
-  ALASCA.version <- "0.0.0.98"
-  ALASCA.version.date <- "2022-01-04"
+  ALASCA.version <- "0.0.0.99"
+  ALASCA.version.date <- "2022-01-07"
   if(is.list(object)){
     ALASCA.version <- object$ALASCA.version
     ALASCA.version.date <- object$ALASCA.version.date

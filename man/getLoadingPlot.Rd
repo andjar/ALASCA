@@ -16,6 +16,8 @@ getLoadingPlot(
   plotzeroline = TRUE,
   figsize = NA,
   figunit = NA,
+  loadinggroup = NA,
+  sortbyloadinggroup = TRUE,
   myTheme = ggplot2::theme_bw()
 )
 }

@@ -19,8 +19,12 @@ plotDevelopment(
   plotzeroline = TRUE,
   filetype = NA,
   figsize = NA,
+  dodgewidth = 0.35,
   figunit = NA,
-  myTheme = ggplot2::theme_bw()
+  plotribbon = TRUE,
+  loadinggroup = NA,
+  sortbyloadinggroup = TRUE,
+  myTheme = ggplot2::theme_classic()
 )
 }
 \arguments{

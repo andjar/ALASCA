@@ -24,6 +24,7 @@ ALASCA(
   plot.figunit = "mm",
   plot.filetype = "png",
   plot.palette = NA,
+  plot.loadinggroupcolumn = NA,
   doDebug = FALSE,
   nValFold = 7,
   nValRuns = 50,

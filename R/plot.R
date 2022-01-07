@@ -74,6 +74,7 @@ plot.ALASCA <- function(object,
                           plotzeroline = TRUE,
                           filetype = NA,
                           figsize = NA,
+                          dodgewidth = 0.35,
                           figunit = NA,
                           plotribbon = TRUE,
                           loadinggroup = NA,
@@ -110,11 +111,11 @@ plot.ALASCA <- function(object,
   }
   if(only == "score"){
     if(effect == "both"){
-      g_score_time <- getScorePlot(object, component = component, effect = "time", plotribbon = plotribbon, myTheme = myTheme)
-      g_score_group <- getScorePlot(object, component = component, effect = "group", plotribbon = plotribbon, myTheme = myTheme)
+      g_score_time <- getScorePlot(object, component = component, effect = "time", plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
+      g_score_group <- getScorePlot(object, component = component, effect = "group", plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
       g <- list(g_score_time, g_score_group)
     }else{
-      g <- getScorePlot(object, component = component, effect = effect, plotribbon = plotribbon, myTheme = myTheme)
+      g <- getScorePlot(object, component = component, effect = effect, plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
     }
   }else if(only == "loading"){
     if(effect == "both"){
@@ -177,8 +178,8 @@ plot.ALASCA <- function(object,
                                         loadinggroup = loadinggroup,
                                         sortbyloadinggroup = sortbyloadinggroup,
                                         myTheme = myTheme)
-      g_score_time <- getScorePlot(object, component = component, effect = "time", plotribbon = plotribbon, myTheme = myTheme)
-      g_score_group <- getScorePlot(object, component = component, effect = "group", plotribbon = plotribbon, myTheme = myTheme)
+      g_score_time <- getScorePlot(object, component = component, effect = "time", plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
+      g_score_group <- getScorePlot(object, component = component, effect = "group", plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
       if(enlist){
         g <- list(g_score_time, g_loading_time, g_score_group, g_loading_group)
       }else{
@@ -215,7 +216,7 @@ plot.ALASCA <- function(object,
                                   loadinggroup = loadinggroup,
                                   sortbyloadinggroup = sortbyloadinggroup,
                                   myTheme = myTheme)
-      g_score <- getScorePlot(object, component = component, effect = effect, plotribbon = plotribbon, myTheme = myTheme)
+      g_score <- getScorePlot(object, component = component, effect = effect, plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
       if(enlist){
         g <- list(g_score, g_loading)
       }else{
@@ -407,16 +408,26 @@ getLoadingPlot <- function(object,
       g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high, shape = model)) + 
         ggplot2::geom_pointrange(size = pointSize)
     }else{
-      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high, color = covargroup)) + 
+      if(is.na(object$plot.loadinggroupcolumn)){
+      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high)) + 
         ggplot2::geom_pointrange(size = pointSize)
+      }else{
+        g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high, color = covargroup)) + 
+          ggplot2::geom_pointrange(size = pointSize)
+      }
     }
   }else{
     if(any(colnames(loadings) == "model")){
       g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, shape = model)) + 
         ggplot2::geom_point()
     }else{
-      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, color = covargroup)) + 
-        ggplot2::geom_point()
+      if(is.na(object$plot.loadinggroupcolumn)){
+        g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading)) + 
+          ggplot2::geom_point()
+      }else{
+        g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, color = covargroup)) + 
+          ggplot2::geom_point()
+      }
     }
   }
   g <- g + myTheme +
@@ -448,11 +459,19 @@ getLoadingPlot <- function(object,
     limLower <- unique(loadings$loading[order(loadings$loading, decreasing = FALSE)[tooDense]])
     g <- g + ggplot2::geom_point(color = ifelse(loadings$loading <= limLower | loadings$loading >= limUpper, "red", "grey")) +
       ggrepel::geom_text_repel(data = subset(loadings, loading <= limLower | loading >= limUpper), ggplot2::aes(label=covars), max.iter	= 5000) +
-      myTheme +
-      ggplot2::theme(axis.title.x=ggplot2::element_blank(),
-                     axis.text.x=ggplot2::element_blank(),
-                     axis.ticks.x=ggplot2::element_blank(),
-                     legend.position = "none")
+      myTheme
+    if(flipaxes){
+      g <- g + ggplot2::theme(axis.title.y=ggplot2::element_blank(),
+                              axis.text.y=ggplot2::element_blank(),
+                              axis.ticks.y=ggplot2::element_blank(),
+                              legend.position = "none")
+    }else{
+      g <- g + ggplot2::theme(axis.title.x=ggplot2::element_blank(),
+                              axis.text.x=ggplot2::element_blank(),
+                              axis.ticks.x=ggplot2::element_blank(),
+                              legend.position = "none")
+    }
+      
   }
   if(object$save){
     saveALASCAPlot(object = object,g = g, filetype = filetype, figsize = figsize, figunit = figunit, suffix = "loading")
@@ -481,6 +500,7 @@ getScorePlot <- function(object,
                          figsize = NA,
                          figunit = NA,
                          plotribbon = TRUE,
+                         dodgewidth = 0.35,
                          myTheme = ggplot2::theme_bw()){
   if(!is.na(filetype)){
     object$plot.filetype <- filetype
@@ -507,15 +527,15 @@ getScorePlot <- function(object,
         }else{
           if(any(colnames(score) == "model")){
             g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = model, linetype = model, shape = model, ymin = low, ymax = high)) +
-              ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
-              ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+              ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
+              ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
           }else{
             g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = levels(object$df$group)[1], ymin = low, ymax = high)) +
-              ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
-              ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+              ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
+              ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
             if(plotribbon){
               g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = levels(object$df$group)[1]), alpha = .1, 
-                                            position = ggplot2::position_dodge(width = 0.35), color = NA) + 
+                                            position = ggplot2::position_dodge(width = dodgewidth), color = NA) + 
                 ggplot2::scale_fill_manual(values = getPlotPalette(object)) + ggplot2::labs(fill = object$plot.grouplabel)
             }
           }
@@ -541,11 +561,11 @@ getScorePlot <- function(object,
             ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.5))
         }else{
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group, ymin = low, ymax = high)) +
-            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
-            ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
+            ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
           if(plotribbon){
             g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = group), alpha = .1,
-                                          position = ggplot2::position_dodge(width = 0.35), color = NA) + 
+                                          position = ggplot2::position_dodge(width = dodgewidth), color = NA) + 
               ggplot2::scale_fill_manual(values = getPlotPalette(object)) + ggplot2::labs(fill = object$plot.grouplabel)
           }
         }
@@ -580,15 +600,15 @@ getScorePlot <- function(object,
       }else{
         if(any(colnames(score) == "model")){
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, linetype = model, shape = model, color = group, ymin = low, ymax = high)) +
-            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
-            ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
+            ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
         }else{
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group, ymin = low, ymax = high)) +
-            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) +
-            ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35))
+            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
+            ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
           if(plotribbon){
             g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = group), alpha = .1,
-                                          position = ggplot2::position_dodge(width = 0.35), color = NA) + 
+                                          position = ggplot2::position_dodge(width = dodgewidth), color = NA) + 
               ggplot2::scale_fill_manual(values = getPlotPalette(object)) + ggplot2::labs(fill = object$plot.grouplabel)
           }
         }
@@ -745,8 +765,8 @@ plotPred <- function(object,
   if(object$validateRegression){
     gg <- lapply(unique(variable), function(x){
       g <- ggplot2::ggplot(subset(object$mod.pred, variable == x), ggplot2::aes(x = time, y = pred, color = group, group = group, ymin = low, ymax = high)) +
-        ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = 0.35)) + 
-        ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.35)) +
+        ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) + 
+        ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth)) +
         ggplot2::scale_color_manual(values = getPlotPalette(object)) +
         myTheme + 
         ggplot2::theme(legend.position = "bottom") +

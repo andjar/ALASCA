@@ -13,6 +13,8 @@ plotComponents(
   figsize = NA,
   figunit = NA,
   validationshape = "ellipse",
+  validationlevel = 0.95,
+  plottext = TRUE,
   texthjust = -0.2,
   alphavalidate = 0.4,
   myTheme = ggplot2::theme_bw()
@@ -27,9 +29,13 @@ plotComponents(
 
 \item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(120, 80, 300)})}
 
-\item{figunit}{= "mm",}
+\item{figunit}{= "mm"}
 
 \item{validationshape}{Either \code{NA}, "ellipse", or "cross"}
+
+\item{validationlevel}{Defaults to 0.95}
+
+\item{plottext}{If \code{TRUE}, plot time point as text}
 
 \item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 

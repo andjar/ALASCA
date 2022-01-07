@@ -1,5 +1,20 @@
 # ALASCA 0.0.0.98
 
+## Improvements
+
+* Nicer default plots
+* Minor improvements in performance
+
+## New features
+
+* `plotresiduals()` will plot residuals as a QQ-plot
+
+## Bug fixes
+
+* ALASCA failes on large datasets when the number of PCs is different between variables
+
+# ALASCA 0.0.0.98
+
 ## New features
 
 * `plot.ALASCA()` will now plot components if `component` is a vector with more than one value

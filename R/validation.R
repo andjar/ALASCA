@@ -33,26 +33,22 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
   }
   
   cat("Running validation...\n")
-  temp_object <- list()
-  time_mean <- c()
 
   start.time.all <- Sys.time()
-  temp_object <- lapply(1:object$nValRuns, function(ii){
+
+  temp_object <- lapply(1:object$nValRuns, FUN = function(ii){
     cat("- Run ",ii," of ",object$nValRuns,"\n")
     start.time.this <- Sys.time()
     
     # Make resampled model
     temp_object <- prepareValidationRun(object)
-      
     
     # Rotate new loadings/scores to the original model
     temp_object <- rotateMatrix(object = temp_object, target = object)
     temp_object <- cleanALASCA(temp_object)
     
-    end.time <- Sys.time()
-    time_this <- end.time - start.time.this
-    time_all <- (end.time - start.time.all)/ii
-    cat("--- Used ",round(time_this,2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*time_all,2)," seconds \n")
+    time_all <- (Sys.time() - start.time.all)/ii
+    cat("--- Used ",round(Sys.time() - start.time.this,2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*time_all,2)," seconds \n")
     temp_object
   })
   
@@ -82,7 +78,6 @@ rotateMatrix <- function(object, target){
   PCloading <- target$ALASCA$loading$explained$time > 0.05
   PCloading[1:2] <- TRUE
   PCloading <- which(PCloading)
-  
   
   a_l <- object$pca$loading
   b_l <- target$pca$loading
@@ -202,7 +197,7 @@ getValidationPercentilesRegression <- function(object, objectlist){
 #' @inheritParams getValidationPercentiles
 #' @return An ALASCA object
 getValidationPercentilesLoading <- function(object, objectlist){
-  df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$loading$time))
+  df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$loading$time), fill = TRUE)
   PC_time <- getRelevantPCs(object$pca$loading$explained$time)
   perc_time <- aggregate(data = df_time, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
   perc_time <- data.table::rbindlist(lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
@@ -215,7 +210,7 @@ getValidationPercentilesLoading <- function(object, objectlist){
   object$ALASCA$loading$time <- merge(object$ALASCA$loading$time, object$validation$time$loading, all.x = TRUE)
   
   if(object$separateTimeAndGroup){
-    df_group <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$loading$group))
+    df_group <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$loading$group), fill = TRUE)
     PC_group <- getRelevantPCs(object$pca$loading$explained$group)
     perc_group <- aggregate(data = df_group, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
     perc_group <- data.table::rbindlist(lapply(2:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
@@ -239,7 +234,7 @@ getValidationPercentilesScore <- function(object, objectlist){
   if(object$separateTimeAndGroup){
     # Separate time and group effects
     
-    df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$score$time))
+    df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$score$time), fill = TRUE)
     PC_time <- getRelevantPCs(object$pca$score$explained$time)
     perc_time <- aggregate(data = df_time, . ~ time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
     perc_time <- data.table::rbindlist(lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
@@ -251,7 +246,7 @@ getValidationPercentilesScore <- function(object, objectlist){
     names(object$validation$time$score)[names(object$validation$time$score) == 'value'] <- 'score'
     object$ALASCA$score$time <- merge(object$ALASCA$score$time, object$validation$time$score, all.x = TRUE)
     
-    df_group <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$score$group))
+    df_group <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$score$group), fill = TRUE)
     PC_group <- getRelevantPCs(object$pca$score$explained$group)
     perc_group <- aggregate(data = df_group, . ~ group + time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
     perc_group <- data.table::rbindlist(lapply(3:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
@@ -266,7 +261,7 @@ getValidationPercentilesScore <- function(object, objectlist){
   }else{
     # Pool time and groups effects
     
-    df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$score$time))
+    df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$score$time), fill = TRUE)
     PC_time <- getRelevantPCs(object$pca$score$explained$time)
     perc_time <- aggregate(data = df_time, . ~ time + group, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
     perc_time <- data.table::rbindlist(lapply(3:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
