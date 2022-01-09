@@ -11,7 +11,7 @@ ALASCA(
   pAdjustMethod = NA,
   participantColumn = "ID",
   validate = FALSE,
-  scaleFun = TRUE,
+  scaleFun = "sdall",
   forceEqualBaseline = FALSE,
   useSumCoding = FALSE,
   method = NA,
@@ -20,7 +20,7 @@ ALASCA(
   minimizeObject = FALSE,
   plot.xlabel = "Time",
   plot.grouplabel = "Group",
-  plot.figsize = c(12, 8, 300),
+  plot.figsize = c(180, 120, 300),
   plot.figunit = "mm",
   plot.filetype = "png",
   plot.palette = NA,
@@ -71,7 +71,7 @@ ALASCA(
 
 \item{plot.grouplabel}{Defaults to "Group"}
 
-\item{plot.figsize}{A vector containing \code{c(width,height,dpi)} (default: \code{c(120, 80, 300)})}
+\item{plot.figsize}{A vector containing \code{c(width,height,dpi)} (default: \code{c(180, 120, 300)})}
 
 \item{plot.figunit}{Defaults to "mm"}
 

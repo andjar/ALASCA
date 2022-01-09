@@ -16,7 +16,7 @@
 #' @param useSumCoding Set to `TRUE` to use sum coding instead of contrast coding for group (defaults to `FALSE`)
 #' @param plot.xlabel Defaults to "Time"
 #' @param plot.grouplabel Defaults to "Group"
-#' @param plot.figsize A vector containing `c(width,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param plot.figsize A vector containing `c(width,height,dpi)` (default: `c(180, 120, 300)`)
 #' @param plot.figunit Defaults to "mm"
 #' @param plot.filetype Which filetype you want to save the figure to (default: `png`)
 #' @param plot.palette List of colors, named by group
@@ -47,7 +47,7 @@ ALASCA <- function(df,
                    pAdjustMethod = NA,
                    participantColumn = "ID",
                    validate = FALSE,
-                   scaleFun = TRUE,
+                   scaleFun = "sdall",
                    forceEqualBaseline = FALSE,
                    useSumCoding = FALSE,
                    method = NA,
@@ -56,7 +56,7 @@ ALASCA <- function(df,
                    minimizeObject = FALSE,
                    plot.xlabel = "Time",
                    plot.grouplabel = "Group",
-                   plot.figsize = c(12, 8, 300),
+                   plot.figsize = c(180, 120, 300),
                    plot.figunit = "mm",
                    plot.filetype = "png",
                    plot.palette = NA,
@@ -126,6 +126,7 @@ ALASCA <- function(df,
                    lowerLimit = lowerLimit,
                    filename = filename,
                    filepath = filepath,
+                   rawFormula = formula,
                    optimizeScore = optimizeScore,
                    stratificationVector = stratificationVector,
                    keepValidationObjects = TRUE,
@@ -142,28 +143,36 @@ ALASCA <- function(df,
   class(object) <- "ALASCA"
   if(object$doDebug){
     cat(".. Has initialized the ALASCA model. Next step is to clean it and check input\n")
+    currentTs <- Sys.time()
   }
 
   object <- sanitizeObject(object)
   
   if(object$doDebug){
+    cat("..* sanitizeObject:",Sys.time()-currentTs,"s\n")
     cat(".. Has cleaned the ALASCA model. Next step is building it\n")
+    currentTs <- Sys.time()
   }
   object <- buildModel(object)
+  if(object$doDebug) cat("..* buildModel:",Sys.time()-currentTs,"s\n")
   
   if(object$minimizeObject){
     # To save space, we remove unnecessary embedded data
+    if(object$doDebug) currentTs <- Sys.time()
     object <- removeEmbedded(object)
+    if(object$doDebug) cat("..* removeEmbedded:",Sys.time()-currentTs,"s\n")
   }
   if(object$validate){
     if(object$doDebug){
       cat(".. You chose to validate the model. Starting validation\n")
+      if(object$doDebug) currentTs <- Sys.time()
     }
     object <- validate(object)
+    if(object$doDebug) cat("..* validate:",Sys.time()-currentTs,"s\n")
   }
   object$runtime <- Sys.time() - object$initTime
   if(object$save){
-    saveALASCAModel(object)
+    saveALASCA(object)
   }
 
   return(object)
@@ -186,8 +195,8 @@ RMASCA <- function(...){
 #' @return String
 #' @export
 printVer <- function(object = FALSE, get = NA, print = TRUE){
-  ALASCA.version <- "0.0.0.99"
-  ALASCA.version.date <- "2022-01-07"
+  ALASCA.version <- "0.0.0.100"
+  ALASCA.version.date <- "2022-01-09"
   if(is.list(object)){
     ALASCA.version <- object$ALASCA.version
     ALASCA.version.date <- object$ALASCA.version.date
@@ -348,14 +357,6 @@ sanitizeObject <- function(object){
     object$df$ID <- factor(object$df$ID)
   }
   
-  if(any(is.na(object$filepath))){
-    object$filepath <- paste0("ALASCA/",strftime(object$initTime, format = "%Y%m%d_%H%M%S"),"/")
-  }
-  
-  if(any(is.na(object$filename))){
-    object$filename <- "ALASCA"
-  }
-  
   if(object$doDebug){
     cat(".... Making factors for time, group and variable\n")
   }
@@ -387,22 +388,25 @@ sanitizeObject <- function(object){
   
   # Keep a copy of unscaled data
   object$dfRaw <- object$df
-  
   if(is.function(object$scaleFun)){
     if(!object$minimizeObject){
       cat("Scaling data with custom function...\n")
     }
     object$df <- object$scaleFun(object$df)
     object$df$value <- object$df[, get(object$valCol)]
-  }else if(object$scaleFun == TRUE){
-    if(!object$minimizeObject){
-      cat("Scaling data...\n")
-    }
-    object$df[,value:=as.double(value)][, value := scale(value), by = variable]
-  }else{
+  }else if(object$scaleFun == "none"){
     if(!object$minimizeObject){
       warning("Not scaling data...\n")
     }
+  }else if(is.character(object$scaleFun)){
+    object$scaleFun <- getScaleFun(object$scaleFun)
+    if(!object$minimizeObject){
+      cat("Scaling data...\n")
+    }
+    object$df <- object$scaleFun(object$df)
+    object$df$value <- object$df[, get(object$valCol)]
+  }else{
+    stop("Unknown scaling function")
   }
   if(!object$minimizeObject){
     # Check what terms that is present in formula
@@ -435,6 +439,38 @@ removeEmbedded <- function(object){
   object$RegressionCoefficients <- NULL
   object$effect.matrix <- NULL
   return(object)
+}
+
+#' Get a scaling function
+#'
+#' Return scaling function
+#'
+#' @param scaleFun_string String to define scaing function: `sdall`, `sdref`, `sdt1`, `sdreft1`
+#' @return An ALASCA object
+getScaleFun <- function(scaleFun_string){
+  if(scaleFun_string == "sdall"){
+    scaleFun <- function(df){
+      # Scale by the SD of all rows
+      df[,value:=as.double(value)][, value := value/sd(value), by = variable]
+    }
+  }else if(scaleFun_string == "sdref"){
+    scaleFun <- function(df){
+      # Scale by the SD of all rows in the refence group
+      df[,value:=as.double(value)][, value := value/sd(value[group == levels(group)[1]]), by = variable]
+    }
+  }else if(scaleFun_string == "sdt1"){
+    scaleFun <- function(df){
+      # Scale by the SD of all baseline rows
+      df[,value:=as.double(value)][, value := value/sd(value[time == levels(time)[1]]), by = variable]
+    }
+  }else if(scaleFun_string == "sdreft1"){
+    scaleFun <- function(df){
+      # Scale by the SD of all baseline rows in the reference group
+      df[,value:=as.double(value)][, value := value/sd(value[group == levels(group)[1] & time == levels(time)[1]]), by = variable]
+    }
+  }else{
+    stop("Unknown scaling method. Please use of on the following: `none`, `sdall`, `sdref`, `sdreft1`, `sdt1`")
+  }
 }
 
 #' Flip an ALASCA object
@@ -489,48 +525,30 @@ flipIt <- function(object, component = NA, effect = "both"){
 #'
 #' @inheritParams ALASCA
 #' @export
-summary.ALASCA <- function(object){
-  cat("================ ALASCA ================\n")
-  cat("Model initialized ", as.character(object$initTime), " using ",object$method," on ",length(unique(mod$RegressionCoefficients$covar))," variables. ", sep = "")
+summary.ALASCA <- function(object, file = ""){
+  cat("================ ALASCA ================\n", file = file, append = TRUE)
+  cat("Model initialized ", as.character(object$initTime), " using ",object$method," on ",length(unique(mod$RegressionCoefficients$covar))," variables. ", sep = "", file = file, append = TRUE)
   if(object$validate){
-    cat("The model been validated.\n")
+    cat("The model been validated.\n", file = file, append = TRUE)
   }else{
-    cat("The model has *not* been validated yet.\n")
+    cat("The model has *not* been validated yet.\n", file = file, append = TRUE)
   }
-  cat("Terms in model:\n   * ",paste(names(lme4::fixef(object$regr.model[[1]])), collapse = "\n   * "),"\n", sep = "")
+  cat("\nRegression model: ", as.character(object$rawFormula)[2],as.character(object$rawFormula)[1],as.character(object$rawFormula)[3],"\n", file = file, append = TRUE)
+  cat("Separating time and group effects: ", object$separateTimeAndGroup,"\n", file = file, append = TRUE)
+  cat("Force equal baseline: ", object$forceEqualBaseline,"\n\n", file = file, append = TRUE)
+  cat("Terms in model:\n   * ",paste(names(lme4::fixef(object$regr.model[[1]])), collapse = "\n   * "),"\n", sep = "", file = file, append = TRUE)
   cat("\nPCs explaining at least 5% of variation:\n   Time: ", 
       paste(getRelevantPCs(object$pca$score$explained$time), collapse = ", "), " (",
       paste(round(100*object$pca$score$explained$time[getRelevantPCs(object$pca$score$explained$time)], 2), collapse = "%, "), "%)", 
          ifelse(object$separateTimeAndGroup,paste0("\n   Group: ",
                                                    paste(getRelevantPCs(object$pca$score$explained$group), collapse = ", "), " (",
-                                                   paste(round(100*object$pca$score$explained$group[getRelevantPCs(object$pca$score$explained$group)], 2), collapse = "%, "), "%)"),"\n"), sep = "")
-  cat("\nNumber of data points (based on ",names(object$regr.model)[[1]]," measurements",ifelse(object$missingMeasurements,", some variables have more/fewer observations",""),"):\n", sep = "")
-  aggregate(data = subset(object$df, variable == names(object$regr.model)[[1]]), as.formula(paste(as.character(object$formula)[[2]], " ~ group + time")), FUN = length)
+                                                   paste(round(100*object$pca$score$explained$group[getRelevantPCs(object$pca$score$explained$group)], 2), collapse = "%, "), "%)"),"\n"), sep = "", file = file, append = TRUE)
   if(is.function(object$scaleFun)){
-    cat("\nScaling function:\n")
-    object$scaleFun
+    cat("\nScaling function:\n", file = file, append = TRUE)
+    cat(deparse(object$scaleFun), file = file, append = TRUE)
   }else{
-    cat("\nNo scaling performed.\n")
+    cat("\nNo scaling performed.\n", file = file, append = TRUE)
   }
-}
-
-#' Save ALASCA object
-#'
-#' @param object An ALASCA object
-#' @return An ALASCA object
-#' @export
-saveALASCAModel <- function(object){
-  if(!dir.exists(object$filepath)){
-    dir.create(object$filepath, recursive = TRUE)
-  }
-  fname <- paste0(object$filepath,object$filename,".Rdata")
-  cnt <- 1
-  while(file.exists(fname)){
-    fname <- paste0(object$filepath,object$filename,"_",cnt,".Rdata")
-    cnt <- cnt + 1
-  }
-  save(object, file=fname)
-  cat(paste0("- Saved model to ", fname,"\n"))
 }
 
 #' Append a new model to an existing model

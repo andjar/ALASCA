@@ -1,3 +1,22 @@
+# ALASCA 0.0.0.100
+
+## Improvements
+
+* The `scaleFun` argument now accepts strings and functions:
+  * `scaleFun = "none"`: no scaling
+  * `scaleFun = "sdall"`: scale by dividing on standard deviation (by variable)
+  * `scaleFun = "sdref"`: scale by dividing on standard deviation of the reference group (by variable)
+  * `scaleFun = "sdt1"`: scale by dividing on standard deviation of baseline (by variable)
+  * `scaleFun = "sdreft1"`: scale by dividing on standard deviation of baseline in the reference group (by variable)
+  * `scaleFun = FUN`: scale with custom function `FUN`
+* Better export of files, including automatic export to csv
+* `summary.ALASCA()` should now be working
+
+## New features
+
+* `savetocsv()` can save a model to csv files
+* `saveALASCA()` will export the central data of the model
+
 # ALASCA 0.0.0.98
 
 ## Improvements

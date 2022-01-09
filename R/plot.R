@@ -474,7 +474,7 @@ getLoadingPlot <- function(object,
       
   }
   if(object$save){
-    saveALASCAPlot(object = object,g = g, filetype = filetype, figsize = figsize, figunit = figunit, suffix = "loading")
+    saveALASCAPlot(object = object,g = g, filetype = filetype, figsize = figsize, figunit = figunit, suffix = "_loading")
   }
   return(g)
 }
@@ -631,7 +631,7 @@ getScorePlot <- function(object,
                     y = paste0("Score PC",component, " (",round(100*object$ALASCA$score$explained$group[component],2),"%)"))
   }
   if(object$save){
-    saveALASCAPlot(object = object,g = g,filetype = filetype, figsize = figsize, figunit = figunit, suffix = "score")
+    saveALASCAPlot(object = object,g = g,filetype = filetype, figsize = figsize, figunit = figunit, suffix = "_score")
   }
   return(g)
 }
@@ -1317,37 +1317,6 @@ plotProjection <- function(object,
       }
       return(g)
     }
-  }
-}
-
-#' Save figure
-#'
-#' @param g ggplot-object
-#' @return A ggplot2 objects.
-#' 
-#' @export
-saveALASCAPlot <- function(object, g, filetype = NA, figsize = NA, suffix = "", figunit = NA){
-  if(is.na(filetype)){
-    filetype <- object$plot.filetype
-  }
-  if(is.na(figsize)){
-    figsize <- object$plot.figsize
-  }
-  if(is.na(figunit)){
-    figunit <- object$plot.figunit
-  }
-  if(!dir.exists(paste0(object$filepath, "plot/"))){
-    dir.create(paste0(object$filepath, "plot/"))
-  }
-  fname <- paste0(object$filepath,"plot/",strftime(Sys.time(), format = "%Y%m%d_%H%M%S"),ifelse(suffix == "", "", paste0("_",suffix)))
-  cnt <- 1
-  for(i in filetype){
-    while(file.exists(paste0(fname,".",i))){
-      fname <- paste0(object$filepath,"plot/",strftime(Sys.time(), format = "%Y%m%d_%H%M%S"),ifelse(suffix == "", "", paste0("_",suffix)),"_",cnt)
-      cnt <- cnt + 1
-    }
-    ggplot2::ggsave(plot = g, filename = paste0(fname,".",i), width = figsize[1], height = figsize[2], dpi = figsize[3], unit = figunit)
-    cat(paste0("- Saved ",fname,".",i,"\n"))
   }
 }
 
