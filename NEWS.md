@@ -1,3 +1,14 @@
+# ALASCA 0.0.0.101
+
+## Bug fix
+
+* `plotParts()` is now working for dataframes
+* `plotPred()` is now working for Rfast. Note that if covariates are added, the values will be the average by time:group
+
+## Improvements
+
+* Theme for `ggplot2` can now be set in the `ALASCA()` call
+
 # ALASCA 0.0.0.100
 
 ## Improvements

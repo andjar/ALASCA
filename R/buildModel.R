@@ -22,7 +22,7 @@ buildModel <- function(object){
     # This is not a validation run
     cat("Finished calculating regression coefficients!\n")
   }
-  if(!object$useRfast & object$method %in% c("LM", "LMM")){
+  if(object$method %in% c("LM", "LMM")){
     if(object$minimizeObject){
       if(object$validateRegression){
         object <- getRegressionPredictions(object)

@@ -311,36 +311,33 @@ switchSign <- function(value, perc, PCs){
 
 #' Validate underlying regression models
 #'
-#' This function extract percentiles during validation
+#' This function ...
 #'
 #' @param object An ALASCA object
-#' @param variable Variable names for which models to validate (default `NA` for all)
 #' @return An ALASCA object
 getRegressionPredictions <- function(object){
   if(!object$minimizeObject){
     # This is not a validation run
     cat("Calculating predictions from regression models...\n")
   }
-  newdata <- data.table::rbindlist(lapply(unique(object$df$variable), function(x){
-    xi <- which(x == names(object$regr.model))
-    model <- object$regr.model[[xi]]
-    if(object$method == "LMM"){
-      data.frame(
-        pred = lme4:::predict.merMod(model, re.form=NA),
-        time = object$df[variable == x,time],
-        group = object$df[variable == x,group],
-        variable = x
-      )
-    }else if(object$method == "LM"){
-      data.frame(
-        pred = predict(model),
-        time = object$df[variable == x,time],
-        group = object$df[variable == x,group],
-        variable = x
-      )
+    regCoeffAll <- reshape2::dcast(data = object[["RegressionCoefficients"]], covar ~ variable, value.var = "estimate")
+    regModel <- unique(model.matrix(object$newformula, data = object$df))
+    if(object$forceEqualBaseline){
+      regModel <- regModel[,!grepl(paste0("time",levels(object$df$time)[1]), colnames(regModel))]
     }
-  }))
-  object$mod.pred <- aggregate(data = newdata, pred~time+group + variable, FUN = "mean")
+    newdata <- data.table::rbindlist(
+      lapply(object$variablelist, function(x){
+        regCoeff <- as.matrix(regCoeffAll[regCoeffAll$covar == x, -1])
+        data.frame(
+          time = object$df$time[as.numeric(rownames(regModel))],
+          group = object$df$group[as.numeric(rownames(regModel))],
+          pred = colSums(regCoeff[,colnames(regModel)] * t(regModel)),
+          variable = x
+        )
+      })
+    )
+    object$mod.pred <- newdata[, .(pred = mean(pred)), by = c("variable", "time", "group")]
+  
   if(!object$minimizeObject){
     # This is not a validation run
     cat("Finished calculating predictions from regression models!\n")

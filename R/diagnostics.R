@@ -48,5 +48,6 @@ plotresiduals <- function(object, variable = NA, plottitle = TRUE, myTheme = ggp
          ggplot2::stat_qq() + ggplot2::stat_qq_line()
       if(plottitle) g <- g + ggplot2::labs(title = names(resList)[x])
       g + myTheme
+      if(object$save) saveALASCAPlot(object, g, prefix = "plot/", suffix = paste0("_qq_plot_",names(resList)[x]))
    })
 }

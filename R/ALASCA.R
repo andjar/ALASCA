@@ -64,13 +64,14 @@ ALASCA <- function(df,
                    doDebug = FALSE,
                    nValFold = 7,
                    nValRuns = 50,
+                   plot.myTheme = ggplot2::theme_classic(),
                    keepTerms = c(""),
                    save = FALSE,
                    filename = NA,
                    filepath = NA,
                    lowerLimit = NA,
                    optimizeScore = TRUE,
-                   validateRegression = FALSE,
+                   validateRegression = TRUE,
                    validationMethod = "loo",
                    validationObject = NA,
                    validationParticipants = NA){
@@ -115,6 +116,7 @@ ALASCA <- function(df,
                    plot.filetype = plot.filetype,
                    plot.palette = plot.palette,
                    plot.loadinggroupcolumn = plot.loadinggroupcolumn,
+                   plot.myTheme = plot.myTheme,
                    minimizeObject = minimizeObject,
                    doDebug = doDebug,
                    nValFold = nValFold,
@@ -195,8 +197,8 @@ RMASCA <- function(...){
 #' @return String
 #' @export
 printVer <- function(object = FALSE, get = NA, print = TRUE){
-  ALASCA.version <- "0.0.0.100"
-  ALASCA.version.date <- "2022-01-09"
+  ALASCA.version <- "0.0.0.101"
+  ALASCA.version.date <- "2022-01-11"
   if(is.list(object)){
     ALASCA.version <- object$ALASCA.version
     ALASCA.version.date <- object$ALASCA.version.date
