@@ -88,8 +88,9 @@ runRegression <- function(object){
   }else if(object$method == "LM"){
         object$regr.model <- lapply(object$variablelist, function(x){
           modmat <- model.matrix(object$formula, data = object$df[variable == x])
-          modmat <- modmat[,-1]
+          modmat <- modmat[,-1] # Remove intercept
           if(object$forceEqualBaseline){
+            # Remove interaction between group and first time point
             modmat <- modmat[,!grepl(paste0("time",unique(object$df$time)[1]), colnames(modmat))]
           }
           environment(object$newformula) <- environment()
@@ -100,8 +101,9 @@ runRegression <- function(object){
   }else if(object$method == "LMM"){
     object$regr.model <- lapply(object$variablelist, function(x){
       modmat <- model.matrix(object$formula, data = object$df[variable == x])
-      modmat <- modmat[,-1]
+      modmat <- modmat[,-1] # Remove intercept
       if(object$forceEqualBaseline){
+        # Remove interaction between group and first time point
         modmat <- modmat[,!grepl(paste0("time",levels(object$df$time)[1]), colnames(modmat), fixed = TRUE)]
       }
       #modmat <- modmat[,ncol(modmat):1]
@@ -139,6 +141,7 @@ runRegression <- function(object){
 #' @return An ALASCA object
 getRegressionCoefficients <- function(object){
   if(object$method %in% c("KM", "KMM")){
+    # Kaplan Meier
     fdf <- data.table::rbindlist(lapply(object$regr.model, function(y){
       sc <- as.data.frame(y$coefficients)
       sc$variable <- rownames(sc)
@@ -157,19 +160,21 @@ getRegressionCoefficients <- function(object){
        )
     }))
   }else{
-    fdf <- data.table::rbindlist(lapply(object$regr.model, function(y){
-      if(object$method == "LM"){
-        tmp_ef <- coef(y)
-        a <- as.data.frame(summary(y)[["coefficients"]][,c(1,4)])
-      }else{
-        tmp_ef <- lme4::fixef(y)
-        a <- as.data.frame(summary(y)[["coefficients"]][,c(1,5)])
-      }
-      a$covar <- attr(y, "name")
-      a$variable <- rownames(a)
-      rownames(a) <- NULL
-      a
-    }))
+    fdf <- data.table::rbindlist(
+        lapply(object$regr.model, function(y){
+            if(object$method == "LM"){
+              tmp_ef <- coef(y)
+              a <- as.data.frame(summary(y)[["coefficients"]][,c(1,4)])
+            }else{
+              tmp_ef <- lme4::fixef(y)
+              a <- as.data.frame(summary(y)[["coefficients"]][,c(1,5)])
+            }
+            a$covar <- attr(y, "name")
+            a$variable <- rownames(a)
+            rownames(a) <- NULL
+            a
+      })
+    )
     fdf$variable <- gsub("modmat","",fdf$variable, fixed = TRUE)
     colnames(fdf) <- c("estimate", "pvalue", "covar", "variable")
   }
@@ -243,7 +248,7 @@ getEffectMatrix <- function(object){
     if(any(colnames(Dmatrix[,selectDColumnsTime]) != BmatrixTime$variable)){
       stop("Column mismatch for time in getEffectMatrix")
     }
-    AmatrixTime <- as.data.frame(as.matrix(Dmatrix[,selectDColumnsTime])%*%as.matrix(BmatrixTime[,2:ncol(BmatrixTime)]))
+    AmatrixTime <- as.data.frame(as.matrix(Dmatrix[,selectDColumnsTime])%*%as.matrix(BmatrixTime[,-1]))
     AmatrixTime$comp <- "TIME"
     
     BmatrixGroup <- object$RegressionCoefficients[object$RegressionCoefficients$comp == "GROUP",c("covar","estimate","variable")]
@@ -257,13 +262,13 @@ getEffectMatrix <- function(object){
     if(any(colnames(Dmatrix[,selectDColumnsGroup]) != BmatrixGroup$variable)){
       stop("Column mismatch for group in getEffectMatrix")
     }
-    AmatrixGroup <- as.data.frame(as.matrix(Dmatrix[,selectDColumnsGroup])%*%as.matrix(BmatrixGroup[,2:ncol(BmatrixGroup)]))
+    AmatrixGroup <- as.data.frame(as.matrix(Dmatrix[,selectDColumnsGroup])%*%as.matrix(BmatrixGroup[,-1]))
     AmatrixGroup$comp <- "GROUP"
     object$effect.matrix <- rbind(AmatrixTime, AmatrixGroup)
-    
   }else{
-    BmatrixTime <- object$RegressionCoefficients[object$RegressionCoefficients$comp == "TIME",c("covar","estimate","variable")]
+    BmatrixTime <- object$RegressionCoefficients[object$RegressionCoefficients$comp == "TIME", c("covar","estimate","variable")]
     BmatrixTime <- reshape2::dcast(BmatrixTime, formula = variable~covar, value.var = "estimate")
+    
     selectDColumnsTime <- colnames(Dmatrix) %in% BmatrixTime$variable
     rowOrder <- c()
     for(i in 1:nrow(BmatrixTime)){
@@ -273,7 +278,7 @@ getEffectMatrix <- function(object){
     if(any(colnames(Dmatrix[,selectDColumnsTime]) != BmatrixTime$variable)){
       stop("Column mismatch for time in getEffectMatrix")
     }
-    AmatrixTime <- as.data.frame(as.matrix(Dmatrix[,selectDColumnsTime])%*%as.matrix(BmatrixTime[,2:ncol(BmatrixTime)]))
+    AmatrixTime <- as.data.frame(as.matrix(Dmatrix[,selectDColumnsTime])%*%as.matrix(BmatrixTime[,-1]))
     AmatrixTime$comp <- "TIME"
     object$effect.matrix <- AmatrixTime
   }

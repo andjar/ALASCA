@@ -1,3 +1,13 @@
+# ALASCA 0.0.0.102
+
+## New features
+
+* Use `limitloading = TRUE` in plot functions to remove loadings containing 0 in CI
+
+## Improvements
+
+* Fixed linetype legend for `plotPred()`
+
 # ALASCA 0.0.0.101
 
 ## Bug fix

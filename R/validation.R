@@ -321,7 +321,7 @@ getRegressionPredictions <- function(object){
     cat("Calculating predictions from regression models...\n")
   }
     regCoeffAll <- reshape2::dcast(data = object[["RegressionCoefficients"]], covar ~ variable, value.var = "estimate")
-    regModel <- unique(model.matrix(object$newformula, data = object$df))
+    regModel <- unique(model.matrix(object$formula, data = object$df))
     if(object$forceEqualBaseline){
       regModel <- regModel[,!grepl(paste0("time",levels(object$df$time)[1]), colnames(regModel))]
     }

@@ -44,6 +44,7 @@ plot.ALASCA <- function(object,
   #' @param grouplabel Defaults to "Group" if not specified here or  during model setup
   #' @param flipaxes When `TRUE` (default), list the variable loadings vertical instead of horizontal
   #' @param plotzeroline When `TRUE` (default), plot a zero line in the loading plot
+  #' @param limitloading Only list robust loadings
   #' @param filetype Which file type you want to save the figure to (default: `png`)
   #' @param figsize A vector containing `c(width,height,dpi)` (default: `c(120, 80, 300)`)
   #' @param figunit Unit for figure size (default: `mm`)
@@ -78,6 +79,7 @@ plot.ALASCA <- function(object,
                           figunit = NA,
                           plotribbon = TRUE,
                           loadinggroup = NA,
+                          limitloading = FALSE,
                           sortbyloadinggroup = TRUE,
                           myTheme = NA){
     if(any(is.na(myTheme))){
@@ -131,6 +133,7 @@ plot.ALASCA <- function(object,
                                        tooDense = tooDense, 
                                        highlight = highlight,
                                        loadinggroup = loadinggroup,
+                                       limitloading = limitloading,
                                        sortbyloadinggroup = sortbyloadinggroup,
                                        myTheme = myTheme)
       g_loading_group <- getLoadingPlot(object,
@@ -141,6 +144,7 @@ plot.ALASCA <- function(object,
                                         plotzeroline = plotzeroline, 
                                         tooDense = tooDense, 
                                         highlight = highlight, 
+                                        limitloading = limitloading,
                                         loadinggroup = loadinggroup,
                                         sortbyloadinggroup = sortbyloadinggroup,
                                         myTheme = myTheme)
@@ -153,6 +157,7 @@ plot.ALASCA <- function(object,
                           flipaxes = flipaxes, 
                           plotzeroline = plotzeroline, 
                           tooDense = tooDense,
+                          limitloading = limitloading,
                           loadinggroup = loadinggroup,
                           sortbyloadinggroup = sortbyloadinggroup,
                           myTheme = myTheme)
@@ -166,6 +171,7 @@ plot.ALASCA <- function(object,
                                        flipaxes = flipaxes, 
                                        plotzeroline = plotzeroline,
                                        tooDense = tooDense,
+                                       limitloading = limitloading,
                                        highlight = highlight,
                                        loadinggroup = loadinggroup,
                                        sortbyloadinggroup = sortbyloadinggroup,
@@ -178,6 +184,7 @@ plot.ALASCA <- function(object,
                                         plotzeroline = plotzeroline,
                                         tooDense = tooDense,
                                         highlight = highlight,
+                                        limitloading = limitloading,
                                         loadinggroup = loadinggroup,
                                         sortbyloadinggroup = sortbyloadinggroup,
                                         myTheme = myTheme)
@@ -215,6 +222,7 @@ plot.ALASCA <- function(object,
                                   flipaxes = flipaxes, 
                                   plotzeroline = plotzeroline,
                                   tooDense = tooDense,
+                                  limitloading = limitloading,
                                   highlight = highlight,
                                   loadinggroup = loadinggroup,
                                   sortbyloadinggroup = sortbyloadinggroup,
@@ -320,8 +328,20 @@ screeplot.ALASCA <- function(object,
 #' @param object An ALASCA object
 #' @return A list with loadings for time (and group), and the exploratory power for each component
 #' @export
-getLoadings <- function(object){
-  return(object$ALASCA$loading)
+getLoadings <- function(object, limitloadings = FALSE){
+  if(!limitloadings | !object$validate){
+    return(object$ALASCA$loading)
+  }else{
+    dfl <- object$ALASCA$loading
+    dfl$time <- na.omit(dfl$time)
+    dfl$time <- subset(dfl$time, sign(low) == sign(high))
+    if(object$separateTimeAndGroup){
+      dfl$group <- na.omit(dfl$group)
+      dfl$group <- subset(dfl$group, sign(low) == sign(high))
+    }
+    return(dfl)
+  }
+  
 }
 
 #' Get scores
@@ -375,6 +395,7 @@ getLoadingPlot <- function(object,
                            figsize = NA,
                            figunit = NA,
                            loadinggroup = NA,
+                           limitloading = FALSE,
                            sortbyloadinggroup = TRUE,
                            myTheme = NA){
   if(any(is.na(myTheme))){
@@ -394,9 +415,9 @@ getLoadingPlot <- function(object,
   }
   pointSize <- 0.4
   if(effect == "time"){
-    loadings <- subset(getLoadings(object)$time, PC == component)
+    loadings <- subset(getLoadings(object, limitloading == limitloading)$time, PC == component)
   }else{
-    loadings <- subset(getLoadings(object)$group, PC == component)
+    loadings <- subset(getLoadings(object, limitloading == limitloading)$group, PC == component)
   }
   if(!is.na(object$plot.loadinggroupcolumn)){
     df_loading_labels <- data.frame(
@@ -810,7 +831,7 @@ plotPred <- function(object,
         ggplot2::scale_color_manual(values = getPlotPalette(object)) +
         myTheme + 
         ggplot2::theme(legend.position = "bottom") +
-        ggplot2::labs(x = object$plot.xlabel, y = x, color = object$plot.grouplabel)
+        ggplot2::labs(x = object$plot.xlabel, y = x, color = object$plot.grouplabel, linetype = object$plot.grouplabel)
       if(plotribbon){
         g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = group), alpha = .1, 
                                       position = ggplot2::position_dodge(width = dodgewidth), color = NA) + 
@@ -821,13 +842,13 @@ plotPred <- function(object,
     
   }else{
     gg <- lapply(unique(variable), function(x){
-      g <- ggplot2::ggplot(subset(object$mod.pred, variable == x), ggplot2::aes(x = time, y = pred, color = group, group = group)) +
+      g <- ggplot2::ggplot(subset(object$mod.pred, variable == x), ggplot2::aes(x = time, y = pred, color = group, linetype = group, group = group)) +
         ggplot2::geom_point() + 
         ggplot2::geom_line() +
         ggplot2::scale_color_manual(values = getPlotPalette(object)) +
         myTheme + 
         ggplot2::theme(legend.position = "bottom") +
-        ggplot2::labs(x = object$plot.xlabel, y = x, color = object$plot.grouplabel)
+        ggplot2::labs(x = object$plot.xlabel, y = x, color = object$plot.grouplabel, linetype = object$plot.grouplabel)
       g
     })
   }
