@@ -13,7 +13,7 @@ getScorePlot(
   figunit = NA,
   plotribbon = TRUE,
   dodgewidth = 0.35,
-  myTheme = ggplot2::theme_bw()
+  myTheme = NA
 )
 }
 \arguments{

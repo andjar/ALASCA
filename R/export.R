@@ -7,7 +7,7 @@
 saveALASCA <- function(object, filename = NA, filepath = NA, saveCSV = TRUE, saveScores = TRUE, saveLoadings = TRUE, saveCovars = TRUE, csv = "csv", ...){
   saveALASCAModel(object = object, filename = filename, filepath = NA)
   savetocsv(object = object, filename = filename, filepath = filepath, saveCSV = saveCSV, saveScores = saveScores, saveLoadings = saveLoadings, saveCovars = saveCovars, csv = "csv", ...)
-  summary.ALASCA(object = object, file = getFilename(object = object, filetype = "txt"))
+  summary.ALASCA(object = object, file = getFilename(object = object, filetype = "txt"), sessioninfo = TRUE)
 }
 
 #' Save ALASCA object to csv

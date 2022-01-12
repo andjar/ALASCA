@@ -15,7 +15,7 @@ plotParts(
   addSmooth = "loess",
   filetype = "png",
   figsize = c(12, 8, 300),
-  myTheme = ggplot2::theme_bw()
+  myTheme = NA
 )
 }
 \arguments{

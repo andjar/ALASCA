@@ -525,9 +525,11 @@ flipIt <- function(object, component = NA, effect = "both"){
 #'
 #' Gives some general information
 #'
-#' @inheritParams ALASCA
+#' @param object
+#' @param file
+#' @param sessioninfo
 #' @export
-summary.ALASCA <- function(object, file = ""){
+summary.ALASCA <- function(object, file = "", sessioninfo = FALSE){
   cat("================ ALASCA ================\n", file = file, append = TRUE)
   cat("Model initialized ", as.character(object$initTime), " using ",object$method," on ",length(unique(mod$RegressionCoefficients$covar))," variables. ", sep = "", file = file, append = TRUE)
   if(object$validate){
@@ -550,6 +552,9 @@ summary.ALASCA <- function(object, file = ""){
     cat(deparse(object$scaleFun), file = file, append = TRUE)
   }else{
     cat("\nNo scaling performed.\n", file = file, append = TRUE)
+  }
+  if(sessioninfo & file != ""){
+    write(capture.output(devtools::session_info()), file = file, append = TRUE)
   }
 }
 

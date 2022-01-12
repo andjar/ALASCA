@@ -10,7 +10,9 @@ plotPred(
   filetype = NA,
   figsize = NA,
   figunit = NA,
-  myTheme = ggplot2::theme_bw()
+  dodgewidth = 0.35,
+  plotribbon = TRUE,
+  myTheme = NA
 )
 }
 \arguments{

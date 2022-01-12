@@ -8,12 +8,10 @@ getRegressionPredictions(object)
 }
 \arguments{
 \item{object}{An ALASCA object}
-
-\item{variable}{Variable names for which models to validate (default \code{NA} for all)}
 }
 \value{
 An ALASCA object
 }
 \description{
-This function extract percentiles during validation
+This function ...
 }

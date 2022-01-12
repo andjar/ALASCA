@@ -4,7 +4,7 @@
 \alias{summary.ALASCA}
 \title{Summary}
 \usage{
-\method{summary}{ALASCA}(object, file = "")
+\method{summary}{ALASCA}(object, file = "", sessioninfo = FALSE)
 }
 \description{
 Gives some general information

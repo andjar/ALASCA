@@ -23,8 +23,9 @@ plotDevelopment(
   figunit = NA,
   plotribbon = TRUE,
   loadinggroup = NA,
+  limitloading = FALSE,
   sortbyloadinggroup = TRUE,
-  myTheme = ggplot2::theme_classic()
+  myTheme = NA
 )
 }
 \arguments{
@@ -57,6 +58,8 @@ plotDevelopment(
 \item{figsize}{A vector containing \code{c(width,height,dpi)} (default: \code{c(120, 80, 300)})}
 
 \item{figunit}{Unit for figure size (default: \code{mm})}
+
+\item{limitloading}{Only list robust loadings}
 
 \item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }

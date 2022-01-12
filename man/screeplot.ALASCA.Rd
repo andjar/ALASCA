@@ -10,7 +10,7 @@
   filetype = NA,
   figsize = NA,
   figunit = NA,
-  myTheme = ggplot2::theme_bw()
+  myTheme = NA
 )
 }
 \arguments{

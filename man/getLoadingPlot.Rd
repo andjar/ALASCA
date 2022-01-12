@@ -17,8 +17,9 @@ getLoadingPlot(
   figsize = NA,
   figunit = NA,
   loadinggroup = NA,
+  limitloading = FALSE,
   sortbyloadinggroup = TRUE,
-  myTheme = ggplot2::theme_bw()
+  myTheme = NA
 )
 }
 \arguments{
