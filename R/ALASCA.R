@@ -173,7 +173,7 @@ ALASCA <- function(df,
     if(object$doDebug) cat("..* validate:",Sys.time()-currentTs,"s\n")
   }
   object$runtime <- Sys.time() - object$initTime
-  if(object$save){
+  if(object$save & !object$minimizeObject){
     saveALASCA(object)
   }
 
@@ -540,7 +540,6 @@ summary.ALASCA <- function(object, file = "", sessioninfo = FALSE){
   cat("\nRegression model: ", as.character(object$rawFormula)[2],as.character(object$rawFormula)[1],as.character(object$rawFormula)[3],"\n", file = file, append = TRUE)
   cat("Separating time and group effects: ", object$separateTimeAndGroup,"\n", file = file, append = TRUE)
   cat("Force equal baseline: ", object$forceEqualBaseline,"\n\n", file = file, append = TRUE)
-  cat("Terms in model:\n   * ",paste(names(lme4::fixef(object$regr.model[[1]])), collapse = "\n   * "),"\n", sep = "", file = file, append = TRUE)
   cat("\nPCs explaining at least 5% of variation:\n   Time: ", 
       paste(getRelevantPCs(object$pca$score$explained$time), collapse = ", "), " (",
       paste(round(100*object$pca$score$explained$time[getRelevantPCs(object$pca$score$explained$time)], 2), collapse = "%, "), "%)", 

@@ -310,7 +310,7 @@ screeplot.ALASCA <- function(object,
   }
   if(effect == "group"){
     if(object$save){
-      saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+      saveALASCAPlot(object = object, g = gg, filetype = filetype, figsize = figsize, figunit = figunit)
     }
     return(gg)
   }else{
@@ -341,7 +341,6 @@ getLoadings <- function(object, limitloadings = FALSE){
     }
     return(dfl)
   }
-  
 }
 
 #' Get scores
@@ -501,10 +500,9 @@ getLoadingPlot <- function(object,
                               axis.ticks.x=ggplot2::element_blank(),
                               legend.position = "none")
     }
-      
   }
   if(object$save){
-    saveALASCAPlot(object = object,g = g, filetype = filetype, figsize = figsize, figunit = figunit, suffix = "_loading")
+    saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit, suffix = "_loading")
   }
   return(g)
 }

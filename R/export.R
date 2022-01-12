@@ -148,8 +148,9 @@ getFilename <- function(object, filename = NA, filepath = NA, prefix = "", suffi
   # Check if file already exists
   cnt <- 1
   while(file.exists(paste0(fname, suffix, ifelse(substr(filetype,1,1) == ".", filetype, paste0(".", filetype))))){
-    fname <- paste0(object$filepath,object$filename,"_",cnt)
+    fname <- paste0(object$filepath,prefix,object$filename,"_",cnt)
     cnt <- cnt + 1
   }
   fname <- paste0(fname, suffix, ifelse(substr(filetype,1,1) == "." | filetype == "", filetype, paste0(".", filetype)))
+  return(fname)
 }
