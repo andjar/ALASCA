@@ -531,7 +531,7 @@ flipIt <- function(object, component = NA, effect = "both"){
 #' @export
 summary.ALASCA <- function(object, file = "", sessioninfo = FALSE){
   cat("================ ALASCA ================\n", file = file, append = TRUE)
-  cat("Model initialized ", as.character(object$initTime), " using ",object$method," on ",length(unique(mod$RegressionCoefficients$covar))," variables. ", sep = "", file = file, append = TRUE)
+  cat("Model initialized ", as.character(object$initTime), " using ",object$method," on ",length(unique(object$RegressionCoefficients$covar))," variables. ", sep = "", file = file, append = TRUE)
   if(object$validate){
     cat("The model been validated.\n", file = file, append = TRUE)
   }else{
