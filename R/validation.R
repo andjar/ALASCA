@@ -446,15 +446,20 @@ prepareValidationRun <- function(object){
     cc_id <- 1 # Will become the new participant ID
     
     if(object$method %in% c("LMM", "Rfast")){
-      # Loop through all the groups
+      # Loop through all the groups and create a new dataframe with resampled values
       for(i in unique(object$stratificationVector)){
+        # Get ID of all members of stratification group
         selectedParts_temp_all <- unique(object$df[object$stratificationVector == i,ID])
+        
+        # Resample participants
         selectedParts_temp_selected <- sample(selectedParts_temp_all, length(selectedParts_temp_all), replace = TRUE)
+        
+        # Create data frame from resampled participants
         bootdf <- rbind(bootdf,
                           data.table::rbindlist(
                                  lapply(selectedParts_temp_selected, function(x){
                                         seldf <- bootdf_temp[bootdf_temp$ID == x,]
-                                        seldf$ID <- cc_id
+                                        seldf$ID <- cc_id # Replace ID
                                         cc_id <- cc_id + 1
                                         seldf
                                       })

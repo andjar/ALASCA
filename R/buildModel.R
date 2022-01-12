@@ -223,7 +223,7 @@ separateLMECoefficients <- function(object){
 
 #' Get effect matrix
 #'
-#' This function separates time and group variables if separateTimeAndGroup = TRUE
+#' This function calculates the effect matrix
 #'
 #' @param object An ALASCA object
 #' @return An ALASCA object

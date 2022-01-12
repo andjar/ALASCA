@@ -149,6 +149,7 @@ ALASCA <- function(df,
     currentTs <- Sys.time()
   }
 
+  # Clean input
   object <- sanitizeObject(object)
   
   if(object$doDebug){
@@ -156,6 +157,7 @@ ALASCA <- function(df,
     cat(".. Has cleaned the ALASCA model. Next step is building it\n")
     currentTs <- Sys.time()
   }
+  # Build the ALASCA model
   object <- buildModel(object)
   if(object$doDebug) cat("..* buildModel:",Sys.time()-currentTs,"s\n")
   
@@ -165,6 +167,8 @@ ALASCA <- function(df,
     object <- removeEmbedded(object)
     if(object$doDebug) cat("..* removeEmbedded:",Sys.time()-currentTs,"s\n")
   }
+  
+  # Validate the model
   if(object$validate){
     if(object$doDebug){
       cat(".. You chose to validate the model. Starting validation\n")
@@ -174,6 +178,8 @@ ALASCA <- function(df,
     if(object$doDebug) cat("..* validate:",Sys.time()-currentTs,"s\n")
   }
   object$runtime <- Sys.time() - object$initTime
+  
+  # Save the model
   if(object$save & !object$minimizeObject){
     saveALASCA(object)
   }
@@ -240,6 +246,7 @@ sanitizeObject <- function(object){
   
   if(!object$minimizeObject){
     object$valCol <- as.character(object$formula)[2]
+    
     # Check formula from user
     formulaTerms <- colnames(attr(terms.formula(object$formula),"factors"))
     object$formulaTerms <- formulaTerms
@@ -391,16 +398,22 @@ sanitizeObject <- function(object){
   
   # Keep a copy of unscaled data
   object$dfRaw <- object$df
+  
+  # The user provided a custom function
   if(is.function(object$scaleFun)){
     if(!object$minimizeObject){
       cat("Scaling data with custom function...\n")
     }
     object$df <- object$scaleFun(object$df)
     object$df$value <- object$df[, get(object$valCol)]
+    
+    # The user do not want to scale
   }else if(object$scaleFun == "none"){
     if(!object$minimizeObject){
       warning("Not scaling data...\n")
     }
+    
+    # Use a deafult scaling
   }else if(is.character(object$scaleFun)){
     object$scaleFun <- getScaleFun(object$scaleFun)
     if(!object$minimizeObject){
