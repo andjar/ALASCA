@@ -173,9 +173,9 @@ getValidationPercentiles <- function(object, objectlist){
   return(object)
 }
 
-#' Extract percentiles for loading
+#' Extract percentiles for refressions
 #'
-#' This function extract percentiles during validation
+#' This function extract percentiles for validation of regression
 #'
 #' @inheritParams getValidationPercentiles
 #' @return An ALASCA object
@@ -192,7 +192,7 @@ getValidationPercentilesRegression <- function(object, objectlist){
 
 #' Extract percentiles for loading
 #'
-#' This function extract percentiles during validation
+#' This function extract percentiles during validation of loadings
 #'
 #' @inheritParams getValidationPercentiles
 #' @return An ALASCA object
@@ -200,10 +200,12 @@ getValidationPercentilesLoading <- function(object, objectlist){
   df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$loading$time), fill = TRUE)
   PC_time <- getRelevantPCs(object$pca$loading$explained$time)
   perc_time <- aggregate(data = df_time, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-  perc_time <- data.table::rbindlist(lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
-                                                                             high = perc_time[[x]][,2],
-                                                                             PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
-                                                                             covars = perc_time$covars)))
+  perc_time <- data.table::rbindlist(
+    lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
+                                                    high = perc_time[[x]][,2],
+                                                      PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
+                                                  covars = perc_time$covars))
+    )
   
   object$validation$time$loading <- subset(perc_time, PC %in% PC_time)
   names(object$validation$time$loading)[names(object$validation$time$loading) == 'value'] <- 'loading'
@@ -213,10 +215,11 @@ getValidationPercentilesLoading <- function(object, objectlist){
     df_group <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$loading$group), fill = TRUE)
     PC_group <- getRelevantPCs(object$pca$loading$explained$group)
     perc_group <- aggregate(data = df_group, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-    perc_group <- data.table::rbindlist(lapply(2:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
-                                                                                 high = perc_group[[x]][,2],
-                                                                                 PC = as.numeric(substr(names(perc_group)[x], 3, nchar(names(perc_group)[x]))), 
-                                                                                 covars = perc_group$covars)))
+    perc_group <- data.table::rbindlist(
+      lapply(2:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
+                                                       high = perc_group[[x]][,2],
+                                                         PC = as.numeric(substr(names(perc_group)[x], 3, nchar(names(perc_group)[x]))), 
+                                                     covars = perc_group$covars)))
     object$validation$group$loading <- subset(perc_group, PC %in% PC_group)
     names(object$validation$group$loading)[names(object$validation$group$loading) == 'value'] <- 'loading'
     object$ALASCA$loading$group <- merge(object$ALASCA$loading$group, object$validation$group$loading, all.x = TRUE)
@@ -226,7 +229,7 @@ getValidationPercentilesLoading <- function(object, objectlist){
 
 #' Extract percentiles for score
 #'
-#' This function extract percentiles during validation
+#' This function extract percentiles during validation of scores
 #'
 #' @inheritParams getValidationPercentiles
 #' @return An ALASCA object
@@ -259,8 +262,7 @@ getValidationPercentilesScore <- function(object, objectlist){
     names(object$validation$group$score)[names(object$validation$group$score) == 'value'] <- 'score'
     object$ALASCA$score$group <- merge(object$ALASCA$score$group, object$validation$group$score, all.x = TRUE)
   }else{
-    # Pool time and groups effects
-    
+    # Pooled time and groups effects
     df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$score$time), fill = TRUE)
     PC_time <- getRelevantPCs(object$pca$score$explained$time)
     perc_time <- aggregate(data = df_time, . ~ time + group, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
@@ -290,7 +292,7 @@ getRelevantPCs <- function(x){
 
 #' Switch sign
 #'
-#' This function extract percentiles during validation
+#' This function switch the signs of high/low CI
 #'
 #' @param value Point estimate
 #' @param perc Uncertainty
@@ -311,7 +313,7 @@ switchSign <- function(value, perc, PCs){
 
 #' Validate underlying regression models
 #'
-#' This function ...
+#' This function calcuates predictions from each regression model
 #'
 #' @param object An ALASCA object
 #' @return An ALASCA object
