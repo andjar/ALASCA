@@ -47,8 +47,8 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
     temp_object <- rotateMatrix(object = temp_object, target = object)
     temp_object <- cleanALASCA(temp_object)
     
-    time_all <- (Sys.time() - start.time.all)/ii
-    cat("--- Used ",round(Sys.time() - start.time.this,2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*time_all,2)," seconds \n")
+    time_all <- difftime(Sys.time(), start.time.all, units = c("secs"))/ii
+    cat("--- Used ",round(difftime(Sys.time(), start.time.this, units = c("secs")),2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*time_all,2)," seconds \n")
     temp_object
   })
   
