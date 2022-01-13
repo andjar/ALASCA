@@ -2,6 +2,13 @@
 
 ## New features
 
+* `plothistogram()` will make nice histograms of the validation runs
+  * For subplots: `plothistogram_loading()` and `plothistogram_score()`
+
+# ALASCA 0.0.0.102
+
+## New features
+
 * Use `limitloading = TRUE` in plot functions to remove loadings containing 0 in CI
 
 ## Improvements

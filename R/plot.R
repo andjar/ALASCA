@@ -1081,7 +1081,7 @@ plotComponents <- function(object,
     validationshape <- NA
   }
   if(any(!comps %in% getRelevantPCs(object$ALASCA$loading$explained$time))){
-    warning("Please note: Come components have low explanatory power and HAVE NOT BEEN rotated during rotation. Proceed with care.")
+    warning("Please note: Some components have low explanatory power and HAVE NOT BEEN rotated during rotation. Proceed with care.")
   }
   if(validationshape == "cross" & !is.na(validationshape)){
     if(object$separateTimeAndGroup){
