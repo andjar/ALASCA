@@ -1,6 +1,6 @@
 Package: ALASCA
 Title: Assorted, Linear ASCA Functions
-Version: 0.0.0.102
+Version: 0.0.0.103
 Authors@R: 
     person(given = "Anders H.",
            family = "Jarmund",
@@ -13,7 +13,7 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Depends:
   data.table
 Imports:

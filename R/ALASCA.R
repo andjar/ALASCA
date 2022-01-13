@@ -204,8 +204,8 @@ RMASCA <- function(...){
 #' @return String
 #' @export
 printVer <- function(object = FALSE, get = NA, print = TRUE){
-  ALASCA.version <- "0.0.0.102"
-  ALASCA.version.date <- "2022-01-11"
+  ALASCA.version <- "0.0.0.103"
+  ALASCA.version.date <- "2022-01-13"
   if(is.list(object)){
     ALASCA.version <- object$ALASCA.version
     ALASCA.version.date <- object$ALASCA.version.date

@@ -2,7 +2,7 @@
 % Please edit documentation in R/validation.R
 \name{getValidationPercentilesRegression}
 \alias{getValidationPercentilesRegression}
-\title{Extract percentiles for loading}
+\title{Extract percentiles for refressions}
 \usage{
 getValidationPercentilesRegression(object, objectlist)
 }
@@ -15,5 +15,5 @@ getValidationPercentilesRegression(object, objectlist)
 An ALASCA object
 }
 \description{
-This function extract percentiles during validation
+This function extract percentiles for validation of regression
 }

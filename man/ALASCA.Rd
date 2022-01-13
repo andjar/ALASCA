@@ -31,12 +31,13 @@ ALASCA(
   plot.myTheme = ggplot2::theme_classic(),
   keepTerms = c(""),
   save = FALSE,
+  validation = FALSE,
   filename = NA,
   filepath = NA,
   lowerLimit = NA,
   optimizeScore = TRUE,
   validateRegression = TRUE,
-  validationMethod = "loo",
+  validationMethod = "bootstrap",
   validationObject = NA,
   validationParticipants = NA
 )

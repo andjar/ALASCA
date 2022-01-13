@@ -15,5 +15,5 @@ getValidationPercentilesLoading(object, objectlist)
 An ALASCA object
 }
 \description{
-This function extract percentiles during validation
+This function extract percentiles during validation of loadings
 }

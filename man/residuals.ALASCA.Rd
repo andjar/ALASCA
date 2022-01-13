@@ -7,7 +7,7 @@
 \method{residuals}{ALASCA}(object, variable = NA)
 }
 \arguments{
-\item{object}{An RMASCA object}
+\item{object}{An ALASCA object}
 
 \item{variable}{The name of the variable(s) you want. \code{NA} returns all (default).}
 }

@@ -17,5 +17,5 @@ switchSign(value, perc, PCs)
 An ALASCA object
 }
 \description{
-This function extract percentiles during validation
+This function switch the signs of high/low CI
 }

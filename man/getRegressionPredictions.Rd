@@ -13,5 +13,5 @@ getRegressionPredictions(object)
 An ALASCA object
 }
 \description{
-This function ...
+This function calcuates predictions from each regression model
 }
