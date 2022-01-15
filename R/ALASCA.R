@@ -63,7 +63,7 @@ ALASCA <- function(df,
                    plot.loadinggroupcolumn = NA,
                    doDebug = FALSE,
                    nValFold = 7,
-                   nValRuns = 50,
+                   nValRuns = 1000,
                    plot.myTheme = ggplot2::theme_classic(),
                    keepTerms = c(""),
                    save = FALSE,
@@ -130,7 +130,7 @@ ALASCA <- function(df,
                    lowerLimit = lowerLimit,
                    filename = filename,
                    filepath = filepath,
-                   savetodisk = savetodisk,
+                   savetodisk = ifelse(validate|validation,savetodisk,FALSE),
                    rawFormula = formula,
                    optimizeScore = optimizeScore,
                    stratificationVector = stratificationVector,
@@ -140,6 +140,8 @@ ALASCA <- function(df,
                    validationObject = validationObject,
                    validationParticipants = validationParticipants,
                    variablelist = unique(df$variable),
+                   timelist = levels(df$time),
+                   grouplist = levels(df$group),
                    ALASCA.version = printVer(get = "version"),
                    ALASCA.version.date = printVer(get = "date")
     )
@@ -187,7 +189,8 @@ ALASCA <- function(df,
   }
   
   if(object$savetodisk & !object$minimizeObject){
-    object$validation.file$close_all()
+    DBI::dbDisconnect(object$db.con)
+    DBI::dbUnloadDriver(object$db.driver)
   }
 
   return(object)
@@ -210,7 +213,7 @@ RMASCA <- function(...){
 #' @return String
 #' @export
 printVer <- function(object = FALSE, get = NA, print = TRUE){
-  ALASCA.version <- "0.0.0.104"
+  ALASCA.version <- "0.0.0.105"
   ALASCA.version.date <- "2022-01-15"
   if(is.list(object)){
     ALASCA.version <- object$ALASCA.version
@@ -366,9 +369,22 @@ sanitizeObject <- function(object){
     }
     
     if(object$savetodisk){
-      object$validation.filename <- getFilename(object, prefix = "validation/", filetype = "h5")
-      object$validation.file <- hdf5r::H5File$new(object$validation.filename, mode = "w")
-      object$validation.file$create_group("ALASCA")
+      object$db.driver = RSQLite::dbDriver("SQLite")
+      object$db.filename <- getFilename(object, prefix = "validation/", filetype = "db")
+      object$db.con = DBI::dbConnect(object$db.driver, dbname = object$db.filename)
+      object$numvariablelist <- 1:length(object$variablelist)
+      names(object$numvariablelist) <- object$variablelist
+      DBI::dbWriteTable(object$db.con, "covars", data.frame(id = object$numvariablelist, covar = object$variablelist))
+      
+      # object$timelist <- unique(object$df$time)
+      # object$numtimelist <- 1:length(object$timelist)
+      # names(object$numtimelist) <- object$timelist
+      # DBI::dbWriteTable(object$db.con, "time", data.frame(id = object$numtimelist, time = object$timelist))
+
+      # object$grouplist <- unique(object$df$group)
+      # object$numgrouplist <- 1:length(object$grouplist)
+      # names(object$numgrouplist) <- object$grouplist
+      # DBI::dbWriteTable(object$db.con, "group", data.frame(id = object$numgrouplist, group = object$grouplist))
     }
   }
   

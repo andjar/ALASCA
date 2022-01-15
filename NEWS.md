@@ -1,3 +1,9 @@
+# ALASCA 0.0.0.105
+
+## New features
+
+* `savetodisk = TRUE` in `ALASCA()` will use a SQLite database so save the validation runs
+
 # ALASCA 0.0.0.102
 
 ## New features

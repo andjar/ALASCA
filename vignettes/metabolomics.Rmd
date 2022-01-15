@@ -102,7 +102,12 @@ Without any fuss, let us see what ALASCA makes out of it using the same model as
 
 ```{r}
 form <- value ~ time + time:group + (1|ID)
-mod <- ALASCA(df, form, separateTimeAndGroup = FALSE, forceEqualBaseline = TRUE, scaleFun = scaleFun, method = "LMM", useRfast = FALSE)
+#mod <- ALASCA(df, form, separateTimeAndGroup = FALSE, forceEqualBaseline = TRUE, scaleFun = scaleFun, method = "LMM", useRfast = FALSE)
+
+
+devtools::load_all()
+mod <- ALASCA(df, form, separateTimeAndGroup = FALSE, forceEqualBaseline = TRUE, scaleFun = "sdall", validate = TRUE, nValRuns = 10)
+
 ```
 
 Let us check that our model is as expected:

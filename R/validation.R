@@ -37,6 +37,10 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
   start.time.all <- Sys.time()
 
   if(object$savetodisk){
+    limPC_time <- getRelevantPCs(object$ALASCA$loading$explained$time)
+    if(object$separateTimeAndGroup){
+      limPC_group <- getRelevantPCs(object$ALASCA$loading$explained$group)
+    }
     temp_object <- lapply(1:object$nValRuns, FUN = function(ii){
       cat("- Run ",ii," of ",object$nValRuns,"\n")
       start.time.this <- Sys.time()
@@ -50,24 +54,28 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
       
       # Save to disk
       fname <- paste0("val_",ii)
-      object$validation.file[["ALASCA"]]$create_group(fname)
-      object$validation.file[["ALASCA"]][[fname]]$create_group("loading")
-      object$validation.file[["ALASCA"]][[fname]][["loading"]][["time"]] <- temp_object$ALASCA$loading$time
-      object$validation.file[["ALASCA"]][[fname]]$create_group("score")
-      object$validation.file[["ALASCA"]][[fname]][["score"]][["time"]] <- temp_object$ALASCA$score$time
-      object$validation.file[["ALASCA"]][[fname]]$create_group("pca")
-      object$validation.file[["ALASCA"]][[fname]][["pca"]]$create_group("loading")
-      object$validation.file[["ALASCA"]][[fname]][["pca"]][["loading"]][["time"]] <- temp_object$pca$loading$time
-      object$validation.file[["ALASCA"]][[fname]][["pca"]]$create_group("score")
-      object$validation.file[["ALASCA"]][[fname]][["pca"]][["score"]][["time"]] <- temp_object$pca$score$time
+      loading <- data.frame(temp_object$ALASCA$loading$time[temp_object$ALASCA$loading$time$PC %in% limPC_time,], model = ii)
+      #loading$covars <- object$numvariablelist[loading$covars]
+      DBI::dbWriteTable(object$db.con, "time.loading", loading, append= T, overwrite=F)
+      scores <- data.frame(temp_object$ALASCA$score$time[temp_object$ALASCA$score$time$PC %in% limPC_time,], model = ii)
+      #scores$time <- object$numtimelist[scores$time]
+      #if(!object$separateTimeAndGroup){
+      #  scores$group <- object$numgrouplist[scores$group]
+      #}
+      DBI::dbWriteTable(object$db.con, "time.score", scores, append= T, overwrite=F)
+      
       if(object$separateTimeAndGroup){
-        object$validation.file[["ALASCA"]][[fname]][["loading"]][["group"]] <- temp_object$ALASCA$loading$group
-        object$validation.file[["ALASCA"]][[fname]][["score"]][["group"]] <- temp_object$ALASCA$score$group
-        object$validation.file[["ALASCA"]][[fname]][["pca"]][["loading"]][["group"]] <- temp_object$pca$loading$group
-        object$validation.file[["ALASCA"]][[fname]][["pca"]][["score"]][["group"]] <- temp_object$pca$score$group
+        loading <- data.frame(temp_object$ALASCA$loading$group[temp_object$ALASCA$loading$group$PC %in% limPC_group,], model = ii)
+        #loading$covars <- object$numvariablelist[loading$covars]
+        DBI::dbWriteTable(object$db.con, "group.loading", loading, append= T, overwrite=F)
+        
+        scores <- data.frame(temp_object$ALASCA$score$group[temp_object$ALASCA$score$group$PC %in% limPC_group,], model = ii)
+        #scores$time <- object$numtimelist[scores$time]
+        #scores$group <- object$numgrouplist[scores$group]
+        DBI::dbWriteTable(object$db.con, "group.score", scores, append= T, overwrite=F)
       }
       if(object$validateRegression){
-        object$validation.file[["ALASCA"]][[fname]][["mod.pred"]] <- temp_object$mod.pred
+        DBI::dbWriteTable(object$db.con, "mod.pred", data.frame(temp_object$mod.pred, model = ii), append= T, overwrite=F)
       }
       
       time_all <- difftime(Sys.time(), start.time.all, units = c("secs"))/ii
@@ -221,9 +229,9 @@ getValidationPercentiles <- function(object, objectlist){
 #' @return An ALASCA object
 getValidationPercentilesRegression <- function(object, objectlist){
   if(object$savetodisk){
-    df <- data.table::rbindlist(lapply(objectlist, function(x){
-      object$validation.file[["ALASCA"]][[x]][["mod.pred"]]
-    }))
+    res <- DBI::dbSendQuery(object$db.con, "SELECT * FROM 'mod.pred'")
+    df <- DBI::dbFetch(res)
+    DBI::dbClearResult(res)
   }else{
     df <- data.table::rbindlist(lapply(objectlist, function(x) x$mod.pred))
   }
@@ -243,43 +251,41 @@ getValidationPercentilesRegression <- function(object, objectlist){
 #' @inheritParams getValidationPercentiles
 #' @return An ALASCA object
 getValidationPercentilesLoading <- function(object, objectlist){
+  PC_time <- getRelevantPCs(object$ALASCA$loading$explained$time)
   if(object$savetodisk){
-    df_time <- data.table::rbindlist(lapply(objectlist, function(x) object$validation.file[["ALASCA"]][[x]][["pca"]][["loading"]][["time"]]$read()), fill = TRUE)
+    res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.loading' WHERE PC IN(",paste(PC_time, collapse = ', '),")"))
+    df_time <- DBI::dbFetch(res)
+    DBI::dbClearResult(res)
   }else{
-    df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$loading$time), fill = TRUE)
+    df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$ALASCA$loading$time[x$ALASCA$loading$time$PC %in% PC_time,]), fill = TRUE)
   }
   
-  PC_time <- getRelevantPCs(object$pca$loading$explained$time)
-  perc_time <- aggregate(data = df_time, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-  perc_time <- data.table::rbindlist(
-    lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
-                                                    high = perc_time[[x]][,2],
-                                                      PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
-                                                  covars = perc_time$covars))
-    )
+  perc_time <- aggregate(data = df_time, loading ~ PC + covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+  object$validation$time$loading <- data.frame(low = perc_time$loading[,1], 
+                                              high = perc_time$loading[,2],
+                                                PC = perc_time$PC, 
+                                            covars = perc_time$covars)
   
-  object$validation$time$loading <- subset(perc_time, PC %in% PC_time)
-  names(object$validation$time$loading)[names(object$validation$time$loading) == 'value'] <- 'loading'
+  #names(object$validation$time$loading)[names(object$validation$time$loading) == 'value'] <- 'loading'
   object$ALASCA$loading$time <- merge(object$ALASCA$loading$time, object$validation$time$loading, all.x = TRUE)
   
   if(object$separateTimeAndGroup){
+    PC_group <- getRelevantPCs(object$ALASCA$loading$explained$group)
     if(object$savetodisk){
-      df_group <- data.table::rbindlist(lapply(objectlist, function(x){
-        df_group <- data.table::rbindlist(lapply(objectlist, function(x) object$validation.file[["ALASCA"]][[x]][["pca"]][["loading"]][["group"]]$read()), fill = TRUE)
-      }), fill = TRUE)
+      res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'group.loading' WHERE PC IN(",paste(PC_group, collapse = ', '),")"))
+      df_group <- DBI::dbFetch(res)
+      DBI::dbClearResult(res)
     }else{
-      df_group <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$loading$group), fill = TRUE)
+      df_group <- data.table::rbindlist(lapply(objectlist, function(x) x$ALASCA$loading$group[x$ALASCA$loading$group %in% PC_group,]), fill = TRUE)
     }
     
-    PC_group <- getRelevantPCs(object$pca$loading$explained$group)
-    perc_group <- aggregate(data = df_group, . ~ covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-    perc_group <- data.table::rbindlist(
-      lapply(2:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
-                                                       high = perc_group[[x]][,2],
-                                                         PC = as.numeric(substr(names(perc_group)[x], 3, nchar(names(perc_group)[x]))), 
-                                                     covars = perc_group$covars)))
-    object$validation$group$loading <- subset(perc_group, PC %in% PC_group)
-    names(object$validation$group$loading)[names(object$validation$group$loading) == 'value'] <- 'loading'
+    perc_group <- aggregate(data = df_group, loading ~ PC + covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+    object$validation$group$loading <- data.frame(low = perc_group$loading[,1], 
+                                                 high = perc_group$loading[,2],
+                                                   PC = perc_group$PC, 
+                                               covars = perc_group$covars)
+
+    #names(object$validation$group$loading)[names(object$validation$group$loading) == 'value'] <- 'loading'
     object$ALASCA$loading$group <- merge(object$ALASCA$loading$group, object$validation$group$loading, all.x = TRUE)
   }
   return(object)
@@ -295,63 +301,63 @@ getValidationPercentilesScore <- function(object, objectlist){
   if(object$separateTimeAndGroup){
     # Separate time and group effects
     
+    PC_time <- getRelevantPCs(object$ALASCA$score$explained$time)
     if(object$savetodisk){
-      df_group <- data.table::rbindlist(lapply(objectlist, function(x){
-        df_time <- data.table::rbindlist(lapply(objectlist, function(x) object$validation.file[["ALASCA"]][[x]][["pca"]][["score"]][["time"]]$read()), fill = TRUE)
-      }), fill = TRUE)
+      res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.score' WHERE PC IN(",paste(PC_time, collapse = ', '),")"))
+      df_time <- DBI::dbFetch(res)
+      DBI::dbClearResult(res)
     }else{
-      df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$score$time), fill = TRUE)
+      df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$ALASCA$score$time[x$ALASCA$score$time$PC %in% PC_time,]), fill = TRUE)
     }
     
-    PC_time <- getRelevantPCs(object$pca$score$explained$time)
-    perc_time <- aggregate(data = df_time, . ~ time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-    perc_time <- data.table::rbindlist(lapply(2:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
-                                                                               high = perc_time[[x]][,2],
-                                                                               PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
-                                                                               time = perc_time$time)))
+    perc_time <- aggregate(data = df_time, score ~ PC + time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+    object$validation$time$score <- data.frame(low = perc_time$score[,1], 
+                                              high = perc_time$score[,2],
+                                                PC = perc_time$PC, 
+                                              time = perc_time$time)
     #perc_time <- switchSign(reshape2::melt(object$pca$score$time, id.vars = "time"), perc_time)
-    object$validation$time$score <- subset(perc_time, PC %in% PC_time)
-    names(object$validation$time$score)[names(object$validation$time$score) == 'value'] <- 'score'
+
+    #names(object$validation$time$score)[names(object$validation$time$score) == 'value'] <- 'score'
     object$ALASCA$score$time <- merge(object$ALASCA$score$time, object$validation$time$score, all.x = TRUE)
     
+    PC_group <- getRelevantPCs(object$ALASCA$score$explained$group)
     if(object$savetodisk){
-      df_group <- data.table::rbindlist(lapply(objectlist, function(x){
-        df_group <- data.table::rbindlist(lapply(objectlist, function(x) object$validation.file[["ALASCA"]][[x]][["pca"]][["score"]][["group"]]$read()), fill = TRUE)
-      }), fill = TRUE)
+      res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'group.score' WHERE PC IN(",paste(PC_group, collapse = ', '),")"))
+      df_group <- DBI::dbFetch(res)
+      DBI::dbClearResult(res)
     }else{
-      df_group <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$score$group), fill = TRUE)
+      df_group <- data.table::rbindlist(lapply(objectlist, function(x) x$ALASCA$score$group[x$ALASCA$score$group$PC %in% x$ALASCA$score$group,]), fill = TRUE)
     }
     
-    PC_group <- getRelevantPCs(object$pca$score$explained$group)
-    perc_group <- aggregate(data = df_group, . ~ group + time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-    perc_group <- data.table::rbindlist(lapply(3:ncol(perc_group), function(x) data.frame(low = perc_group[[x]][,1], 
-                                                                                 high = perc_group[[x]][,2],
-                                                                                 PC = as.numeric(substr(names(perc_group)[x], 3, nchar(names(perc_group)[x]))), 
-                                                                                 time = perc_group$time,
-                                                                                 group = perc_group$group)))
-    #perc_group <- switchSign(reshape2::melt(object$pca$score$group, id.vars = c("time", "group")), perc_group, PC_group)
-    object$validation$group$score <- subset(perc_group, PC %in% PC_group)
-    names(object$validation$group$score)[names(object$validation$group$score) == 'value'] <- 'score'
+    perc_group <- aggregate(data = df_group, score ~ PC + group + time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+    object$validation$group$score <- data.frame(low = perc_group$score[,1], 
+                                               high = perc_group$score[,2],
+                                                 PC = perc_group$PC, 
+                                               time = perc_group$time,
+                                              group = perc_group$group)
+    #perc_group <- switchSign(reshape2::melt(object$pca$score$group, id.vars = c("time"$score, "group")), perc_group, PC_group)
+
+    #names(object$validation$group$score)[names(object$validation$group$score) == 'value'] <- 'score'
     object$ALASCA$score$group <- merge(object$ALASCA$score$group, object$validation$group$score, all.x = TRUE)
   }else{
     # Pooled time and groups effects
+    PC_time <- getRelevantPCs(object$ALASCA$score$explained$time)
     if(object$savetodisk){
-      df_group <- data.table::rbindlist(lapply(objectlist, function(x){
-        df_time <- data.table::rbindlist(lapply(objectlist, function(x) object$validation.file[["ALASCA"]][[x]][["pca"]][["score"]][["time"]]$read()), fill = TRUE)
-      }), fill = TRUE)
+      res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.score' WHERE PC IN(",paste(PC_time, collapse = ', '),")"))
+      df_time <- DBI::dbFetch(res)
+      DBI::dbClearResult(res)
     }else{
-      df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$pca$score$time), fill = TRUE)
+      df_time <- data.table::rbindlist(lapply(objectlist, function(x) x$ALASCA$score$time[x$ALASCA$score$time$PC %in% PC_time,]), fill = TRUE)
     }
     
-    PC_time <- getRelevantPCs(object$pca$score$explained$time)
-    perc_time <- aggregate(data = df_time, . ~ time + group, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
-    perc_time <- data.table::rbindlist(lapply(3:ncol(perc_time), function(x) data.frame(low = perc_time[[x]][,1], 
-                                                                               high = perc_time[[x]][,2],
-                                                                               PC = as.numeric(substr(names(perc_time)[x], 3, nchar(names(perc_time)[x]))), 
-                                                                               time = perc_time$time,
-                                                                               group = perc_time$group)))
-    object$validation$time$score <- subset(perc_time, PC %in% PC_time)
-    names(object$validation$time$score)[names(object$validation$time$score) == 'value'] <- 'score'
+    perc_time <- aggregate(data = df_time, score ~ PC + time + group, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
+    object$validation$time$score <- data.frame(low = perc_time$score[,1], 
+                                              high = perc_time$score[,2],
+                                                PC = perc_time$PC, 
+                                              time = perc_time$time,
+                                             group = perc_time$group)
+    
+    #names(object$validation$time$score)[names(object$validation$time$score) == 'value'] <- 'score'
     object$ALASCA$score$time <- merge(object$ALASCA$score$time, object$validation$time$score, all.x = TRUE)
   }
   return(object)
