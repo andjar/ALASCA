@@ -94,5 +94,6 @@ cleanALASCA<- function(object){
     object$ALASCA$score$explained$time <- object$pca$score$explained$time
     object$ALASCA$loading$explained$time <- object$pca$loading$explained$time
   }
+  
   return(object)
 }

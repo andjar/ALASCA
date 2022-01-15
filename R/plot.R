@@ -328,8 +328,8 @@ screeplot.ALASCA <- function(object,
 #' @param object An ALASCA object
 #' @return A list with loadings for time (and group), and the exploratory power for each component
 #' @export
-getLoadings <- function(object, limitloadings = FALSE){
-  if(!limitloadings | !object$validate){
+getLoadings <- function(object, limitloading = FALSE){
+  if(!limitloading | !object$validate){
     return(object$ALASCA$loading)
   }else{
     dfl <- object$ALASCA$loading
@@ -414,9 +414,9 @@ getLoadingPlot <- function(object,
   }
   pointSize <- 0.4
   if(effect == "time"){
-    loadings <- subset(getLoadings(object, limitloading == limitloading)$time, PC == component)
+    loadings <- subset(getLoadings(object, limitloading = limitloading)$time, PC == component)
   }else{
-    loadings <- subset(getLoadings(object, limitloading == limitloading)$group, PC == component)
+    loadings <- subset(getLoadings(object, limitloading = limitloading)$group, PC == component)
   }
   if(!is.na(object$plot.loadinggroupcolumn)){
     df_loading_labels <- data.frame(

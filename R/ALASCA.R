@@ -71,6 +71,7 @@ ALASCA <- function(df,
                    filename = NA,
                    filepath = NA,
                    lowerLimit = NA,
+                   savetodisk = FALSE,
                    optimizeScore = TRUE,
                    validateRegression = TRUE,
                    validationMethod = "bootstrap",
@@ -129,10 +130,11 @@ ALASCA <- function(df,
                    lowerLimit = lowerLimit,
                    filename = filename,
                    filepath = filepath,
+                   savetodisk = savetodisk,
                    rawFormula = formula,
                    optimizeScore = optimizeScore,
                    stratificationVector = stratificationVector,
-                   keepValidationObjects = TRUE,
+                   keepValidationObjects = FALSE,
                    validateRegression = ifelse(validate,validateRegression,FALSE),
                    validationMethod = validationMethod,
                    validationObject = validationObject,
@@ -183,6 +185,10 @@ ALASCA <- function(df,
   if(object$save & !object$minimizeObject){
     saveALASCA(object)
   }
+  
+  if(object$savetodisk & !object$minimizeObject){
+    object$validation.file$close_all()
+  }
 
   return(object)
 }
@@ -204,8 +210,8 @@ RMASCA <- function(...){
 #' @return String
 #' @export
 printVer <- function(object = FALSE, get = NA, print = TRUE){
-  ALASCA.version <- "0.0.0.103"
-  ALASCA.version.date <- "2022-01-13"
+  ALASCA.version <- "0.0.0.104"
+  ALASCA.version.date <- "2022-01-15"
   if(is.list(object)){
     ALASCA.version <- object$ALASCA.version
     ALASCA.version.date <- object$ALASCA.version.date
@@ -358,6 +364,12 @@ sanitizeObject <- function(object){
     }else if(object$method %in% c("LM")){
       object$newformula <- value ~ modmat
     }
+    
+    if(object$savetodisk){
+      object$validation.filename <- getFilename(object, prefix = "validation/", filetype = "h5")
+      object$validation.file <- hdf5r::H5File$new(object$validation.filename, mode = "w")
+      object$validation.file$create_group("ALASCA")
+    }
   }
   
   
@@ -449,11 +461,16 @@ removeEmbedded <- function(object){
   object$df <- NULL
   object$dfRaw <- NULL
   object$parts <- NULL
+  object$validationParticipants <- NULL
+  object$stratificationVector <- NULL
   object$partsWithVariable <- NULL
   object$validationObject <- NULL
   object$regr.model <- NULL
   object$RegressionCoefficients <- NULL
   object$effect.matrix <- NULL
+  
+  attr(object$newformula, ".Environment") <- NULL
+  attr(object$formula, ".Environment") <- NULL
   return(object)
 }
 

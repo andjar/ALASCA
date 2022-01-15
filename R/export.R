@@ -73,8 +73,8 @@ savetocsv <- function(object, filename = NA, filepath = NA, saveCSV = TRUE, save
 #' @return Full file name of the saved object (String)
 #' @export
 saveALASCAModel <- function(object, filename = NA, filepath = NA){
-  fname <- getFilename(object = object, filename = filename, filepath = filepath, filetype = ".Rdata")
-  save(object, file = fname)
+  fname <- getFilename(object = object, filename = filename, filepath = filepath, filetype = ".rds")
+  saveRDS(object, file = fname)
   cat(paste0("- Saved model to ", fname,"\n"))
   return(fname)
 }
