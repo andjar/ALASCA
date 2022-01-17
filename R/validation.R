@@ -37,9 +37,9 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
   start.time.all <- Sys.time()
 
   if(object$savetodisk){
-    limPC_time <- getRelevantPCs(object$ALASCA$loading$explained$time)
+    limPC_time <- getRelevantPCs(object = object,  object$ALASCA$loading$explained$time)
     if(object$separateTimeAndGroup){
-      limPC_group <- getRelevantPCs(object$ALASCA$loading$explained$group)
+      limPC_group <- getRelevantPCs(object = object,  object$ALASCA$loading$explained$group)
     }
     temp_object <- lapply(1:object$nValRuns, FUN = function(ii){
       cat("- Run ",ii," of ",object$nValRuns,"\n")
@@ -91,7 +91,7 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
       temp_object <- prepareValidationRun(object)
       
       # Rotate new loadings/scores to the original model
-      temp_object <- rotateMatrix4(object = temp_object, target = object)
+      temp_object <- rotateMatrix(object = temp_object, target = object)
       temp_object <- cleanALASCA(temp_object)
       
       time_all <- difftime(Sys.time(), start.time.all, units = c("secs"))/ii
@@ -115,10 +115,8 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
 }
 
 rotateMatrix <- function(object, target){
-  # We are only looking at components explaining more than 5% of variation
-  PCloading <- target$ALASCA$loading$explained$time > 0.05
-  PCloading[1:2] <- TRUE
-  PCloading <- which(PCloading)
+  # We are only looking at components explaining more than a predefined value
+  PCloading <- getRelevantPCs(object = target, target$ALASCA$loading$explained$time)
   
   a_l <- object$pca$loading
   b_l <- target$pca$loading
@@ -166,9 +164,7 @@ rotateMatrix <- function(object, target){
   
   if(object$separateTimeAndGroup){
     # We are only looking at components explaining more than 5% of variation
-    PCloading <- target$pca$loading$explained$group > 0.05
-    PCloading[1:2] <- TRUE
-    PCloading <- which(PCloading)
+    PCloading <- getRelevantPCs(object = target, target$ALASCA$loading$explained$group)
     
     # PCA can give loadings with either sign, so we have to check whether this improves the rotation
     N   <- length(PCloading)
@@ -375,6 +371,19 @@ rotateMatrix4 <- function(object, target){
 #' @return An ALASCA object
 getValidationPercentiles <- function(object, objectlist){
 
+  if("low" %in% colnames(object$ALASCA$loading$time)){
+    object$ALASCA$loading$time$low <- NULL
+    object$ALASCA$loading$time$high <- NULL
+    object$ALASCA$score$time$low <- NULL
+    object$ALASCA$score$time$high <- NULL
+    if(object$separateTimeAndGroup){
+      object$ALASCA$loading$group$low <- NULL
+      object$ALASCA$loading$group$high <- NULL
+      object$ALASCA$score$group$low <- NULL
+      object$ALASCA$score$group$high <- NULL
+    }
+  }
+  
   object <- getValidationPercentilesLoading(object, objectlist)
   object <- getValidationPercentilesScore(object, objectlist)
   if(object$validateRegression){
@@ -414,7 +423,7 @@ getValidationPercentilesRegression <- function(object, objectlist){
 #' @inheritParams getValidationPercentiles
 #' @return An ALASCA object
 getValidationPercentilesLoading <- function(object, objectlist){
-  PC_time <- getRelevantPCs(object$ALASCA$loading$explained$time)
+  PC_time <- getRelevantPCs(object = object,  object$ALASCA$loading$explained$time)
   if(object$savetodisk){
     res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.loading' WHERE PC IN(",paste(PC_time, collapse = ', '),")"))
     df_time <- DBI::dbFetch(res)
@@ -433,7 +442,7 @@ getValidationPercentilesLoading <- function(object, objectlist){
   object$ALASCA$loading$time <- merge(object$ALASCA$loading$time, object$validation$time$loading, all.x = TRUE)
   
   if(object$separateTimeAndGroup){
-    PC_group <- getRelevantPCs(object$ALASCA$loading$explained$group)
+    PC_group <- getRelevantPCs(object = object,  object$ALASCA$loading$explained$group)
     if(object$savetodisk){
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'group.loading' WHERE PC IN(",paste(PC_group, collapse = ', '),")"))
       df_group <- DBI::dbFetch(res)
@@ -464,7 +473,7 @@ getValidationPercentilesScore <- function(object, objectlist){
   if(object$separateTimeAndGroup){
     # Separate time and group effects
     
-    PC_time <- getRelevantPCs(object$ALASCA$score$explained$time)
+    PC_time <- getRelevantPCs(object = object,  object$ALASCA$score$explained$time)
     if(object$savetodisk){
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.score' WHERE PC IN(",paste(PC_time, collapse = ', '),")"))
       df_time <- DBI::dbFetch(res)
@@ -482,7 +491,7 @@ getValidationPercentilesScore <- function(object, objectlist){
     #names(object$validation$time$score)[names(object$validation$time$score) == 'value'] <- 'score'
     object$ALASCA$score$time <- merge(object$ALASCA$score$time, object$validation$time$score, all.x = TRUE)
     
-    PC_group <- getRelevantPCs(object$ALASCA$score$explained$group)
+    PC_group <- getRelevantPCs(object = object,  object$ALASCA$score$explained$group)
     if(object$savetodisk){
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'group.score' WHERE PC IN(",paste(PC_group, collapse = ', '),")"))
       df_group <- DBI::dbFetch(res)
@@ -502,7 +511,7 @@ getValidationPercentilesScore <- function(object, objectlist){
     object$ALASCA$score$group <- merge(object$ALASCA$score$group, object$validation$group$score, all.x = TRUE)
   }else{
     # Pooled time and groups effects
-    PC_time <- getRelevantPCs(object$ALASCA$score$explained$time)
+    PC_time <- getRelevantPCs(object = object,  object$ALASCA$score$explained$time)
     if(object$savetodisk){
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.score' WHERE PC IN(",paste(PC_time, collapse = ', '),")"))
       df_time <- DBI::dbFetch(res)
@@ -530,8 +539,8 @@ getValidationPercentilesScore <- function(object, objectlist){
 #'
 #' @param x Explanatory power of PC
 #' @return A vector with relevant PCs
-getRelevantPCs <- function(x){
-  PC <- x > 0.05
+getRelevantPCs <- function(object, x){
+  PC <- x >= object$exploratorylimit
   PC[1:2] <- TRUE
   return(which(PC))
 }
@@ -717,27 +726,27 @@ getPermutationPValues <- function(target, objectlist){
     SS_f_time <- data.table::rbindlist(lapply(seq_along(objectlist), function(i){
       tmp <- reshape2::melt(objectlist[[i]]$pca$score$time, id.vars = c("time"))
       tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
-      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(objectlist[[i]]$pca$loading$explained$time),], value~time, FUN = function(x) sum(x^2))
+      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(object = target,  objectlist[[i]]$pca$loading$explained$time),], value~time, FUN = function(x) sum(x^2))
       tmp2$model <- i
       tmp2
     }))
     SS_time <- data.table::rbindlist(lapply(1, function(i){
       tmp <- reshape2::melt(target$pca$score$time, id.vars = c("time"))
       tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
-      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(target$pca$loading$explained$time),], value~time, FUN = function(x) sum(x^2))
+      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(object = target,  target$pca$loading$explained$time),], value~time, FUN = function(x) sum(x^2))
       tmp2
     }))
     SS_f_group <- data.table::rbindlist(lapply(seq_along(objectlist), function(i){
       tmp <- reshape2::melt(objectlist[[i]]$pca$score$group, id.vars = c("time","group"))
       tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
-      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(objectlist[[i]]$pca$loading$explained$group),], value~group+time, FUN = function(x) sum(x^2))
+      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(object = target,  objectlist[[i]]$pca$loading$explained$group),], value~group+time, FUN = function(x) sum(x^2))
       tmp2$model <- i
       tmp2
     }))
     SS_group <- data.table::rbindlist(lapply(1, function(i){
       tmp <- reshape2::melt(target$pca$score$group, id.vars = c("time","group"))
       tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
-      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(target$pca$loading$explained$group),], value~group+time, FUN = function(x) sum(x^2))
+      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(object = target,  target$pca$loading$explained$group),], value~group+time, FUN = function(x) sum(x^2))
       tmp2
     }))
     
@@ -764,14 +773,14 @@ getPermutationPValues <- function(target, objectlist){
     SS_f <- data.table::rbindlist(lapply(seq_along(objectlist), function(i){
       tmp <- reshape2::melt(objectlist[[i]]$pca$score$time, id.vars = c("time","group"))
       tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
-      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(objectlist[[i]]$pca$loading$explained$time),], value~group+time, FUN = function(x) sum(x^2))
+      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(object = target,  objectlist[[i]]$pca$loading$explained$time),], value~group+time, FUN = function(x) sum(x^2))
       tmp2$model <- i
       tmp2
     }))
     SS <- data.table::rbindlist(lapply(1, function(i){
       tmp <- reshape2::melt(target$pca$score$time, id.vars = c("time","group"))
       tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
-      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(target$pca$loading$explained$time),], value~group+time, FUN = function(x) sum(x^2))
+      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(object = target,  target$pca$loading$explained$time),], value~group+time, FUN = function(x) sum(x^2))
       tmp2
     }))
     pvals <- data.table::rbindlist(lapply(unique(paste(SS$time,SS$group)), function(x){

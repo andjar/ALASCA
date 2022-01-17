@@ -198,3 +198,6 @@ plothistogram_loading <- function(object, component = 1, bins = object$nValRuns/
    if(object$save) saveALASCAPlot(object, g, prefix = "plot/", suffix = paste0("_histo_loading"))
    return(g)
 }
+
+
+

@@ -61,6 +61,7 @@ ALASCA <- function(df,
                    plot.filetype = "png",
                    plot.palette = NA,
                    plot.loadinggroupcolumn = NA,
+                   exploratorylimit = 0.05,
                    doDebug = FALSE,
                    nValFold = 7,
                    nValRuns = 1000,
@@ -119,6 +120,7 @@ ALASCA <- function(df,
                    plot.palette = plot.palette,
                    plot.loadinggroupcolumn = plot.loadinggroupcolumn,
                    plot.myTheme = plot.myTheme,
+                   exploratorylimit = exploratorylimit,
                    minimizeObject = minimizeObject,
                    doDebug = doDebug,
                    nValFold = nValFold,
@@ -588,11 +590,11 @@ summary.ALASCA <- function(object, file = "", sessioninfo = FALSE){
   cat("Separating time and group effects: ", object$separateTimeAndGroup,"\n", file = file, append = TRUE)
   cat("Force equal baseline: ", object$forceEqualBaseline,"\n\n", file = file, append = TRUE)
   cat("\nPCs explaining at least 5% of variation:\n   Time: ", 
-      paste(getRelevantPCs(object$pca$score$explained$time), collapse = ", "), " (",
-      paste(round(100*object$pca$score$explained$time[getRelevantPCs(object$pca$score$explained$time)], 2), collapse = "%, "), "%)", 
+      paste(getRelevantPCs(object = object, object$pca$score$explained$time), collapse = ", "), " (",
+      paste(round(100*object$pca$score$explained$time[getRelevantPCs(object = object, object$pca$score$explained$time)], 2), collapse = "%, "), "%)", 
          ifelse(object$separateTimeAndGroup,paste0("\n   Group: ",
-                                                   paste(getRelevantPCs(object$pca$score$explained$group), collapse = ", "), " (",
-                                                   paste(round(100*object$pca$score$explained$group[getRelevantPCs(object$pca$score$explained$group)], 2), collapse = "%, "), "%)"),"\n"), sep = "", file = file, append = TRUE)
+                                                   paste(getRelevantPCs(object = object, object$pca$score$explained$group), collapse = ", "), " (",
+                                                   paste(round(100*object$pca$score$explained$group[getRelevantPCs(object = object, object$pca$score$explained$group)], 2), collapse = "%, "), "%)"),"\n"), sep = "", file = file, append = TRUE)
   if(is.function(object$scaleFun)){
     cat("\nScaling function:\n", file = file, append = TRUE)
     cat(deparse(object$scaleFun), file = file, append = TRUE)

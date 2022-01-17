@@ -86,10 +86,10 @@ saveALASCAModel <- function(object, filename = NA, filepath = NA){
 #' 
 #' @export
 saveALASCAPlot <- function(object, g, filetype = NA, figsize = NA, prefix = "plot/", suffix = "", figunit = NA){
-  if(is.na(filetype)){
+  if(any(is.na(filetype))){
     filetype <- object$plot.filetype
   }
-  if(is.na(figsize)){
+  if(any(is.na(figsize))){
     figsize <- object$plot.figsize
   }
   if(is.na(figunit)){
