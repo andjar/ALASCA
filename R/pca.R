@@ -61,7 +61,7 @@ cleanALASCA<- function(object){
     object$ALASCA$score$time <- object$pca$score$time[!duplicated(object$pca$score$time),]
     object$ALASCA$score$time <- setDT(reshape2::melt(object$ALASCA$score$time, id.vars = c("time")))
     colnames(object$ALASCA$score$time) <- c("time","PC","score")
-    object$ALASCA$score$time[,time := factor(time, levels = object$timelist),]
+    object$ALASCA$score$time[, time := factor(time, levels = object$timelist),]
     object$ALASCA$score$time[, PC := as.numeric(gsub("PC","", PC)),]
     
     object$ALASCA$score$explained$time <- object$pca$score$explained$time
@@ -76,8 +76,8 @@ cleanALASCA<- function(object){
     object$ALASCA$score$group <- object$pca$score$group[!duplicated(object$pca$score$group),]
     object$ALASCA$score$group <- setDT(reshape2::melt(object$ALASCA$score$group, id.vars = c("time","group")))
     colnames(object$ALASCA$score$group) <- c("time","group","PC","score")
-    object$ALASCA$score$group[,time := factor(time, levels = object$timelist),]
-    object$ALASCA$score$group[,group := factor(group, levels = object$grouplist),]
+    object$ALASCA$score$group[, time := factor(time, levels = object$timelist),]
+    object$ALASCA$score$group[, group := factor(group, levels = object$grouplist),]
     object$ALASCA$score$group[, PC := as.numeric(gsub("PC","", PC)),]
     
     object$ALASCA$score$explained$group <- object$pca$score$explained$group
@@ -85,7 +85,7 @@ cleanALASCA<- function(object){
     
   }else{
     object$ALASCA$loading$time <- object$pca$loading$time[!duplicated(object$pca$loading$time),]
-    object$ALASCA$loading$time <- (reshape2::melt(object$ALASCA$loading$time, id.vars = "covars"))
+    object$ALASCA$loading$time <- setDT(reshape2::melt(object$ALASCA$loading$time, id.vars = "covars"))
     colnames(object$ALASCA$loading$time) <- c("covars","PC","loading")
     object$ALASCA$loading$time[, PC := as.numeric(gsub("PC","", PC)),]
     
