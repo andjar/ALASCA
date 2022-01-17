@@ -91,7 +91,7 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
       temp_object <- prepareValidationRun(object)
       
       # Rotate new loadings/scores to the original model
-      temp_object <- rotateMatrix(object = temp_object, target = object)
+      temp_object <- rotateMatrix4(object = temp_object, target = object)
       temp_object <- cleanALASCA(temp_object)
       
       time_all <- difftime(Sys.time(), start.time.all, units = c("secs"))/ii
@@ -114,13 +114,6 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
   return(object)
 }
 
-#' Rotate PCA
-#'
-#' This function rotates loadings and scores during validation
-#'
-#' @param object ALASCA object to be rotated (and returned)
-#' @param target ALASCA object acting as target
-#' @return An ALASCA object
 rotateMatrix <- function(object, target){
   # We are only looking at components explaining more than 5% of variation
   PCloading <- target$ALASCA$loading$explained$time > 0.05
@@ -165,7 +158,7 @@ rotateMatrix <- function(object, target){
   object$pca$loading$time[,PCloading] <- t(t(object$pca$loading$time[,PCloading]) * signMatrix[minSignVar,])
   object$pca$score$time[,PCloading] <- t(t(object$pca$score$time[,PCloading]) * signMatrix[minSignVar,])
   a_l <- object$pca$loading
-
+  
   c <- procrustes(loadings= as.matrix(a_l$time[,PCloading]),
                   target = as.matrix(b_l$time[,PCloading]))
   object$pca$loading$time[,PCloading] <- c$procrust
@@ -193,13 +186,183 @@ rotateMatrix <- function(object, target){
     object$pca$loading$group[,PCloading] <- t(t(object$pca$loading$group[,PCloading]) * signMatrix[minSignVar,])
     object$pca$score$group[,PCloading] <- t(t(object$pca$score$group[,PCloading]) * signMatrix[minSignVar,])
     a_l <- object$pca$loading
-
+    
     c <- procrustes(loadings= as.matrix(a_l$group[,PCloading]),
                     target = as.matrix(b_l$group[,PCloading]))
     object$pca$loading$group[,PCloading] <- c$procrust
     object$pca$score$group[,PCloading] <- as.matrix(object$pca$score$group[,PCloading]) %*% solve(c$t1)
   }
- 
+  
+  return(object)
+}
+
+#' Rotate PCA
+#'
+#' This function rotates loadings and scores during validation
+#'
+#' @param object ALASCA object to be rotated (and returned)
+#' @param target ALASCA object acting as target
+#' @return An ALASCA object
+rotateMatrix2 <- function(object, target){
+  # We are only looking at components explaining more than 5% of variation
+  PCloading <- target$ALASCA$loading$explained$time > 0.05
+  PCloading[1:2] <- TRUE
+  PCloading <- which(PCloading)
+  
+  a_l <- object$pca$loading
+  b_l <- target$pca$loading
+  a_s <- object$pca$score
+  b_s <- target$pca$score
+  
+  procrustes <- function(loadings, target){
+    svd.result <- svd(t(target) %*% loadings)
+    return(list(
+      t1 = svd.result$u %*% t(svd.result$v),
+      procrust  = loadings %*% svd.result$u %*% t(svd.result$v)
+    ))
+    return(out)
+  }
+  
+  
+  c <- procrustes(loadings= as.matrix(a_l$time[,PCloading]),
+                  target = as.matrix(b_l$time[,PCloading]))
+  object$pca$loading$time[,PCloading] <- c$procrust
+  object$pca$score$time[,PCloading] <- as.matrix(object$pca$score$time[,PCloading]) %*% solve(c$t1)
+  
+  if(object$separateTimeAndGroup){
+    # We are only looking at components explaining more than 5% of variation
+    PCloading <- target$pca$loading$explained$group > 0.05
+    PCloading[1:2] <- TRUE
+    PCloading <- which(PCloading)
+    
+    c <- procrustes(loadings= as.matrix(a_l$group[,PCloading]),
+                    target = as.matrix(b_l$group[,PCloading]))
+    object$pca$loading$group[,PCloading] <- c$procrust
+    object$pca$score$group[,PCloading] <- as.matrix(object$pca$score$group[,PCloading]) %*% solve(c$t1)
+  }
+  
+  return(object)
+}
+
+rotateMatrix3 <- function(object, target){
+  # We are only looking at components explaining more than 5% of variation
+  PCloading <- target$ALASCA$loading$explained$time > 0.05
+  PCloading[1:2] <- TRUE
+  PCloading <- which(PCloading)
+  
+  a_l <- object$pca$loading
+  b_l <- target$pca$loading
+  a_s <- object$pca$score
+  b_s <- target$pca$score
+  
+  procrustes <- function(loadings, target){
+    svd.result <- svd(t(target) %*% loadings)
+    return(list(
+      t1 = svd.result$u %*% t(svd.result$v),
+      procrust  = loadings %*% svd.result$u %*% t(svd.result$v)
+    ))
+    return(out)
+  }
+  
+  # PCA can give loadings with either sign, so we have to check whether this improves the rotation
+  N   <- length(PCloading)
+  vec <- c(-1, 1)
+  lst <- lapply(numeric(N), function(x) vec)
+  signMatrix <- as.matrix(expand.grid(lst))
+  signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
+    c <- procrustes(loadings= as.matrix(t(t(a_l$time[,PCloading]) * signMatrix[i,])),
+                    target = as.matrix(b_l$time[,PCloading]))
+    ifelse(object$optimizeScore,
+           sum((b_s$time[,PCloading] - as.matrix(t(t(a_s$time[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2),
+           sum((b_l$time[,PCloading] - c$procrust)^2))
+  }))
+  minSignVar <- which(signVar == min(signVar))[1]
+  object$pca$loading$time[,PCloading] <- t(t(object$pca$loading$time[,PCloading]) * signMatrix[minSignVar,])
+  object$pca$score$time[,PCloading] <- t(t(object$pca$score$time[,PCloading]) * signMatrix[minSignVar,])
+  a_l <- object$pca$loading
+  
+  c <- procrustes(loadings= as.matrix(a_l$time[,PCloading]),
+                  target = as.matrix(b_l$time[,PCloading]))
+  object$pca$loading$time[,PCloading] <- c$procrust
+  object$pca$score$time[,PCloading] <- as.matrix(object$pca$score$time[,PCloading]) %*% solve(c$t1)
+  
+  if(object$separateTimeAndGroup){
+    # We are only looking at components explaining more than 5% of variation
+    PCloading <- target$pca$loading$explained$group > 0.05
+    PCloading[1:2] <- TRUE
+    PCloading <- which(PCloading)
+    
+    # PCA can give loadings with either sign, so we have to check whether this improves the rotation
+    N   <- length(PCloading)
+    vec <- c(-1, 1)
+    lst <- lapply(numeric(N), function(x) vec)
+    signMatrix <- as.matrix(expand.grid(lst))
+    signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
+      c <- procrustes(loadings= as.matrix(t(t(a_l$group[,PCloading]) * signMatrix[i,])),
+                      target = as.matrix(b_l$group[,PCloading]))
+      ifelse(object$optimizeScore,
+             sum((b_s$group[,PCloading] - as.matrix(t(t(a_s$group[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2),
+             sum((b_l$group[,PCloading] - c$procrust)^2))
+    }))
+    minSignVar <- which(signVar == min(signVar))[1]
+    object$pca$loading$group[,PCloading] <- t(t(object$pca$loading$group[,PCloading]) * signMatrix[minSignVar,])
+    object$pca$score$group[,PCloading] <- t(t(object$pca$score$group[,PCloading]) * signMatrix[minSignVar,])
+    a_l <- object$pca$loading
+    
+    c <- procrustes(loadings= as.matrix(a_l$group[,PCloading]),
+                    target = as.matrix(b_l$group[,PCloading]))
+    object$pca$loading$group[,PCloading] <- c$procrust
+    object$pca$score$group[,PCloading] <- as.matrix(object$pca$score$group[,PCloading]) %*% solve(c$t1)
+  }
+  
+  return(object)
+}
+
+rotateMatrix4 <- function(object, target){
+  # We are only looking at components explaining more than 5% of variation
+  PCloading <- target$ALASCA$loading$explained$time > 0.05
+  PCloading[1:2] <- TRUE
+  PCloading <- which(PCloading)
+  
+  a_l <- object$pca$loading
+  b_l <- target$pca$loading
+  a_s <- object$pca$score
+  b_s <- target$pca$score
+  
+  procrustes <- function(loadings, target){
+    s= t(loadings)%*%target
+    w1 = s %*% t(s)
+    v1 = t(s) %*% s
+    w <- eigen(w1) $vectors
+    ew <- diag(eigen(w1) $values)
+    v <- eigen(v1) $vectors
+    ev <- diag(eigen(v1) $values)
+    o = t(w) %*% s %*% v
+    k = diag(  ((diag(o)) / abs(diag(o))) , nrow = nrow(o), ncol =nrow(o))
+    ww = w %*% k
+    out <- list()
+    out$t1 = ww %*% t(v) # Rotation matrix
+    out$procrust = loadings %*% out$t1 # Rotated loadings
+    return(out)
+  }
+  
+  c <- procrustes(loadings= as.matrix(a_l$time[,PCloading]),
+                  target = as.matrix(b_l$time[,PCloading]))
+  object$pca$loading$time[,PCloading] <- c$procrust
+  object$pca$score$time[,PCloading] <- as.matrix(object$pca$score$time[,PCloading]) %*% solve(c$t1)
+  
+  if(object$separateTimeAndGroup){
+    # We are only looking at components explaining more than 5% of variation
+    PCloading <- target$pca$loading$explained$group > 0.05
+    PCloading[1:2] <- TRUE
+    PCloading <- which(PCloading)
+    
+    c <- procrustes(loadings= as.matrix(a_l$group[,PCloading]),
+                    target = as.matrix(b_l$group[,PCloading]))
+    object$pca$loading$group[,PCloading] <- c$procrust
+    object$pca$score$group[,PCloading] <- as.matrix(object$pca$score$group[,PCloading]) %*% solve(c$t1)
+  }
+  
   return(object)
 }
 
@@ -276,7 +439,7 @@ getValidationPercentilesLoading <- function(object, objectlist){
       df_group <- DBI::dbFetch(res)
       DBI::dbClearResult(res)
     }else{
-      df_group <- data.table::rbindlist(lapply(objectlist, function(x) x$ALASCA$loading$group[x$ALASCA$loading$group %in% PC_group,]), fill = TRUE)
+      df_group <- data.table::rbindlist(lapply(objectlist, function(x) x$ALASCA$loading$group[x$ALASCA$loading$group$PC %in% PC_group,]), fill = TRUE)
     }
     
     perc_group <- aggregate(data = df_group, loading ~ PC + covars, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
@@ -315,7 +478,6 @@ getValidationPercentilesScore <- function(object, objectlist){
                                               high = perc_time$score[,2],
                                                 PC = perc_time$PC, 
                                               time = perc_time$time)
-    #perc_time <- switchSign(reshape2::melt(object$pca$score$time, id.vars = "time"), perc_time)
 
     #names(object$validation$time$score)[names(object$validation$time$score) == 'value'] <- 'score'
     object$ALASCA$score$time <- merge(object$ALASCA$score$time, object$validation$time$score, all.x = TRUE)
@@ -326,7 +488,7 @@ getValidationPercentilesScore <- function(object, objectlist){
       df_group <- DBI::dbFetch(res)
       DBI::dbClearResult(res)
     }else{
-      df_group <- data.table::rbindlist(lapply(objectlist, function(x) x$ALASCA$score$group[x$ALASCA$score$group$PC %in% x$ALASCA$score$group,]), fill = TRUE)
+      df_group <- data.table::rbindlist(lapply(objectlist, function(x) x$ALASCA$score$group[x$ALASCA$score$group$PC %in% PC_group,]), fill = TRUE)
     }
     
     perc_group <- aggregate(data = df_group, score ~ PC + group + time, FUN = function(x) quantile(x , probs = c(0.025, 0.975) ))
@@ -335,7 +497,6 @@ getValidationPercentilesScore <- function(object, objectlist){
                                                  PC = perc_group$PC, 
                                                time = perc_group$time,
                                               group = perc_group$group)
-    #perc_group <- switchSign(reshape2::melt(object$pca$score$group, id.vars = c("time"$score, "group")), perc_group, PC_group)
 
     #names(object$validation$group$score)[names(object$validation$group$score) == 'value'] <- 'score'
     object$ALASCA$score$group <- merge(object$ALASCA$score$group, object$validation$group$score, all.x = TRUE)
@@ -373,27 +534,6 @@ getRelevantPCs <- function(x){
   PC <- x > 0.05
   PC[1:2] <- TRUE
   return(which(PC))
-}
-
-#' Switch sign
-#'
-#' This function switch the signs of high/low CI
-#'
-#' @param value Point estimate
-#' @param perc Uncertainty
-#' @param PCs Components
-#' @return An ALASCA object
-switchSign <- function(value, perc, PCs){
-  value$variable <- NULL
-  perc <- merge(perc, value, all.x = TRUE)
-  perc <- subset(perc, PC %in% PCs)
-  for(p in unique(perc$PC)){
-    if(any(perc$value[perc$PC == p] < perc$low[perc$PC == p]) | any(perc$value[perc$PC == p] > perc$high[perc$PC == p])){
-      perc$high[perc$PC == p] <- perc$high[perc$PC == p]*(-1)
-      perc$low[perc$PC == p] <- perc$low[perc$PC == p]*(-1)
-    }
-  }
-  return(perc)
 }
 
 #' Validate underlying regression models
