@@ -101,7 +101,7 @@ ALASCA <- function(df,
     
     object$doDebug <- FALSE
   }else{
-    object <- list(df = data.table::setDT(df),
+    object <- list(df = setDT(df),
                    formula = formula,
                    separateTimeAndGroup = separateTimeAndGroup,
                    pAdjustMethod = pAdjustMethod,
@@ -134,7 +134,7 @@ ALASCA <- function(df,
                    rawFormula = formula,
                    optimizeScore = optimizeScore,
                    stratificationVector = stratificationVector,
-                   keepValidationObjects = FALSE,
+                   keepValidationObjects = TRUE,
                    validateRegression = ifelse(validate,validateRegression,FALSE),
                    validationMethod = validationMethod,
                    validationObject = validationObject,
