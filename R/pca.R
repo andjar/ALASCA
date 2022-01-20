@@ -82,7 +82,6 @@ cleanALASCA<- function(object){
     
     object$ALASCA$score$explained$group <- object$pca$score$explained$group
     object$ALASCA$loading$explained$group <- object$pca$loading$explained$group
-    
   }else{
     object$ALASCA$loading$time <- object$pca$loading$time[!duplicated(object$pca$loading$time),]
     object$ALASCA$loading$time <- setDT(reshape2::melt(object$ALASCA$loading$time, id.vars = "covars"))

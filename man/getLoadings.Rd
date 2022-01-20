@@ -4,7 +4,7 @@
 \alias{getLoadings}
 \title{Get loadings}
 \usage{
-getLoadings(object, limitloadings = FALSE)
+getLoadings(object, limitloading = FALSE)
 }
 \arguments{
 \item{object}{An ALASCA object}

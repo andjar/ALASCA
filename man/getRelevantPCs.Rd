@@ -4,7 +4,7 @@
 \alias{getRelevantPCs}
 \title{Get relevant PCs}
 \usage{
-getRelevantPCs(x)
+getRelevantPCs(object, x)
 }
 \arguments{
 \item{x}{Explanatory power of PC}

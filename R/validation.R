@@ -316,10 +316,16 @@ rotateMatrix3 <- function(object, target){
 
 rotateMatrix4 <- function(object, target){
   # We are only looking at components explaining more than 5% of variation
-  PCloading <- target$ALASCA$loading$explained$time > 0.05
-  PCloading[1:2] <- TRUE
-  PCloading <- which(PCloading)
-  
+  PCloading <- getRelevantPCs(object = target, target$ALASCA$loading$explained$time)
+  for(i in PCloading){
+    # If the sign of the highest loading in the object to be rotated differs from the corresponding sign in the main matrix, switch sign
+    nVar <- which(abs(target$pca$loading$time[, i]) == max(abs(target$pca$loading$time[, i])))[1]
+    mVar <- target$pca$loading$time$covars[nVar]
+    sVar <- sign(target$pca$loading$time[nVar, i])
+    newSign <- sVar * sign(object$pca$loading$time[mVar, i])
+    object$pca$loading$time[,i] <- newSign * object$pca$loading$time[,i]
+    object$pca$score$time[,i] <- newSign * object$pca$score$time[,i]
+  }
   a_l <- object$pca$loading
   b_l <- target$pca$loading
   a_s <- object$pca$score
@@ -349,9 +355,16 @@ rotateMatrix4 <- function(object, target){
   
   if(object$separateTimeAndGroup){
     # We are only looking at components explaining more than 5% of variation
-    PCloading <- target$pca$loading$explained$group > 0.05
-    PCloading[1:2] <- TRUE
-    PCloading <- which(PCloading)
+    PCloading <- getRelevantPCs(object = target, target$ALASCA$loading$explained$group)
+    for(i in PCloading){
+      # If the sign of the highest loading in the object to be rotated differs from the corresponding sign in the main matrix, switch sign
+      nVar <- which(abs(target$pca$loading$group[, i]) == max(abs(target$pca$loading$group[, i])))[1]
+      mVar <- target$pca$loading$group$covars[nVar]
+      sVar <- sign(target$pca$loading$group[nVar, i])
+      newSign <- sVar * sign(object$pca$loading$group[mVar, i])
+      object$pca$loading$group[,i] <- newSign * object$pca$loading$group[,i]
+      object$pca$score$group[,i] <- newSign * object$pca$score$group[,i]
+    }
     
     c <- procrustes(loadings= as.matrix(a_l$group[,PCloading]),
                     target = as.matrix(b_l$group[,PCloading]))
@@ -616,61 +629,6 @@ prepareValidationRun <- function(object){
       temp_object <- ALASCA(validationObject = object,
                             validationParticipants = object$df[,ID] %in% unlist(selectedParts))
     }
-  }else if(object$validationMethod == "permutation2"){
-    # Validation by permutation
-    # Randomize samples
-    parts <- data.frame(
-      time = object$df$time,
-      group = object$df$group,
-      ID = object$df[,ID]
-    )
-    parts <- parts[!duplicated(parts),]
-    times <- parts$time
-    groups <- parts$group
-    
-    # sample id
-    parts_orig <- paste0(object$df[,ID], object$df$time, object$df$group)
-    u_parts_orig <- unique(parts_orig)
-    
-    temp_object <- object
-    for(i in 1:length(u_parts_orig)){
-      rIDTime <- sample(seq_along(times), 1)
-      rIDGroup <- sample(seq_along(groups), 1)
-      temp_object$dfRaw$time[parts_orig == u_parts_orig[i]] <- times[rIDTime]
-      times <- times[-rIDTime]
-      temp_object$dfRaw$group[parts_orig == u_parts_orig[i]] <- groups[rIDGroup]
-      groups <- groups[-rIDGroup]
-    }
-    temp_object <- ALASCA(validationObject = temp_object,
-                          validationParticipants = !is.na(object$df[,ID]))
-  }else if(object$validationMethod == "permutation"){
-    # Validation by permutation
-    # Randomize individuals across groups
-    # Randomize time within individual
-    parts_g <- data.frame(
-      group = object$df$group,
-      ID = object$df[,ID]
-    )
-    parts_g <- parts_g[!duplicated(parts_g),]
-    groups <- parts_g$group
-    
-    # sample id
-    parts_orig <- unique(paste0(object$df[,ID]))
-    
-    temp_object <- object
-    for(i in unique(object$df[,ID])){
-      rIDGroup <- sample(seq_along(groups), 1)
-      temp_object$dfRaw$group[temp_object$df[,ID] == i] <- groups[rIDGroup]
-      groups <- groups[-rIDGroup]
-      times <- unique(temp_object$dfRaw$time[temp_object$df[,ID] == i])
-      for(j in unique(temp_object$dfRaw$time[temp_object$df[,ID] == i])){
-        rIDTime <- sample(seq_along(times), 1)
-        temp_object$dfRaw$time[temp_object$df[,ID] == i & temp_object$df$time == j] <- times[rIDTime]
-        times <- times[-rIDTime]
-      }
-    }
-    temp_object <- ALASCA(validationObject = temp_object,
-                          validationParticipants = !is.na(object$df[,ID]))
   }else if(object$validationMethod == "bootstrap"){
     # Use bootstrap validation
     # When using bootstrapping, we resample participants with replacement
@@ -710,90 +668,4 @@ prepareValidationRun <- function(object){
   }
   
   return(temp_object)
-}
-
-#' Get P values
-#'
-#' This function calculates P values
-#'
-#' @param target The full-model ALASCA object
-#' @param objectlist List of permutated ALASCA objects
-#' @return An ALASCA object
-getPermutationPValues <- function(target, objectlist){
-  
-  if(target$separateTimeAndGroup){
-    # Calculate the Frobenius sum squares of the first l principal components
-    SS_f_time <- data.table::rbindlist(lapply(seq_along(objectlist), function(i){
-      tmp <- reshape2::melt(objectlist[[i]]$pca$score$time, id.vars = c("time"))
-      tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
-      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(object = target,  objectlist[[i]]$pca$loading$explained$time),], value~time, FUN = function(x) sum(x^2))
-      tmp2$model <- i
-      tmp2
-    }))
-    SS_time <- data.table::rbindlist(lapply(1, function(i){
-      tmp <- reshape2::melt(target$pca$score$time, id.vars = c("time"))
-      tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
-      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(object = target,  target$pca$loading$explained$time),], value~time, FUN = function(x) sum(x^2))
-      tmp2
-    }))
-    SS_f_group <- data.table::rbindlist(lapply(seq_along(objectlist), function(i){
-      tmp <- reshape2::melt(objectlist[[i]]$pca$score$group, id.vars = c("time","group"))
-      tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
-      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(object = target,  objectlist[[i]]$pca$loading$explained$group),], value~group+time, FUN = function(x) sum(x^2))
-      tmp2$model <- i
-      tmp2
-    }))
-    SS_group <- data.table::rbindlist(lapply(1, function(i){
-      tmp <- reshape2::melt(target$pca$score$group, id.vars = c("time","group"))
-      tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
-      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(object = target,  target$pca$loading$explained$group),], value~group+time, FUN = function(x) sum(x^2))
-      tmp2
-    }))
-    
-    pvals_time <- data.table::rbindlist(lapply(unique(SS_time$time), function(x){
-      data.frame(
-        p.value = sum( SS_f_time$value[SS_f_time$time == x] >= SS_time$value[SS_time$time == x] ) / sum(SS_f_time$time == x),
-        effect = x,
-        nRuns = target$nValRuns
-      )
-    }))
-    
-    pvals_group <- data.table::rbindlist(lapply(unique(paste(SS_group$time,SS_group$group)), function(x){
-      data.frame(
-        p.value = sum( SS_f_group$value[paste(SS_f_group$time,SS_f_group$group) == x] >= SS_group$value[paste(SS_group$time,SS_group$group) == x] ) / sum(paste(SS_f_group$time,SS_f_group$group) == x),
-        effect = x,
-        nRuns = target$nValRuns
-      )
-    }))
-    
-    pvals <- rbind(pvals_time,pvals_group)
-    
-  }else{
-    # Calculate the Frobenius sum squares of the first l principal components
-    SS_f <- data.table::rbindlist(lapply(seq_along(objectlist), function(i){
-      tmp <- reshape2::melt(objectlist[[i]]$pca$score$time, id.vars = c("time","group"))
-      tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
-      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(object = target,  objectlist[[i]]$pca$loading$explained$time),], value~group+time, FUN = function(x) sum(x^2))
-      tmp2$model <- i
-      tmp2
-    }))
-    SS <- data.table::rbindlist(lapply(1, function(i){
-      tmp <- reshape2::melt(target$pca$score$time, id.vars = c("time","group"))
-      tmp$variable <- as.numeric(gsub("PC","",tmp$variable))
-      tmp2 <- aggregate(data=tmp[tmp$variable %in% getRelevantPCs(object = target,  target$pca$loading$explained$time),], value~group+time, FUN = function(x) sum(x^2))
-      tmp2
-    }))
-    pvals <- data.table::rbindlist(lapply(unique(paste(SS$time,SS$group)), function(x){
-      data.frame(
-        p.value = sum( SS_f$value[paste(SS_f$time,SS_f$group) == x] >= SS$value[paste(SS$time,SS$group) == x] ) / sum(paste(SS_f$time,SS_f$group) == x),
-        effect = x,
-        nRuns = target$nValRuns
-      )
-    }))
-  }
-  
-  min_p_value <- 1/pvals$nRuns[1]
-  pvals$p.value[pvals$p.value < min_p_value] <- min_p_value
-  target$pvals <- pvals
-  return(target)
 }

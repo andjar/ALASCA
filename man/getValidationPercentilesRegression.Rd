@@ -2,7 +2,7 @@
 % Please edit documentation in R/validation.R
 \name{getValidationPercentilesRegression}
 \alias{getValidationPercentilesRegression}
-\title{Extract percentiles for refressions}
+\title{Extract percentiles for regressions}
 \usage{
 getValidationPercentilesRegression(object, objectlist)
 }
