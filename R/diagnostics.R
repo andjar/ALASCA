@@ -33,7 +33,7 @@ residuals.ALASCA <- function(object, variable = NA){
 #' @return A list of ggplot2 objects per variable
 #' 
 #' @export
-plotresiduals <- function(object, variable = NA, plottitle = TRUE, myTheme = ggplot2::theme_classic()){
+plotResiduals <- function(object, variable = NA, plottitle = TRUE, myTheme = ggplot2::theme_classic()){
    if(any(is.na(variable))){
       resList <- lapply(object$regr.model, residuals)
    }else{
@@ -62,7 +62,7 @@ plotresiduals <- function(object, variable = NA, plottitle = TRUE, myTheme = ggp
 #' @return A list of ggplot2 objects per variable
 #' 
 #' @export
-plothistogram <- function(object, component = 1, bins = object$nValRuns/10, variable = NA, effect = "time", orderbyname = FALSE){
+plotHistogram <- function(object, component = 1, bins = object$nValRuns/10, variable = NA, effect = "time", orderbyname = FALSE){
    if(effect == "time" | effect == "group"){
       g_s <- plothistogram_score(object = object, component = component, bins = bins, effect = effect)
       g_l <- plothistogram_loading(object = object, component = component, bins = bins, variable = variable, effect = effect, orderbyname = orderbyname)
@@ -199,5 +199,32 @@ plothistogram_loading <- function(object, component = 1, bins = object$nValRuns/
    return(g)
 }
 
-
+#' Count participants and samples
+#'
+#' Count participants and samples
+#'
+#' @param object An ALASCA object
+#' @return A list of data frames
+#' 
+#' @export
+countParts <- function(object){
+   wideDF <- dcast(data = object$df, ID + group ~ time + variable, fun.aggregate = length)
+   samples.by.participant = data.frame(
+      ID = wideDF$ID,
+      count = rowSums(wideDF[,3:ncol(wideDF)])
+   )
+   complete.cases.by.group <- as.data.frame(table(wideDF[rowSums(wideDF[,3:ncol(wideDF)]) == length(mod$variablelist)*length(mod$timelist),"group"]))
+   colnames(complete.cases.by.group) <- c("group", "count")
+   
+   list(
+      participants.by.group = object$df[, .(count = uniqueN(ID)), by = .(group)],
+      complete.cases.by.group = complete.cases.by.group,
+      participants.by.time = object$df[, .(count = uniqueN(ID)), by = .(time)],
+      participants.by.time.and.group = dcast(data = object$df[, .(count = uniqueN(ID)), by = .(time, group)], group ~ time, value.var = "count"),
+      participants.by.variable.and.time.and.group = dcast(data = object$df[, .(count = uniqueN(ID)), by = .(variable, time, group)], time + group ~ variable, value.var = "count"),
+      samples.by.variable.and.time.and.group = dcast(data = object$df[, .(count = .N), by = .(variable, time, group)], time + group ~ variable, value.var = "count"),
+      samples.by.participant = samples.by.participant,
+      samples.by.participant.and.and.time = dcast(data = object$df, ID + time ~ ., value.var = "variable", fun.aggregate = length)
+   )
+}
 
