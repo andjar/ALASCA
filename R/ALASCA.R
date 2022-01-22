@@ -78,6 +78,7 @@ ALASCA <- function(df,
                    validateRegression = TRUE,
                    validationMethod = "bootstrap",
                    validationObject = NA,
+                   validationAssignNewID = TRUE,
                    validationParticipants = NA){
 
   if(!is.na(validationObject[1])){
@@ -143,6 +144,7 @@ ALASCA <- function(df,
                    validationMethod = validationMethod,
                    validationObject = validationObject,
                    validationParticipants = validationParticipants,
+                   validationAssignNewID = validationAssignNewID,
                    variablelist = unique(df$variable),
                    timelist = levels(df$time),
                    grouplist = levels(df$group),
@@ -217,8 +219,8 @@ RMASCA <- function(...){
 #' @return String
 #' @export
 printVer <- function(object = FALSE, get = NA, print = TRUE){
-  ALASCA.version <- "0.0.0.105"
-  ALASCA.version.date <- "2022-01-15"
+  ALASCA.version <- "0.0.0.106"
+  ALASCA.version.date <- "2022-01-22"
   if(is.list(object)){
     ALASCA.version <- object$ALASCA.version
     ALASCA.version.date <- object$ALASCA.version.date
@@ -258,6 +260,9 @@ SMASCA <- function(...){
 sanitizeObject <- function(object){
   
   if(!object$minimizeObject){
+    object$df[, time := factor(time, levels = object$timelist),]
+    object$df[, group := factor(group, levels = object$grouplist),]
+    
     object$valCol <- as.character(object$formula)[2]
     
     # Check formula from user

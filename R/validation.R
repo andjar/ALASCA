@@ -418,7 +418,7 @@ getValidationPercentilesRegression <- function(object, objectlist){
     df <- setDT(DBI::dbFetch(res))
     DBI::dbClearResult(res)
   }else{
-    df <- data.table::rbindlist(lapply(objectlist, function(x) x$mod.pred))
+    df <- rbindlist(lapply(objectlist, function(x) x$mod.pred))
   }
   df <- df[, as.list(quantile(pred, probs = object$limitsCI, type = 1)),by = .(group, time, variable)]
   colnames(df) = c("group", "time", "variable", "low", "high")
@@ -624,7 +624,8 @@ prepareValidationRun <- function(object){
                         data.table::rbindlist(
                           lapply(seq_along(selectedParts_temp_selected), function(x){
                             seldf <- bootdf_temp[bootdf_temp$ID == selectedParts_temp_selected[x], ]
-                            seldf$ID <- newIDs[x] # Replace ID
+                            seldf$originalIDbeforeBootstrap <- seldf$ID
+                            if(object$validationAssignNewID) seldf$ID <- newIDs[x] # Replace ID
                             seldf
                           })
                         )

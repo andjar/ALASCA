@@ -1,3 +1,13 @@
+# ALASCA 0.0.0.106
+
+## New features
+
+* `validationAssignNewID` Choose whether or not bootstrap samples should get assigned a new and unique ID when drawn
+
+## Bug fix
+
+* All participants got the same ID when bootstrapping
+
 # ALASCA 0.0.0.105
 
 ## New features
