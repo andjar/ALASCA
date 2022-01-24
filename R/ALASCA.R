@@ -483,6 +483,8 @@ sanitizeObject <- function(object){
 #' @param object An ALASCA object
 #' @return An ALASCA object
 removeEmbedded <- function(object){
+  object$partID <- object$df$ID
+  object$bootPartID <- object$df$originalIDbeforeBootstrap
   object$df <- NULL
   object$dfRaw <- NULL
   object$parts <- NULL
@@ -491,7 +493,7 @@ removeEmbedded <- function(object){
   object$partsWithVariable <- NULL
   object$validationObject <- NULL
   object$regr.model <- NULL
-  object$RegressionCoefficients <- NULL
+  #object$RegressionCoefficients <- NULL
   object$effect.matrix <- NULL
   
   attr(object$newformula, ".Environment") <- NULL
@@ -509,22 +511,22 @@ getScaleFun <- function(scaleFun_string){
   if(scaleFun_string == "sdall"){
     scaleFun <- function(df){
       # Scale by the SD of all rows
-      df[,value:=as.double(value)][, value := value/sd(value), by = variable]
+      df[,value := as.double(value)][, value := value/sd(value), by = variable]
     }
   }else if(scaleFun_string == "sdref"){
     scaleFun <- function(df){
       # Scale by the SD of all rows in the refence group
-      df[,value:=as.double(value)][, value := value/sd(value[group == levels(group)[1]]), by = variable]
+      df[,value := as.double(value)][, value := value/sd(value[group == levels(group)[1]]), by = variable]
     }
   }else if(scaleFun_string == "sdt1"){
     scaleFun <- function(df){
       # Scale by the SD of all baseline rows
-      df[,value:=as.double(value)][, value := value/sd(value[time == levels(time)[1]]), by = variable]
+      df[,value := as.double(value)][, value := value/sd(value[time == levels(time)[1]]), by = variable]
     }
   }else if(scaleFun_string == "sdreft1"){
     scaleFun <- function(df){
       # Scale by the SD of all baseline rows in the reference group
-      df[,value:=as.double(value)][, value := value/sd(value[group == levels(group)[1] & time == levels(time)[1]]), by = variable]
+      df[,value := as.double(value)][, value := value/sd(value[group == levels(group)[1] & time == levels(time)[1]]), by = variable]
     }
   }else{
     stop("Unknown scaling method. Please use of on the following: `none`, `sdall`, `sdref`, `sdreft1`, `sdt1`")
@@ -589,7 +591,7 @@ summary.ALASCA <- function(object, file = "", sessioninfo = FALSE){
   cat("================ ALASCA ================\n", file = file, append = TRUE)
   cat("Model initialized ", as.character(object$initTime), " using ",object$method," on ",length(unique(object$RegressionCoefficients$covar))," variables. ", sep = "", file = file, append = TRUE)
   if(object$validate){
-    cat("The model been validated.\n", file = file, append = TRUE)
+    cat("The model been validated with ", object$validationMethod, ".\n", file = file, append = TRUE)
   }else{
     cat("The model has *not* been validated yet.\n", file = file, append = TRUE)
   }

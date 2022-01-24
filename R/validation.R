@@ -610,6 +610,8 @@ prepareValidationRun <- function(object){
     
     if(object$method %in% c("LMM", "Rfast")){
       # Loop through all the groups and create a new dataframe with resampled values
+      bootobject$newIDs <- c()
+      bootobject$originalIDs <- c()
       for(i in unique(object$stratificationVector)){
         # Get ID of all members of stratification group
         selectedParts_temp_all <- unique(object$df[object$stratificationVector == i,ID])
@@ -618,6 +620,8 @@ prepareValidationRun <- function(object){
         selectedParts_temp_selected <- sample(selectedParts_temp_all, length(selectedParts_temp_all), replace = TRUE)
         newIDs <- seq(cc_id+1, cc_id+length(selectedParts_temp_selected))
         cc_id <- max(newIDs)
+        bootobject$originalIDs <- c(bootobject$originalIDs, selectedParts_temp_selected)
+        bootobject$newIDs <- c(bootobject$newIDs, newIDs)
         
         # Create data frame from resampled participants
         bootdf <- rbind(bootdf,

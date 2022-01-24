@@ -10,6 +10,20 @@ saveALASCA <- function(object, filename = NA, filepath = NA, saveCSV = TRUE, sav
   summary.ALASCA(object = object, file = getFilename(object = object, filetype = "txt"), sessioninfo = TRUE)
 }
 
+#' Save ALASCA object
+#'
+#' @inheritParams saveALASCAModel
+#' @inheritParams savetocsv
+#' @return An ALASCA object
+#' @export
+saveBootstrapID <- function(object){
+  if(!(object$validate && object$validationMethod == "bootstrap")) stop("Please validate with bootstrapping")
+  for(i in seq_along(object$validation$temp_object)){
+    write(paste0(object$validation$temp_object[[i]]$originalIDs, collapse = ";"),
+          file=getFilename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE),append=TRUE)
+  }
+}
+
 #' Save ALASCA object to csv
 #'
 #' @param object An ALASCA object
@@ -114,7 +128,7 @@ saveALASCAPlot <- function(object, g, filetype = NA, figsize = NA, prefix = "plo
 #' @return A ggplot2 objects.
 #' 
 #' @export
-getFilename <- function(object, filename = NA, filepath = NA, prefix = "", suffix = "", filetype = ""){
+getFilename <- function(object, filename = NA, filepath = NA, prefix = "", suffix = "", filetype = "", overwrite = FALSE){
   # Use arguments if defined
   if(any(!is.na(filename))){
     object$filename <- filename
@@ -146,10 +160,12 @@ getFilename <- function(object, filename = NA, filepath = NA, prefix = "", suffi
   fname <- paste0(object$filepath,prefix,object$filename)
   
   # Check if file already exists
-  cnt <- 1
-  while(file.exists(paste0(fname, suffix, ifelse(substr(filetype,1,1) == ".", filetype, paste0(".", filetype))))){
-    fname <- paste0(object$filepath,prefix,object$filename,"_",cnt)
-    cnt <- cnt + 1
+  if(!overwrite){
+    cnt <- 1
+    while(file.exists(paste0(fname, suffix, ifelse(substr(filetype,1,1) == ".", filetype, paste0(".", filetype))))){
+      fname <- paste0(object$filepath,prefix,object$filename,"_",cnt)
+      cnt <- cnt + 1
+    }
   }
   fname <- paste0(fname, suffix, ifelse(substr(filetype,1,1) == "." | filetype == "", filetype, paste0(".", filetype)))
   return(fname)

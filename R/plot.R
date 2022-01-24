@@ -75,6 +75,7 @@ plot.ALASCA <- function(object,
                           plotzeroline = TRUE,
                           filetype = NA,
                           figsize = NA,
+                          variables = NA,
                           dodgewidth = 0.35,
                           figunit = NA,
                           plotribbon = TRUE,
@@ -132,6 +133,7 @@ plot.ALASCA <- function(object,
                                        plotzeroline = plotzeroline, 
                                        tooDense = tooDense, 
                                        highlight = highlight,
+                                       variables = variables,
                                        loadinggroup = loadinggroup,
                                        limitloading = limitloading,
                                        sortbyloadinggroup = sortbyloadinggroup,
@@ -142,7 +144,8 @@ plot.ALASCA <- function(object,
                                         decreasingLoadings = decreasingLoadings, 
                                         flipaxes = flipaxes, 
                                         plotzeroline = plotzeroline, 
-                                        tooDense = tooDense, 
+                                        tooDense = tooDense,
+                                        variables = variables,
                                         highlight = highlight, 
                                         limitloading = limitloading,
                                         loadinggroup = loadinggroup,
@@ -157,6 +160,7 @@ plot.ALASCA <- function(object,
                           flipaxes = flipaxes, 
                           plotzeroline = plotzeroline, 
                           tooDense = tooDense,
+                          variables = variables,
                           limitloading = limitloading,
                           loadinggroup = loadinggroup,
                           sortbyloadinggroup = sortbyloadinggroup,
@@ -183,6 +187,7 @@ plot.ALASCA <- function(object,
                                         flipaxes = flipaxes, 
                                         plotzeroline = plotzeroline,
                                         tooDense = tooDense,
+                                        variables = variables,
                                         highlight = highlight,
                                         limitloading = limitloading,
                                         loadinggroup = loadinggroup,
@@ -222,6 +227,7 @@ plot.ALASCA <- function(object,
                                   flipaxes = flipaxes, 
                                   plotzeroline = plotzeroline,
                                   tooDense = tooDense,
+                                  variables = variables,
                                   limitloading = limitloading,
                                   highlight = highlight,
                                   loadinggroup = loadinggroup,
@@ -393,6 +399,7 @@ getLoadingPlot <- function(object,
                            plotzeroline = TRUE,
                            figsize = NA,
                            figunit = NA,
+                           variables = NA,
                            loadinggroup = NA,
                            limitloading = FALSE,
                            sortbyloadinggroup = TRUE,
@@ -402,6 +409,9 @@ getLoadingPlot <- function(object,
   }
   if(!is.na(filetype)){
     object$plot.filetype <- filetype
+  }
+  if(any(is.na(variables))){
+    variables <- object$variablelist
   }
   if(!is.na(figsize)){
     object$plot.figsize <- figsize
@@ -414,9 +424,9 @@ getLoadingPlot <- function(object,
   }
   pointSize <- 0.4
   if(effect == "time"){
-    loadings <- subset(getLoadings(object, limitloading = limitloading)$time, PC == component)
+    loadings <- subset(getLoadings(object, limitloading = limitloading)$time, PC == component & covars %in% variables)
   }else{
-    loadings <- subset(getLoadings(object, limitloading = limitloading)$group, PC == component)
+    loadings <- subset(getLoadings(object, limitloading = limitloading)$group, PC == component & covars %in% variables)
   }
   if(!is.na(object$plot.loadinggroupcolumn)){
     df_loading_labels <- data.frame(
@@ -997,6 +1007,7 @@ plotVal <- function(object,
 plotCovar <- function(object,
                       covar = NA,
                       xlabel = NA,
+                      variables = NA,
                       return_data = FALSE,
                       filetype = NA,
                       figsize = NA,
@@ -1007,6 +1018,10 @@ plotCovar <- function(object,
   if(any(is.na(covar))){
     covar <- unique(df$variable)
   }
+  if(any(is.na(variables))){
+    variables <- object$variablelist
+  }
+  df <- subset(df, covar %in% variables)
   if(any(is.na(xlabel))){
     xlabel <- covar
   }
@@ -1023,7 +1038,7 @@ plotCovar <- function(object,
       g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, shape = pvalue_label)) + 
         ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
         ggplot2::scale_shape_manual(values = c("Not significant"=3, "< 0.05"=15, "< 0.01"=16, "< 0.001"=17, "Baseline"=5)) +
-        ggplot2::facet_wrap(~tlab) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
+        ggplot2::facet_wrap(~xlabel) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
         myTheme + ggplot2::theme(legend.position = "bottom", legend.box="vertical", legend.margin=ggplot2::margin())
     }else if(pvalue == "star" | pvalue == "asterisk" | pvalue == "stars"){
       g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, label = pvalue_sign)) + 
@@ -1080,7 +1095,7 @@ plotComponents <- function(object,
   if(!object$validate){
     validationshape <- NA
   }
-  if(any(!comps %in% getRelevantPCs(object$ALASCA$loading$explained$time))){
+  if(any(!comps %in% getRelevantPCs(object = object, object$ALASCA$loading$explained$time))){
     warning("Please note: Some components have low explanatory power and HAVE NOT BEEN rotated during rotation. Proceed with care.")
   }
   if(validationshape == "cross" & !is.na(validationshape)){
