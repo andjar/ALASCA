@@ -68,6 +68,7 @@ plot.ALASCA <- function(object,
                           only = "both", 
                           enlist = FALSE, 
                           tooDense = NA, 
+                          tooDense2 = NA,
                           highlight = NA, 
                           xlabel = NA,
                           grouplabel = NA,
@@ -131,7 +132,8 @@ plot.ALASCA <- function(object,
                                        decreasingLoadings = decreasingLoadings, 
                                        flipaxes = flipaxes, 
                                        plotzeroline = plotzeroline, 
-                                       tooDense = tooDense, 
+                                       tooDense = tooDense,
+                                       tooDense2 = tooDense2,
                                        highlight = highlight,
                                        variables = variables,
                                        loadinggroup = loadinggroup,
@@ -145,6 +147,7 @@ plot.ALASCA <- function(object,
                                         flipaxes = flipaxes, 
                                         plotzeroline = plotzeroline, 
                                         tooDense = tooDense,
+                                        tooDense2 = tooDense2,
                                         variables = variables,
                                         highlight = highlight, 
                                         limitloading = limitloading,
@@ -160,6 +163,7 @@ plot.ALASCA <- function(object,
                           flipaxes = flipaxes, 
                           plotzeroline = plotzeroline, 
                           tooDense = tooDense,
+                          tooDense2 = tooDense2,
                           variables = variables,
                           limitloading = limitloading,
                           loadinggroup = loadinggroup,
@@ -175,6 +179,7 @@ plot.ALASCA <- function(object,
                                        flipaxes = flipaxes, 
                                        plotzeroline = plotzeroline,
                                        tooDense = tooDense,
+                                       tooDense2 = tooDense2,
                                        limitloading = limitloading,
                                        highlight = highlight,
                                        loadinggroup = loadinggroup,
@@ -187,6 +192,7 @@ plot.ALASCA <- function(object,
                                         flipaxes = flipaxes, 
                                         plotzeroline = plotzeroline,
                                         tooDense = tooDense,
+                                        tooDense2 = tooDense2,
                                         variables = variables,
                                         highlight = highlight,
                                         limitloading = limitloading,
@@ -227,6 +233,7 @@ plot.ALASCA <- function(object,
                                   flipaxes = flipaxes, 
                                   plotzeroline = plotzeroline,
                                   tooDense = tooDense,
+                                  tooDense2 = tooDense2,
                                   variables = variables,
                                   limitloading = limitloading,
                                   highlight = highlight,
@@ -335,7 +342,7 @@ screeplot.ALASCA <- function(object,
 #' @return A list with loadings for time (and group), and the exploratory power for each component
 #' @export
 getLoadings <- function(object, limitloading = FALSE){
-  if(!limitloading | !object$validate){
+  if(!limitloading || !object$validate){
     return(object$ALASCA$loading)
   }else{
     dfl <- object$ALASCA$loading
@@ -393,6 +400,7 @@ getLoadingPlot <- function(object,
                            effect = "time",
                            decreasingLoadings = TRUE,
                            tooDense = NA,
+                           tooDense2 = NA,
                            highlight = NA,
                            filetype = NA,
                            flipaxes = TRUE,
@@ -427,6 +435,11 @@ getLoadingPlot <- function(object,
     loadings <- subset(getLoadings(object, limitloading = limitloading)$time, PC == component & covars %in% variables)
   }else{
     loadings <- subset(getLoadings(object, limitloading = limitloading)$group, PC == component & covars %in% variables)
+  }
+  if(!is.na(tooDense2) & tooDense2 > 0){
+    limUpper <- loadings$covars[order(loadings$loading, decreasing = TRUE)[1:tooDense2]]
+    limLower <- loadings$covars[order(loadings$loading, decreasing = FALSE)[1:tooDense2]]
+    loadings <- subset(loadings, covars %in% c(limUpper,limLower))
   }
   if(!is.na(object$plot.loadinggroupcolumn)){
     df_loading_labels <- data.frame(
@@ -497,7 +510,9 @@ getLoadingPlot <- function(object,
     limUpper <- unique(loadings$loading[order(loadings$loading, decreasing = TRUE)[tooDense]])
     limLower <- unique(loadings$loading[order(loadings$loading, decreasing = FALSE)[tooDense]])
     g <- g + ggplot2::geom_point(color = ifelse(loadings$loading <= limLower | loadings$loading >= limUpper, "red", "grey")) +
-      ggrepel::geom_text_repel(data = subset(loadings, loading <= limLower | loading >= limUpper), ggplot2::aes(label=covars), max.iter	= 5000) +
+      ggrepel::geom_text_repel(data = subset(loadings, loading <= limLower | loading >= limUpper),
+                               ggplot2::aes(label=covars),
+                               max.iter	= 5000) +
       myTheme
     if(flipaxes){
       g <- g + ggplot2::theme(axis.title.y=ggplot2::element_blank(),
