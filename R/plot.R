@@ -1099,6 +1099,9 @@ plotCovar <- function(object,
 #' @export
 plotComponents <- function(object,
                            comps = c(1,2),
+                           filetype = NA,
+                           figsize = NA,
+                           figunit = NA,
                            ...){
   g_score <- plotComponentsScore(object = object, comps = comps, ...)
   g_loading <- plotComponentsLoadings(object = object, comps = comps, ...)
@@ -1113,6 +1116,10 @@ plotComponents <- function(object,
 
 plotComponentsLoadings <- function(object,
                                    comps = c(1,2),
+                                   filetype = NA,
+                                   figsize = NA,
+                                   figunit = NA,
+                                   validationshape = NA,
                                    myTheme = ggplot2::theme_classic()){
   if(any(!comps %in% getRelevantPCs(object = object, object$ALASCA$loading$explained$time))){
     warning("Please note: Some components have low explanatory power and HAVE NOT BEEN rotated during rotation. Proceed with care.")
@@ -1142,8 +1149,8 @@ plotComponentsLoadings <- function(object,
   }
   g <- g + 
     ggrepel::geom_text_repel() +
-    ggplot2::labs(x = paste0("Loading PC",comps[1], " (", round(100*object$ALASCA$loading$explained$time[comps[1]],2),"%)"),
-                  y = paste0("Loading PC",comps[2], " (", round(100*object$ALASCA$loading$explained$time[comps[2]],2),"%)")) + 
+    ggplot2::labs(x = getExpLabel(object, component = comps[1], effect = "time", type = "Loading"),
+                  y = getExpLabel(object, component = comps[2], effect = "time", type = "Loading")) + 
     myTheme
   
   if(object$separateTimeAndGroup){
@@ -1170,8 +1177,8 @@ plotComponentsLoadings <- function(object,
     }
     glg <- glg + 
       ggrepel::geom_text_repel() +
-      ggplot2::labs(x = paste0("Loading PC",comps[1], " (", round(100*object$ALASCA$loading$explained$time[comps[1]],2),"%)"),
-                    y = paste0("Loading PC",comps[2], " (", round(100*object$ALASCA$loading$explained$time[comps[2]],2),"%)")) + 
+      ggplot2::labs(x = getExpLabel(object, component = comps[1], effect = "group", type = "Loading"),
+                    y = getExpLabel(object, component = comps[2], effect = "group", type = "Loading")) + 
       myTheme
     
     g <- ggpubr::ggarrange(g, glg)
@@ -1221,25 +1228,28 @@ plotComponentsScore <- function(object,
     warning("Please note: Some components have low explanatory power and HAVE NOT BEEN rotated during rotation. Proceed with care.")
   }
   if(validationshape == "cross" & !is.na(validationshape)){
+    dff <- subset(getScores(object)$time, PC %in% comps)
+    dff$PC <- paste0("PC", dff$PC)
+    dff <- reshape2::melt(data = dff, id.vars = c("PC", "time", "group"))
+    dff <- reshape2::dcast(data = dff, time + group ~ PC + variable, value.var = "value")
+    dff$time <- factor(dff$time, levels = object$timelist)
+    dff$group <- factor(dff$group, levels = object$grouplist)
+    g <- ggplot2::ggplot(dff, ggplot2::aes_string(x = paste0("PC",comps[1],"_score"),
+                                                  y = paste0("PC",comps[2],"_score"),
+                                                  shape = "time",
+                                                  color = "group",
+                                                  group = "group",
+                                                  linetype = "group")) +
+      ggplot2::geom_line() +
+      ggplot2::geom_pointrange(ggplot2::aes_string(xmin = paste0("PC",comps[1],"_low"), xmax = paste0("PC",comps[1],"_high"))) +
+      ggplot2::geom_pointrange(ggplot2::aes_string(ymin = paste0("PC",comps[2],"_low"), ymax = paste0("PC",comps[2],"_high")))
+    g <- getPlotHandle(g = g,
+                       object = object,
+                       myTheme = myTheme,
+                       comp = comps,
+                       effect = "time")
+    
     if(object$separateTimeAndGroup){
-      dff <- subset(getScores(object)$time, PC %in% comps)
-      dff$PC <- paste0("PC", dff$PC)
-      dff <- reshape2::melt(data = dff, id.vars = c("PC", "time"))
-      dff <- reshape2::dcast(data = dff, time ~ PC + variable, value.var = "value")
-      dff$group <- levels(getScores(object)$group$group)[1]
-      dff$time <- factor(dff$time, levels = object$timelist)
-      gst <- ggplot2::ggplot(dff, ggplot2::aes_string(x = paste0("PC",comps[1],"_score"), 
-                                                      y = paste0("PC",comps[2],"_score"), 
-                                                      shape = "time", color = "group", group = "group")) +
-        ggplot2::geom_line() +
-        ggplot2::geom_pointrange(ggplot2::aes_string(xmin = paste0("PC",comps[1],"_low"), xmax = paste0("PC",comps[1],"_high"))) +
-        ggplot2::geom_pointrange(ggplot2::aes_string(ymin = paste0("PC",comps[2],"_low"), ymax = paste0("PC",comps[2],"_high")))
-      gst <- getPlotHandle(g = gst,
-                         object = object,
-                         myTheme = myTheme,
-                         comp = comps,
-                         effect = "time")
-      
       dff <- subset(getScores(object)$group, PC %in% comps)
       dff$PC <- paste0("PC", dff$PC)
       dff <- reshape2::melt(data = dff, id.vars = c("PC", "time", "group"))
@@ -1248,7 +1258,10 @@ plotComponentsScore <- function(object,
       dff$group <- factor(dff$group, levels = object$grouplist)
       gsg <- ggplot2::ggplot(dff, ggplot2::aes_string(x = paste0("PC",comps[1],"_score"), 
                                                       y = paste0("PC",comps[2],"_score"), 
-                                                      shape = "time", color = "group", group = "group")) +
+                                                      shape = "time",
+                                                      color = "group",
+                                                      group = "group",
+                                                      linetype = "group")) +
         ggplot2::geom_line() +
         ggplot2::geom_pointrange(ggplot2::aes_string(xmin = paste0("PC",comps[1],"_low"), xmax = paste0("PC",comps[1],"_high"))) +
         ggplot2::geom_pointrange(ggplot2::aes_string(ymin = paste0("PC",comps[2],"_low"), ymax = paste0("PC",comps[2],"_high")))
@@ -1259,62 +1272,41 @@ plotComponentsScore <- function(object,
                          effect = "group",
                          legend = "bottom")
       
-      g <- ggpubr::ggarrange(gst, gsg, common.legend = TRUE, legend = "bottom", legend.grob = ggpubr::get_legend(gsg), align = "hv")
+      g <- ggpubr::ggarrange(g, gsg, common.legend = TRUE, legend = "bottom", legend.grob = ggpubr::get_legend(gsg), align = "hv")
       
-    }else{
-      dff <- subset(getScores(object)$time, PC %in% comps)
-      dff$PC <- paste0("PC", dff$PC)
-      dff <- reshape2::melt(data = dff, id.vars = c("PC", "time", "group"))
-      dff <- reshape2::dcast(data = dff, time + group ~ PC + variable, value.var = "value")
-      dff$time <- factor(dff$time, levels = object$timelist)
-      dff$group <- factor(dff$group, levels = object$grouplist)
-      g <- ggplot2::ggplot(dff, ggplot2::aes_string(x = paste0("PC",comps[1],"_score"),
-                                                    y = paste0("PC",comps[2],"_score"),
-                                                    shape = "time", color = "group", group = "group")) +
-        ggplot2::geom_line() +
-        ggplot2::geom_pointrange(ggplot2::aes_string(xmin = paste0("PC",comps[1],"_low"), xmax = paste0("PC",comps[1],"_high"))) +
-        ggplot2::geom_pointrange(ggplot2::aes_string(ymin = paste0("PC",comps[2],"_low"), ymax = paste0("PC",comps[2],"_high")))
-      g <- getPlotHandle(g = g,
-                         object = object,
-                         myTheme = myTheme,
-                         comp = comps,
-                         effect = "time")
     }
   }else if(validationshape == "ellipse" & !is.na(validationshape)){
-    if(object$separateTimeAndGroup){
-      # Score plots
-      ## Time
-      dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
-        data.frame(
-          subset(getScores(object$validation$temp_objects[[x]])$time, PC %in% comps),
-          model = x
-        )
-      })
+    # Score plots
+    ## Time
+    dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
+      data.frame(
+        subset(getScores(object$validation$temp_objects[[x]])$time, PC %in% comps),
+        model = x
       )
-      df_temp <- subset(getScores(object)$time, PC %in% comps)
-      df_temp$model <- 0
-      df_temp$low <- NULL
-      df_temp$high <- NULL
-      dff <- rbind(dff, df_temp)
-      dff$group <- levels(getScores(object)$group$group)[1]
-      
-      dff$PC <- paste0("PC", dff$PC)
-      dfff <- reshape2::dcast(data = dff, time + group + model ~ PC, value.var = "score")
-      dfff$time <- factor(dfff$time, levels = object$timelist)
-      dfff$group <- factor(dfff$group, levels = object$grouplist)
-      dfff$alpha <- ifelse(dfff$model == 0, 1, alphavalidate)
-      gst <- ggplot2::ggplot(dfff, ggplot2::aes_string(paste0("PC",comps[1]), paste0("PC",comps[2]), shape = "time", color = "group")) + 
-        ggplot2::geom_line(data = subset(dfff, model == 0), aes(group = paste(model, group))) +
-        ggplot2::geom_point(alpha = dfff$alpha) + ggplot2::stat_ellipse(level = validationlevel)
-      if(plottext){
-        gst <- gst + ggplot2::geom_text(data = subset(dfff, model == 0), color = "black", ggplot2::aes(label = time), hjust = texthjust)
-      }
-      gst <- getPlotHandle(g = gst,
-                           object = object,
-                           myTheme = myTheme,
-                           comp = comps,
-                           effect = "time")
-      
+    })
+    )
+    df_temp <- subset(getScores(object)$time, PC %in% comps)
+    df_temp$model <- 0
+    df_temp$low <- NULL
+    df_temp$high <- NULL
+    dff <- rbind(dff, df_temp)
+    
+    dff$PC <- paste0("PC", dff$PC)
+    dfff <- reshape2::dcast(data = dff, time + group + model ~ PC, value.var = "score")
+    dfff$time <- factor(dfff$time, levels = object$timelist)
+    dfff$group <- factor(dfff$group, levels = object$grouplist)
+    dfff$alpha <- ifelse(dfff$model == 0, 1, alphavalidate)
+    dfff <- dfff[order(dff$time),]
+    g <- ggplot2::ggplot(dfff, ggplot2::aes_string(paste0("PC",comps[1]), paste0("PC",comps[2]), shape = "time", color = "group")) + 
+      ggplot2::geom_line(data = subset(dfff, model == 0), ggplot2::aes(group = paste(model, group), linetype =  group)) +
+      ggplot2::geom_point(alpha = dfff$alpha) + ggplot2::stat_ellipse(level = validationlevel)
+    if(plottext){
+      g <- g + ggplot2::geom_text(data = subset(dfff, model == 0),
+                                  color = "black",
+                                  ggplot2::aes(label = time), hjust = texthjust)
+    }
+    g <- getPlotHandle(g = g, object = object, myTheme = myTheme, comp = comps, effect = "time")
+    if(object$separateTimeAndGroup){
       ## Group
       dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
         data.frame(
@@ -1336,7 +1328,7 @@ plotComponentsScore <- function(object,
       dfff$alpha <- ifelse(dfff$model == 0, 1, alphavalidate)
       dfff <- dfff[order(dff$time),]
       gsg <- ggplot2::ggplot(dfff, ggplot2::aes_string(paste0("PC",comps[1]), paste0("PC",comps[2]), shape = "time", color = "group")) + 
-        ggplot2::geom_line(data = subset(dfff, model == 0), ggplot2::aes(group = paste(model, group))) +
+        ggplot2::geom_line(data = subset(dfff, model == 0), ggplot2::aes(group = paste(model, group), linetype = group)) +
         ggplot2::geom_point(alpha = dfff$alpha) + ggplot2::stat_ellipse(level = validationlevel)
         if(plottext){
           gsg <- gsg + ggplot2::geom_text(data = subset(dfff, model == 0), color = "black", ggplot2::aes(label = time), hjust = texthjust)
@@ -1344,52 +1336,18 @@ plotComponentsScore <- function(object,
         
       gsg <- getPlotHandle(g = gsg, object = object, myTheme = myTheme, comp = comps, effect = "group", legend = "bottom")
       
-      g <- ggpubr::ggarrange(gst, gsg, common.legend = TRUE, legend = "bottom", legend.grob = ggpubr::get_legend(gsg), align = "hv")
-      
-    }else{
-      # Score plots
-      ## Time
-      dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
-        data.frame(
-          subset(getScores(object$validation$temp_objects[[x]])$time, PC %in% comps),
-          model = x
-        )
-      })
-      )
-      df_temp <- subset(getScores(object)$time, PC %in% comps)
-      df_temp$model <- 0
-      df_temp$low <- NULL
-      df_temp$high <- NULL
-      dff <- rbind(dff, df_temp)
-      
-      dff$PC <- paste0("PC", dff$PC)
-      dfff <- reshape2::dcast(data = dff, time + group + model ~ PC, value.var = "score")
-      dfff$time <- factor(dfff$time, levels = object$timelist)
-      dfff$group <- factor(dfff$group, levels = object$grouplist)
-      dfff$alpha <- ifelse(dfff$model == 0, 1, alphavalidate)
-      dfff <- dfff[order(dff$time),]
-      g <- ggplot2::ggplot(dfff, ggplot2::aes_string(paste0("PC",comps[1]), paste0("PC",comps[2]), shape = "time", color = "group")) + 
-        ggplot2::geom_line(data = subset(dfff, model == 0), ggplot2::aes(group = paste(model, group))) +
-        ggplot2::geom_point(alpha = dfff$alpha) + ggplot2::stat_ellipse(level = validationlevel)
-      if(plottext){
-        g <- g + ggplot2::geom_text(data = subset(dfff, model == 0),
-                                    color = "black",
-                                    ggplot2::aes(label = time), hjust = texthjust)
-      }
-      g <- getPlotHandle(g = g, object = object, myTheme = myTheme, comp = comps, effect = "time")
+      g <- ggpubr::ggarrange(g, gsg, common.legend = TRUE, legend = "bottom", legend.grob = ggpubr::get_legend(gsg), align = "hv")
     }
   }else{
+    dff <- subset(getScores(object)$time, PC %in% comps)
+    dff$PC <- paste0("PC", dff$PC)
+    dff <- reshape2::dcast(data = dff, time + group ~ PC, value.var = "score")
+    dff$time <- factor(dff$time, levels = object$timelist)
+    dff$group <- factor(dff$group, levels = object$grouplist)
+    g <- ggplot2::ggplot(dff, ggplot2::aes_string(x = paste0("PC",comps[1]), y = paste0("PC",comps[2]), shape = "time", color = "group", group = "group", linetype = "group")) +
+      ggplot2::geom_line() + ggplot2::geom_point()
+    g <- getPlotHandle(g = g, object = object, myTheme = myTheme, comp = comps, effect = "time")
     if(object$separateTimeAndGroup){
-      dff <- subset(getScores(object)$time, PC %in% comps)
-      dff$PC <- paste0("PC", dff$PC)
-      dff$group <- levels(getScores(object)$group$group)[1]
-      dff <- reshape2::dcast(data = dff, time + group ~ PC, value.var = "score")
-      dff$time <- factor(dff$time, levels = object$timelist)
-      dff$group <- factor(dff$group, levels = object$grouplist)
-      gst <- ggplot2::ggplot(dff, ggplot2::aes_string(x = paste0("PC",comps[1]), y = paste0("PC",comps[2]), shape = "time", color = "group", "group" = "group", linetype = "group")) +
-        ggplot2::geom_line() + ggplot2::geom_point()
-      gst <- getPlotHandle(g = gst, object = object, myTheme = myTheme, comp = comps, effect = "time")
-      
       dff <- subset(getScores(object)$group, PC %in% comps)
       dff$PC <- paste0("PC", dff$PC)
       dff <- reshape2::dcast(data = dff, time + group ~ PC, value.var = "score")
@@ -1404,17 +1362,8 @@ plotComponentsScore <- function(object,
                            effect = "group",
                            legend = "bottom")
       
-      g <- ggpubr::ggarrange(gst, gsg, common.legend = TRUE, legend = "bottom", legend.grob = ggpubr::get_legend(gsg))
+      g <- ggpubr::ggarrange(g, gsg, common.legend = TRUE, legend = "bottom", legend.grob = ggpubr::get_legend(gsg))
       
-    }else{
-      dff <- subset(getScores(object)$time, PC %in% comps)
-      dff$PC <- paste0("PC", dff$PC)
-      dff <- reshape2::dcast(data = dff, time + group ~ PC, value.var = "score")
-      dff$time <- factor(dff$time, levels = object$timelist)
-      dff$group <- factor(dff$group, levels = object$grouplist)
-      g <- ggplot2::ggplot(dff, ggplot2::aes_string(x = paste0("PC",comps[1]), y = paste0("PC",comps[2]), shape = "time", color = "group", group = "group", linetype = "group")) +
-        ggplot2::geom_line() + ggplot2::geom_point()
-      g <- getPlotHandle(g = g, object = object, myTheme = myTheme, comp = comps, effect = "time")
     }
   }
   if(object$save){
