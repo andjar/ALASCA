@@ -18,6 +18,8 @@ Depends:
   data.table
 Imports:
 	ggplot2,
+	DBI,
+	RSQLite,
 	ggpubr,
 	lme4,
 	lmerTest,
