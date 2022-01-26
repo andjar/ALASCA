@@ -49,7 +49,12 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
       temp_object <- prepareValidationRun(object)
       
       # Rotate new loadings/scores to the original model
-      temp_object <- rotateMatrix(object = temp_object, target = object)
+      if(object$optimizeScore){
+        temp_object <- rotateMatrixOptimizeScore(object = temp_object, target = object)
+      }else{
+        temp_object <- rotateMatrix(object = temp_object, target = object)
+      }
+      
       temp_object <- cleanALASCA(temp_object)
       
       # Save to disk
@@ -91,7 +96,11 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
       temp_object <- prepareValidationRun(object)
       
       # Rotate new loadings/scores to the original model
-      temp_object <- rotateMatrix(object = temp_object, target = object)
+      if(object$optimizeScore){
+        temp_object <- rotateMatrixOptimizeScore(object = temp_object, target = object)
+      }else{
+        temp_object <- rotateMatrix(object = temp_object, target = object)
+      }
       temp_object <- cleanALASCA(temp_object)
       
       time_all <- difftime(Sys.time(), start.time.all, units = c("secs"))/ii
@@ -114,31 +123,35 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
   return(object)
 }
 
-rotateMatrix <- function(object, target){
+.procrustes <- function(loadings, target){
+  s= t(loadings)%*%target
+  w1 = s %*% t(s)
+  v1 = t(s) %*% s
+  w <- eigen(w1) $vectors
+  ew <- diag(eigen(w1) $values)
+  v <- eigen(v1) $vectors
+  ev <- diag(eigen(v1) $values)
+  o = t(w) %*% s %*% v
+  k = diag(  ((diag(o)) / abs(diag(o))) , nrow = nrow(o), ncol =nrow(o))
+  ww = w %*% k
+  out <- list()
+  out$t1 = ww %*% t(v) # Rotation matrix
+  out$procrust = loadings %*% out$t1 # Rotated loadings
+  return(out)
+}
+
+#' Rotate PCA
+#'
+#' This function rotates loadings and scores during validation
+#' 
+#' Optimizes the rotation for lowest possible difference in score
+#'
+#' @param object ALASCA object to be rotated (and returned)
+#' @param target ALASCA object acting as target
+#' @return An ALASCA object
+rotateMatrixOptimizeScore <- function(object, target){
   # We are only looking at components explaining more than a predefined value
   PCloading <- getRelevantPCs(object = target, target$ALASCA$loading$explained$time)
-  
-  a_l <- object$pca$loading
-  b_l <- target$pca$loading
-  a_s <- object$pca$score
-  b_s <- target$pca$score
-  
-  procrustes <- function(loadings, target){
-    s= t(loadings)%*%target
-    w1 = s %*% t(s)
-    v1 = t(s) %*% s
-    w <- eigen(w1) $vectors
-    ew <- diag(eigen(w1) $values)
-    v <- eigen(v1) $vectors
-    ev <- diag(eigen(v1) $values)
-    o = t(w) %*% s %*% v
-    k = diag(  ((diag(o)) / abs(diag(o))) , nrow = nrow(o), ncol =nrow(o))
-    ww = w %*% k
-    out <- list()
-    out$t1 = ww %*% t(v) # Rotation matrix
-    out$procrust = loadings %*% out$t1 # Rotated loadings
-    return(out)
-  }
   
   # PCA can give loadings with either sign, so we have to check whether this improves the rotation
   N   <- length(PCloading)
@@ -146,19 +159,16 @@ rotateMatrix <- function(object, target){
   lst <- lapply(numeric(N), function(x) vec)
   signMatrix <- as.matrix(expand.grid(lst))
   signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
-    c <- procrustes(loadings= as.matrix(t(t(a_l$time[,PCloading]) * signMatrix[i,])),
-                    target = as.matrix(b_l$time[,PCloading]))
-    ifelse(object$optimizeScore,
-           sum((b_s$time[,PCloading] - as.matrix(t(t(a_s$time[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2),
-           sum((b_l$time[,PCloading] - c$procrust)^2))
+    c <- .procrustes(loadings= as.matrix(t(t(object$pca$loading$time[,PCloading]) * signMatrix[i,])),
+                    target = as.matrix(target$pca$loading$time[,PCloading]))
+    (target$pca$score$time[,PCloading] - as.matrix(t(t(object$pca$score$time[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2
   }))
   minSignVar <- which(signVar == min(signVar))[1]
   object$pca$loading$time[,PCloading] <- t(t(object$pca$loading$time[,PCloading]) * signMatrix[minSignVar,])
   object$pca$score$time[,PCloading] <- t(t(object$pca$score$time[,PCloading]) * signMatrix[minSignVar,])
-  a_l <- object$pca$loading
-  
-  c <- procrustes(loadings= as.matrix(a_l$time[,PCloading]),
-                  target = as.matrix(b_l$time[,PCloading]))
+
+  c <- .procrustes(loadings= as.matrix(object$pca$loading$time[,PCloading]),
+                  target = as.matrix(target$pca$loading$time[,PCloading]))
   object$pca$loading$time[,PCloading] <- c$procrust
   object$pca$score$time[,PCloading] <- as.matrix(object$pca$score$time[,PCloading]) %*% solve(c$t1)
   
@@ -172,19 +182,16 @@ rotateMatrix <- function(object, target){
     lst <- lapply(numeric(N), function(x) vec)
     signMatrix <- as.matrix(expand.grid(lst))
     signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
-      c <- procrustes(loadings= as.matrix(t(t(a_l$group[,PCloading]) * signMatrix[i,])),
-                      target = as.matrix(b_l$group[,PCloading]))
-      ifelse(object$optimizeScore,
-             sum((b_s$group[,PCloading] - as.matrix(t(t(a_s$group[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2),
-             sum((b_l$group[,PCloading] - c$procrust)^2))
+      c <- .procrustes(loadings= as.matrix(t(t(object$pca$loading$group[,PCloading]) * signMatrix[i,])),
+                      target = as.matrix(target$pca$loading$group[,PCloading]))
+      (target$pca$score$group[,PCloading] - as.matrix(t(t(object$pca$score$group[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2
     }))
     minSignVar <- which(signVar == min(signVar))[1]
     object$pca$loading$group[,PCloading] <- t(t(object$pca$loading$group[,PCloading]) * signMatrix[minSignVar,])
     object$pca$score$group[,PCloading] <- t(t(object$pca$score$group[,PCloading]) * signMatrix[minSignVar,])
-    a_l <- object$pca$loading
-    
-    c <- procrustes(loadings= as.matrix(a_l$group[,PCloading]),
-                    target = as.matrix(b_l$group[,PCloading]))
+
+    c <- .procrustes(loadings= as.matrix(object$pca$loading$group[,PCloading]),
+                    target = as.matrix(target$pca$loading$group[,PCloading]))
     object$pca$loading$group[,PCloading] <- c$procrust
     object$pca$score$group[,PCloading] <- as.matrix(object$pca$score$group[,PCloading]) %*% solve(c$t1)
   }
@@ -199,175 +206,19 @@ rotateMatrix <- function(object, target){
 #' @param object ALASCA object to be rotated (and returned)
 #' @param target ALASCA object acting as target
 #' @return An ALASCA object
-rotateMatrix2 <- function(object, target){
-  # We are only looking at components explaining more than 5% of variation
-  PCloading <- target$ALASCA$loading$explained$time > 0.05
-  PCloading[1:2] <- TRUE
-  PCloading <- which(PCloading)
-  
-  a_l <- object$pca$loading
-  b_l <- target$pca$loading
-  a_s <- object$pca$score
-  b_s <- target$pca$score
-  
-  procrustes <- function(loadings, target){
-    svd.result <- svd(t(target) %*% loadings)
-    return(list(
-      t1 = svd.result$u %*% t(svd.result$v),
-      procrust  = loadings %*% svd.result$u %*% t(svd.result$v)
-    ))
-    return(out)
-  }
-  
-  
-  c <- procrustes(loadings= as.matrix(a_l$time[,PCloading]),
-                  target = as.matrix(b_l$time[,PCloading]))
-  object$pca$loading$time[,PCloading] <- c$procrust
-  object$pca$score$time[,PCloading] <- as.matrix(object$pca$score$time[,PCloading]) %*% solve(c$t1)
-  
-  if(object$separateTimeAndGroup){
-    # We are only looking at components explaining more than 5% of variation
-    PCloading <- target$pca$loading$explained$group > 0.05
-    PCloading[1:2] <- TRUE
-    PCloading <- which(PCloading)
-    
-    c <- procrustes(loadings= as.matrix(a_l$group[,PCloading]),
-                    target = as.matrix(b_l$group[,PCloading]))
-    object$pca$loading$group[,PCloading] <- c$procrust
-    object$pca$score$group[,PCloading] <- as.matrix(object$pca$score$group[,PCloading]) %*% solve(c$t1)
-  }
-  
-  return(object)
-}
-
-rotateMatrix3 <- function(object, target){
-  # We are only looking at components explaining more than 5% of variation
-  PCloading <- target$ALASCA$loading$explained$time > 0.05
-  PCloading[1:2] <- TRUE
-  PCloading <- which(PCloading)
-  
-  a_l <- object$pca$loading
-  b_l <- target$pca$loading
-  a_s <- object$pca$score
-  b_s <- target$pca$score
-  
-  procrustes <- function(loadings, target){
-    svd.result <- svd(t(target) %*% loadings)
-    return(list(
-      t1 = svd.result$u %*% t(svd.result$v),
-      procrust  = loadings %*% svd.result$u %*% t(svd.result$v)
-    ))
-    return(out)
-  }
-  
-  # PCA can give loadings with either sign, so we have to check whether this improves the rotation
-  N   <- length(PCloading)
-  vec <- c(-1, 1)
-  lst <- lapply(numeric(N), function(x) vec)
-  signMatrix <- as.matrix(expand.grid(lst))
-  signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
-    c <- procrustes(loadings= as.matrix(t(t(a_l$time[,PCloading]) * signMatrix[i,])),
-                    target = as.matrix(b_l$time[,PCloading]))
-    ifelse(object$optimizeScore,
-           sum((b_s$time[,PCloading] - as.matrix(t(t(a_s$time[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2),
-           sum((b_l$time[,PCloading] - c$procrust)^2))
-  }))
-  minSignVar <- which(signVar == min(signVar))[1]
-  object$pca$loading$time[,PCloading] <- t(t(object$pca$loading$time[,PCloading]) * signMatrix[minSignVar,])
-  object$pca$score$time[,PCloading] <- t(t(object$pca$score$time[,PCloading]) * signMatrix[minSignVar,])
-  a_l <- object$pca$loading
-  
-  c <- procrustes(loadings= as.matrix(a_l$time[,PCloading]),
-                  target = as.matrix(b_l$time[,PCloading]))
-  object$pca$loading$time[,PCloading] <- c$procrust
-  object$pca$score$time[,PCloading] <- as.matrix(object$pca$score$time[,PCloading]) %*% solve(c$t1)
-  
-  if(object$separateTimeAndGroup){
-    # We are only looking at components explaining more than 5% of variation
-    PCloading <- target$pca$loading$explained$group > 0.05
-    PCloading[1:2] <- TRUE
-    PCloading <- which(PCloading)
-    
-    # PCA can give loadings with either sign, so we have to check whether this improves the rotation
-    N   <- length(PCloading)
-    vec <- c(-1, 1)
-    lst <- lapply(numeric(N), function(x) vec)
-    signMatrix <- as.matrix(expand.grid(lst))
-    signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
-      c <- procrustes(loadings= as.matrix(t(t(a_l$group[,PCloading]) * signMatrix[i,])),
-                      target = as.matrix(b_l$group[,PCloading]))
-      ifelse(object$optimizeScore,
-             sum((b_s$group[,PCloading] - as.matrix(t(t(a_s$group[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2),
-             sum((b_l$group[,PCloading] - c$procrust)^2))
-    }))
-    minSignVar <- which(signVar == min(signVar))[1]
-    object$pca$loading$group[,PCloading] <- t(t(object$pca$loading$group[,PCloading]) * signMatrix[minSignVar,])
-    object$pca$score$group[,PCloading] <- t(t(object$pca$score$group[,PCloading]) * signMatrix[minSignVar,])
-    a_l <- object$pca$loading
-    
-    c <- procrustes(loadings= as.matrix(a_l$group[,PCloading]),
-                    target = as.matrix(b_l$group[,PCloading]))
-    object$pca$loading$group[,PCloading] <- c$procrust
-    object$pca$score$group[,PCloading] <- as.matrix(object$pca$score$group[,PCloading]) %*% solve(c$t1)
-  }
-  
-  return(object)
-}
-
-rotateMatrix4 <- function(object, target){
-  # We are only looking at components explaining more than 5% of variation
+rotateMatrix <- function(object, target){
   PCloading <- getRelevantPCs(object = target, target$ALASCA$loading$explained$time)
-  for(i in PCloading){
-    # If the sign of the highest loading in the object to be rotated differs from the corresponding sign in the main matrix, switch sign
-    nVar <- which(abs(target$pca$loading$time[, i]) == max(abs(target$pca$loading$time[, i])))[1]
-    mVar <- target$pca$loading$time$covars[nVar]
-    sVar <- sign(target$pca$loading$time[nVar, i])
-    newSign <- sVar * sign(object$pca$loading$time[mVar, i])
-    object$pca$loading$time[,i] <- newSign * object$pca$loading$time[,i]
-    object$pca$score$time[,i] <- newSign * object$pca$score$time[,i]
-  }
-  a_l <- object$pca$loading
-  b_l <- target$pca$loading
-  a_s <- object$pca$score
-  b_s <- target$pca$score
+  c <- .procrustes(loadings= as.matrix(object$pca$loading$time[,PCloading]),
+                  target = as.matrix(target$pca$loading$time[,PCloading]))
   
-  procrustes <- function(loadings, target){
-    s= t(loadings)%*%target
-    w1 = s %*% t(s)
-    v1 = t(s) %*% s
-    w <- eigen(w1) $vectors
-    ew <- diag(eigen(w1) $values)
-    v <- eigen(v1) $vectors
-    ev <- diag(eigen(v1) $values)
-    o = t(w) %*% s %*% v
-    k = diag(  ((diag(o)) / abs(diag(o))) , nrow = nrow(o), ncol =nrow(o))
-    ww = w %*% k
-    out <- list()
-    out$t1 = ww %*% t(v) # Rotation matrix
-    out$procrust = loadings %*% out$t1 # Rotated loadings
-    return(out)
-  }
-  
-  c <- procrustes(loadings= as.matrix(a_l$time[,PCloading]),
-                  target = as.matrix(b_l$time[,PCloading]))
   object$pca$loading$time[,PCloading] <- c$procrust
   object$pca$score$time[,PCloading] <- as.matrix(object$pca$score$time[,PCloading]) %*% solve(c$t1)
   
-  if(object$separateTimeAndGroup){
-    # We are only looking at components explaining more than 5% of variation
+   if(object$separateTimeAndGroup){
     PCloading <- getRelevantPCs(object = target, target$ALASCA$loading$explained$group)
-    for(i in PCloading){
-      # If the sign of the highest loading in the object to be rotated differs from the corresponding sign in the main matrix, switch sign
-      nVar <- which(abs(target$pca$loading$group[, i]) == max(abs(target$pca$loading$group[, i])))[1]
-      mVar <- target$pca$loading$group$covars[nVar]
-      sVar <- sign(target$pca$loading$group[nVar, i])
-      newSign <- sVar * sign(object$pca$loading$group[mVar, i])
-      object$pca$loading$group[,i] <- newSign * object$pca$loading$group[,i]
-      object$pca$score$group[,i] <- newSign * object$pca$score$group[,i]
-    }
+    c <- .procrustes(loadings= as.matrix(object$pca$loading$group[,PCloading]),
+                    target = as.matrix(target$pca$loading$group[,PCloading]))
     
-    c <- procrustes(loadings= as.matrix(a_l$group[,PCloading]),
-                    target = as.matrix(b_l$group[,PCloading]))
     object$pca$loading$group[,PCloading] <- c$procrust
     object$pca$score$group[,PCloading] <- as.matrix(object$pca$score$group[,PCloading]) %*% solve(c$t1)
   }
