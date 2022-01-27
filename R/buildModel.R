@@ -77,7 +77,7 @@ runRegression <- function(object){
                                      x = modmat[,2:ncol(modmat)], 
                                      id = as.numeric(factor(df[,ID])), 
                                      ranef = FALSE)$be,
-          pvalue = 1,
+          pvalue = NA,
           covar = as.character(x),
           variable = colnames(modmat)
         )

@@ -1,3 +1,10 @@
+# ALASCA 0.0.0.107
+
+## New features
+
+* Provide a data frame `validationIDs` to reuse validation samples
+* Covariates excluded from the effect matrices are now validated by percentiles
+
 # ALASCA 0.0.0.106
 
 ## New features

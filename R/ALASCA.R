@@ -77,6 +77,7 @@ ALASCA <- function(df,
                    optimizeScore = FALSE,
                    validateRegression = TRUE,
                    validationMethod = "bootstrap",
+                   validationIDs = NA,
                    validationObject = NA,
                    validationAssignNewID = TRUE,
                    validationParticipants = NA){
@@ -127,7 +128,7 @@ ALASCA <- function(df,
                    minimizeObject = minimizeObject,
                    doDebug = doDebug,
                    nValFold = nValFold,
-                   nValRuns = nValRuns,
+                   nValRuns = ifelse(any(is.na(validationIDs)), nValRuns, nrow(validationIDs)),
                    useRfast = useRfast,
                    keepTerms = keepTerms,
                    initTime = Sys.time(),
@@ -145,6 +146,7 @@ ALASCA <- function(df,
                    validationObject = validationObject,
                    validationParticipants = validationParticipants,
                    validationAssignNewID = validationAssignNewID,
+                   validationIDs = validationIDs,
                    variablelist = unique(df$variable),
                    timelist = levels(df$time),
                    grouplist = levels(df$group),
@@ -219,8 +221,8 @@ RMASCA <- function(...){
 #' @return String
 #' @export
 printVer <- function(object = FALSE, get = NA, print = TRUE){
-  ALASCA.version <- "0.0.0.106"
-  ALASCA.version.date <- "2022-01-22"
+  ALASCA.version <- "0.0.0.107"
+  ALASCA.version.date <- "2022-01-27"
   if(is.list(object)){
     ALASCA.version <- object$ALASCA.version
     ALASCA.version.date <- object$ALASCA.version.date

@@ -36,77 +36,156 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
 
   start.time.all <- Sys.time()
 
-  if(object$savetodisk){
-    limPC_time <- getRelevantPCs(object = object,  object$ALASCA$loading$explained$time)
-    if(object$separateTimeAndGroup){
-      limPC_group <- getRelevantPCs(object = object,  object$ALASCA$loading$explained$group)
-    }
-    temp_object <- lapply(1:object$nValRuns, FUN = function(ii){
-      cat("- Run ",ii," of ",object$nValRuns,"\n")
-      start.time.this <- Sys.time()
-      
-      # Make resampled model
-      temp_object <- prepareValidationRun(object)
-      
-      # Rotate new loadings/scores to the original model
-      if(object$optimizeScore){
-        temp_object <- rotateMatrixOptimizeScore(object = temp_object, target = object)
-      }else{
-        temp_object <- rotateMatrix(object = temp_object, target = object)
-      }
-      
-      temp_object <- cleanALASCA(temp_object)
-      
-      # Save to disk
-      fname <- paste0("val_",ii)
-      loading <- data.frame(temp_object$ALASCA$loading$time[temp_object$ALASCA$loading$time$PC %in% limPC_time,], model = ii)
-      #loading$covars <- object$numvariablelist[loading$covars]
-      DBI::dbWriteTable(object$db.con, "time.loading", loading, append= T, overwrite=F)
-      scores <- data.frame(temp_object$ALASCA$score$time[temp_object$ALASCA$score$time$PC %in% limPC_time,], model = ii)
-      #scores$time <- object$numtimelist[scores$time]
-      #if(!object$separateTimeAndGroup){
-      #  scores$group <- object$numgrouplist[scores$group]
-      #}
-      DBI::dbWriteTable(object$db.con, "time.score", scores, append= T, overwrite=F)
-      
+  if(any(is.na(object$validationIDs))){
+    # Generate random samples
+    if(object$savetodisk){
+      limPC_time <- getRelevantPCs(object = object,  object$ALASCA$loading$explained$time)
       if(object$separateTimeAndGroup){
-        loading <- data.frame(temp_object$ALASCA$loading$group[temp_object$ALASCA$loading$group$PC %in% limPC_group,], model = ii)
-        #loading$covars <- object$numvariablelist[loading$covars]
-        DBI::dbWriteTable(object$db.con, "group.loading", loading, append= T, overwrite=F)
+        limPC_group <- getRelevantPCs(object = object,  object$ALASCA$loading$explained$group)
+      }
+      temp_object <- lapply(1:object$nValRuns, FUN = function(ii){
+        cat("- Run ",ii," of ",object$nValRuns,"\n")
+        start.time.this <- Sys.time()
         
-        scores <- data.frame(temp_object$ALASCA$score$group[temp_object$ALASCA$score$group$PC %in% limPC_group,], model = ii)
+        # Make resampled model
+        temp_object <- prepareValidationRun(object)
+        
+        # Rotate new loadings/scores to the original model
+        if(object$optimizeScore){
+          temp_object <- rotateMatrixOptimizeScore(object = temp_object, target = object)
+        }else{
+          temp_object <- rotateMatrix(object = temp_object, target = object)
+        }
+        
+        temp_object <- cleanALASCA(temp_object)
+        
+        # Save to disk
+        fname <- paste0("val_",ii)
+        loading <- data.frame(temp_object$ALASCA$loading$time[temp_object$ALASCA$loading$time$PC %in% limPC_time,], model = ii)
+        #loading$covars <- object$numvariablelist[loading$covars]
+        DBI::dbWriteTable(object$db.con, "time.loading", loading, append= T, overwrite=F)
+        scores <- data.frame(temp_object$ALASCA$score$time[temp_object$ALASCA$score$time$PC %in% limPC_time,], model = ii)
         #scores$time <- object$numtimelist[scores$time]
-        #scores$group <- object$numgrouplist[scores$group]
-        DBI::dbWriteTable(object$db.con, "group.score", scores, append= T, overwrite=F)
-      }
-      if(object$validateRegression){
-        DBI::dbWriteTable(object$db.con, "mod.pred", data.frame(temp_object$mod.pred, model = ii), append= T, overwrite=F)
-      }
-      
-      time_all <- difftime(Sys.time(), start.time.all, units = c("secs"))/ii
-      cat("--- Used ",round(difftime(Sys.time(), start.time.this, units = c("secs")),2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*time_all,2)," seconds \n")
-      fname
-    })
+        #if(!object$separateTimeAndGroup){
+        #  scores$group <- object$numgrouplist[scores$group]
+        #}
+        DBI::dbWriteTable(object$db.con, "time.score", scores, append= T, overwrite=F)
+        
+        if(object$separateTimeAndGroup){
+          loading <- data.frame(temp_object$ALASCA$loading$group[temp_object$ALASCA$loading$group$PC %in% limPC_group,], model = ii)
+          #loading$covars <- object$numvariablelist[loading$covars]
+          DBI::dbWriteTable(object$db.con, "group.loading", loading, append= T, overwrite=F)
+          
+          scores <- data.frame(temp_object$ALASCA$score$group[temp_object$ALASCA$score$group$PC %in% limPC_group,], model = ii)
+          #scores$time <- object$numtimelist[scores$time]
+          #scores$group <- object$numgrouplist[scores$group]
+          DBI::dbWriteTable(object$db.con, "group.score", scores, append= T, overwrite=F)
+        }
+        if(object$validateRegression){
+          DBI::dbWriteTable(object$db.con, "mod.pred", data.frame(temp_object$mod.pred, model = ii), append= T, overwrite=F)
+        }
+        
+        time_all <- difftime(Sys.time(), start.time.all, units = c("secs"))/ii
+        cat("--- Used ",round(difftime(Sys.time(), start.time.this, units = c("secs")),2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*time_all,2)," seconds \n")
+        fname
+      })
+    }else{
+      temp_object <- lapply(1:object$nValRuns, FUN = function(ii){
+        cat("- Run ",ii," of ",object$nValRuns,"\n")
+        start.time.this <- Sys.time()
+        
+        # Make resampled model
+        temp_object <- prepareValidationRun(object)
+        
+        # Rotate new loadings/scores to the original model
+        if(object$optimizeScore){
+          temp_object <- rotateMatrixOptimizeScore(object = temp_object, target = object)
+        }else{
+          temp_object <- rotateMatrix(object = temp_object, target = object)
+        }
+        temp_object <- cleanALASCA(temp_object)
+        
+        time_all <- difftime(Sys.time(), start.time.all, units = c("secs"))/ii
+        cat("--- Used ",round(difftime(Sys.time(), start.time.this, units = c("secs")),2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*time_all,2)," seconds \n")
+        temp_object
+      })
+    }
   }else{
-    temp_object <- lapply(1:object$nValRuns, FUN = function(ii){
-      cat("- Run ",ii," of ",object$nValRuns,"\n")
-      start.time.this <- Sys.time()
-      
-      # Make resampled model
-      temp_object <- prepareValidationRun(object)
-      
-      # Rotate new loadings/scores to the original model
-      if(object$optimizeScore){
-        temp_object <- rotateMatrixOptimizeScore(object = temp_object, target = object)
-      }else{
-        temp_object <- rotateMatrix(object = temp_object, target = object)
+    # Reuse previous samples
+    cat("Using predefined samples...\n")
+    
+    if(object$savetodisk){
+      limPC_time <- getRelevantPCs(object = object,  object$ALASCA$loading$explained$time)
+      if(object$separateTimeAndGroup){
+        limPC_group <- getRelevantPCs(object = object,  object$ALASCA$loading$explained$group)
       }
-      temp_object <- cleanALASCA(temp_object)
-      
-      time_all <- difftime(Sys.time(), start.time.all, units = c("secs"))/ii
-      cat("--- Used ",round(difftime(Sys.time(), start.time.this, units = c("secs")),2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*time_all,2)," seconds \n")
-      temp_object
-    })
+      temp_object <- lapply(1:object$nValRuns, FUN = function(ii){
+        cat("- Run ",ii," of ",object$nValRuns,"\n")
+        start.time.this <- Sys.time()
+        
+        # Make resampled model
+        temp_object <- prepareValidationRun(object, runN = ii)
+        
+        # Rotate new loadings/scores to the original model
+        if(object$optimizeScore){
+          temp_object <- rotateMatrixOptimizeScore(object = temp_object, target = object)
+        }else{
+          temp_object <- rotateMatrix(object = temp_object, target = object)
+        }
+        
+        temp_object <- cleanALASCA(temp_object)
+        
+        # Save to disk
+        fname <- paste0("val_",ii)
+        loading <- data.frame(temp_object$ALASCA$loading$time[temp_object$ALASCA$loading$time$PC %in% limPC_time,], model = ii)
+        #loading$covars <- object$numvariablelist[loading$covars]
+        DBI::dbWriteTable(object$db.con, "time.loading", loading, append= T, overwrite=F)
+        scores <- data.frame(temp_object$ALASCA$score$time[temp_object$ALASCA$score$time$PC %in% limPC_time,], model = ii)
+        #scores$time <- object$numtimelist[scores$time]
+        #if(!object$separateTimeAndGroup){
+        #  scores$group <- object$numgrouplist[scores$group]
+        #}
+        DBI::dbWriteTable(object$db.con, "time.score", scores, append= T, overwrite=F)
+        
+        if(object$separateTimeAndGroup){
+          loading <- data.frame(temp_object$ALASCA$loading$group[temp_object$ALASCA$loading$group$PC %in% limPC_group,], model = ii)
+          #loading$covars <- object$numvariablelist[loading$covars]
+          DBI::dbWriteTable(object$db.con, "group.loading", loading, append= T, overwrite=F)
+          
+          scores <- data.frame(temp_object$ALASCA$score$group[temp_object$ALASCA$score$group$PC %in% limPC_group,], model = ii)
+          #scores$time <- object$numtimelist[scores$time]
+          #scores$group <- object$numgrouplist[scores$group]
+          DBI::dbWriteTable(object$db.con, "group.score", scores, append= T, overwrite=F)
+        }
+        if(object$validateRegression){
+          DBI::dbWriteTable(object$db.con, "mod.pred", data.frame(temp_object$mod.pred, model = ii), append= T, overwrite=F)
+        }
+        
+        time_all <- difftime(Sys.time(), start.time.all, units = c("secs"))/ii
+        cat("--- Used ",round(difftime(Sys.time(), start.time.this, units = c("secs")),2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*time_all,2)," seconds \n")
+        fname
+      })
+    }else{
+      temp_object <- lapply(1:object$nValRuns, FUN = function(ii){
+        cat("- Run ",ii," of ",object$nValRuns,"\n")
+        start.time.this <- Sys.time()
+        
+        # Make resampled model
+        temp_object <- prepareValidationRun(object, runN = ii)
+        
+        # Rotate new loadings/scores to the original model
+        if(object$optimizeScore){
+          temp_object <- rotateMatrixOptimizeScore(object = temp_object, target = object)
+        }else{
+          temp_object <- rotateMatrix(object = temp_object, target = object)
+        }
+        temp_object <- cleanALASCA(temp_object)
+        
+        time_all <- difftime(Sys.time(), start.time.all, units = c("secs"))/ii
+        cat("--- Used ",round(difftime(Sys.time(), start.time.this, units = c("secs")),2)," seconds. Est. time remaining: ",round((object$nValRuns-ii)*time_all,2)," seconds \n")
+        temp_object
+      })
+    }
   }
   
   if(grepl("permutation",object$validationMethod)){
@@ -253,6 +332,9 @@ getValidationPercentiles <- function(object, objectlist){
   if(object$validateRegression){
     object <- getValidationPercentilesRegression(object, objectlist)
   }
+  if(nrow(getCovars(object)) > 0){
+    object <- getValidationPercentilesCovars(object, objectlist)
+  }
   
   return(object)
 }
@@ -275,6 +357,25 @@ getValidationPercentilesRegression <- function(object, objectlist){
   colnames(df) = c("group", "time", "variable", "low", "high")
   
   object$mod.pred <- merge(object$mod.pred, df)
+  return(object)
+}
+
+#' Extract percentiles for covariates
+#'
+#' This function extract percentiles for validation of covariates
+#'
+#' @inheritParams getValidationPercentiles
+#' @return An ALASCA object
+getValidationPercentilesCovars <- function(object, objectlist){
+  if(object$savetodisk){
+    stop("Not working yet")
+  }else{
+    df <- rbindlist(lapply(objectlist, function(x) getCovars(x)))
+  }
+  df <- df[, as.list(quantile(estimate, probs = object$limitsCI, type = 1)),by = .(covar, variable)]
+  colnames(df) = c("covar", "variable", "low", "high")
+  
+  object$CovarCoefficients <- merge(object$CovarCoefficients, df)
   return(object)
 }
 
@@ -422,34 +523,44 @@ getRegressionPredictions <- function(object){
 #'
 #' @param object An ALASCA object
 #' @return An ALASCA object
-prepareValidationRun <- function(object){
+prepareValidationRun <- function(object, runN = NA){
   if(object$validationMethod %in% c("loo", "jack-knife", "jackknife")){
     # Use leave-one-out validation
     selectedParts <- data.frame()
     
     if(object$method %in% c("LMM", "Rfast")){
-      # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
-      selectedParts <- lapply(unique(object$stratificationVector), function(gr){
-        selectedParts_temp_all <- unique(object$df[object$stratificationVector == gr,ID])
-        selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
-        selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
-        selectedParts_temp_all[selectedParts_temp_ticket != 1]
-      })
+      if(any(is.na(object$validationIDs))){
+        # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
+        selectedParts <- lapply(unique(object$stratificationVector), function(gr){
+          selectedParts_temp_all <- unique(object$df[object$stratificationVector == gr,ID])
+          selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
+          selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
+          selectedParts_temp_all[selectedParts_temp_ticket != 1]
+        })
+        temp_object <- ALASCA(validationObject = object,
+                              validationParticipants = object$df[,ID] %in% unlist(selectedParts))
+      }else{
+        temp_object <- ALASCA(validationObject = object,
+                              validationParticipants = object$df[,ID] %in% object$validationIDs[runN,x])
+      }
       
-      temp_object <- ALASCA(validationObject = object,
-                            validationParticipants = object$df[,ID] %in% unlist(selectedParts))
     }else if(object$method == "LM"){
       object$df$ID <- c(1:nrow(object$df))
-      # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
-      selectedParts <- lapply(unique(object$stratificationVector), function(gr){
-        selectedParts_temp_all <- unique(object$df[object$stratificationVector == gr,ID])
-        selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
-        selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
-        selectedParts_temp_all[selectedParts_temp_ticket != 1]
-      })
+      if(any(is.na(object$validationIDs))){
+        # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
+        selectedParts <- lapply(unique(object$stratificationVector), function(gr){
+          selectedParts_temp_all <- unique(object$df[object$stratificationVector == gr,ID])
+          selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$nValFold
+          selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
+          selectedParts_temp_all[selectedParts_temp_ticket != 1]
+        })
       
       temp_object <- ALASCA(validationObject = object,
                             validationParticipants = object$df[,ID] %in% unlist(selectedParts))
+    }else{
+      temp_object <- ALASCA(validationObject = object,
+                            validationParticipants = object$df[,ID] %in% object$validationIDs[runN,x])
+    }
     }
   }else if(object$validationMethod == "bootstrap"){
     # Use bootstrap validation
@@ -463,22 +574,37 @@ prepareValidationRun <- function(object){
       # Loop through all the groups and create a new dataframe with resampled values
       bootobject$newIDs <- c()
       bootobject$originalIDs <- c()
-      for(i in unique(object$stratificationVector)){
-        # Get ID of all members of stratification group
-        selectedParts_temp_all <- unique(object$df[object$stratificationVector == i,ID])
+      if(any(is.na(object$validationIDs))){
+        for(i in unique(object$stratificationVector)){
+          # Get ID of all members of stratification group
+          selectedParts_temp_all <- unique(object$df[object$stratificationVector == i,ID])
+          
+          # Resample participants
+          selectedParts_temp_selected <- sample(selectedParts_temp_all, length(selectedParts_temp_all), replace = TRUE)
+          newIDs <- seq(cc_id+1, cc_id+length(selectedParts_temp_selected))
+          cc_id <- max(newIDs)
+          bootobject$originalIDs <- c(bootobject$originalIDs, selectedParts_temp_selected)
+          bootobject$newIDs <- c(bootobject$newIDs, newIDs)
+          
+          # Create data frame from resampled participants
+          bootdf <- rbind(bootdf,
+                          data.table::rbindlist(
+                            lapply(seq_along(selectedParts_temp_selected), function(x){
+                              seldf <- bootdf_temp[bootdf_temp$ID == selectedParts_temp_selected[x], ]
+                              seldf$originalIDbeforeBootstrap <- seldf$ID
+                              if(object$validationAssignNewID) seldf$ID <- newIDs[x] # Replace ID
+                              seldf
+                            })
+                          )
+          )
+        }
         
-        # Resample participants
-        selectedParts_temp_selected <- sample(selectedParts_temp_all, length(selectedParts_temp_all), replace = TRUE)
-        newIDs <- seq(cc_id+1, cc_id+length(selectedParts_temp_selected))
-        cc_id <- max(newIDs)
-        bootobject$originalIDs <- c(bootobject$originalIDs, selectedParts_temp_selected)
-        bootobject$newIDs <- c(bootobject$newIDs, newIDs)
-        
-        # Create data frame from resampled participants
+      }else{
+        newIDs <- seq(1, length(object$validationIDs[runN,]))
         bootdf <- rbind(bootdf,
                         data.table::rbindlist(
-                          lapply(seq_along(selectedParts_temp_selected), function(x){
-                            seldf <- bootdf_temp[bootdf_temp$ID == selectedParts_temp_selected[x], ]
+                          lapply(seq_along(object$validationIDs[runN,]), function(x){
+                            seldf <- bootdf_temp[bootdf_temp$ID == object$validationIDs[runN,x], ]
                             seldf$originalIDbeforeBootstrap <- seldf$ID
                             if(object$validationAssignNewID) seldf$ID <- newIDs[x] # Replace ID
                             seldf

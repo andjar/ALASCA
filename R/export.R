@@ -39,9 +39,9 @@ savetocsv <- function(object, filename = NA, filepath = NA, saveCSV = TRUE, save
         if(saveLoadings) write.csv(getLoadings(object)$time,
                                    file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_time_loadings", filetype = ".csv"),  ...)
         if(saveScores) write.csv(getScores(object)$group,
-                                 file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_scores_scores", filetype = ".csv"), ...)
+                                 file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_group_scores", filetype = ".csv"), ...)
         if(saveLoadings) write.csv(getLoadings(object)$group,
-                                   file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_scores_loadings", filetype = ".csv"),  ...)
+                                   file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_group_loadings", filetype = ".csv"),  ...)
         if(saveCovars) write.csv(getCovars(object),
                                  file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_covars", filetype = ".csv"),  ...)
       }else{

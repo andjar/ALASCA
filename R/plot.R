@@ -484,7 +484,7 @@ getLoadingPlot <- function(object,
   }
   g <- g + myTheme +
     ggplot2::labs(x = "Variable",
-                  y = getExpLabel(object, component = component, effect = effect, type = "Loading"))
+                  y = .getExpLabel(object, component = component, effect = effect, type = "Loading"))
   if(plotzeroline){
     g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
   }
@@ -643,7 +643,7 @@ getScorePlot <- function(object,
       ggplot2::theme(legend.position = "bottom") +
       ggplot2::labs(x = object$plot.xlabel,
                     group = object$plot.grouplabel, color = object$plot.grouplabel, linetype = object$plot.grouplabel,
-                    y = getExpLabel(object, component = component, effect = "time"))
+                    y = .getExpLabel(object, component = component, effect = "time"))
   }else{
     score <- subset(getScores(object)$group, PC == component)
     if(object$validate){
@@ -687,7 +687,7 @@ getScorePlot <- function(object,
       ggplot2::theme(legend.position = "bottom") +
       ggplot2::labs(x = object$plot.xlabel,
                     group = object$plot.grouplabel, color = object$plot.grouplabel, linetype = object$plot.grouplabel,
-                    y = getExpLabel(object, component = component, effect = "group"))
+                    y = .getExpLabel(object, component = component, effect = "group"))
   }
   if(object$save){
     saveALASCAPlot(object = object,g = g,filetype = filetype, figsize = figsize, figunit = figunit, suffix = "_score")
@@ -1018,7 +1018,7 @@ plotVal <- function(object,
 #' @param figunit = "mm",
 #' @param return_data Set to `TRUE` to return data instead of plot
 #' 
-#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
+#' @param myTheme A ggplot2 theme
 #' @return A ggplot2 objects\.
 #' 
 #' @export
@@ -1030,8 +1030,11 @@ plotCovar <- function(object,
                       filetype = NA,
                       figsize = NA,
                       figunit = NA,
-                      myTheme = ggplot2::theme_bw(),
+                      myTheme = NA,
                       pvalue = "shape"){
+  if(any(is.na(myTheme))){
+    myTheme <- object$plot.myTheme
+  }
   df <- getCovars(object)
   if(any(is.na(covar))){
     covar <- unique(df$variable)
@@ -1046,35 +1049,49 @@ plotCovar <- function(object,
   for(i in 1:length(covar)){
     df$xlabel[df$variable == covar[i]] <- xlabel[i]
   }
-  df$pvalue_label <- ifelse(df$pvalue >= 0.05, "Not significant", ifelse(df$pvalue < 0.001, "< 0.001", ifelse(df$pvalue < 0.01, "< 0.01", "< 0.05")))
-  df$pvalue_sign <- ifelse(df$pvalue >= 0.05, "", ifelse(df$pvalue < 0.001, "***", ifelse(df$pvalue < 0.01, "**", "*")))
-  df$covar <- factor(df$covar, levels = unique(df$covar[order(df$estimate)]))
-  if(return_data){
-    return(df)
-  }else{
-    if(pvalue == "shape"){
-      g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, shape = pvalue_label)) + 
-        ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
-        ggplot2::scale_shape_manual(values = c("Not significant"=3, "< 0.05"=15, "< 0.01"=16, "< 0.001"=17, "Baseline"=5)) +
-        ggplot2::facet_wrap(~xlabel) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
-        myTheme + ggplot2::theme(legend.position = "bottom", legend.box="vertical", legend.margin=ggplot2::margin())
-    }else if(pvalue == "star" | pvalue == "asterisk" | pvalue == "stars"){
-      g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, label = pvalue_sign)) + 
-        ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
-        ggplot2::geom_text(hjust = 0.5, vjust = 0) +
-        ggplot2::facet_wrap(~xlabel) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
-        myTheme
+  if(!object$useRfast){
+    df$pvalue_label <- ifelse(df$pvalue >= 0.05, "Not significant", ifelse(df$pvalue < 0.001, "< 0.001", ifelse(df$pvalue < 0.01, "< 0.01", "< 0.05")))
+    df$pvalue_sign <- ifelse(df$pvalue >= 0.05, "", ifelse(df$pvalue < 0.001, "***", ifelse(df$pvalue < 0.01, "**", "*")))
+    df$covar <- factor(df$covar, levels = unique(df$covar[order(df$estimate)]))
+    if(return_data){
+      return(df)
     }else{
-      g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar)) + 
-        ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
+      if(pvalue == "shape"){
+        g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, shape = pvalue_label)) + 
+          ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
+          ggplot2::scale_shape_manual(values = c("Not significant"=3, "< 0.05"=15, "< 0.01"=16, "< 0.001"=17, "Baseline"=5))
+      }else if(pvalue == "star" | pvalue == "asterisk" | pvalue == "stars"){
+        g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, label = pvalue_sign)) + 
+          ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0) +
+          ggplot2::geom_text(hjust = 0.5, vjust = 0)
+      }else{
+        g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar)) + 
+          ggplot2::geom_point() + ggplot2::geom_vline(xintercept = 0)
+      }
+      g <- g +
         ggplot2::facet_wrap(~xlabel) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
         myTheme + ggplot2::theme(legend.position = "bottom", legend.box="vertical", legend.margin=ggplot2::margin())
+      
+      if(object$save){
+        saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+      }
+      return(g)
     }
-    
-    if(object$save){
-      saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+  }else{
+    df$covar <- factor(df$covar, levels = unique(df$covar[order(df$estimate)]))
+    if(return_data){
+      return(df)
+    }else{
+        g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, xmin = low, xmax = high)) + 
+          ggplot2::geom_pointrange() + ggplot2::geom_vline(xintercept = 0) +
+        ggplot2::facet_wrap(~xlabel) + ggplot2::labs(x = "Coefficient", y = "") +
+        myTheme
+      
+      if(object$save){
+        saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+      }
+      return(g)
     }
-    return(g)
   }
 }
 
@@ -1149,8 +1166,8 @@ plotComponentsLoadings <- function(object,
   }
   g <- g + 
     ggrepel::geom_text_repel() +
-    ggplot2::labs(x = getExpLabel(object, component = comps[1], effect = "time", type = "Loading"),
-                  y = getExpLabel(object, component = comps[2], effect = "time", type = "Loading")) + 
+    ggplot2::labs(x = .getExpLabel(object, component = comps[1], effect = "time", type = "Loading"),
+                  y = .getExpLabel(object, component = comps[2], effect = "time", type = "Loading")) + 
     myTheme
   
   if(object$separateTimeAndGroup){
@@ -1177,8 +1194,8 @@ plotComponentsLoadings <- function(object,
     }
     glg <- glg + 
       ggrepel::geom_text_repel() +
-      ggplot2::labs(x = getExpLabel(object, component = comps[1], effect = "group", type = "Loading"),
-                    y = getExpLabel(object, component = comps[2], effect = "group", type = "Loading")) + 
+      ggplot2::labs(x = .getExpLabel(object, component = comps[1], effect = "group", type = "Loading"),
+                    y = .getExpLabel(object, component = comps[2], effect = "group", type = "Loading")) + 
       myTheme
     
     g <- ggpubr::ggarrange(g, glg)
@@ -1243,7 +1260,7 @@ plotComponentsScore <- function(object,
       ggplot2::geom_line() +
       ggplot2::geom_pointrange(ggplot2::aes_string(xmin = paste0("PC",comps[1],"_low"), xmax = paste0("PC",comps[1],"_high"))) +
       ggplot2::geom_pointrange(ggplot2::aes_string(ymin = paste0("PC",comps[2],"_low"), ymax = paste0("PC",comps[2],"_high")))
-    g <- getPlotHandle(g = g,
+    g <- .getPlotHandle(g = g,
                        object = object,
                        myTheme = myTheme,
                        comp = comps,
@@ -1265,7 +1282,7 @@ plotComponentsScore <- function(object,
         ggplot2::geom_line() +
         ggplot2::geom_pointrange(ggplot2::aes_string(xmin = paste0("PC",comps[1],"_low"), xmax = paste0("PC",comps[1],"_high"))) +
         ggplot2::geom_pointrange(ggplot2::aes_string(ymin = paste0("PC",comps[2],"_low"), ymax = paste0("PC",comps[2],"_high")))
-      gsg <- getPlotHandle(g = gsg,
+      gsg <- .getPlotHandle(g = gsg,
                          object = object,
                          myTheme = myTheme,
                          comp = comps,
@@ -1305,7 +1322,7 @@ plotComponentsScore <- function(object,
                                   color = "black",
                                   ggplot2::aes(label = time), hjust = texthjust)
     }
-    g <- getPlotHandle(g = g, object = object, myTheme = myTheme, comp = comps, effect = "time")
+    g <- .getPlotHandle(g = g, object = object, myTheme = myTheme, comp = comps, effect = "time")
     if(object$separateTimeAndGroup){
       ## Group
       dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x){
@@ -1334,7 +1351,7 @@ plotComponentsScore <- function(object,
           gsg <- gsg + ggplot2::geom_text(data = subset(dfff, model == 0), color = "black", ggplot2::aes(label = time), hjust = texthjust)
         }
         
-      gsg <- getPlotHandle(g = gsg, object = object, myTheme = myTheme, comp = comps, effect = "group", legend = "bottom")
+      gsg <- .getPlotHandle(g = gsg, object = object, myTheme = myTheme, comp = comps, effect = "group", legend = "bottom")
       
       g <- ggpubr::ggarrange(g, gsg, common.legend = TRUE, legend = "bottom", legend.grob = ggpubr::get_legend(gsg), align = "hv")
     }
@@ -1346,7 +1363,7 @@ plotComponentsScore <- function(object,
     dff$group <- factor(dff$group, levels = object$grouplist)
     g <- ggplot2::ggplot(dff, ggplot2::aes_string(x = paste0("PC",comps[1]), y = paste0("PC",comps[2]), shape = "time", color = "group", group = "group", linetype = "group")) +
       ggplot2::geom_line() + ggplot2::geom_point()
-    g <- getPlotHandle(g = g, object = object, myTheme = myTheme, comp = comps, effect = "time")
+    g <- .getPlotHandle(g = g, object = object, myTheme = myTheme, comp = comps, effect = "time")
     if(object$separateTimeAndGroup){
       dff <- subset(getScores(object)$group, PC %in% comps)
       dff$PC <- paste0("PC", dff$PC)
@@ -1355,7 +1372,7 @@ plotComponentsScore <- function(object,
       dff$group <- factor(dff$group, levels = object$grouplist)
       gsg <- ggplot2::ggplot(dff, ggplot2::aes_string(x = paste0("PC",comps[1]), y = paste0("PC",comps[2]), shape = "time", color = "group", "group" = "group", linetype = "group")) +
         ggplot2::geom_line() + ggplot2::geom_point()
-      gsg <- getPlotHandle(g = gsg,
+      gsg <- .getPlotHandle(g = gsg,
                            object = object,
                            myTheme = myTheme,
                            comp = comps,
@@ -1398,10 +1415,10 @@ getPlotPalette <- function(object){
 #' @return A list with colors
 #' 
 #' @export
-getPlotHandle <- function(g, object, myTheme, effect = "time", comps = c(1,2), legend = NA){
+.getPlotHandle <- function(g, object, myTheme, effect = "time", comps = c(1,2), legend = NA){
   g <- g + ggplot2::scale_color_manual(values = getPlotPalette(object)) +
-    ggplot2::labs(x = getExpLabel(object, component = comps[1], effect = effect),
-                  y = getExpLabel(object, component = comps[2], effect = effect)) +
+    ggplot2::labs(x = .getExpLabel(object, component = comps[1], effect = effect),
+                  y = .getExpLabel(object, component = comps[2], effect = effect)) +
     myTheme
   if(!is.na(legend)){
     g <- g + ggplot2::theme(legend.position = legend)
@@ -1416,7 +1433,7 @@ getPlotHandle <- function(g, object, myTheme, effect = "time", comps = c(1,2), l
 #' @param object An ALASCA object
 #' @param comp Which two components to plot (default: `c(1, 2`)
 #' @return A ggplot2 objects.
-getExpLabel <- function(object, component = 1, effect = "time", type = "Score"){
+.getExpLabel <- function(object, component = 1, effect = "time", type = "Score"){
   if(effect == "time"){
     paste0(type," PC",component, " (", round(100*object$ALASCA$loading$explained$time[component],2),"%)")
   }else{
@@ -1432,8 +1449,8 @@ getExpLabel <- function(object, component = 1, effect = "time", type = "Score"){
 #' @param comp Which two components to plot (default: `c(1, 2`)
 #' @param return_data Set to `TRUE` to return data instead of plot
 #' @param filetype Which filetype you want to save the figure to
-#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
-#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param myTheme A ggplot2 theme to use
 #' @return A ggplot2 objects.
 #' 
 #' @export
@@ -1443,7 +1460,10 @@ plotProjection <- function(object,
                            filetype = NA,
                            figsize = NA,
                            figunit = NA,
-                           myTheme = ggplot2::theme_bw()){
+                           myTheme = NA){
+  if(any(is.na(myTheme))){
+    myTheme <- object$plot.myTheme
+  }
   df <- object$df
   df$ID <- df[, ID]
   loadings_Time <- subset(getLoadings(object)$time, PC %in% comp)
