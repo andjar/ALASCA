@@ -447,6 +447,8 @@ getValidationPercentilesScore <- function(object, objectlist){
     object$validation$time$score <- df_time[, as.list(quantile(score, probs = object$limitsCI, type = 1)),by = .(PC, time)]
     colnames(object$validation$time$score) = c("PC", "time", "low", "high")
     object$ALASCA$score$time <- merge(object$ALASCA$score$time, object$validation$time$score, all.x = TRUE)
+    object$ALASCA$score$time[, time := factor(time, levels = object$timelist),]
+    object$ALASCA$score$time[, group := factor(group, levels = object$grouplist),]
     
     PC_group <- getRelevantPCs(object = object,  object$ALASCA$score$explained$group)
     if(object$savetodisk){
@@ -460,6 +462,8 @@ getValidationPercentilesScore <- function(object, objectlist){
     object$validation$group$score <- df_group[, as.list(quantile(score, probs = object$limitsCI, type = object$validationQuantileMethod)),by = .(PC, time, group)]
     colnames(object$validation$group$score) = c("PC", "time", "group", "low", "high")
     object$ALASCA$score$group <- merge(object$ALASCA$score$group, object$validation$group$score, all.x = TRUE)
+    object$ALASCA$score$group[, time := factor(time, levels = object$timelist),]
+    object$ALASCA$score$group[, group := factor(group, levels = object$grouplist),]
   }else{
     # Pooled time and groups effects
     PC_time <- getRelevantPCs(object = object,  object$ALASCA$score$explained$time)
@@ -474,6 +478,8 @@ getValidationPercentilesScore <- function(object, objectlist){
     object$validation$time$score <- df_time[, as.list(quantile(score, probs = object$limitsCI, type = object$validationQuantileMethod)),by = .(PC, time, group)]
     colnames(object$validation$time$score) = c("PC", "time", "group", "low", "high")
     object$ALASCA$score$time <- merge(object$ALASCA$score$time, object$validation$time$score, all.x = TRUE)
+    object$ALASCA$score$time[, time := factor(time, levels = object$timelist),]
+    object$ALASCA$score$time[, group := factor(group, levels = object$grouplist),]
   }
   return(object)
 }
