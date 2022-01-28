@@ -237,11 +237,12 @@ rotateMatrixOptimizeScore <- function(object, target){
   vec <- c(-1, 1)
   lst <- lapply(numeric(N), function(x) vec)
   signMatrix <- as.matrix(expand.grid(lst))
-  signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
+  signVar <- Reduce(cbind,lapply(1:(nrow(signMatrix)/2), function(i){
     c <- .procrustes(loadings= as.matrix(t(t(object$pca$loading$time[,PCloading]) * signMatrix[i,])),
                     target = as.matrix(target$pca$loading$time[,PCloading]))
-    (target$pca$score$time[,PCloading] - as.matrix(t(t(object$pca$score$time[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2
+    sum((target$pca$score$time[,PCloading] - as.matrix(t(t(object$pca$score$time[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2)
   }))
+  if(target$doDebug) cat("SignVar time: ",signVar,"\n")
   minSignVar <- which(signVar == min(signVar))[1]
   object$pca$loading$time[,PCloading] <- t(t(object$pca$loading$time[,PCloading]) * signMatrix[minSignVar,])
   object$pca$score$time[,PCloading] <- t(t(object$pca$score$time[,PCloading]) * signMatrix[minSignVar,])
@@ -260,11 +261,12 @@ rotateMatrixOptimizeScore <- function(object, target){
     vec <- c(-1, 1)
     lst <- lapply(numeric(N), function(x) vec)
     signMatrix <- as.matrix(expand.grid(lst))
-    signVar <- Reduce(cbind,lapply(1:nrow(signMatrix), function(i){
-      c <- .procrustes(loadings= as.matrix(t(t(object$pca$loading$group[,PCloading]) * signMatrix[i,])),
+    signVar <- Reduce(cbind,lapply(1:(nrow(signMatrix)/2), function(i){
+      c <- .procrustes(loadings = as.matrix(t(t(object$pca$loading$group[,PCloading]) * signMatrix[i,])),
                       target = as.matrix(target$pca$loading$group[,PCloading]))
-      (target$pca$score$group[,PCloading] - as.matrix(t(t(object$pca$score$group[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2
+      sum((target$pca$score$group[,PCloading] - as.matrix(t(t(object$pca$score$group[,PCloading]) * signMatrix[i,])) %*% solve(c$t1) )^2)
     }))
+    if(target$doDebug) cat("SignVar group: ",signVar,"\n")
     minSignVar <- which(signVar == min(signVar))[1]
     object$pca$loading$group[,PCloading] <- t(t(object$pca$loading$group[,PCloading]) * signMatrix[minSignVar,])
     object$pca$score$group[,PCloading] <- t(t(object$pca$score$group[,PCloading]) * signMatrix[minSignVar,])
@@ -326,14 +328,21 @@ getValidationPercentiles <- function(object, objectlist){
       object$ALASCA$score$group$high <- NULL
     }
   }
-  
+  if(object$doDebug) currentTs <- Sys.time()
   object <- getValidationPercentilesLoading(object, objectlist)
+  if(object$doDebug) cat("* getValidationPercentilesLoading:",Sys.time()-currentTs,"s\n")
+  if(object$doDebug) currentTs <- Sys.time()
   object <- getValidationPercentilesScore(object, objectlist)
+  if(object$doDebug) cat("* getValidationPercentilesScore:",Sys.time()-currentTs,"s\n")
   if(object$validateRegression){
+    if(object$doDebug) currentTs <- Sys.time()
     object <- getValidationPercentilesRegression(object, objectlist)
+    if(object$doDebug) cat("* getValidationPercentilesRegression:",Sys.time()-currentTs,"s\n")
   }
   if(nrow(getCovars(object)) > 0){
+    if(object$doDebug) currentTs <- Sys.time()
     object <- getValidationPercentilesCovars(object, objectlist)
+    if(object$doDebug) cat("* getValidationPercentilesCovars:",Sys.time()-currentTs,"s\n")
   }
   
   return(object)
@@ -448,7 +457,7 @@ getValidationPercentilesScore <- function(object, objectlist){
       df_group <- rbindlist(lapply(objectlist, function(x) x$ALASCA$score$group[x$ALASCA$score$group$PC %in% PC_group,]), fill = TRUE)
     }
     
-    object$validation$group$score <- df_group[, as.list(quantile(score, probs = object$limitsCI, type = 1)),by = .(PC, time, group)]
+    object$validation$group$score <- df_group[, as.list(quantile(score, probs = object$limitsCI, type = object$validationQuantileMethod)),by = .(PC, time, group)]
     colnames(object$validation$group$score) = c("PC", "time", "group", "low", "high")
     object$ALASCA$score$group <- merge(object$ALASCA$score$group, object$validation$group$score, all.x = TRUE)
   }else{
@@ -462,7 +471,7 @@ getValidationPercentilesScore <- function(object, objectlist){
       df_time <- rbindlist(lapply(objectlist, function(x) x$ALASCA$score$time[x$ALASCA$score$time$PC %in% PC_time,]), fill = TRUE)
     }
     
-    object$validation$time$score <- df_time[, as.list(quantile(score, probs = object$limitsCI, type = 1)),by = .(PC, time, group)]
+    object$validation$time$score <- df_time[, as.list(quantile(score, probs = object$limitsCI, type = object$validationQuantileMethod)),by = .(PC, time, group)]
     colnames(object$validation$time$score) = c("PC", "time", "group", "low", "high")
     object$ALASCA$score$time <- merge(object$ALASCA$score$time, object$validation$time$score, all.x = TRUE)
   }
@@ -476,7 +485,7 @@ getValidationPercentilesScore <- function(object, objectlist){
 #' @param x Explanatory power of PC
 #' @return A vector with relevant PCs
 getRelevantPCs <- function(object, x){
-  PC <- x >= object$exploratorylimit
+  PC <- x >= object$explanatorylimit
   PC[1:2] <- TRUE
   return(which(PC))
 }
