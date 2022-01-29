@@ -385,9 +385,9 @@ sanitizeObject <- function(object){
       object$db.driver = RSQLite::dbDriver("SQLite")
       object$db.filename <- getFilename(object, prefix = "validation/", filetype = "db")
       object$db.con = DBI::dbConnect(object$db.driver, dbname = object$db.filename)
-      object$numvariablelist <- 1:length(object$variablelist)
-      names(object$numvariablelist) <- object$variablelist
-      DBI::dbWriteTable(object$db.con, "covars", data.frame(id = object$numvariablelist, covar = object$variablelist))
+      #object$numvariablelist <- 1:length(object$variablelist)
+      #names(object$numvariablelist) <- object$variablelist
+      #DBI::dbWriteTable(object$db.con, "covars", data.frame(id = object$numvariablelist, covar = object$variablelist))
       
       # object$timelist <- unique(object$df$time)
       # object$numtimelist <- 1:length(object$timelist)

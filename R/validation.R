@@ -70,6 +70,7 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
         #  scores$group <- object$numgrouplist[scores$group]
         #}
         DBI::dbWriteTable(object$db.con, "time.score", scores, append= T, overwrite=F)
+        DBI::dbWriteTable(object$db.con, "covars", data.frame(getCovars(temp_object), model = ii), append= T, overwrite=F)
         
         if(object$separateTimeAndGroup){
           loading <- data.frame(temp_object$ALASCA$loading$group[temp_object$ALASCA$loading$group$PC %in% limPC_group,], model = ii)
@@ -146,6 +147,7 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
         #  scores$group <- object$numgrouplist[scores$group]
         #}
         DBI::dbWriteTable(object$db.con, "time.score", scores, append= T, overwrite=F)
+        DBI::dbWriteTable(object$db.con, "covars", data.frame(getCovars(temp_object), model = ii), append= T, overwrite=F)
         
         if(object$separateTimeAndGroup){
           loading <- data.frame(temp_object$ALASCA$loading$group[temp_object$ALASCA$loading$group$PC %in% limPC_group,], model = ii)
@@ -377,7 +379,9 @@ getValidationPercentilesRegression <- function(object, objectlist){
 #' @return An ALASCA object
 getValidationPercentilesCovars <- function(object, objectlist){
   if(object$savetodisk){
-    stop("Not working yet")
+    res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'covars'"))
+    df <- setDT(DBI::dbFetch(res))
+    DBI::dbClearResult(res)
   }else{
     df <- rbindlist(lapply(objectlist, function(x) getCovars(x)))
   }
