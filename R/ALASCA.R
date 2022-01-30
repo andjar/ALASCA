@@ -1,5 +1,5 @@
 #' Get an ALASCA object
-#' 
+#'
 #' `ALASCA` initializes an ALASCA model and returns an ALASCA object
 #'
 #' This function builds your ALASCA model. It needs a data frame containing at least a column identifying participants, a column called `time` contining time information, a column `group` containing group information, a column `variable` containing variable names, and a value column. In addition you need to specify the model you want, and whether you want to separate group and time effects (defaults to `TRUE`).
@@ -35,11 +35,10 @@
 #' @param validationObject Don't worry about me:)
 #' @param validationParticipants Don't worry about me:)
 #' @return An ALASCA object
-#' 
+#'
 #' @examples
 #' load("PE.Rdata")
-#' model <- ALASCA(df = df, formula = value~time*group + (1|ID))
-#' 
+#' model <- ALASCA(df = df, formula = value ~ time * group + (1 | ID))
 #' @export
 ALASCA <- function(df,
                    formula,
@@ -82,125 +81,125 @@ ALASCA <- function(df,
                    validationIDs = NA,
                    validationObject = NA,
                    validationAssignNewID = TRUE,
-                   validationParticipants = NA){
-
-  if(!is.na(validationObject[1])){
+                   validationParticipants = NA) {
+  if (!is.na(validationObject[1])) {
     # This is a validation run
-    
+
     object <- validationObject
     # Overwrite some data
-    
+
     ## Unscaled values
     object$df <- validationObject$dfRaw
-    
+
     ## Avoid recursion
     object$validate <- FALSE
-    
+
     ## Save space
     object$minimizeObject <- TRUE
-    
+
     ## Selected participants for this run
     object$validationParticipants <- validationParticipants
-    
+
     ## Keep original object?
-    object$validationObject <- NULL #validationObject
-    
+    object$validationObject <- NULL # validationObject
+
     object$doDebug <- FALSE
-  }else{
-    object <- list(df = setDT(df),
-                   formula = formula,
-                   separateTimeAndGroup = separateTimeAndGroup,
-                   pAdjustMethod = pAdjustMethod,
-                   participantColumn = participantColumn,
-                   validate = ifelse(validate | validation, TRUE, FALSE),
-                   scaleFun = scaleFun,
-                   forceEqualBaseline = forceEqualBaseline,
-                   useSumCoding = FALSE,
-                   method = method,
-                   plot.xlabel = plot.xlabel,
-                   plot.grouplabel = plot.grouplabel,
-                   plot.figsize = plot.figsize,
-                   plot.figunit = plot.figunit,
-                   plot.filetype = plot.filetype,
-                   plot.palette = plot.palette,
-                   plot.palette.end = plot.palette.end,
-                   plot.loadinggroupcolumn = plot.loadinggroupcolumn,
-                   plot.myTheme = plot.myTheme,
-                   explanatorylimit = explanatorylimit,
-                   limitsCI = limitsCI,
-                   minimizeObject = minimizeObject,
-                   doDebug = doDebug,
-                   nValFold = nValFold,
-                   nValRuns = ifelse(any(is.na(validationIDs)), nValRuns, nrow(validationIDs)),
-                   useRfast = useRfast,
-                   keepTerms = keepTerms,
-                   initTime = Sys.time(),
-                   save = save,
-                   lowerLimit = lowerLimit,
-                   filename = filename,
-                   filepath = filepath,
-                   savetodisk = ifelse(validate|validation,savetodisk,FALSE),
-                   rawFormula = formula,
-                   optimizeScore = optimizeScore,
-                   stratificationVector = stratificationVector,
-                   keepValidationObjects = TRUE,
-                   validateRegression = ifelse(validate,validateRegression,FALSE),
-                   validationMethod = validationMethod,
-                   validationObject = validationObject,
-                   validationParticipants = validationParticipants,
-                   validationAssignNewID = validationAssignNewID,
-                   validationIDs = validationIDs,
-                   validationQuantileMethod = validationQuantileMethod,
-                   variablelist = unique(df$variable),
-                   timelist = levels(df$time),
-                   grouplist = levels(df$group),
-                   ALASCA.version = printVer(get = "version"),
-                   ALASCA.version.date = printVer(get = "date")
+  } else {
+    object <- list(
+      df = setDT(df),
+      formula = formula,
+      separateTimeAndGroup = separateTimeAndGroup,
+      pAdjustMethod = pAdjustMethod,
+      participantColumn = participantColumn,
+      validate = ifelse(validate | validation, TRUE, FALSE),
+      scaleFun = scaleFun,
+      forceEqualBaseline = forceEqualBaseline,
+      useSumCoding = FALSE,
+      method = method,
+      plot.xlabel = plot.xlabel,
+      plot.grouplabel = plot.grouplabel,
+      plot.figsize = plot.figsize,
+      plot.figunit = plot.figunit,
+      plot.filetype = plot.filetype,
+      plot.palette = plot.palette,
+      plot.palette.end = plot.palette.end,
+      plot.loadinggroupcolumn = plot.loadinggroupcolumn,
+      plot.myTheme = plot.myTheme,
+      explanatorylimit = explanatorylimit,
+      limitsCI = limitsCI,
+      minimizeObject = minimizeObject,
+      doDebug = doDebug,
+      nValFold = nValFold,
+      nValRuns = ifelse(any(is.na(validationIDs)), nValRuns, nrow(validationIDs)),
+      useRfast = useRfast,
+      keepTerms = keepTerms,
+      initTime = Sys.time(),
+      save = save,
+      lowerLimit = lowerLimit,
+      filename = filename,
+      filepath = filepath,
+      savetodisk = ifelse(validate | validation, savetodisk, FALSE),
+      rawFormula = formula,
+      optimizeScore = optimizeScore,
+      stratificationVector = stratificationVector,
+      keepValidationObjects = TRUE,
+      validateRegression = ifelse(validate, validateRegression, FALSE),
+      validationMethod = validationMethod,
+      validationObject = validationObject,
+      validationParticipants = validationParticipants,
+      validationAssignNewID = validationAssignNewID,
+      validationIDs = validationIDs,
+      validationQuantileMethod = validationQuantileMethod,
+      variablelist = unique(df$variable),
+      timelist = levels(df$time),
+      grouplist = levels(df$group),
+      ALASCA.version = printVer(get = "version"),
+      ALASCA.version.date = printVer(get = "date")
     )
     printVer()
   }
   class(object) <- "ALASCA"
-  if(object$doDebug){
+  if (object$doDebug) {
     cat(".. Has initialized the ALASCA model. Next step is to clean it and check input\n")
     currentTs <- Sys.time()
   }
 
   # Clean input
   object <- sanitizeObject(object)
-  
-  if(object$doDebug){
-    cat("..* sanitizeObject:",Sys.time()-currentTs,"s\n")
+
+  if (object$doDebug) {
+    cat("..* sanitizeObject:", Sys.time() - currentTs, "s\n")
     cat(".. Has cleaned the ALASCA model. Next step is building it\n")
     currentTs <- Sys.time()
   }
   # Build the ALASCA model
   object <- buildModel(object)
-  if(object$doDebug) cat("..* buildModel:",Sys.time()-currentTs,"s\n")
-  
-  if(object$minimizeObject){
+  if (object$doDebug) cat("..* buildModel:", Sys.time() - currentTs, "s\n")
+
+  if (object$minimizeObject) {
     # To save space, we remove unnecessary embedded data
-    if(object$doDebug) currentTs <- Sys.time()
+    if (object$doDebug) currentTs <- Sys.time()
     object <- removeEmbedded(object)
-    if(object$doDebug) cat("..* removeEmbedded:",Sys.time()-currentTs,"s\n")
+    if (object$doDebug) cat("..* removeEmbedded:", Sys.time() - currentTs, "s\n")
   }
-  
+
   # Validate the model
-  if(object$validate){
-    if(object$doDebug){
+  if (object$validate) {
+    if (object$doDebug) {
       cat(".. You chose to validate the model. Starting validation\n")
-      if(object$doDebug) currentTs <- Sys.time()
+      if (object$doDebug) currentTs <- Sys.time()
     }
     object <- validate(object)
-    if(object$doDebug) cat("..* validate:",Sys.time()-currentTs,"s\n")
+    if (object$doDebug) cat("..* validate:", Sys.time() - currentTs, "s\n")
   }
   object$runtime <- Sys.time() - object$initTime
-  
+
   # Save the model
-  if(object$save & !object$minimizeObject){
+  if (object$save & !object$minimizeObject) {
     saveALASCA(object)
   }
-  
-  if(object$savetodisk & !object$minimizeObject){
+
+  if (object$savetodisk & !object$minimizeObject) {
     DBI::dbDisconnect(object$db.con)
     DBI::dbUnloadDriver(object$db.driver)
   }
@@ -215,7 +214,7 @@ ALASCA <- function(df,
 #' @inheritParams ALASCA
 #' @return An ALASCA object
 #' @export
-RMASCA <- function(...){
+RMASCA <- function(...) {
   object <- ALASCA(..., method = "LMM")
   return(object)
 }
@@ -224,22 +223,22 @@ RMASCA <- function(...){
 #'
 #' @return String
 #' @export
-printVer <- function(object = FALSE, get = NA, print = TRUE){
+printVer <- function(object = FALSE, get = NA, print = TRUE) {
   ALASCA.version <- "0.0.0.108"
   ALASCA.version.date <- "2022-01-29"
-  if(is.list(object)){
+  if (is.list(object)) {
     ALASCA.version <- object$ALASCA.version
     ALASCA.version.date <- object$ALASCA.version.date
   }
-  if(is.na(get)){
-    if(print){
+  if (is.na(get)) {
+    if (print) {
       cat("\n\n====== ALASCA ======\n\n")
       cat(paste0(ALASCA.version, " (", ALASCA.version.date, ")\n\n"))
     }
-  }else{
-    if(get == "date"){
+  } else {
+    if (get == "date") {
       return(ALASCA.version.date)
-    }else{
+    } else {
       return(ALASCA.version)
     }
   }
@@ -252,7 +251,7 @@ printVer <- function(object = FALSE, get = NA, print = TRUE){
 #' @inheritParams ALASCA
 #' @return An ALASCA object
 #' @export
-SMASCA <- function(...){
+SMASCA <- function(...) {
   object <- ALASCA(..., method = "LM")
   return(object)
 }
@@ -263,134 +262,139 @@ SMASCA <- function(...){
 #'
 #' @param object An ALASCA object to be sanitized
 #' @return An ALASCA object
-sanitizeObject <- function(object){
-  
-  if(!object$minimizeObject){
-    object$df[, time := factor(time, levels = object$timelist),]
-    object$df[, group := factor(group, levels = object$grouplist),]
-    
+sanitizeObject <- function(object) {
+  if (!object$minimizeObject) {
+    object$df[, time := factor(time, levels = object$timelist), ]
+    object$df[, group := factor(group, levels = object$grouplist), ]
+
     object$valCol <- as.character(object$formula)[2]
-    
+
     # Check formula from user
-    formulaTerms <- colnames(attr(terms.formula(object$formula),"factors"))
+    formulaTerms <- colnames(attr(terms.formula(object$formula), "factors"))
     object$formulaTerms <- formulaTerms
-    if(!is.na(object$method)){ 
+    if (!is.na(object$method)) {
       # The user has specified a method to use
-      if(object$method == "LMM"){
-        if(!any(grepl("\\|",formulaTerms))){
+      if (object$method == "LMM") {
+        if (!any(grepl("\\|", formulaTerms))) {
           stop("The model must contain at least one random effect. Sure you wanted linear mixed models?")
         }
-      }else if(object$method == "LM"){
-        if(any(grepl("\\|",formulaTerms))){
+      } else if (object$method == "LM") {
+        if (any(grepl("\\|", formulaTerms))) {
           stop("The model contains at least one random effect. Sure you not wanted linear mixed models instead?")
         }
-      }else if(object$method %in% c("KM", "KMM")){
-        
-      }else{
+      } else if (object$method %in% c("KM", "KMM")) {
+
+      } else {
         stop("You entered an undefined method. Use `LMM` or `LM`!")
       }
-      if(object$useRfast){
+      if (object$useRfast) {
         cat("Will use Rfast!\n")
-        
+
         # Validation of regression only works for LMs at the moment
         object$validateRegression <- FALSE
       }
-    }else{
+    } else {
       # Find which default method to use
-      if(any(grepl("\\|",formulaTerms))){
+      if (any(grepl("\\|", formulaTerms))) {
         object$method <- "LMM"
         cat("Will use linear mixed models!\n")
-      }else{
+      } else {
         object$method <- "LM"
         cat("Will use linear models!\n")
       }
     }
-    
+
     # Check that the input is as expected
-    if(!("time" %in% colnames(object$df))){
+    if (!("time" %in% colnames(object$df))) {
       stop("The dataframe must contain a column names 'time'")
     }
-    if(!("group" %in% colnames(object$df))){
+    if (!("group" %in% colnames(object$df))) {
       stop("The dataframe must contain a column names 'group'")
     }
-    if(!("variable" %in% colnames(object$df))){
+    if (!("variable" %in% colnames(object$df))) {
       stop("The dataframe must contain a column names 'variable'")
     }
-  
-    if(all(is.na(object$stratificationVector))){
+
+    if (all(is.na(object$stratificationVector))) {
       cat("Using group for stratification.\n")
       object$stratificationVector <- object$df$group
     }
-    if(object$method %in% c("KM", "KMM")){
-      if(!is.data.frame(object$lowerLimit) | any(!(unique(object$df$variable) %in% unique(object$lowerLimit$variable) ))){
+    if (object$method %in% c("KM", "KMM")) {
+      if (!is.data.frame(object$lowerLimit) | any(!(unique(object$df$variable) %in% unique(object$lowerLimit$variable)))) {
         stop("Some lower limits are not specified!")
       }
-      for(i in unique(object$df$variable)){
+      for (i in unique(object$df$variable)) {
         maxValue <- max(object$df$value[object$df$variable == i])
-        object$df$value[object$df$variable == i] <- maxValue-object$df$value[object$df$variable == i]
-        object$lowerLimit$value[object$lowerLimit$variable == i] <- maxValue-object$lowerLimit$value[object$lowerLimit$variable == i]
+        object$df$value[object$df$variable == i] <- maxValue - object$df$value[object$df$variable == i]
+        object$lowerLimit$value[object$lowerLimit$variable == i] <- maxValue - object$lowerLimit$value[object$lowerLimit$variable == i]
         object$df$belowLowerLimit[object$df$variable == i] <- object$df$value[object$df$variable == i] > object$lowerLimit$value[object$lowerLimit$variable == i]
         object$df$value[object$df$variable == i & object$df$belowLowerLimit[object$df$variable == i]] <- object$lowerLimit$value[object$lowerLimit$variable == i]
       }
     }
-    
+
     # Change value column if necessary
-    if(as.character(object$formula)[2] != "value"){
-      cat("Changing",as.character(object$formula)[2],"to `value`.\n")
+    if (as.character(object$formula)[2] != "value") {
+      cat("Changing", as.character(object$formula)[2], "to `value`.\n")
       object$df$value <- object$df[, get(object$valCol)]
-      object$formula <- formula(paste("value ~",
-                                      as.character(object$formula)[3]))
+      object$formula <- formula(paste(
+        "value ~",
+        as.character(object$formula)[3]
+      ))
     }
-  
-    if(object$method %in% c("LMM")){
-      if(object$participantColumn != "ID"){
+
+    if (object$method %in% c("LMM")) {
+      if (object$participantColumn != "ID") {
         object$df$ID <- object$df[, get(object$participantColumn)]
-        tmp <- formulaTerms[!grepl("\\|",formulaTerms)]
-        object$formula <- formula(paste("value ~",
-                                        paste(tmp, collapse = "+")))
-      }else if(any(grepl("\\|",formulaTerms))){
-        if(sum(grepl("\\|",formulaTerms)) > 1){
+        tmp <- formulaTerms[!grepl("\\|", formulaTerms)]
+        object$formula <- formula(paste(
+          "value ~",
+          paste(tmp, collapse = "+")
+        ))
+      } else if (any(grepl("\\|", formulaTerms))) {
+        if (sum(grepl("\\|", formulaTerms)) > 1) {
           stop("Multiple random effects, couldn't determine participant-id. Please specify `participantColumn`")
-        }else{
-          tmp <- formulaTerms[grepl("\\|",formulaTerms)]
-          tmp <- gsub(" ", "",tmp)
+        } else {
+          tmp <- formulaTerms[grepl("\\|", formulaTerms)]
+          tmp <- gsub(" ", "", tmp)
           tmp <- strsplit(tmp, "\\|")
           object$participantColumn <- tmp[[1]][2]
           object$df$ID <- object$df[, get(object$participantColumn)]
-          tmp <- formulaTerms[!grepl("\\|",formulaTerms)]
-          object$formula <- formula(paste("value ~",
-                                          paste(tmp, collapse = "+")))
+          tmp <- formulaTerms[!grepl("\\|", formulaTerms)]
+          object$formula <- formula(paste(
+            "value ~",
+            paste(tmp, collapse = "+")
+          ))
         }
-      }else if(object$participantColumn == "ID"){
-        if(!("ID" %in% colnames(object$df))){
+      } else if (object$participantColumn == "ID") {
+        if (!("ID" %in% colnames(object$df))) {
           stop("Please specify participant-id in `participantColumn`")
         }
       }
-      
-      if(object$method == "LMM"){
-        if(object$useRfast){
+
+      if (object$method == "LMM") {
+        if (object$useRfast) {
           # Using Rfast
-          rterms <- formulaTerms[!grepl("\\|",formulaTerms)]
+          rterms <- formulaTerms[!grepl("\\|", formulaTerms)]
           object$newformula <- formula(paste("value ~ ", paste(rterms, collapse = "+")))
-        }else{
-          #Using lme4
-          rterms <- formulaTerms[grepl("\\|",formulaTerms)]
-          rterms <- paste0("(",rterms, ")")
+        } else {
+          # Using lme4
+          rterms <- formulaTerms[grepl("\\|", formulaTerms)]
+          rterms <- paste0("(", rterms, ")")
           object$newformula <- formula(paste("value ~ modmat+", paste(rterms, collapse = "+")))
         }
       }
-    }else if(object$method %in% c("LM")){
+    } else if (object$method %in% c("LM")) {
       object$newformula <- value ~ modmat
     }
-    
-    if(object$savetodisk){
-      object$db.driver = RSQLite::dbDriver("SQLite")
+
+    if (object$savetodisk) {
+      object$db.driver <- RSQLite::dbDriver("SQLite")
       object$db.filename <- getFilename(object, prefix = "validation/", filetype = "db")
-      object$db.con = DBI::dbConnect(object$db.driver, dbname = object$db.filename)
-      #object$numvariablelist <- 1:length(object$variablelist)
-      #names(object$numvariablelist) <- object$variablelist
-      #DBI::dbWriteTable(object$db.con, "covars", data.frame(id = object$numvariablelist, covar = object$variablelist))
-      
+      object$db.con <- DBI::dbConnect(object$db.driver, dbname = object$db.filename)
+      # object$numvariablelist <- 1:length(object$variablelist)
+      # names(object$numvariablelist) <- object$variablelist
+      # DBI::dbWriteTable(object$db.con, "covars", data.frame(id = object$numvariablelist, covar = object$variablelist))
+
       # object$timelist <- unique(object$df$time)
       # object$numtimelist <- 1:length(object$timelist)
       # names(object$numtimelist) <- object$timelist
@@ -402,80 +406,80 @@ sanitizeObject <- function(object){
       # DBI::dbWriteTable(object$db.con, "group", data.frame(id = object$numgrouplist, group = object$grouplist))
     }
   }
-  
-  
-  if(object$minimizeObject){
+
+
+  if (object$minimizeObject) {
     # This is usually a validation object
     object$df <- object$df[object$validationParticipants]
     object$df$ID <- factor(object$df$ID)
   }
-  
-  if(object$doDebug){
+
+  if (object$doDebug) {
     cat(".... Making factors for time, group and variable\n")
   }
-  if(!is.factor(object$df$time)){
+  if (!is.factor(object$df$time)) {
     object$df$time <- factor(object$df$time)
   }
-  if(!is.factor(object$df$group)){
+  if (!is.factor(object$df$group)) {
     object$df$group <- factor(object$df$group)
   }
-  if(!is.factor(object$df$variable)){
+  if (!is.factor(object$df$variable)) {
     object$df$variable <- factor(object$df$variable)
   }
-  
-  if(object$doDebug){
+
+  if (object$doDebug) {
     cat(".... Checking for missing information\n")
   }
-  if(any(is.na(object$df$time) | is.na(object$df$group))){
+  if (any(is.na(object$df$time) | is.na(object$df$group))) {
     warning("\n\n!!! -> Oh dear, at least on of your rows is missing either time or group. I have removed it/them for now, but you should check if this is a problem...\n\n")
     object$df <- object$df[!is.na(time) & !is.na(group)]
   }
-  
+
   # Use sum coding?
-  if(object$useSumCoding){
-    if(object$doDebug){
+  if (object$useSumCoding) {
+    if (object$doDebug) {
       cat(".... Use sum coding\n")
     }
     contrasts(object$df$group) <- contr.sum(length(unique(object$df$group)))
   }
-  
+
   # Keep a copy of unscaled data
   object$dfRaw <- object$df
-  
+
   # The user provided a custom function
-  if(is.function(object$scaleFun)){
-    if(!object$minimizeObject){
+  if (is.function(object$scaleFun)) {
+    if (!object$minimizeObject) {
       cat("Scaling data with custom function...\n")
     }
     object$df <- object$scaleFun(object$df)
     object$df$value <- object$df[, get(object$valCol)]
-    
+
     # The user do not want to scale
-  }else if(object$scaleFun == "none"){
-    if(!object$minimizeObject){
+  } else if (object$scaleFun == "none") {
+    if (!object$minimizeObject) {
       warning("Not scaling data...\n")
     }
-    
+
     # Use a deafult scaling
-  }else if(is.character(object$scaleFun)){
+  } else if (is.character(object$scaleFun)) {
     object$scaleFun <- getScaleFun(object$scaleFun)
-    if(!object$minimizeObject){
+    if (!object$minimizeObject) {
       cat("Scaling data...\n")
     }
     object$df <- object$scaleFun(object$df)
     object$df$value <- object$df[, get(object$valCol)]
-  }else{
+  } else {
     stop("Unknown scaling function")
   }
-  if(!object$minimizeObject){
+  if (!object$minimizeObject) {
     # Check what terms that is present in formula
     object$hasGroupTerm <- ifelse(any(formulaTerms == "group"), TRUE, FALSE)
     object$hasInteractionTerm <- ifelse(any(formulaTerms == "group:time" | formulaTerms == "time:group"), TRUE, FALSE)
-    object$covars <- formulaTerms[!(formulaTerms %in% c("time","group","group:time","time:group",object$keepTerms))]
-    if(object$doDebug){
-      cat(".... Group term in formula? ",object$hasGroupTerm,"\n")
-      cat(".... Interaction term in formula? ",object$hasInteractionTerm,"\n")
-      cat(".... Identified the following covariates in addition to time and troup: ",object$covars,"\n")
+    object$covars <- formulaTerms[!(formulaTerms %in% c("time", "group", "group:time", "time:group", object$keepTerms))]
+    if (object$doDebug) {
+      cat(".... Group term in formula? ", object$hasGroupTerm, "\n")
+      cat(".... Interaction term in formula? ", object$hasInteractionTerm, "\n")
+      cat(".... Identified the following covariates in addition to time and troup: ", object$covars, "\n")
     }
   }
 
@@ -488,7 +492,7 @@ sanitizeObject <- function(object){
 #'
 #' @param object An ALASCA object
 #' @return An ALASCA object
-removeEmbedded <- function(object){
+removeEmbedded <- function(object) {
   object$partID <- object$df$ID
   object$bootPartID <- object$df$originalIDbeforeBootstrap
   object$df <- NULL
@@ -499,9 +503,9 @@ removeEmbedded <- function(object){
   object$partsWithVariable <- NULL
   object$validationObject <- NULL
   object$regr.model <- NULL
-  #object$RegressionCoefficients <- NULL
+  # object$RegressionCoefficients <- NULL
   object$effect.matrix <- NULL
-  
+
   attr(object$newformula, ".Environment") <- NULL
   attr(object$formula, ".Environment") <- NULL
   return(object)
@@ -513,28 +517,28 @@ removeEmbedded <- function(object){
 #'
 #' @param scaleFun_string String to define scaing function: `sdall`, `sdref`, `sdt1`, `sdreft1`
 #' @return An ALASCA object
-getScaleFun <- function(scaleFun_string){
-  if(scaleFun_string == "sdall"){
-    scaleFun <- function(df){
+getScaleFun <- function(scaleFun_string) {
+  if (scaleFun_string == "sdall") {
+    scaleFun <- function(df) {
       # Scale by the SD of all rows
-      df[,value := as.double(value)][, value := value/sd(value), by = variable]
+      df[, value := as.double(value)][, value := value / sd(value), by = variable]
     }
-  }else if(scaleFun_string == "sdref"){
-    scaleFun <- function(df){
+  } else if (scaleFun_string == "sdref") {
+    scaleFun <- function(df) {
       # Scale by the SD of all rows in the refence group
-      df[,value := as.double(value)][, value := value/sd(value[group == levels(group)[1]]), by = variable]
+      df[, value := as.double(value)][, value := value / sd(value[group == levels(group)[1]]), by = variable]
     }
-  }else if(scaleFun_string == "sdt1"){
-    scaleFun <- function(df){
+  } else if (scaleFun_string == "sdt1") {
+    scaleFun <- function(df) {
       # Scale by the SD of all baseline rows
-      df[,value := as.double(value)][, value := value/sd(value[time == levels(time)[1]]), by = variable]
+      df[, value := as.double(value)][, value := value / sd(value[time == levels(time)[1]]), by = variable]
     }
-  }else if(scaleFun_string == "sdreft1"){
-    scaleFun <- function(df){
+  } else if (scaleFun_string == "sdreft1") {
+    scaleFun <- function(df) {
       # Scale by the SD of all baseline rows in the reference group
-      df[,value := as.double(value)][, value := value/sd(value[group == levels(group)[1] & time == levels(time)[1]]), by = variable]
+      df[, value := as.double(value)][, value := value / sd(value[group == levels(group)[1] & time == levels(time)[1]]), by = variable]
     }
-  }else{
+  } else {
     stop("Unknown scaling method. Please use of on the following: `none`, `sdall`, `sdref`, `sdreft1`, `sdt1`")
   }
 }
@@ -548,27 +552,27 @@ getScaleFun <- function(scaleFun_string){
 #' @param effect Specify `time` or `group` to only flip subplot
 #' @return An ALASCA object
 #' @export
-flipIt <- function(object, component = NA, effect = "both"){
-  if(any(is.na(component))){
+flipIt <- function(object, component = NA, effect = "both") {
+  if (any(is.na(component))) {
     component <- unique(object$ALASCA$score$time$PC)
   }
-  for(i in component){
-    if(effect %in% c("both", "time")){
+  for (i in component) {
+    if (effect %in% c("both", "time")) {
       object$ALASCA$score$time$score[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$score[object$ALASCA$score$time$PC == i]
       object$ALASCA$loading$time$loading[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$loading[object$ALASCA$loading$time$PC == i]
     }
-    if(object$separateTimeAndGroup & effect %in% c("both", "group")){
+    if (object$separateTimeAndGroup & effect %in% c("both", "group")) {
       object$ALASCA$score$group$score[object$ALASCA$score$group$PC == i] <- -object$ALASCA$score$group$score[object$ALASCA$score$group$PC == i]
       object$ALASCA$loading$group$loading[object$ALASCA$loading$group$PC == i] <- -object$ALASCA$loading$group$loading[object$ALASCA$loading$group$PC == i]
     }
-    if(object$validate){
-      if(effect %in% c("both", "time")){
+    if (object$validate) {
+      if (effect %in% c("both", "time")) {
         object$ALASCA$score$time$high[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$high[object$ALASCA$score$time$PC == i]
         object$ALASCA$loading$time$high[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$high[object$ALASCA$loading$time$PC == i]
         object$ALASCA$score$time$low[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$low[object$ALASCA$score$time$PC == i]
         object$ALASCA$loading$time$low[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$low[object$ALASCA$loading$time$PC == i]
       }
-      if(object$separateTimeAndGroup & effect %in% c("both", "group")){
+      if (object$separateTimeAndGroup & effect %in% c("both", "group")) {
         object$ALASCA$score$group$high[object$ALASCA$score$group$PC == i] <- -object$ALASCA$score$group$high[object$ALASCA$score$group$PC == i]
         object$ALASCA$loading$group$high[object$ALASCA$loading$group$PC == i] <- -object$ALASCA$loading$group$high[object$ALASCA$loading$group$PC == i]
         object$ALASCA$score$group$low[object$ALASCA$score$group$PC == i] <- -object$ALASCA$score$group$low[object$ALASCA$score$group$PC == i]
@@ -576,9 +580,9 @@ flipIt <- function(object, component = NA, effect = "both"){
       }
     }
   }
-  
-  if(object$validate == TRUE){
-    for(i in seq_along(object$validation$temp_objects)){
+
+  if (object$validate == TRUE) {
+    for (i in seq_along(object$validation$temp_objects)) {
       object$validation$temp_objects[[i]] <- flipIt(object$validation$temp_objects[[i]], component = component, effect = effect)
     }
   }
@@ -593,30 +597,34 @@ flipIt <- function(object, component = NA, effect = "both"){
 #' @param file
 #' @param sessioninfo
 #' @export
-summary.ALASCA <- function(object, file = "", sessioninfo = FALSE){
+summary.ALASCA <- function(object, file = "", sessioninfo = FALSE) {
   cat("================ ALASCA ================\n", file = file, append = TRUE)
-  cat("Model initialized ", as.character(object$initTime), " using ",object$method," on ",length(unique(object$RegressionCoefficients$covar))," variables. ", sep = "", file = file, append = TRUE)
-  if(object$validate){
+  cat("Model initialized ", as.character(object$initTime), " using ", object$method, " on ", length(unique(object$RegressionCoefficients$covar)), " variables. ", sep = "", file = file, append = TRUE)
+  if (object$validate) {
     cat("The model been validated with ", object$validationMethod, ".\n", file = file, append = TRUE)
-  }else{
+  } else {
     cat("The model has *not* been validated yet.\n", file = file, append = TRUE)
   }
-  cat("\nRegression model: ", as.character(object$rawFormula)[2],as.character(object$rawFormula)[1],as.character(object$rawFormula)[3],"\n", file = file, append = TRUE)
-  cat("Separating time and group effects: ", object$separateTimeAndGroup,"\n", file = file, append = TRUE)
-  cat("Force equal baseline: ", object$forceEqualBaseline,"\n\n", file = file, append = TRUE)
-  cat("\nPCs explaining at least 5% of variation:\n   Time: ", 
-      paste(getRelevantPCs(object = object, object$pca$score$explained$time), collapse = ", "), " (",
-      paste(round(100*object$pca$score$explained$time[getRelevantPCs(object = object, object$pca$score$explained$time)], 2), collapse = "%, "), "%)", 
-         ifelse(object$separateTimeAndGroup,paste0("\n   Group: ",
-                                                   paste(getRelevantPCs(object = object, object$pca$score$explained$group), collapse = ", "), " (",
-                                                   paste(round(100*object$pca$score$explained$group[getRelevantPCs(object = object, object$pca$score$explained$group)], 2), collapse = "%, "), "%)"),"\n"), sep = "", file = file, append = TRUE)
-  if(is.function(object$scaleFun)){
+  cat("\nRegression model: ", as.character(object$rawFormula)[2], as.character(object$rawFormula)[1], as.character(object$rawFormula)[3], "\n", file = file, append = TRUE)
+  cat("Separating time and group effects: ", object$separateTimeAndGroup, "\n", file = file, append = TRUE)
+  cat("Force equal baseline: ", object$forceEqualBaseline, "\n\n", file = file, append = TRUE)
+  cat("\nPCs explaining at least 5% of variation:\n   Time: ",
+    paste(getRelevantPCs(object = object, object$pca$score$explained$time), collapse = ", "), " (",
+    paste(round(100 * object$pca$score$explained$time[getRelevantPCs(object = object, object$pca$score$explained$time)], 2), collapse = "%, "), "%)",
+    ifelse(object$separateTimeAndGroup, paste0(
+      "\n   Group: ",
+      paste(getRelevantPCs(object = object, object$pca$score$explained$group), collapse = ", "), " (",
+      paste(round(100 * object$pca$score$explained$group[getRelevantPCs(object = object, object$pca$score$explained$group)], 2), collapse = "%, "), "%)"
+    ), "\n"),
+    sep = "", file = file, append = TRUE
+  )
+  if (is.function(object$scaleFun)) {
     cat("\nScaling function:\n", file = file, append = TRUE)
     cat(deparse(object$scaleFun), file = file, append = TRUE)
-  }else{
+  } else {
     cat("\nNo scaling performed.\n", file = file, append = TRUE)
   }
-  if(sessioninfo & file != ""){
+  if (sessioninfo & file != "") {
     write(capture.output(devtools::session_info()), file = file, append = TRUE)
   }
 }

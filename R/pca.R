@@ -4,10 +4,10 @@
 #'
 #' @param object An ALASCA object to be sanitized
 #' @return An ALASCA object
-doPCA <- function(object){
-  object$pca$time <- prcomp(object$effect.matrix[object$effect.matrix$comp == "TIME",1:(ncol(object$effect.matrix)-1)], scale = FALSE, center = TRUE)
-  if(object$separateTimeAndGroup){
-    object$pca$group <- prcomp(object$effect.matrix[object$effect.matrix$comp == "GROUP",1:(ncol(object$effect.matrix)-1)], scale = FALSE, center = TRUE)
+doPCA <- function(object) {
+  object$pca$time <- prcomp(object$effect.matrix[object$effect.matrix$comp == "TIME", seq_len(ncol(object$effect.matrix) - 1)], scale = FALSE, center = TRUE)
+  if (object$separateTimeAndGroup) {
+    object$pca$group <- prcomp(object$effect.matrix[object$effect.matrix$comp == "GROUP", seq_len(ncol(object$effect.matrix) - 1)], scale = FALSE, center = TRUE)
   }
   return(object)
 }
@@ -18,103 +18,103 @@ doPCA <- function(object){
 #'
 #' @param object An ALASCA object to be sanitized
 #' @return An ALASCA object
-cleanPCA <- function(object){
-  loading_time <- as.data.frame(object$pca$time$rotation[,])
+cleanPCA <- function(object) {
+  loading_time <- as.data.frame(object$pca$time$rotation[, ])
   loading_time$covars <- rownames(loading_time)
   object$pca$loading$time <- loading_time
 
-  PC_time <- as.data.frame(object$pca$time$x[,])
+  PC_time <- as.data.frame(object$pca$time$x[, ])
   PC_time$time <- object$parts$time
-  if(!object$separateTimeAndGroup){
+  if (!object$separateTimeAndGroup) {
     PC_time$group <- object$parts$group
   }
   object$pca$score$time <- PC_time
   object$pca$score$explained$time <- object$pca$time$sdev^2 / sum(object$pca$time$sdev^2)
   object$pca$loading$explained$time <- object$pca$score$explained$time
-  
+
   PCloading <- getRelevantPCs(object = object, object$pca$score$explained$group)
-  for(i in PCloading){
+  for (i in PCloading) {
     # Ensure that the highest loading has positive sign
     nVar <- which(abs(object$pca$loading$time[, i]) == max(abs(object$pca$loading$time[, i])))[1]
     mVar <- object$pca$loading$time$covars[nVar]
     sVar <- sign(object$pca$loading$time[nVar, i])
-    object$pca$loading$time[, i] <- sVar*object$pca$loading$time[, i]
-    object$pca$score$time[, i] <- sVar*object$pca$score$time[, i]
+    object$pca$loading$time[, i] <- sVar * object$pca$loading$time[, i]
+    object$pca$score$time[, i] <- sVar * object$pca$score$time[, i]
   }
 
-  if(object$separateTimeAndGroup){
-    loading_group <- as.data.frame(object$pca$group$rotation[,])
+  if (object$separateTimeAndGroup) {
+    loading_group <- as.data.frame(object$pca$group$rotation[, ])
     loading_group$covars <- rownames(loading_group)
     object$pca$loading$group <- loading_group
-    PC_group <- as.data.frame(object$pca$group$x[,])
+    PC_group <- as.data.frame(object$pca$group$x[, ])
     PC_group$time <- rownames(PC_group)
     PC_group$group <- object$parts$group
     PC_group$time <- object$parts$time
     object$pca$score$group <- PC_group
     object$pca$score$explained$group <- object$pca$group$sdev^2 / sum(object$pca$group$sdev^2)
     object$pca$loading$explained$group <- object$pca$score$explained$group
-    
+
     PCloading <- getRelevantPCs(object = object, object$pca$score$explained$group)
-    for(i in PCloading){
+    for (i in PCloading) {
       # Ensure that the highest loading has positive sign
       nVar <- which(abs(object$pca$loading$group[, i]) == max(abs(object$pca$loading$group[, i])))[1]
       mVar <- object$pca$loading$group$covars[nVar]
       sVar <- sign(object$pca$loading$group[nVar, i])
-      object$pca$loading$group[, i] <- sVar*object$pca$loading$group[, i]
-      object$pca$score$group[, i] <- sVar*object$pca$score$group[, i]
+      object$pca$loading$group[, i] <- sVar * object$pca$loading$group[, i]
+      object$pca$score$group[, i] <- sVar * object$pca$score$group[, i]
     }
   }
-  
+
   return(object)
 }
 
-cleanALASCA<- function(object){
+cleanALASCA <- function(object) {
   # We need to create new group names for the combined group and keepTerms
-  if(object$keepTerms != ""){
-    if(object$separateTimeAndGroup){
+  if (object$keepTerms != "") {
+    if (object$separateTimeAndGroup) {
       object$grouplist <- unique(object$pca$score$group$group)
-    }else{
+    } else {
       object$grouplist <- unique(object$pca$score$time$group)
     }
   }
-  
+
   # Clean up a copy
   # Time effect
-  object$ALASCA$loading$time <- setDT(object$pca$loading$time[!duplicated(object$pca$loading$time),])
+  object$ALASCA$loading$time <- setDT(object$pca$loading$time[!duplicated(object$pca$loading$time), ])
   object$ALASCA$loading$time <- melt(object$ALASCA$loading$time, id.vars = "covars")
-  colnames(object$ALASCA$loading$time) <- c("covars","PC","loading")
-  object$ALASCA$loading$time[, PC := as.numeric(gsub("PC","", PC)),]
-  
-  object$ALASCA$score$time <- setDT(object$pca$score$time[!duplicated(object$pca$score$time),])
-  if(object$separateTimeAndGroup){
+  colnames(object$ALASCA$loading$time) <- c("covars", "PC", "loading")
+  object$ALASCA$loading$time[, PC := as.numeric(gsub("PC", "", PC)), ]
+
+  object$ALASCA$score$time <- setDT(object$pca$score$time[!duplicated(object$pca$score$time), ])
+  if (object$separateTimeAndGroup) {
     object$ALASCA$score$time$group <- object$grouplist[1]
   }
   object$ALASCA$score$time <- melt(object$ALASCA$score$time, id.vars = c("time", "group"))
-  colnames(object$ALASCA$score$time) <- c("time","group","PC","score")
-  object$ALASCA$score$time[,time  := factor(time, levels = object$timelist),]
-  object$ALASCA$score$time[,group := factor(group, levels = object$grouplist),]
-  object$ALASCA$score$time[,PC    := as.numeric(gsub("PC","", PC)),]
-  
+  colnames(object$ALASCA$score$time) <- c("time", "group", "PC", "score")
+  object$ALASCA$score$time[, time := factor(time, levels = object$timelist), ]
+  object$ALASCA$score$time[, group := factor(group, levels = object$grouplist), ]
+  object$ALASCA$score$time[, PC := as.numeric(gsub("PC", "", PC)), ]
+
   object$ALASCA$score$explained$time <- object$pca$score$explained$time
   object$ALASCA$loading$explained$time <- object$pca$loading$explained$time
-  
-  if(object$separateTimeAndGroup){
+
+  if (object$separateTimeAndGroup) {
     # Group effect
-    object$ALASCA$loading$group <- object$pca$loading$group[!duplicated(object$pca$loading$group),]
+    object$ALASCA$loading$group <- object$pca$loading$group[!duplicated(object$pca$loading$group), ]
     object$ALASCA$loading$group <- setDT(reshape2::melt(object$ALASCA$loading$group, id.vars = "covars"))
-    colnames(object$ALASCA$loading$group) <- c("covars","PC","loading")
-    object$ALASCA$loading$group[, PC := as.numeric(gsub("PC","", PC)),]
-    
-    object$ALASCA$score$group <- object$pca$score$group[!duplicated(object$pca$score$group),]
-    object$ALASCA$score$group <- setDT(reshape2::melt(object$ALASCA$score$group, id.vars = c("time","group")))
-    colnames(object$ALASCA$score$group) <- c("time","group","PC","score")
-    object$ALASCA$score$group[, time := factor(time, levels = object$timelist),]
-    object$ALASCA$score$group[, group := factor(group, levels = object$grouplist),]
-    object$ALASCA$score$group[, PC := as.numeric(gsub("PC","", PC)),]
-    
+    colnames(object$ALASCA$loading$group) <- c("covars", "PC", "loading")
+    object$ALASCA$loading$group[, PC := as.numeric(gsub("PC", "", PC)), ]
+
+    object$ALASCA$score$group <- object$pca$score$group[!duplicated(object$pca$score$group), ]
+    object$ALASCA$score$group <- setDT(reshape2::melt(object$ALASCA$score$group, id.vars = c("time", "group")))
+    colnames(object$ALASCA$score$group) <- c("time", "group", "PC", "score")
+    object$ALASCA$score$group[, time := factor(time, levels = object$timelist), ]
+    object$ALASCA$score$group[, group := factor(group, levels = object$grouplist), ]
+    object$ALASCA$score$group[, PC := as.numeric(gsub("PC", "", PC)), ]
+
     object$ALASCA$score$explained$group <- object$pca$score$explained$group
     object$ALASCA$loading$explained$group <- object$pca$loading$explained$group
   }
-  
+
   return(object)
 }
