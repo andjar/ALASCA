@@ -83,10 +83,8 @@ plot.ALASCA <- function(object,
                           loadinggroup = NA,
                           limitloading = FALSE,
                           sortbyloadinggroup = TRUE,
-                          myTheme = NA){
-    if(any(is.na(myTheme))){
-      myTheme <- object$plot.myTheme
-    }
+                          myTheme = object$plot.myTheme){
+
   if(!(effect %in% c("both","time","group"))){
     stop("`effect` has to be `both`, `time` or `group`")
   }
@@ -288,30 +286,27 @@ plot.ALASCA <- function(object,
 #' @export
 screeplot.ALASCA <- function(object,
                              effect = "both",
-                             filetype = NA,
-                             figsize = NA,
-                             figunit = NA,
-                             myTheme = NA){
-  if(any(is.na(myTheme))){
-    myTheme <- object$plot.myTheme
-  }
-  if(!is.na(filetype)){
-    object$plot.filetype <- filetype
-  }
-  if(!is.na(figsize)){
-    object$plot.figsize <- figsize
-  }
-  if(!is.na(figunit)){
-    object$plot.figunit <- figunit
-  }
+                             nComps = NA,
+                             filetype = object$plot.filetype,
+                             figsize = object$plot.figsize,
+                             figunit = object$plot.figunit,
+                             myTheme = object$plot.myTheme){
   explained <- as.data.frame(getScores(object)$explained)
   explained$component <- 1:nrow(explained)
+  if(any(!is.na(nComps))){
+    if(length(nComps) == 1){
+      explained <- subset(explained, component <= nComps)
+    }else{
+      explained <- subset(explained, component %in% nComps)
+      explained$component <- factor(explained$component)
+    }
+  }
   g <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = time, group = NA)) +
     ggplot2::geom_point() +
     ggplot2::geom_line() +
     myTheme + 
     ggplot2::labs(x = "Principal Component", y = paste0("Relative Expl. of ",object$plot.xlabel," Var."))
-  if(length(object$ALASCA$loading) == 3){
+  if(object$separateTimeAndGroup){
     gg <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = group, group = NA)) +
       ggplot2::geom_point() +
       ggplot2::geom_line() +
@@ -830,19 +825,13 @@ plotParts <- function(object,
 #' )
 #' @export
 plotPred <- function(object, 
-                     variable = NA, 
+                     variable = object$variablelist, 
                      filetype = NA,
                      figsize = NA,
                      figunit = NA,
                      dodgewidth = 0.35,
                      plotribbon = TRUE,
-                     myTheme = NA){
-  if(any(is.na(myTheme))){
-    myTheme <- object$plot.myTheme
-  }
-  if(any(is.na(variable))){
-    variable <- object$variablelist
-  }
+                     myTheme = object$plot.myTheme){
   if(object$validateRegression){
     gg <- lapply(unique(variable), function(x){
       g <- ggplot2::ggplot(subset(object$mod.pred, variable == x), ggplot2::aes(x = time, 
