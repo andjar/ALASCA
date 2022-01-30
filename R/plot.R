@@ -579,7 +579,7 @@ getScorePlot <- function(object,
           pvals <- object$pvals
           score <- merge(score, pvals, by.x = "time", by.y = "effect", all.x=TRUE, all.y=FALSE)
           score$p.value.str <- ifelse(score$p.value > .05, "", ifelse(score$p.value < .001, "***", ifelse(score$p.value < .01, "**", "*")))
-          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = levels(object$df$group)[1], label=p.value.str)) +
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, label=p.value.str)) +
             ggplot2::geom_point(position = ggplot2::position_dodge(width = 0.5)) +
             ggplot2::geom_text(vjust = 0, hjust = 0.5, position = ggplot2::position_dodge(width = 0.5), show.legend = FALSE)+
             ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.5))
@@ -589,11 +589,11 @@ getScorePlot <- function(object,
               ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
               ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
           }else{
-            g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = levels(object$df$group)[1], ymin = low, ymax = high)) +
+            g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
               ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
               ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
             if(plotribbon){
-              g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = levels(object$df$group)[1]), alpha = .1, 
+              g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = group), alpha = .1, 
                                             position = ggplot2::position_dodge(width = dodgewidth), color = NA) + 
                 ggplot2::scale_fill_manual(values = getPlotPalette(object)) + ggplot2::labs(fill = object$plot.grouplabel)
             }
@@ -603,7 +603,7 @@ getScorePlot <- function(object,
         if(any(colnames(score) == "model")){
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = model, linetype = model)) + ggplot2::geom_point() + ggplot2::geom_line()
         }else{
-          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = levels(object$df$group)[1])) + ggplot2::geom_point() + ggplot2::geom_line()
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group)) + ggplot2::geom_point() + ggplot2::geom_line()
         }
       }
     }else{
@@ -1399,8 +1399,8 @@ plotComponentsScore <- function(object,
 #' @export
 getPlotPalette <- function(object){
   if(any(is.na(object$plot.palette)) | any(is.null(object$plot.palette))){
-    plotColors <- scales::viridis_pal(end = .8)(length(unique(object$df$group)))
-    names(plotColors) <- levels(object$df$group)
+    plotColors <- scales::viridis_pal(end = object$plot.palette.end)(length(object$grouplist))
+    names(plotColors) <- object$grouplist
   }else{
     plotColors <- object$plot.palette
   }

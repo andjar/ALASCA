@@ -69,6 +69,15 @@ cleanPCA <- function(object){
 }
 
 cleanALASCA<- function(object){
+  # We need to create new group names for the combined group and keepTerms
+  if(object$keepTerms != ""){
+    if(object$separateTimeAndGroup){
+      object$grouplist <- unique(object$pca$score$group$group)
+    }else{
+      object$grouplist <- unique(object$pca$score$time$group)
+    }
+  }
+  
   # Clean up a copy
   # Time effect
   object$ALASCA$loading$time <- setDT(object$pca$loading$time[!duplicated(object$pca$loading$time),])
@@ -82,9 +91,9 @@ cleanALASCA<- function(object){
   }
   object$ALASCA$score$time <- melt(object$ALASCA$score$time, id.vars = c("time", "group"))
   colnames(object$ALASCA$score$time) <- c("time","group","PC","score")
-  object$ALASCA$score$time[,time := factor(time, levels = object$timelist),]
+  object$ALASCA$score$time[,time  := factor(time, levels = object$timelist),]
   object$ALASCA$score$time[,group := factor(group, levels = object$grouplist),]
-  object$ALASCA$score$time[, PC := as.numeric(gsub("PC","", PC)),]
+  object$ALASCA$score$time[,PC    := as.numeric(gsub("PC","", PC)),]
   
   object$ALASCA$score$explained$time <- object$pca$score$explained$time
   object$ALASCA$loading$explained$time <- object$pca$loading$explained$time
