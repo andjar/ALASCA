@@ -5,9 +5,17 @@
 #' @param object An ALASCA object to be sanitized
 #' @return An ALASCA object
 doPCA <- function(object) {
-  object$pca$time <- prcomp(object$effect.matrix[object$effect.matrix$comp == "TIME", seq_len(ncol(object$effect.matrix) - 1)], scale = FALSE, center = TRUE)
+  object$pca$time <- prcomp(
+    object$effect.matrix[object$effect.matrix$comp == "TIME",
+                         seq_len(ncol(object$effect.matrix) - 1)],
+    scale = FALSE,
+    center = TRUE)
   if (object$separateTimeAndGroup) {
-    object$pca$group <- prcomp(object$effect.matrix[object$effect.matrix$comp == "GROUP", seq_len(ncol(object$effect.matrix) - 1)], scale = FALSE, center = TRUE)
+    object$pca$group <- prcomp(
+      object$effect.matrix[object$effect.matrix$comp == "GROUP",
+                           seq_len(ncol(object$effect.matrix) - 1)],
+      scale = FALSE,
+      center = TRUE)
   }
   return(object)
 }
@@ -32,7 +40,7 @@ cleanPCA <- function(object) {
   object$pca$score$explained$time <- object$pca$time$sdev^2 / sum(object$pca$time$sdev^2)
   object$pca$loading$explained$time <- object$pca$score$explained$time
 
-  PCloading <- getRelevantPCs(object = object, object$pca$score$explained$group)
+  PCloading <- getRelevantPCs(object = object, effect = "time")
   for (i in PCloading) {
     # Ensure that the highest loading has positive sign
     nVar <- which(abs(object$pca$loading$time[, i]) == max(abs(object$pca$loading$time[, i])))[1]
@@ -54,7 +62,7 @@ cleanPCA <- function(object) {
     object$pca$score$explained$group <- object$pca$group$sdev^2 / sum(object$pca$group$sdev^2)
     object$pca$loading$explained$group <- object$pca$score$explained$group
 
-    PCloading <- getRelevantPCs(object = object, object$pca$score$explained$group)
+    PCloading <- getRelevantPCs(object = object, effect = "group")
     for (i in PCloading) {
       # Ensure that the highest loading has positive sign
       nVar <- which(abs(object$pca$loading$group[, i]) == max(abs(object$pca$loading$group[, i])))[1]

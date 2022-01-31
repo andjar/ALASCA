@@ -1182,7 +1182,7 @@ plotComponentsLoadings <- function(object,
                                    figunit = NA,
                                    validationshape = NA,
                                    myTheme = ggplot2::theme_classic()) {
-  if (any(!comps %in% getRelevantPCs(object = object, object$ALASCA$loading$explained$time))) {
+  if (any(!comps %in% getRelevantPCs(object = object, effect = "time"))) {
     warning("Please note: Some components have low explanatory power and HAVE NOT BEEN rotated during rotation. Proceed with care.")
   }
 
@@ -1293,7 +1293,7 @@ plotComponentsScore <- function(object,
   if (!object$validate) {
     validationshape <- NA
   }
-  if (any(!comps %in% getRelevantPCs(object = object, object$ALASCA$loading$explained$time))) {
+  if (any(!comps %in% getRelevantPCs(object = object, effect = "time"))) {
     warning("Please note: Some components have low explanatory power and HAVE NOT BEEN rotated during rotation. Proceed with care.")
   }
   if (validationshape == "cross" & !is.na(validationshape)) {

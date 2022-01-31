@@ -609,12 +609,12 @@ summary.ALASCA <- function(object, file = "", sessioninfo = FALSE) {
   cat("Separating time and group effects: ", object$separateTimeAndGroup, "\n", file = file, append = TRUE)
   cat("Force equal baseline: ", object$forceEqualBaseline, "\n\n", file = file, append = TRUE)
   cat("\nPCs explaining at least 5% of variation:\n   Time: ",
-    paste(getRelevantPCs(object = object, object$pca$score$explained$time), collapse = ", "), " (",
-    paste(round(100 * object$pca$score$explained$time[getRelevantPCs(object = object, object$pca$score$explained$time)], 2), collapse = "%, "), "%)",
+    paste(getRelevantPCs(object = object, effect = "time"), collapse = ", "), " (",
+    paste(round(100 * object$pca$score$explained$time[getRelevantPCs(object = object, effect = "time")], 2), collapse = "%, "), "%)",
     ifelse(object$separateTimeAndGroup, paste0(
       "\n   Group: ",
-      paste(getRelevantPCs(object = object, object$pca$score$explained$group), collapse = ", "), " (",
-      paste(round(100 * object$pca$score$explained$group[getRelevantPCs(object = object, object$pca$score$explained$group)], 2), collapse = "%, "), "%)"
+      paste(getRelevantPCs(object = object, effect = "group"), collapse = ", "), " (",
+      paste(round(100 * object$pca$score$explained$group[getRelevantPCs(object = object, effect = "group")], 2), collapse = "%, "), "%)"
     ), "\n"),
     sep = "", file = file, append = TRUE
   )

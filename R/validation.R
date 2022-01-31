@@ -38,11 +38,11 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
   if (any(is.na(object$validationIDs))) {
     # Generate random samples
     if (object$savetodisk) {
-      limPC_time <- getRelevantPCs(object = object, object$ALASCA$loading$explained$time)
+      limPC_time <- getRelevantPCs(object = object, effect = "time")
       if (object$separateTimeAndGroup) {
-        limPC_group <- getRelevantPCs(object = object, object$ALASCA$loading$explained$group)
+        limPC_group <- getRelevantPCs(object = object, effect = "group")
       }
-      temp_object <- lapply(1:object$nValRuns, FUN = function(ii) {
+      temp_object <- lapply(seq_len(object$nValRuns), FUN = function(ii) {
         cat("- Run ", ii, " of ", object$nValRuns, "\n")
         start.time.this <- Sys.time()
 
@@ -90,7 +90,7 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
         fname
       })
     } else {
-      temp_object <- lapply(1:object$nValRuns, FUN = function(ii) {
+      temp_object <- lapply(seq_len(object$nValRuns), FUN = function(ii) {
         cat("- Run ", ii, " of ", object$nValRuns, "\n")
         start.time.this <- Sys.time()
 
@@ -115,11 +115,11 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
     cat("Using predefined samples...\n")
 
     if (object$savetodisk) {
-      limPC_time <- getRelevantPCs(object = object, object$ALASCA$loading$explained$time)
+      limPC_time <- getRelevantPCs(object = object, effect = "time")
       if (object$separateTimeAndGroup) {
-        limPC_group <- getRelevantPCs(object = object, object$ALASCA$loading$explained$group)
+        limPC_group <- getRelevantPCs(object = object, effect = "group")
       }
-      temp_object <- lapply(1:object$nValRuns, FUN = function(ii) {
+      temp_object <- lapply(seq_len(object$nValRuns), FUN = function(ii) {
         cat("- Run ", ii, " of ", object$nValRuns, "\n")
         start.time.this <- Sys.time()
 
@@ -167,7 +167,7 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
         fname
       })
     } else {
-      temp_object <- lapply(1:object$nValRuns, FUN = function(ii) {
+      temp_object <- lapply(seq_len(object$nValRuns), FUN = function(ii) {
         cat("- Run ", ii, " of ", object$nValRuns, "\n")
         start.time.this <- Sys.time()
 
@@ -231,7 +231,7 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
 #' @return An ALASCA object
 rotateMatrixOptimizeScore <- function(object, target) {
   # We are only looking at components explaining more than a predefined value
-  PCloading <- getRelevantPCs(object = target, target$ALASCA$loading$explained$time)
+  PCloading <- getRelevantPCs(object = target, effect = "time")
 
   # PCA can give loadings with either sign, so we have to check whether this improves the rotation
   N <- length(PCloading)
@@ -259,7 +259,7 @@ rotateMatrixOptimizeScore <- function(object, target) {
 
   if (object$separateTimeAndGroup) {
     # We are only looking at components explaining more than 5% of variation
-    PCloading <- getRelevantPCs(object = target, target$ALASCA$loading$explained$group)
+    PCloading <- getRelevantPCs(object = target, effect = "group")
 
     # PCA can give loadings with either sign, so we have to check whether this improves the rotation
     N <- length(PCloading)
@@ -297,7 +297,7 @@ rotateMatrixOptimizeScore <- function(object, target) {
 #' @param target ALASCA object acting as target
 #' @return An ALASCA object
 rotateMatrix <- function(object, target) {
-  PCloading <- getRelevantPCs(object = target, target$ALASCA$loading$explained$time)
+  PCloading <- getRelevantPCs(object = target, effect = "time")
   c <- .procrustes(
     loadings = as.matrix(object$pca$loading$time[, PCloading]),
     target = as.matrix(target$pca$loading$time[, PCloading])
@@ -307,7 +307,7 @@ rotateMatrix <- function(object, target) {
   object$pca$score$time[, PCloading] <- as.matrix(object$pca$score$time[, PCloading]) %*% solve(c$t1)
 
   if (object$separateTimeAndGroup) {
-    PCloading <- getRelevantPCs(object = target, target$ALASCA$loading$explained$group)
+    PCloading <- getRelevantPCs(object = target, effect = "group")
     c <- .procrustes(
       loadings = as.matrix(object$pca$loading$group[, PCloading]),
       target = as.matrix(target$pca$loading$group[, PCloading])
@@ -409,7 +409,7 @@ getValidationPercentilesCovars <- function(object, objectlist) {
 #' @inheritParams getValidationPercentiles
 #' @return An ALASCA object
 getValidationPercentilesLoading <- function(object, objectlist) {
-  PC_time <- getRelevantPCs(object = object, object$ALASCA$loading$explained$time)
+  PC_time <- getRelevantPCs(object = object, effect = "time")
   if (object$savetodisk) {
     res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.loading' WHERE PC IN(", paste(PC_time, collapse = ", "), ")"))
     df_time <- setDT(DBI::dbFetch(res))
@@ -423,7 +423,7 @@ getValidationPercentilesLoading <- function(object, objectlist) {
   object$ALASCA$loading$time <- merge(object$ALASCA$loading$time, object$validation$time$loading, all.x = TRUE)
 
   if (object$separateTimeAndGroup) {
-    PC_group <- getRelevantPCs(object = object, object$ALASCA$loading$explained$group)
+    PC_group <- getRelevantPCs(object = object, effect = "group")
     if (object$savetodisk) {
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'group.loading' WHERE PC IN(", paste(PC_group, collapse = ", "), ")"))
       df_group <- setDT(DBI::dbFetch(res))
@@ -449,7 +449,7 @@ getValidationPercentilesScore <- function(object, objectlist) {
   if (object$separateTimeAndGroup) {
     # Separate time and group effects
 
-    PC_time <- getRelevantPCs(object = object, object$ALASCA$score$explained$time)
+    PC_time <- getRelevantPCs(object = object, effect = "time")
     if (object$savetodisk) {
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.score' WHERE PC IN(", paste(PC_time, collapse = ", "), ")"))
       df_time <- setDT(DBI::dbFetch(res))
@@ -464,7 +464,7 @@ getValidationPercentilesScore <- function(object, objectlist) {
     object$ALASCA$score$time[, time := factor(time, levels = object$timelist), ]
     object$ALASCA$score$time[, group := factor(group, levels = object$grouplist), ]
 
-    PC_group <- getRelevantPCs(object = object, object$ALASCA$score$explained$group)
+    PC_group <- getRelevantPCs(object = object, effect = "group")
     if (object$savetodisk) {
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'group.score' WHERE PC IN(", paste(PC_group, collapse = ", "), ")"))
       df_group <- setDT(DBI::dbFetch(res))
@@ -480,7 +480,7 @@ getValidationPercentilesScore <- function(object, objectlist) {
     object$ALASCA$score$group[, group := factor(group, levels = object$grouplist), ]
   } else {
     # Pooled time and groups effects
-    PC_time <- getRelevantPCs(object = object, object$ALASCA$score$explained$time)
+    PC_time <- getRelevantPCs(object = object, effect = "time")
     if (object$savetodisk) {
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.score' WHERE PC IN(", paste(PC_time, collapse = ", "), ")"))
       df_time <- setDT(DBI::dbFetch(res))
@@ -504,8 +504,12 @@ getValidationPercentilesScore <- function(object, objectlist) {
 #'
 #' @param x Explanatory power of PC
 #' @return A vector with relevant PCs
-getRelevantPCs <- function(object, x) {
-  PC <- x >= object$explanatorylimit
+getRelevantPCs <- function(object, effect = "time") {
+  if (effect == "time") {
+    PC <- object$ALASCA$loading$explained$time >= object$explanatorylimit
+  } else {
+    PC <- object$ALASCA$loading$explained$group >= object$explanatorylimit
+  }
   PC[1:2] <- TRUE
   return(which(PC))
 }
