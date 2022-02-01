@@ -9,6 +9,12 @@ buildModel <- function(object) {
     # This is not a validation run
     cat("Calculating ", object$method, " coefficients...\n")
   }
+  
+  if (object$method == "Limm") {
+    if (object$doDebug) currentTs <- Sys.time()
+    object <- doLimmPCA(object)
+    if (object$doDebug) cat("* doLimmPCA:", Sys.time() - currentTs, "s\n")
+  }
 
   if (object$doDebug) currentTs <- Sys.time()
   object <- runRegression(object)
@@ -60,12 +66,12 @@ buildModel <- function(object) {
 #' @param object An ALASCA object
 #' @return An ALASCA object
 runRegression <- function(object) {
-  if (object$useRfast & object$method == "LMM") {
+  if (object$useRfast & object$method %in% c("LMM", "Limm")) {
     # start.time <- Sys.time()
     if (any(is.na(object$df[, value]))) {
       stop("Rfast does NOT like NA's! Check your scaling function or value column.")
     }
-    object$RegressionCoefficients <- data.table::rbindlist(
+    object$RegressionCoefficients <- rbindlist(
       lapply(object$variablelist, function(x) {
         df <- object$df[variable == x]
         modmat <- model.matrix(object$newformula, data = df)
@@ -101,7 +107,7 @@ runRegression <- function(object) {
       attr(regr.model, "name") <- x
       regr.model
     })
-  } else if (object$method == "LMM") {
+  } else if (object$method %in% c("LMM", "Limm")) {
     object$regr.model <- lapply(object$variablelist, function(x) {
       modmat <- model.matrix(object$formula, data = object$df[variable == x])
       modmat <- modmat[, -1] # Remove intercept

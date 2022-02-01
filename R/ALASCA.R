@@ -73,6 +73,7 @@ ALASCA <- function(df,
                    validation = FALSE,
                    filename = NA,
                    filepath = NA,
+                   limm.nComps= 100,
                    lowerLimit = NA,
                    savetodisk = FALSE,
                    optimizeScore = FALSE,
@@ -90,6 +91,9 @@ ALASCA <- function(df,
 
     ## Unscaled values
     object$df <- validationObject$dfRaw
+    if(object$method == "Limm"){
+      object$Limm$main$pca <- object$Limm$pca
+    }
 
     ## Avoid recursion
     object$validate <- FALSE
@@ -103,7 +107,7 @@ ALASCA <- function(df,
     ## Keep original object?
     object$validationObject <- NULL # validationObject
 
-    object$doDebug <- FALSE
+    #object$doDebug <- FALSE
   } else {
     object <- list(
       df = setDT(df),
@@ -123,6 +127,7 @@ ALASCA <- function(df,
       plot.filetype = plot.filetype,
       plot.palette = plot.palette,
       plot.palette.end = plot.palette.end,
+      limm.nComps = limm.nComps,
       plot.loadinggroupcolumn = plot.loadinggroupcolumn,
       plot.myTheme = plot.myTheme,
       explanatorylimit = explanatorylimit,
@@ -224,8 +229,8 @@ RMASCA <- function(...) {
 #' @return String
 #' @export
 printVer <- function(object = FALSE, get = NA, print = TRUE) {
-  ALASCA.version <- "0.0.0.108"
-  ALASCA.version.date <- "2022-01-29"
+  ALASCA.version <- "0.0.0.109"
+  ALASCA.version.date <- "2022-02-01"
   if (is.list(object)) {
     ALASCA.version <- object$ALASCA.version
     ALASCA.version.date <- object$ALASCA.version.date
@@ -264,9 +269,6 @@ SMASCA <- function(...) {
 #' @return An ALASCA object
 sanitizeObject <- function(object) {
   if (!object$minimizeObject) {
-    object$df[, time := factor(time, levels = object$timelist), ]
-    object$df[, group := factor(group, levels = object$grouplist), ]
-
     object$valCol <- as.character(object$formula)[2]
 
     # Check formula from user
@@ -282,7 +284,7 @@ sanitizeObject <- function(object) {
         if (any(grepl("\\|", formulaTerms))) {
           stop("The model contains at least one random effect. Sure you not wanted linear mixed models instead?")
         }
-      } else if (object$method %in% c("KM", "KMM")) {
+      } else if (object$method %in% c("KM", "KMM", "Limm")) {
 
       } else {
         stop("You entered an undefined method. Use `LMM` or `LM`!")
@@ -342,7 +344,7 @@ sanitizeObject <- function(object) {
       ))
     }
 
-    if (object$method %in% c("LMM")) {
+    if (object$method %in% c("LMM", "Limm")) {
       if (object$participantColumn != "ID") {
         object$df$ID <- object$df[, get(object$participantColumn)]
         tmp <- formulaTerms[!grepl("\\|", formulaTerms)]
@@ -371,7 +373,7 @@ sanitizeObject <- function(object) {
         }
       }
 
-      if (object$method == "LMM") {
+      if (object$method %in% c("LMM", "Limm")) {
         if (object$useRfast) {
           # Using Rfast
           rterms <- formulaTerms[!grepl("\\|", formulaTerms)]
@@ -407,24 +409,17 @@ sanitizeObject <- function(object) {
     }
   }
 
+  if (object$doDebug) {
+    cat(".... Making factors for time, group and variable\n")
+  }
+  object$df[, time := factor(time, levels = object$timelist), ]
+  object$df[, group := factor(group, levels = object$grouplist), ]
+  object$df[, variable := factor(variable, levels = object$variablelist), ]
 
   if (object$minimizeObject) {
     # This is usually a validation object
     object$df <- object$df[object$validationParticipants]
     object$df$ID <- factor(object$df$ID)
-  }
-
-  if (object$doDebug) {
-    cat(".... Making factors for time, group and variable\n")
-  }
-  if (!is.factor(object$df$time)) {
-    object$df$time <- factor(object$df$time)
-  }
-  if (!is.factor(object$df$group)) {
-    object$df$group <- factor(object$df$group)
-  }
-  if (!is.factor(object$df$variable)) {
-    object$df$variable <- factor(object$df$variable)
   }
 
   if (object$doDebug) {

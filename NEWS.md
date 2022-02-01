@@ -1,3 +1,9 @@
+# ALASCA 0.0.0.109
+
+## New features
+
+* Use `method = "Limm"` for Limm-PCA
+
 # ALASCA 0.0.0.107
 
 ## New features

@@ -231,37 +231,50 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
 #' @return An ALASCA object
 rotateMatrixOptimizeScore <- function(object, target) {
   # We are only looking at components explaining more than a predefined value
-  PCloading <- getRelevantPCs(object = target, effect = "time")
+  PCloading <- getRelevantPCs(target, effect = "time")
 
-  # PCA can give loadings with either sign, so we have to check whether this improves the rotation
-  N <- length(PCloading)
+  # PCA can give loadings with either sign, so we have to check whether switching signs improves the rotation
+  N <- length(PCloading) # Number of components to look at
+  
+  # Create matrix with all possible combinations of signs
   vec <- c(-1, 1)
   lst <- lapply(numeric(N), function(x) vec)
   signMatrix <- as.matrix(expand.grid(lst))
+  
+  # Test all combinations and calculate residuals
   signVar <- Reduce(cbind, lapply(seq_len(nrow(signMatrix) / 2), function(i) {
     c <- .procrustes(
       loadings = as.matrix(t(t(object$pca$loading$time[, PCloading]) * signMatrix[i, ])),
       target = as.matrix(target$pca$loading$time[, PCloading])
     )
-    sum((target$pca$score$time[, PCloading] - as.matrix(t(t(object$pca$score$time[, PCloading]) * signMatrix[i, ])) %*% solve(c$t1))^2)
+    sum((target$pca$score$time[, PCloading] - as.matrix(
+      t(t(object$pca$score$time[, PCloading]) * signMatrix[i, ])
+      ) %*% solve(c$t1))^2)
   }))
   if (target$doDebug) cat("SignVar time: ", signVar, "\n")
+  
+  # Find the combination that minimizes the sum of squares
   minSignVar <- which(signVar == min(signVar))[1]
+  
+  # Switch signs
   object$pca$loading$time[, PCloading] <- t(t(object$pca$loading$time[, PCloading]) * signMatrix[minSignVar, ])
   object$pca$score$time[, PCloading] <- t(t(object$pca$score$time[, PCloading]) * signMatrix[minSignVar, ])
 
+  # Final rotation
   c <- .procrustes(
     loadings = as.matrix(object$pca$loading$time[, PCloading]),
     target = as.matrix(target$pca$loading$time[, PCloading])
   )
   object$pca$loading$time[, PCloading] <- c$procrust
-  object$pca$score$time[, PCloading] <- as.matrix(object$pca$score$time[, PCloading]) %*% solve(c$t1)
+  object$pca$score$time[, PCloading] <- as.matrix(
+    object$pca$score$time[, PCloading]
+    ) %*% solve(c$t1)
 
   if (object$separateTimeAndGroup) {
     # We are only looking at components explaining more than 5% of variation
-    PCloading <- getRelevantPCs(object = target, effect = "group")
+    PCloading <- getRelevantPCs(target, effect = "group")
 
-    # PCA can give loadings with either sign, so we have to check whether this improves the rotation
+    # PCA can give loadings with either sign, so we have to check whether swithcing signs improves the rotation
     N <- length(PCloading)
     vec <- c(-1, 1)
     lst <- lapply(numeric(N), function(x) vec)
@@ -297,7 +310,7 @@ rotateMatrixOptimizeScore <- function(object, target) {
 #' @param target ALASCA object acting as target
 #' @return An ALASCA object
 rotateMatrix <- function(object, target) {
-  PCloading <- getRelevantPCs(object = target, effect = "time")
+  PCloading <- getRelevantPCs(target, effect = "time")
   c <- .procrustes(
     loadings = as.matrix(object$pca$loading$time[, PCloading]),
     target = as.matrix(target$pca$loading$time[, PCloading])
@@ -307,7 +320,7 @@ rotateMatrix <- function(object, target) {
   object$pca$score$time[, PCloading] <- as.matrix(object$pca$score$time[, PCloading]) %*% solve(c$t1)
 
   if (object$separateTimeAndGroup) {
-    PCloading <- getRelevantPCs(object = target, effect = "group")
+    PCloading <- getRelevantPCs(target, effect = "group")
     c <- .procrustes(
       loadings = as.matrix(object$pca$loading$group[, PCloading]),
       target = as.matrix(target$pca$loading$group[, PCloading])
@@ -409,7 +422,7 @@ getValidationPercentilesCovars <- function(object, objectlist) {
 #' @inheritParams getValidationPercentiles
 #' @return An ALASCA object
 getValidationPercentilesLoading <- function(object, objectlist) {
-  PC_time <- getRelevantPCs(object = object, effect = "time")
+  PC_time <- getRelevantPCs(object, effect = "time")
   if (object$savetodisk) {
     res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.loading' WHERE PC IN(", paste(PC_time, collapse = ", "), ")"))
     df_time <- setDT(DBI::dbFetch(res))
@@ -423,7 +436,7 @@ getValidationPercentilesLoading <- function(object, objectlist) {
   object$ALASCA$loading$time <- merge(object$ALASCA$loading$time, object$validation$time$loading, all.x = TRUE)
 
   if (object$separateTimeAndGroup) {
-    PC_group <- getRelevantPCs(object = object, effect = "group")
+    PC_group <- getRelevantPCs(object, effect = "group")
     if (object$savetodisk) {
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'group.loading' WHERE PC IN(", paste(PC_group, collapse = ", "), ")"))
       df_group <- setDT(DBI::dbFetch(res))
@@ -449,7 +462,7 @@ getValidationPercentilesScore <- function(object, objectlist) {
   if (object$separateTimeAndGroup) {
     # Separate time and group effects
 
-    PC_time <- getRelevantPCs(object = object, effect = "time")
+    PC_time <- getRelevantPCs(object, effect = "time")
     if (object$savetodisk) {
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.score' WHERE PC IN(", paste(PC_time, collapse = ", "), ")"))
       df_time <- setDT(DBI::dbFetch(res))
@@ -464,7 +477,7 @@ getValidationPercentilesScore <- function(object, objectlist) {
     object$ALASCA$score$time[, time := factor(time, levels = object$timelist), ]
     object$ALASCA$score$time[, group := factor(group, levels = object$grouplist), ]
 
-    PC_group <- getRelevantPCs(object = object, effect = "group")
+    PC_group <- getRelevantPCs(object, effect = "group")
     if (object$savetodisk) {
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'group.score' WHERE PC IN(", paste(PC_group, collapse = ", "), ")"))
       df_group <- setDT(DBI::dbFetch(res))
@@ -480,7 +493,7 @@ getValidationPercentilesScore <- function(object, objectlist) {
     object$ALASCA$score$group[, group := factor(group, levels = object$grouplist), ]
   } else {
     # Pooled time and groups effects
-    PC_time <- getRelevantPCs(object = object, effect = "time")
+    PC_time <- getRelevantPCs(object, effect = "time")
     if (object$savetodisk) {
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.score' WHERE PC IN(", paste(PC_time, collapse = ", "), ")"))
       df_time <- setDT(DBI::dbFetch(res))
@@ -561,7 +574,7 @@ prepareValidationRun <- function(object, runN = NA) {
     # Use leave-one-out validation
     selectedParts <- data.frame()
 
-    if (object$method %in% c("LMM", "Rfast")) {
+    if (object$method %in% c("LMM", "Rfast", "Limm")) {
       if (any(is.na(object$validationIDs))) {
         # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
         selectedParts <- lapply(unique(object$stratificationVector), function(gr) {
@@ -610,7 +623,7 @@ prepareValidationRun <- function(object, runN = NA) {
     bootdf <- data.frame()
     cc_id <- 0 # Will become the new participant ID
 
-    if (object$method %in% c("LMM", "Rfast")) {
+    if (object$method %in% c("LMM", "Rfast", "Limm")) {
       # Loop through all the groups and create a new dataframe with resampled values
       bootobject$newIDs <- c()
       bootobject$originalIDs <- c()
@@ -659,7 +672,7 @@ prepareValidationRun <- function(object, runN = NA) {
         validationObject = bootobject,
         validationParticipants = rep(TRUE, nrow(bootobject$dfRaw))
       )
-    } else if (df$method == "LM") {
+    } else if (object$method == "LM") {
       stop("Bootstrapping not implemented for LMs yet")
     }
   }
