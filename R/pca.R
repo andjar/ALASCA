@@ -135,7 +135,7 @@ cleanALASCA <- function(object) {
   object$ALASCA$loading$time <- setDT(object$pca$loading$time[!duplicated(object$pca$loading$time), ])
   object$ALASCA$loading$time <- melt(object$ALASCA$loading$time, id.vars = "covars")
   colnames(object$ALASCA$loading$time) <- c("covars", "PC", "loading")
-  if(object$method == "Limm"){
+  if(object$method %in% c("Limm", "Lim")){
     object$ALASCA$loading$time <- rbindlist(lapply(unique(object$ALASCA$loading$time$PC), function(selPC){
       ref <- object$ALASCA$loading$time[PC == selPC,]
       data.frame(
@@ -173,7 +173,7 @@ cleanALASCA <- function(object) {
     colnames(object$ALASCA$score$group) <- c("time", "group", "PC", "score")
     object$ALASCA$score$group[, time := factor(time, levels = object$timelist), ]
     object$ALASCA$score$group[, group := factor(group, levels = object$grouplist), ]
-    if(object$method == "Limm"){
+    if(object$method %in% c("Limm", "Lim")){
       object$ALASCA$loading$group <- rbindlist(lapply(unique(object$ALASCA$loading$group$PC), function(selPC){
         ref <- object$ALASCA$loading$group[PC == selPC,]
         data.frame(

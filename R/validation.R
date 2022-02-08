@@ -538,7 +538,7 @@ getRegressionPredictions <- function(object) {
     # This is not a validation run
     cat("Calculating predictions from regression models...\n")
   }
-  regCoeffAll <- reshape2::dcast(data = object[["RegressionCoefficients"]], covar ~ variable, value.var = "estimate")
+  regCoeffAll <- dcast(data = object[["RegressionCoefficients"]], covar ~ variable)
   regModel <- unique(model.matrix(object$formula, data = object$df))
   if (object$forceEqualBaseline) {
     regModel <- regModel[, !grepl(paste0("time", levels(object$df$time)[1]), colnames(regModel))]
@@ -623,7 +623,7 @@ prepareValidationRun <- function(object, runN = NA) {
     bootdf <- data.frame()
     cc_id <- 0 # Will become the new participant ID
 
-    if (object$method %in% c("LMM", "Rfast", "Limm")) {
+    if (object$method %in% c("LMM", "Limm", "LM", "Lim")) {
       # Loop through all the groups and create a new dataframe with resampled values
       bootobject$newIDs <- c()
       bootobject$originalIDs <- c()
@@ -642,7 +642,7 @@ prepareValidationRun <- function(object, runN = NA) {
           # Create data frame from resampled participants
           bootdf <- rbind(
             bootdf,
-            data.table::rbindlist(
+            rbindlist(
               lapply(seq_along(selectedParts_temp_selected), function(x) {
                 seldf <- bootdf_temp[bootdf_temp$ID == selectedParts_temp_selected[x], ]
                 seldf$originalIDbeforeBootstrap <- seldf$ID
@@ -672,7 +672,7 @@ prepareValidationRun <- function(object, runN = NA) {
         validationObject = bootobject,
         validationParticipants = rep(TRUE, nrow(bootobject$dfRaw))
       )
-    } else if (object$method == "LM") {
+    } else if (object$method == "") {
       stop("Bootstrapping not implemented for LMs yet")
     }
   }

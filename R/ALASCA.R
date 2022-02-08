@@ -91,7 +91,7 @@ ALASCA <- function(df,
 
     ## Unscaled values
     object$df <- validationObject$dfRaw
-    if(object$method == "Limm"){
+    if(object$method %in% c("Limm", "Lim")){
       object$Limm$main$pca <- object$Limm$pca
     }
 
@@ -106,6 +106,10 @@ ALASCA <- function(df,
 
     ## Keep original object?
     object$validationObject <- NULL # validationObject
+    
+    object$variablelist <- unique(object$df$variable)
+    object$timelist <- levels(object$df$time)
+    object$grouplist <- levels(object$df$group)
 
     #object$doDebug <- FALSE
   } else {
@@ -284,7 +288,7 @@ sanitizeObject <- function(object) {
         if (any(grepl("\\|", formulaTerms))) {
           stop("The model contains at least one random effect. Sure you not wanted linear mixed models instead?")
         }
-      } else if (object$method %in% c("KM", "KMM", "Limm")) {
+      } else if (object$method %in% c("KM", "KMM", "Limm","Lim")) {
 
       } else {
         stop("You entered an undefined method. Use `LMM` or `LM`!")
@@ -385,7 +389,7 @@ sanitizeObject <- function(object) {
           object$newformula <- formula(paste("value ~ modmat+", paste(rterms, collapse = "+")))
         }
       }
-    } else if (object$method %in% c("LM")) {
+    } else if (object$method %in% c("LM", "Lim")) {
       object$newformula <- value ~ modmat
     }
 
@@ -576,7 +580,7 @@ flipIt <- function(object, component = NA, effect = "both") {
     }
   }
 
-  if (object$validate == TRUE) {
+  if (object$validate && !object$savetodisk) {
     for (i in seq_along(object$validation$temp_objects)) {
       object$validation$temp_objects[[i]] <- flipIt(object$validation$temp_objects[[i]], component = component, effect = effect)
     }

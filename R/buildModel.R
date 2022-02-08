@@ -10,7 +10,7 @@ buildModel <- function(object) {
     cat("Calculating ", object$method, " coefficients...\n")
   }
   
-  if (object$method == "Limm") {
+  if (object$method %in% c("Limm", "Lim")) {
     if (object$doDebug) currentTs <- Sys.time()
     object <- doLimmPCA(object)
     if (object$doDebug) cat("* doLimmPCA:", Sys.time() - currentTs, "s\n")
@@ -34,7 +34,9 @@ buildModel <- function(object) {
         object <- getRegressionPredictions(object)
       }
     } else {
-      object <- getRegressionPredictions(object)
+      if (object$validateRegression) {
+        object <- getRegressionPredictions(object)
+      }
     }
   }
   if (object$doDebug) currentTs <- Sys.time()
@@ -94,7 +96,7 @@ runRegression <- function(object) {
     # end.time <- Sys.time()
     # cat("\n\n",end.time - start.time,"\n")
     return(object)
-  } else if (object$method == "LM") {
+  } else if (!object$useRfast & object$method == "LM") {
     object$regr.model <- lapply(object$variablelist, function(x) {
       modmat <- model.matrix(object$formula, data = object$df[variable == x])
       modmat <- modmat[, -1] # Remove intercept
@@ -107,6 +109,30 @@ runRegression <- function(object) {
       attr(regr.model, "name") <- x
       regr.model
     })
+  } else if (object$useRfast & object$method %in% c("LM", "Lim")) {
+    # start.time <- Sys.time()
+    if (any(is.na(object$df[, value]))) {
+      stop("Rfast does NOT like NA's! Check your scaling function or value column.")
+    }
+    object$RegressionCoefficients <- rbindlist(
+      lapply(object$variablelist, function(x) {
+        df <- object$df[variable == x]
+        modmat <- model.matrix(object$formula, data = object$df[variable == x])
+        modmat <- modmat[, -1] # Remove intercept
+        data.frame(
+          estimate = Rfast::lmfit(
+            y = df[, value],
+            x = modmat
+          )$be,
+          pvalue = NA,
+          covar = as.character(x),
+          variable = colnames(modmat)
+        )
+      })
+    )
+    # end.time <- Sys.time()
+    # cat("\n\n",end.time - start.time,"\n")
+    return(object)
   } else if (object$method %in% c("LMM", "Limm")) {
     object$regr.model <- lapply(object$variablelist, function(x) {
       modmat <- model.matrix(object$formula, data = object$df[variable == x])

@@ -217,7 +217,7 @@ countParts <- function(object) {
     ID = wideDF$ID,
     count = rowSums(wideDF[, 3:ncol(wideDF)])
   )
-  complete.cases.by.group <- as.data.frame(table(wideDF[rowSums(wideDF[, 3:ncol(wideDF)]) == length(mod$variablelist) * length(mod$timelist), "group"]))
+  complete.cases.by.group <- as.data.frame(table(wideDF[rowSums(wideDF[, 3:ncol(wideDF)]) == length(object$variablelist) * length(object$timelist), "group"]))
   colnames(complete.cases.by.group) <- c("group", "count")
 
   list(
