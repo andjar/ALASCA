@@ -81,8 +81,8 @@ cleanPCA <- function(object) {
   if (!object$separateTimeAndGroup) {
     PC_time$group <- object$parts$group
   }
-  object$pca$score$time <- setDT(PC_time[!duplicated(PC_time$time),])
-  setkey(object$pca$score$time, time)
+  object$pca$score$time <- setDT(PC_time[!duplicated(paste(PC_time$time, PC_time$group)),])
+  setkey(object$pca$score$time, time, group)
   object$pca$score$explained$time <- object$pca$time$sdev^2 / sum(object$pca$time$sdev^2)
   object$pca$loading$explained$time <- object$pca$score$explained$time
 

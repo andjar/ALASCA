@@ -318,22 +318,22 @@ rotateMatrixOptimizeScore <- function(object, target) {
 rotateMatrix <- function(object, target) {
   PCloading <- getRelevantPCs(target, effect = "time")
   c <- .procrustes(
-    loadings = as.matrix(object$pca$loading$time[, ..PCloading]),
+    loadings = as.matrix(object$pca$loading$time[target$pca$loading$time, ..PCloading]),
     target = as.matrix(target$pca$loading$time[, ..PCloading])
   )
 
-  object$pca$loading$time[, (PCloading) := as.data.frame(c$procrust)]
-  object$pca$score$time[, (PCloading) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading]
+  object$pca$loading$time[target$pca$loading$time, (PCloading) := as.data.frame(c$procrust)]
+  object$pca$score$time[target$pca$score$time, (PCloading) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading]
 
   if (object$separateTimeAndGroup) {
     PCloading <- getRelevantPCs(target, effect = "group")
     c <- .procrustes(
-      loadings = as.matrix(object$pca$loading$group[, ..PCloading]),
+      loadings = as.matrix(object$pca$loading$group[target$pca$loading$group, ..PCloading]),
       target = as.matrix(target$pca$loading$group[, ..PCloading])
     )
 
-    object$pca$loading$group[, (PCloading) := as.data.frame(c$procrust)]
-    object$pca$score$group[, (PCloading) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading]
+    object$pca$loading$group[target$pca$loading$group, (PCloading) := as.data.frame(c$procrust)]
+    object$pca$score$group[target$pca$score$group, (PCloading) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading]
   }
 
   return(object)
