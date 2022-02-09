@@ -230,6 +230,7 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
 #' @param target ALASCA object acting as target
 #' @return An ALASCA object
 rotateMatrixOptimizeScore <- function(object, target) {
+  if (object$doDebug) currentTs <- Sys.time()
   # We are only looking at components explaining more than a predefined value
   PCloading <- getRelevantPCs(target, effect = "time")
 
@@ -244,12 +245,11 @@ rotateMatrixOptimizeScore <- function(object, target) {
   # Test all combinations and calculate residuals
   signVar <- Reduce(cbind, lapply(seq_len(nrow(signMatrix) / 2), function(i) {
     c <- .procrustes(
-      loadings = as.matrix(t(t(object$pca$loading$time[, PCloading]) * signMatrix[i, ])),
-      target = as.matrix(target$pca$loading$time[, PCloading])
+      loadings = as.matrix(t(t(object$pca$loading$time[target$pca$loading$time, ..PCloading]) * signMatrix[i, ])),
+      target = as.matrix(target$pca$loading$time[, ..PCloading])
     )
-    sum((target$pca$score$time[, PCloading] - as.matrix(
-      t(t(object$pca$score$time[, PCloading]) * signMatrix[i, ])
-      ) %*% solve(c$t1))^2)
+    sum((target$pca$score$time[, ..PCloading] - 
+           as.matrix(t(t(object$pca$score$time[target$pca$score$time, ..PCloading]) * signMatrix[i, ])) %*% solve(c$t1))^2)
   }))
   if (target$doDebug) cat("SignVar time: ", signVar, "\n")
   
@@ -257,21 +257,23 @@ rotateMatrixOptimizeScore <- function(object, target) {
   minSignVar <- which(signVar == min(signVar))[1]
   
   # Switch signs
-  object$pca$loading$time[, PCloading] <- t(t(object$pca$loading$time[, PCloading]) * signMatrix[minSignVar, ])
-  object$pca$score$time[, PCloading] <- t(t(object$pca$score$time[, PCloading]) * signMatrix[minSignVar, ])
+  for (i in PCloading){
+    object$pca$loading$time[, (i) := t(t(.SD) * signMatrix[minSignVar, i]), .SDcols = i]
+    object$pca$score$time[, (i) := t(t(.SD) * signMatrix[minSignVar, i]), .SDcols = i]
+  }
 
   # Final rotation
   c <- .procrustes(
-    loadings = as.matrix(object$pca$loading$time[, PCloading]),
-    target = as.matrix(target$pca$loading$time[, PCloading])
+    loadings = as.matrix(object$pca$loading$time[target$pca$loading$time, ..PCloading]),
+    target = as.matrix(target$pca$loading$time[, ..PCloading])
   )
-  object$pca$loading$time[, PCloading] <- c$procrust
-  object$pca$score$time[, PCloading] <- as.matrix(
-    object$pca$score$time[, PCloading]
-    ) %*% solve(c$t1)
+  object$pca$loading$time[target$pca$loading$time, (PCloading) := as.data.frame(c$procrust)]
+  object$pca$score$time[target$pca$score$time, (PCloading) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading]
 
+  if (object$doDebug) cat("* Rotating time:", Sys.time() - currentTs, "s\n")
   if (object$separateTimeAndGroup) {
-    # We are only looking at components explaining more than 5% of variation
+    if (object$doDebug) currentTs <- Sys.time()
+    # We are only looking at components explaining more than a set limit
     PCloading <- getRelevantPCs(target, effect = "group")
 
     # PCA can give loadings with either sign, so we have to check whether swithcing signs improves the rotation
@@ -281,22 +283,26 @@ rotateMatrixOptimizeScore <- function(object, target) {
     signMatrix <- as.matrix(expand.grid(lst))
     signVar <- Reduce(cbind, lapply(seq_len(nrow(signMatrix) / 2), function(i) {
       c <- .procrustes(
-        loadings = as.matrix(t(t(object$pca$loading$group[, PCloading]) * signMatrix[i, ])),
-        target = as.matrix(target$pca$loading$group[, PCloading])
+        loadings = as.matrix(t(t(object$pca$loading$group[target$pca$loading$group, ..PCloading]) * signMatrix[i, ])),
+        target = as.matrix(target$pca$loading$group[, ..PCloading])
       )
-      sum((target$pca$score$group[, PCloading] - as.matrix(t(t(object$pca$score$group[, PCloading]) * signMatrix[i, ])) %*% solve(c$t1))^2)
+      sum((target$pca$score$group[, ..PCloading] - 
+             as.matrix(t(t(object$pca$score$group[target$pca$score$group, ..PCloading]) * signMatrix[i, ])) %*% solve(c$t1))^2)
     }))
     if (target$doDebug) cat("SignVar group: ", signVar, "\n")
     minSignVar <- which(signVar == min(signVar))[1]
-    object$pca$loading$group[, PCloading] <- t(t(object$pca$loading$group[, PCloading]) * signMatrix[minSignVar, ])
-    object$pca$score$group[, PCloading] <- t(t(object$pca$score$group[, PCloading]) * signMatrix[minSignVar, ])
-
+    for (i in PCloading){
+      object$pca$loading$group[, (i) := t(t(.SD) * signMatrix[minSignVar, i]), .SDcols = i]
+      object$pca$score$group[, (i) := t(t(.SD) * signMatrix[minSignVar, i]), .SDcols = i]
+    }
+    
     c <- .procrustes(
-      loadings = as.matrix(object$pca$loading$group[, PCloading]),
-      target = as.matrix(target$pca$loading$group[, PCloading])
+      loadings = as.matrix(object$pca$loading$group[target$pca$loading$group, ..PCloading]),
+      target = as.matrix(target$pca$loading$group[, ..PCloading])
     )
-    object$pca$loading$group[, PCloading] <- c$procrust
-    object$pca$score$group[, PCloading] <- as.matrix(object$pca$score$group[, PCloading]) %*% solve(c$t1)
+    object$pca$loading$group[target$pca$loading$group, (PCloading) := as.data.frame(c$procrust)]
+    object$pca$score$group[target$pca$score$group, (PCloading) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading]
+    if (object$doDebug) cat("* Rotating group:", Sys.time() - currentTs, "s\n")
   }
 
   return(object)
@@ -312,22 +318,22 @@ rotateMatrixOptimizeScore <- function(object, target) {
 rotateMatrix <- function(object, target) {
   PCloading <- getRelevantPCs(target, effect = "time")
   c <- .procrustes(
-    loadings = as.matrix(object$pca$loading$time[, PCloading]),
-    target = as.matrix(target$pca$loading$time[, PCloading])
+    loadings = as.matrix(object$pca$loading$time[, ..PCloading]),
+    target = as.matrix(target$pca$loading$time[, ..PCloading])
   )
 
-  object$pca$loading$time[, PCloading] <- c$procrust
-  object$pca$score$time[, PCloading] <- as.matrix(object$pca$score$time[, PCloading]) %*% solve(c$t1)
+  object$pca$loading$time[, (PCloading) := as.data.frame(c$procrust)]
+  object$pca$score$time[, (PCloading) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading]
 
   if (object$separateTimeAndGroup) {
     PCloading <- getRelevantPCs(target, effect = "group")
     c <- .procrustes(
-      loadings = as.matrix(object$pca$loading$group[, PCloading]),
-      target = as.matrix(target$pca$loading$group[, PCloading])
+      loadings = as.matrix(object$pca$loading$group[, ..PCloading]),
+      target = as.matrix(target$pca$loading$group[, ..PCloading])
     )
 
-    object$pca$loading$group[, PCloading] <- c$procrust
-    object$pca$score$group[, PCloading] <- as.matrix(object$pca$score$group[, PCloading]) %*% solve(c$t1)
+    object$pca$loading$group[, (PCloading) := as.data.frame(c$procrust)]
+    object$pca$score$group[, (PCloading) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading]
   }
 
   return(object)
@@ -387,7 +393,7 @@ getValidationPercentilesRegression <- function(object, objectlist) {
   } else {
     df <- rbindlist(lapply(objectlist, function(x) x$mod.pred))
   }
-  df <- df[, as.list(quantile(pred, probs = object$limitsCI, type = 1)), by = .(group, time, variable)]
+  df <- df[, as.list(quantile(pred, probs = object$limitsCI, type = object$validationQuantileMethod)), by = .(group, time, variable)]
   colnames(df) <- c("group", "time", "variable", "low", "high")
 
   object$mod.pred <- merge(object$mod.pred, df)
@@ -408,7 +414,7 @@ getValidationPercentilesCovars <- function(object, objectlist) {
   } else {
     df <- rbindlist(lapply(objectlist, function(x) getCovars(x)))
   }
-  df <- df[, as.list(quantile(estimate, probs = object$limitsCI, type = 1)), by = .(covar, variable)]
+  df <- df[, as.list(quantile(estimate, probs = object$limitsCI, type = object$validationQuantileMethod)), by = .(covar, variable)]
   colnames(df) <- c("covar", "variable", "low", "high")
 
   object$CovarCoefficients <- merge(object$CovarCoefficients, df)
@@ -431,7 +437,7 @@ getValidationPercentilesLoading <- function(object, objectlist) {
     df_time <- rbindlist(lapply(objectlist, function(x) x$ALASCA$loading$time[x$ALASCA$loading$time$PC %in% PC_time, ]), fill = TRUE)
   }
 
-  object$validation$time$loading <- df_time[, as.list(quantile(loading, probs = object$limitsCI, type = 1)), by = .(PC, covars)]
+  object$validation$time$loading <- df_time[, as.list(quantile(loading, probs = object$limitsCI, type = object$validationQuantileMethod)), by = .(PC, covars)]
   colnames(object$validation$time$loading) <- c("PC", "covars", "low", "high")
   object$ALASCA$loading$time <- merge(object$ALASCA$loading$time, object$validation$time$loading, all.x = TRUE)
 
@@ -445,7 +451,7 @@ getValidationPercentilesLoading <- function(object, objectlist) {
       df_group <- rbindlist(lapply(objectlist, function(x) x$ALASCA$loading$group[x$ALASCA$loading$group$PC %in% PC_group, ]), fill = TRUE)
     }
 
-    object$validation$group$loading <- df_group[, as.list(quantile(loading, probs = object$limitsCI, type = 1)), by = .(PC, covars)]
+    object$validation$group$loading <- df_group[, as.list(quantile(loading, probs = object$limitsCI, type = object$validationQuantileMethod)), by = .(PC, covars)]
     colnames(object$validation$group$loading) <- c("PC", "covars", "low", "high")
     object$ALASCA$loading$group <- merge(object$ALASCA$loading$group, object$validation$group$loading, all.x = TRUE)
   }
@@ -471,7 +477,7 @@ getValidationPercentilesScore <- function(object, objectlist) {
       df_time <- rbindlist(lapply(objectlist, function(x) x$ALASCA$score$time[x$ALASCA$score$time$PC %in% PC_time, ]), fill = TRUE)
     }
 
-    object$validation$time$score <- df_time[, as.list(quantile(score, probs = object$limitsCI, type = 1)), by = .(PC, time)]
+    object$validation$time$score <- df_time[, as.list(quantile(score, probs = object$limitsCI, type = object$validationQuantileMethod)), by = .(PC, time)]
     colnames(object$validation$time$score) <- c("PC", "time", "low", "high")
     object$ALASCA$score$time <- merge(object$ALASCA$score$time, object$validation$time$score, all.x = TRUE)
     object$ALASCA$score$time[, time := factor(time, levels = object$timelist), ]
@@ -538,7 +544,7 @@ getRegressionPredictions <- function(object) {
     # This is not a validation run
     cat("Calculating predictions from regression models...\n")
   }
-  regCoeffAll <- dcast(data = object[["RegressionCoefficients"]], covar ~ variable)
+  regCoeffAll <- dcast(data = object[["RegressionCoefficients"]], covar ~ variable, value.var = "estimate")
   regModel <- unique(model.matrix(object$formula, data = object$df))
   if (object$forceEqualBaseline) {
     regModel <- regModel[, !grepl(paste0("time", levels(object$df$time)[1]), colnames(regModel))]

@@ -276,16 +276,18 @@ sanitizeObject <- function(object) {
     object$valCol <- as.character(object$formula)[2]
 
     # Check formula from user
-    formulaTerms <- colnames(attr(terms.formula(object$formula), "factors"))
-    object$formulaTerms <- formulaTerms
+    object$formulaTerms <- colnames(attr(terms.formula(object$formula), "factors"))
+    object$allFormulaTerms <- unlist(strsplit(c(object$formulaTerms, object$participantColumn), split = "\\:|\\+|\\||\\*"))
+    object$allFormulaTerms <- gsub(" ", "", object$allFormulaTerms)
+    object$allFormulaTerms <- unique(object$allFormulaTerms[object$allFormulaTerms != "1"])
     if (!is.na(object$method)) {
       # The user has specified a method to use
       if (object$method == "LMM") {
-        if (!any(grepl("\\|", formulaTerms))) {
+        if (!any(grepl("\\|", object$formulaTerms))) {
           stop("The model must contain at least one random effect. Sure you wanted linear mixed models?")
         }
       } else if (object$method == "LM") {
-        if (any(grepl("\\|", formulaTerms))) {
+        if (any(grepl("\\|", object$formulaTerms))) {
           stop("The model contains at least one random effect. Sure you not wanted linear mixed models instead?")
         }
       } else if (object$method %in% c("KM", "KMM", "Limm","Lim")) {
@@ -301,7 +303,7 @@ sanitizeObject <- function(object) {
       }
     } else {
       # Find which default method to use
-      if (any(grepl("\\|", formulaTerms))) {
+      if (any(grepl("\\|", object$formulaTerms))) {
         object$method <- "LMM"
         cat("Will use linear mixed models!\n")
       } else {
@@ -351,21 +353,21 @@ sanitizeObject <- function(object) {
     if (object$method %in% c("LMM", "Limm")) {
       if (object$participantColumn != "ID") {
         object$df$ID <- object$df[, get(object$participantColumn)]
-        tmp <- formulaTerms[!grepl("\\|", formulaTerms)]
+        tmp <- object$formulaTerms[!grepl("\\|", object$formulaTerms)]
         object$formula <- formula(paste(
           "value ~",
           paste(tmp, collapse = "+")
         ))
-      } else if (any(grepl("\\|", formulaTerms))) {
-        if (sum(grepl("\\|", formulaTerms)) > 1) {
+      } else if (any(grepl("\\|", object$formulaTerms))) {
+        if (sum(grepl("\\|", object$formulaTerms)) > 1) {
           stop("Multiple random effects, couldn't determine participant-id. Please specify `participantColumn`")
         } else {
-          tmp <- formulaTerms[grepl("\\|", formulaTerms)]
+          tmp <- object$formulaTerms[grepl("\\|", object$formulaTerms)]
           tmp <- gsub(" ", "", tmp)
           tmp <- strsplit(tmp, "\\|")
           object$participantColumn <- tmp[[1]][2]
           object$df$ID <- object$df[, get(object$participantColumn)]
-          tmp <- formulaTerms[!grepl("\\|", formulaTerms)]
+          tmp <- object$formulaTerms[!grepl("\\|", object$formulaTerms)]
           object$formula <- formula(paste(
             "value ~",
             paste(tmp, collapse = "+")
@@ -380,11 +382,11 @@ sanitizeObject <- function(object) {
       if (object$method %in% c("LMM", "Limm")) {
         if (object$useRfast) {
           # Using Rfast
-          rterms <- formulaTerms[!grepl("\\|", formulaTerms)]
+          rterms <- object$formulaTerms[!grepl("\\|", object$formulaTerms)]
           object$newformula <- formula(paste("value ~ ", paste(rterms, collapse = "+")))
         } else {
           # Using lme4
-          rterms <- formulaTerms[grepl("\\|", formulaTerms)]
+          rterms <- object$formulaTerms[grepl("\\|", object$formulaTerms)]
           rterms <- paste0("(", rterms, ")")
           object$newformula <- formula(paste("value ~ modmat+", paste(rterms, collapse = "+")))
         }
@@ -472,9 +474,9 @@ sanitizeObject <- function(object) {
   }
   if (!object$minimizeObject) {
     # Check what terms that is present in formula
-    object$hasGroupTerm <- ifelse(any(formulaTerms == "group"), TRUE, FALSE)
-    object$hasInteractionTerm <- ifelse(any(formulaTerms == "group:time" | formulaTerms == "time:group"), TRUE, FALSE)
-    object$covars <- formulaTerms[!(formulaTerms %in% c("time", "group", "group:time", "time:group", object$keepTerms))]
+    object$hasGroupTerm <- ifelse(any(object$formulaTerms == "group"), TRUE, FALSE)
+    object$hasInteractionTerm <- ifelse(any(object$formulaTerms == "group:time" | object$formulaTerms == "time:group"), TRUE, FALSE)
+    object$covars <- object$formulaTerms[!(object$formulaTerms %in% c("time", "group", "group:time", "time:group", object$keepTerms))]
     if (object$doDebug) {
       cat(".... Group term in formula? ", object$hasGroupTerm, "\n")
       cat(".... Interaction term in formula? ", object$hasInteractionTerm, "\n")

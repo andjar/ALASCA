@@ -96,7 +96,7 @@ runRegression <- function(object) {
     # end.time <- Sys.time()
     # cat("\n\n",end.time - start.time,"\n")
     return(object)
-  } else if (!object$useRfast & object$method == "LM") {
+  } else if (!object$useRfast & object$method %in% c("LM", "Lim")) {
     object$regr.model <- lapply(object$variablelist, function(x) {
       modmat <- model.matrix(object$formula, data = object$df[variable == x])
       modmat <- modmat[, -1] # Remove intercept
@@ -118,7 +118,10 @@ runRegression <- function(object) {
       lapply(object$variablelist, function(x) {
         df <- object$df[variable == x]
         modmat <- model.matrix(object$formula, data = object$df[variable == x])
-        modmat <- modmat[, -1] # Remove intercept
+        if (object$forceEqualBaseline) {
+          # Remove interaction between group and first time point
+          modmat <- modmat[, !grepl(paste0("time", unique(object$df$time)[1]), colnames(modmat))]
+        }
         data.frame(
           estimate = Rfast::lmfit(
             y = df[, value],
@@ -199,14 +202,14 @@ getRegressionCoefficients <- function(object) {
   } else {
     fdf <- data.table::rbindlist(
       lapply(object$regr.model, function(y) {
-        if (object$method == "LM") {
+        if (object$method %in% c("LM", "Lim")) {
           tmp_ef <- coef(y)
           a <- as.data.frame(summary(y)[["coefficients"]][, c(1, 4)])
         } else {
           tmp_ef <- lme4::fixef(y)
           a <- as.data.frame(summary(y)[["coefficients"]][, c(1, 5)])
         }
-        a$covar <- attr(y, "name")
+        a$covar <- as.character(attr(y, "name"))
         a$variable <- rownames(a)
         rownames(a) <- NULL
         a
@@ -239,6 +242,16 @@ removeCovars <- function(object) {
     object$CovarCoefficients <- rbind(object$CovarCoefficients, subset(object$RegressionCoefficients, substr(variable, 1, nchar(i)) == i))
     object$RegressionCoefficients <- subset(object$RegressionCoefficients, substr(variable, 1, nchar(i)) != i)
   }
+  if(object$method %in% c("Limm", "Lim")){
+    object$CovarCoefficients <- rbindlist(lapply(unique(object$CovarCoefficients$variable), function(v){
+      data.frame(
+        variable = v,
+        covar = rownames(object$Limm$loadings),
+        pvalue = NA,
+        estimate = rowSums(object$Limm$loadings*object$CovarCoefficients$estimate[match(colnames(object$Limm$loadings), object$CovarCoefficients$covar)][col(object$Limm$loadings)])
+      )
+    }))
+  }
   return(object)
 }
 
@@ -267,9 +280,9 @@ getEffectMatrix <- function(object) {
   if (!object$minimizeObject) {
     cat("Calculating effect matrix\n")
   }
-  parts <- object$df[variable == object$df$variable[1]]
+  parts <- object$df[variable == object$variablelist[1]]
   # parts <- object$df[!duplicated(cbind(object$df$ID, object$df$time))]
-  Dmatrix <- model.matrix(object$formula, data = object$df[variable == object$df$variable[1]])
+  Dmatrix <- model.matrix(object$formula, data = object$df[variable == object$variablelist[1]])
   # Dmatrix <- Dmatrix[,ncol(Dmatrix):1]
 
   if (object$separateTimeAndGroup) {
