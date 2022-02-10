@@ -59,7 +59,7 @@ doLimmPCA <- function(object){
   object$Limm$df <- object$df
   object$df <- melt(data = cbind(wide_data[, .SD, .SDcols = object$allFormulaTerms], temp_pca_values$x), id.vars = object$allFormulaTerms, variable.factor = FALSE)
   object$variablelist <- unique(object$df$variable)
-  object$stratificationVector <- object$Limm$df[, get(object$stratificationColumn)]
+  object$stratificationVector <- object$df[, get(object$stratificationColumn)]
   return(object)
 }
 
