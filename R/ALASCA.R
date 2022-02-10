@@ -280,9 +280,7 @@ sanitizeObject <- function(object) {
     object$allFormulaTerms <- unlist(strsplit(c(object$formulaTerms, object$participantColumn), split = "\\:|\\+|\\||\\*"))
     object$allFormulaTerms <- gsub(" ", "", object$allFormulaTerms)
     object$allFormulaTerms <- unique(object$allFormulaTerms[object$allFormulaTerms != "1"])
-    if(!is.na(object$plot.loadinggroupcolumn)){
-      object$allFormulaTerms <- c(object$allFormulaTerms, object$plot.loadinggroupcolumn)
-    }
+
     if (!is.na(object$method)) {
       # The user has specified a method to use
       if (object$method == "LMM") {
