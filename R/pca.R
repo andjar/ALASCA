@@ -57,13 +57,14 @@ doLimmPCA <- function(object){
   
   object$Limm$loadings <- temp_pca_values$rotation
   object$Limm$df <- object$df
+  stratification <- setDT(unique(data.frame(
+    str = object$stratificationVector,
+    time = object$df$time, 
+    ID = object$df$ID
+  )))
   object$df <- melt(data = cbind(wide_data[, .SD, .SDcols = object$allFormulaTerms], temp_pca_values$x), id.vars = object$allFormulaTerms, variable.factor = FALSE)
-  if(!object$minimizeObject & !is.na(object$plot.loadinggroupcolumn)){
-    tmp <- unique(object$Limm$df[, .(variable, get(object$plot.loadinggroupcolumn))])
-    object$df <- merge(object$df, tmp)
-  }
   object$variablelist <- unique(object$df$variable)
-  
+  object$stratificationVector <- stratification[object$df, str, on = .(ID, time)]
   return(object)
 }
 

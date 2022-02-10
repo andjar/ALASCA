@@ -443,10 +443,18 @@ getLoadingPlot <- function(object,
     loadings <- subset(loadings, covars %in% c(limUpper, limLower))
   }
   if (!is.na(object$plot.loadinggroupcolumn)) {
-    df_loading_labels <- data.frame(
-      covargroup = object$df[, get(object$plot.loadinggroupcolumn)],
-      covars = object$df[, get("variable")]
-    )
+    if (object$method %in% c("Limm", "Lim")) {
+      df_loading_labels <- data.frame(
+        covargroup = object$Limm$df[, get(object$plot.loadinggroupcolumn)],
+        covars = object$Limm$df[, get("variable")]
+      )
+    } else {
+      df_loading_labels <- data.frame(
+        covargroup = object$df[, get(object$plot.loadinggroupcolumn)],
+        covars = object$df[, get("variable")]
+      )
+    }
+    
     df_loading_labels <- df_loading_labels[!duplicated(df_loading_labels), ]
     loadings <- merge(loadings, df_loading_labels, by = "covars")
   } else {
