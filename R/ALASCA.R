@@ -51,6 +51,7 @@ ALASCA <- function(df,
                    useSumCoding = FALSE,
                    method = NA,
                    useRfast = TRUE,
+                   stratificationColumn = "group",
                    stratificationVector = NA,
                    minimizeObject = FALSE,
                    limitsCI = c(0.025, 0.975),
@@ -150,7 +151,7 @@ ALASCA <- function(df,
       savetodisk = ifelse(validate | validation, savetodisk, FALSE),
       rawFormula = formula,
       optimizeScore = optimizeScore,
-      stratificationVector = stratificationVector,
+      stratificationColumn = stratificationColumn,
       keepValidationObjects = TRUE,
       validateRegression = ifelse(validate, validateRegression, FALSE),
       validationMethod = validationMethod,
@@ -165,6 +166,7 @@ ALASCA <- function(df,
       ALASCA.version = printVer(get = "version"),
       ALASCA.version.date = printVer(get = "date")
     )
+    object$stratificationVector = object$df[, get(object$stratificationColumn)]
     printVer()
   }
   class(object) <- "ALASCA"
@@ -277,7 +279,7 @@ sanitizeObject <- function(object) {
 
     # Check formula from user
     object$formulaTerms <- colnames(attr(terms.formula(object$formula), "factors"))
-    object$allFormulaTerms <- unlist(strsplit(c(object$formulaTerms, object$participantColumn), split = "\\:|\\+|\\||\\*"))
+    object$allFormulaTerms <- unlist(strsplit(c(object$formulaTerms, object$participantColumn, object$stratificationColumn), split = "\\:|\\+|\\||\\*"))
     object$allFormulaTerms <- gsub(" ", "", object$allFormulaTerms)
     object$allFormulaTerms <- unique(object$allFormulaTerms[object$allFormulaTerms != "1"])
 

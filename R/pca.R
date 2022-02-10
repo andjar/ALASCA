@@ -57,14 +57,9 @@ doLimmPCA <- function(object){
   
   object$Limm$loadings <- temp_pca_values$rotation
   object$Limm$df <- object$df
-  stratification <- setDT(unique(data.frame(
-    str = object$stratificationVector,
-    time = object$df$time, 
-    ID = object$df$ID
-  )))
   object$df <- melt(data = cbind(wide_data[, .SD, .SDcols = object$allFormulaTerms], temp_pca_values$x), id.vars = object$allFormulaTerms, variable.factor = FALSE)
   object$variablelist <- unique(object$df$variable)
-  object$stratificationVector <- stratification[object$df, str, on = .(ID, time)]
+  object$stratificationVector <- object$Limm$df[, get(object$stratificationColumn)]
   return(object)
 }
 
