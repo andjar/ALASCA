@@ -510,7 +510,7 @@ getLoadingPlot <- function(object,
   }
   if (!is.na(object$plot.loadinggroupcolumn)) {
     g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
-      ggplot2::labs(color = "Variable group") +
+      ggplot2::labs(color = object$plot.loadinggrouplabel) +
       ggplot2::theme(legend.position = "bottom") # ggplot2::scale_color_brewer(palette = "Dark2")
   }
   if (!any(is.na(highlight))) {
