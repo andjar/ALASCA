@@ -25,6 +25,21 @@ saveBootstrapID <- function(object) {
   }
 }
 
+#' Save ALASCA object
+#'
+#' @inheritParams saveALASCAModel
+#' @inheritParams savetocsv
+#' @return An ALASCA object
+#' @export
+saveJackKnifeID <- function(object) {
+  if (!(object$validate && object$validationMethod %in% c("loo", "jack-knife", "jackknife"))) stop("Please validate with jack-knife")
+  for (i in seq_along(object$validation$temp_object)) {
+    write(paste0(unique(object$validation$temp_object[[i]]$partID), collapse = ";"),
+          file = getFilename(object = object, prefix = "jackknife_", filetype = ".csv", overwrite = TRUE), append = TRUE
+    )
+  }
+}
+
 #' Save ALASCA object to csv
 #'
 #' @param object An ALASCA object

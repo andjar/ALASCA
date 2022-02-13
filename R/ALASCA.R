@@ -78,7 +78,7 @@ ALASCA <- function(df,
                    limm.nComps= 100,
                    lowerLimit = NA,
                    savetodisk = FALSE,
-                   optimizeScore = FALSE,
+                   optimizeScore = TRUE,
                    validateRegression = TRUE,
                    validationMethod = "bootstrap",
                    validationIDs = NA,
@@ -237,8 +237,8 @@ RMASCA <- function(...) {
 #' @return String
 #' @export
 printVer <- function(object = FALSE, get = NA, print = TRUE) {
-  ALASCA.version <- "0.0.0.109"
-  ALASCA.version.date <- "2022-02-01"
+  ALASCA.version <- "0.0.0.110"
+  ALASCA.version.date <- "2022-02-13"
   if (is.list(object)) {
     ALASCA.version <- object$ALASCA.version
     ALASCA.version.date <- object$ALASCA.version.date

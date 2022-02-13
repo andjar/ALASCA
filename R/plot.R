@@ -340,11 +340,27 @@ screeplot.ALASCA <- function(object,
 #' This function  returns the loadings for an ALASCA model
 #'
 #' @param object An ALASCA object
+#' @param n.limit Returns the n highest and lowest loadings by PC (i.e., 2*n.limit loadings per PC)
 #' @return A list with loadings for time (and group), and the exploratory power for each component
 #' @export
-getLoadings <- function(object, limitloading = FALSE) {
-  if (!limitloading || !object$validate) {
-    return(object$ALASCA$loading)
+getLoadings <- function(object, limitloading = FALSE, n.limit = 0) {
+  if ( !limitloading || !object$validate ) {
+    if ( n.limit > 0 ) {
+      dfl <- object$ALASCA$loading
+      dfl$time <- rbind(
+        mod$ALASCA$loading$time[order(loading, decreasing = FALSE), tail(.SD, n.limit), by = PC],
+        mod$ALASCA$loading$time[order(loading, decreasing = TRUE), tail(.SD, n.limit), by = PC]
+      )
+      if (object$separateTimeAndGroup) {
+        dfl$group <- rbind(
+          mod$ALASCA$loading$group[order(loading, decreasing = FALSE), tail(.SD, n.limit), by = PC],
+          mod$ALASCA$loading$group[order(loading, decreasing = TRUE), tail(.SD, n.limit), by = PC]
+        )
+      }
+      return(dfl)
+    } else {
+      return(object$ALASCA$loading)
+    }
   } else {
     dfl <- object$ALASCA$loading
     dfl$time <- na.omit(dfl$time)
@@ -375,8 +391,17 @@ getScores <- function(object) {
 #' @inheritParams getLoadings
 #' @return A list with scores for time (and group), and the exploratory power for each component
 #' @export
-getCovars <- function(object) {
-  return(object$CovarCoefficients)
+getCovars <- function(object, n.limit = 0) {
+  if (n.limit > 0) {
+    return(
+      rbind(
+        object$CovarCoefficients[order(estimate, decreasing = TRUE), head(.SD, n.limit), by = covar],
+        object$CovarCoefficients[order(estimate, decreasing = FALSE), head(.SD, n.limit), by = covar]
+      )
+    )
+  } else {
+    return(object$CovarCoefficients)
+  }
 }
 
 #' Get loading plot
@@ -401,7 +426,7 @@ getLoadingPlot <- function(object,
                            effect = "time",
                            decreasingLoadings = TRUE,
                            tooDense = NA,
-                           tooDense2 = NA,
+                           tooDense2 = 0,
                            highlight = NA,
                            filetype = NA,
                            flipaxes = TRUE,
@@ -433,14 +458,9 @@ getLoadingPlot <- function(object,
   }
   pointSize <- 0.4
   if (effect == "time") {
-    loadings <- subset(getLoadings(object, limitloading = limitloading)$time, PC == component & covars %in% variables)
+    loadings <- subset(getLoadings(object, limitloading = limitloading, n.limit = tooDense2)$time, PC == component & covars %in% variables)
   } else {
-    loadings <- subset(getLoadings(object, limitloading = limitloading)$group, PC == component & covars %in% variables)
-  }
-  if (!is.na(tooDense2) & tooDense2 > 0) {
-    limUpper <- loadings$covars[order(loadings$loading, decreasing = TRUE)[1:tooDense2]]
-    limLower <- loadings$covars[order(loadings$loading, decreasing = FALSE)[1:tooDense2]]
-    loadings <- subset(loadings, covars %in% c(limUpper, limLower))
+    loadings <- subset(getLoadings(object, limitloading = limitloading, n.limit = tooDense2)$group, PC == component & covars %in% variables)
   }
   if (!is.na(object$plot.loadinggroupcolumn)) {
     if (object$method %in% c("Limm", "Lim")) {
@@ -500,7 +520,7 @@ getLoadingPlot <- function(object,
   if (plotzeroline) {
     g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
   }
-  if (!is.na(tooDense2) & tooDense2 > 0) {
+  if (tooDense2 > 0 & !sortbyloadinggroup) {
     g <- g + ggplot2::geom_vline(xintercept = tooDense2 + 0.5, linetype = "dotted")
   }
   if (flipaxes) {
@@ -1139,7 +1159,7 @@ plotCovar <- function(object,
                       covar = NA,
                       xlabel = NA,
                       variables = NA,
-                      limit.variables = NA,
+                      n.limit = 0,
                       return_data = FALSE,
                       filetype = NA,
                       figsize = NA,
@@ -1149,18 +1169,13 @@ plotCovar <- function(object,
   if (any(is.na(myTheme))) {
     myTheme <- object$plot.myTheme
   }
-  df <- getCovars(object)
+  df <- getCovars(object, n.limit = n.limit)
   df$covar <- factor(df$covar, levels = unique(df$covar[order(df$estimate)]))
   if (any(is.na(covar))) {
     covar <- unique(df$variable)
   }
   if (any(is.na(variables))) {
-    if(is.na(limit.variables)){
-      variables <- object$variablelist
-    }else{
-      nLevels <- length(levels(df$covar))
-      variables <- c(levels(df$covar)[1:limit.variables], levels(df$covar)[nLevels:(nLevels-limit.variables+ 1)])
-    }
+    variables <- object$variablelist
   }
   df <- subset(df, covar %in% variables)
   if (any(is.na(xlabel))) {
@@ -1262,7 +1277,8 @@ plotComponentsLoadings <- function(object,
                                    figsize = NA,
                                    figunit = NA,
                                    validationshape = NA,
-                                   myTheme = ggplot2::theme_classic()) {
+                                   myTheme = ggplot2::theme_classic(),
+                                   ...) {
   if (any(!comps %in% getRelevantPCs(object = object, effect = "time"))) {
     warning("Please note: Some components have low explanatory power and HAVE NOT BEEN rotated during rotation. Proceed with care.")
   }
@@ -1370,7 +1386,8 @@ plotComponentsScore <- function(object,
                                 plottext = TRUE,
                                 texthjust = -0.2,
                                 alphavalidate = 0.4,
-                                myTheme = ggplot2::theme_classic()) {
+                                myTheme = ggplot2::theme_classic(),
+                                ...) {
   if (!object$validate) {
     validationshape <- NA
   }
