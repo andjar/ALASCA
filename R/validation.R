@@ -596,7 +596,7 @@ prepareValidationRun <- function(object, runN = NA) {
       } else {
         temp_object <- ALASCA(
           validationObject = object,
-          validationParticipants = object$df[, ID] %in% object$validationIDs[runN, x]
+          validationParticipants = object$df[, ID] %in% object$validationIDs[runN, ]
         )
       }
     } else if (object$method == "LM") {
@@ -617,7 +617,7 @@ prepareValidationRun <- function(object, runN = NA) {
       } else {
         temp_object <- ALASCA(
           validationObject = object,
-          validationParticipants = object$df[, ID] %in% object$validationIDs[runN, x]
+          validationParticipants = object$df[, ID] %in% object$validationIDs[runN, ]
         )
       }
     }
