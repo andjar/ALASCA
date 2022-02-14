@@ -27,6 +27,9 @@ doPCA <- function(object) {
 #' @param object An ALASCA object
 #' @return An ALASCA object
 doLimmPCA <- function(object){
+  write(paste0(object$validation$temp_object[[i]]$originalIDs, collapse = ";"),
+        file = getFilename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
+  )
   wide_data <- dcast(data = object$df, as.formula(paste(paste(object$allFormulaTerms, collapse = " + "), "~ variable")))
   if (object$doDebug) currentTs <- Sys.time()
   temp_pca_values <- prcomp(

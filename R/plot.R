@@ -348,13 +348,13 @@ getLoadings <- function(object, limitloading = FALSE, n.limit = 0) {
     if ( n.limit > 0 ) {
       dfl <- object$ALASCA$loading
       dfl$time <- rbind(
-        mod$ALASCA$loading$time[order(loading, decreasing = FALSE), tail(.SD, n.limit), by = PC],
-        mod$ALASCA$loading$time[order(loading, decreasing = TRUE), tail(.SD, n.limit), by = PC]
+        object$ALASCA$loading$time[order(loading, decreasing = FALSE), tail(.SD, n.limit), by = PC],
+        object$ALASCA$loading$time[order(loading, decreasing = TRUE), tail(.SD, n.limit), by = PC]
       )
       if (object$separateTimeAndGroup) {
         dfl$group <- rbind(
-          mod$ALASCA$loading$group[order(loading, decreasing = FALSE), tail(.SD, n.limit), by = PC],
-          mod$ALASCA$loading$group[order(loading, decreasing = TRUE), tail(.SD, n.limit), by = PC]
+          object$ALASCA$loading$group[order(loading, decreasing = FALSE), tail(.SD, n.limit), by = PC],
+          object$ALASCA$loading$group[order(loading, decreasing = TRUE), tail(.SD, n.limit), by = PC]
         )
       }
       return(dfl)
