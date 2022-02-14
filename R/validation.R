@@ -599,7 +599,7 @@ prepareValidationRun <- function(object, runN = NA) {
           validationParticipants = object$df[, ID] %in% object$validationIDs[runN, ]
         )
       }
-    } else if (object$method == "LM") {
+    } else if (object$method %in% c("LM", "Lim")) {
       object$df$ID <- c(seq_len(nrow(object$df)))
       if (any(is.na(object$validationIDs))) {
         # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
@@ -612,12 +612,12 @@ prepareValidationRun <- function(object, runN = NA) {
 
         temp_object <- ALASCA(
           validationObject = object,
-          validationParticipants = object$df[, ID] %in% unlist(selectedParts)
+          validationParticipants = object$dfRaw[, ID] %in% unlist(selectedParts)
         )
       } else {
         temp_object <- ALASCA(
           validationObject = object,
-          validationParticipants = object$df[, ID] %in% object$validationIDs[runN, ]
+          validationParticipants = object$dfRaw[, ID] %in% object$validationIDs[runN, ]
         )
       }
     }
