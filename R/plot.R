@@ -66,7 +66,7 @@ plotDevelopment <- function(object,
                             only = "both",
                             enlist = FALSE,
                             tooDense = NA,
-                            tooDense2 = NA,
+                            tooDense2 = 0,
                             highlight = NA,
                             xlabel = NA,
                             grouplabel = NA,
@@ -932,7 +932,7 @@ plotPred <- function(object,
                      myTheme = object$plot.myTheme) {
   if ( as.list ){
     if (object$validateRegression) {
-      gg <- lapply(unique(variable), function(x) {
+      gg <- lapply(variables, function(x) {
         g <- ggplot2::ggplot(subset(object$mod.pred, variable == x), ggplot2::aes(
           x = time,
           y = pred,
@@ -958,7 +958,7 @@ plotPred <- function(object,
         g
       })
     } else {
-      gg <- lapply(unique(variable), function(x) {
+      gg <- lapply(variables, function(x) {
         g <- ggplot2::ggplot(subset(object$mod.pred, variable == x), ggplot2::aes(x = time, y = pred, color = group, linetype = group, group = group)) +
           ggplot2::geom_point() +
           ggplot2::geom_line() +
@@ -977,7 +977,7 @@ plotPred <- function(object,
     }
   } else {
     if (object$validateRegression) {
-    g <- ggplot2::ggplot(object$mod.pred[variable %in% variables,], ggplot2::aes(
+    g <- ggplot2::ggplot(object$mod.pred[object$mod.pred$variable %in% variables,], ggplot2::aes(
       x = time,
       y = pred,
       color = group,
@@ -1001,7 +1001,7 @@ plotPred <- function(object,
         ggplot2::scale_fill_manual(values = getPlotPalette(object)) + ggplot2::labs(fill = object$plot.grouplabel)
     }
     } else {
-      g <- ggplot2::ggplot(object$mod.pred[variable %in% variables,], ggplot2::aes(x = time, y = pred, color = group, linetype = group, group = group)) +
+      g <- ggplot2::ggplot(object$mod.pred[object$mod.pred$variable %in% variables,], ggplot2::aes(x = time, y = pred, color = group, linetype = group, group = group)) +
         ggplot2::geom_point() +
         ggplot2::geom_line() +
         ggplot2::scale_color_manual(values = getPlotPalette(object)) +
