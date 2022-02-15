@@ -27,8 +27,11 @@ doPCA <- function(object) {
 #' @param object An ALASCA object
 #' @return An ALASCA object
 doLimmPCA <- function(object){
-  write(paste0(unique(object$originalIDbeforeBootstrap), collapse = ";"),
+  write(paste0(unique(object$originalIDs), collapse = ";"),
         file = getFilename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
+  )
+  write(paste0(unique(object$df$originalIDbeforeBootstrap), collapse = ";"),
+        file = getFilename(object = object, prefix = "bootstrapID2_", filetype = ".csv", overwrite = TRUE), append = TRUE
   )
   wide_data <- dcast(data = object$df, as.formula(paste(paste(object$allFormulaTerms, collapse = " + "), "~ variable")))
   if (object$doDebug) currentTs <- Sys.time()
