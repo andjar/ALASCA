@@ -380,7 +380,13 @@ getLoadings <- function(object, limitloading = FALSE, n.limit = 0) {
 #' @inheritParams getLoadings
 #' @return A list with scores for time (and group), and the exploratory power for each component
 #' @export
-getScores <- function(object) {
+getScores <- function(object, component = 0) {
+  if(any(component > 0)){
+    object$ALASCA$score$time <- object$ALASCA$score$time[ PC %in% component]
+    if (object$separateTimeAndGroup) {
+      object$ALASCA$score$group <- object$ALASCA$score$group[ PC %in% component]
+    }
+  }
   return(object$ALASCA$score)
 }
 
@@ -494,7 +500,7 @@ getLoadingPlot <- function(object,
         g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high)) +
           ggplot2::geom_pointrange(size = pointSize)
       } else {
-        g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high, color = covargroup)) +
+        g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high, color = covargroup, shape = covargroup)) +
           ggplot2::geom_pointrange(size = pointSize)
       }
     }
@@ -507,7 +513,7 @@ getLoadingPlot <- function(object,
         g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading)) +
           ggplot2::geom_point()
       } else {
-        g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, color = covargroup)) +
+        g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, color = covargroup, shape = covargroup)) +
           ggplot2::geom_point()
       }
     }
@@ -530,7 +536,7 @@ getLoadingPlot <- function(object,
   }
   if (!is.na(object$plot.loadinggroupcolumn)) {
     g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
-      ggplot2::labs(color = object$plot.loadinggrouplabel) +
+      ggplot2::labs(color = object$plot.loadinggrouplabel, shape = object$plot.loadinggrouplabel) +
       ggplot2::theme(legend.position = "bottom") # ggplot2::scale_color_brewer(palette = "Dark2")
   }
   if (!any(is.na(highlight))) {
@@ -613,8 +619,9 @@ getScorePlot <- function(object,
   pointSize <- 2
   if (effect == "time") {
     if (object$separateTimeAndGroup) {
-      score <- subset(getScores(object)$time, PC == component)
+      score <- getScores(object, component = component)$time
       if (object$validate) {
+        # Show error bars
         if (grepl("permutation", object$validationMethod)) {
           pvals <- object$pvals
           score <- merge(score, pvals, by.x = "time", by.y = "effect", all.x = TRUE, all.y = FALSE)
@@ -637,11 +644,14 @@ getScorePlot <- function(object,
                 alpha = .1,
                 position = ggplot2::position_dodge(width = dodgewidth), color = NA
               ) +
-                ggplot2::scale_fill_manual(values = getPlotPalette(object)) + ggplot2::labs(fill = object$plot.grouplabel)
+                ggplot2::scale_fill_manual(values = getPlotPalette(object)) +
+                ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
+                ggplot2::labs(fill = object$plot.grouplabel)
             }
           }
         }
       } else {
+        # No validation - no error bars
         if (any(colnames(score) == "model")) {
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = model, linetype = model)) +
             ggplot2::geom_point() +
@@ -653,7 +663,7 @@ getScorePlot <- function(object,
         }
       }
     } else {
-      score <- subset(getScores(object)$time, PC == component)
+      score <- getScores(object, component = component)$time
       if (object$validate) {
         if (grepl("permutation", object$validationMethod)) {
           pvals <- object$pvals
@@ -690,6 +700,7 @@ getScorePlot <- function(object,
     }
     g <- g + myTheme +
       ggplot2::scale_color_manual(values = getPlotPalette(object)) +
+      ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
       ggplot2::theme(legend.position = "bottom") +
       ggplot2::labs(
         x = object$plot.xlabel,
@@ -697,7 +708,8 @@ getScorePlot <- function(object,
         y = .getExpLabel(object, component = component, effect = "time")
       )
   } else {
-    score <- subset(getScores(object)$group, PC == component)
+    # Group effect
+    score <- getScores(object, component = component)$group
     if (object$validate) {
       if (grepl("permutation", object$validationMethod)) {
         pvals <- object$pvals
@@ -722,7 +734,9 @@ getScorePlot <- function(object,
               alpha = .1,
               position = ggplot2::position_dodge(width = dodgewidth), color = NA
             ) +
-              ggplot2::scale_fill_manual(values = getPlotPalette(object)) + ggplot2::labs(fill = object$plot.grouplabel)
+              ggplot2::scale_fill_manual(values = getPlotPalette(object)) +
+              ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
+              ggplot2::labs(fill = object$plot.grouplabel)
           }
         }
       }
@@ -739,6 +753,7 @@ getScorePlot <- function(object,
     }
     g <- g + myTheme +
       ggplot2::scale_color_manual(values = getPlotPalette(object)) +
+      ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
       ggplot2::theme(legend.position = "bottom") +
       ggplot2::labs(
         x = object$plot.xlabel,
@@ -1567,6 +1582,20 @@ getPlotPalette <- function(object) {
     plotColors <- object$plot.palette
   }
   return(plotColors)
+}
+
+#' Get linetypes
+#'
+#' This function returns a list with linetypes for plotting
+#'
+#' @param object An ALASCA object
+#' @return A list with linetypes
+#'
+#' @export
+getPlotLinetypes <- function(object) {
+  plotLinestypes <- scales::linetype_pal()(length(object$grouplist))
+  names(plotLinestypes) <- object$grouplist
+  return(plotLinestypes)
 }
 
 #' Get plotting features

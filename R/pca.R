@@ -27,13 +27,10 @@ doPCA <- function(object) {
 #' @param object An ALASCA object
 #' @return An ALASCA object
 doLimmPCA <- function(object){
-  write(paste0(unique(object$originalIDs), collapse = ";"),
-        file = getFilename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
-  )
-  write(paste0(unique(object$df$originalIDbeforeBootstrap), collapse = ";"),
-        file = getFilename(object = object, prefix = "bootstrapID2_", filetype = ".csv", overwrite = TRUE), append = TRUE
-  )
-  wide_data <- dcast(data = object$df, as.formula(paste(paste(object$allFormulaTerms, collapse = " + "), "~ variable")))
+  if (sum(object$df[, duplicated(.SD), .SDcols = object$allFormulaTerms]) > 0) stop("Duplicated cases in df!")
+  wide_data <- dcast(data = object$df,
+                     as.formula(paste(paste(object$allFormulaTerms, collapse = " + "), "~ variable"))
+                     )
   if (object$doDebug) currentTs <- Sys.time()
   temp_pca_values <- prcomp(
     wide_data[, (length(object$allFormulaTerms)+1):ncol(wide_data)],
@@ -46,8 +43,6 @@ doLimmPCA <- function(object){
     temp_pca_values$rotation <- temp_pca_values$rotation[,-c((object$limm.nComps+1):ncol(temp_pca_values$rotation))]
     temp_pca_values$x <- temp_pca_values$x[, -c((object$limm.nComps+1):ncol(temp_pca_values$x))]
   }
-  
-  object$Limm$pca <- temp_pca_values
   
   # Check if the pca model needs reflection to better fit the main model
   if (object$doDebug) currentTs <- Sys.time()
@@ -62,6 +57,7 @@ doLimmPCA <- function(object){
   if (object$doDebug) cat("* Remove surplus PCs:", Sys.time() - currentTs, "s\n")
   
   object$Limm$loadings <- temp_pca_values$rotation
+  object$Limm$pca <- temp_pca_values
   object$Limm$df <- object$df
   object$df <- melt(data = cbind(wide_data[, .SD, .SDcols = object$allFormulaTerms], temp_pca_values$x), id.vars = object$allFormulaTerms, variable.factor = FALSE)
   object$variablelist <- unique(object$df$variable)
