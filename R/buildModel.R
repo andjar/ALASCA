@@ -244,11 +244,12 @@ removeCovars <- function(object) {
   }
   if(object$method %in% c("Limm", "Lim")){
     object$CovarCoefficients <- rbindlist(lapply(unique(object$CovarCoefficients$variable), function(v){
+      ref <- object$CovarCoefficients[variable == v]
       data.frame(
         variable = v,
         covar = rownames(object$Limm$loadings),
         pvalue = NA,
-        estimate = rowSums(object$Limm$loadings*object$CovarCoefficients$estimate[match(colnames(object$Limm$loadings), object$CovarCoefficients$covar)][col(object$Limm$loadings)])
+        estimate = rowSums(object$Limm$loadings*ref$estimate[match(colnames(object$Limm$loadings), ref$covar)][col(object$Limm$loadings)])
       )
     }))
   }

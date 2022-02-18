@@ -549,6 +549,7 @@ getRegressionPredictions <- function(object) {
   if (object$forceEqualBaseline) {
     regModel <- regModel[, !grepl(paste0("time", levels(object$df$time)[1]), colnames(regModel))]
   }
+  regModel <- regModel[, grepl(paste0(c("time", "group", object$keepTerms), collapse = "|"), colnames(regModel))]
   newdata <- data.table::rbindlist(
     lapply(object$variablelist, function(x) {
       regCoeff <- as.matrix(regCoeffAll[regCoeffAll$covar == x, -1])
@@ -560,7 +561,12 @@ getRegressionPredictions <- function(object) {
       )
     })
   )
-  object$mod.pred <- newdata[, .(pred = mean(pred)), by = c("variable", "time", "group")]
+  if(any(object$keepTerms != "")){
+    object$mod.pred <- newdata[, .(pred = mean(pred)), by = c("variable", "time", "group", object$keepTerms)]
+  }else{
+    object$mod.pred <- newdata[, .(pred = mean(pred)), by = c("variable", "time", "group")]
+  }
+  
 
   if (!object$minimizeObject) {
     # This is not a validation run
