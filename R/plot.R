@@ -401,8 +401,8 @@ getCovars <- function(object, n.limit = 0) {
   if (n.limit > 0) {
     return(
       rbind(
-        object$CovarCoefficients[order(estimate, decreasing = TRUE), head(.SD, n.limit), by = covar],
-        object$CovarCoefficients[order(estimate, decreasing = FALSE), head(.SD, n.limit), by = covar]
+        object$CovarCoefficients[order(estimate, decreasing = TRUE), head(.SD, n.limit), by = variable],
+        object$CovarCoefficients[order(estimate, decreasing = FALSE), head(.SD, n.limit), by = variable]
       )
     )
   } else {
@@ -645,7 +645,6 @@ getScorePlot <- function(object,
                 position = ggplot2::position_dodge(width = dodgewidth), color = NA
               ) +
                 ggplot2::scale_fill_manual(values = getPlotPalette(object)) +
-                ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
                 ggplot2::labs(fill = object$plot.grouplabel)
             }
           }
@@ -735,7 +734,6 @@ getScorePlot <- function(object,
               position = ggplot2::position_dodge(width = dodgewidth), color = NA
             ) +
               ggplot2::scale_fill_manual(values = getPlotPalette(object)) +
-              ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
               ggplot2::labs(fill = object$plot.grouplabel)
           }
         }
@@ -1221,7 +1219,7 @@ plotCovar <- function(object,
           ggplot2::geom_vline(xintercept = 0)
       }
       g <- g +
-        ggplot2::facet_wrap(~xlabel) + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
+        ggplot2::facet_wrap(~xlabel, scales = "free_y") + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
         myTheme + ggplot2::theme(legend.position = "bottom", legend.box = "vertical", legend.margin = ggplot2::margin())
 
       if (object$save) {
@@ -1234,10 +1232,17 @@ plotCovar <- function(object,
     if (return_data) {
       return(df)
     } else {
-      g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, xmin = low, xmax = high)) +
-        ggplot2::geom_pointrange() +
+      if (object$validate) {
+        g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, xmin = low, xmax = high)) +
+          ggplot2::geom_pointrange()
+      } else {
+        g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar)) +
+          ggplot2::geom_point()
+      }
+      
+      g <- g + 
         ggplot2::geom_vline(xintercept = 0) +
-        ggplot2::facet_wrap(~xlabel) +
+        ggplot2::facet_wrap(~xlabel, scales = "free_y") +
         ggplot2::labs(x = "Coefficient", y = "") +
         myTheme
 
