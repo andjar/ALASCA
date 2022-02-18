@@ -562,28 +562,27 @@ flipIt <- function(object, component = NA, effect = "both") {
   if (any(is.na(component))) {
     component <- unique(object$ALASCA$score$time$PC)
   }
-  for (i in component) {
+
+  if (effect %in% c("both", "time")) {
+    object$ALASCA$score$time[PC %in% component, score := -score]
+    object$ALASCA$loading$time[PC %in% component, loading := -loading]
+  }
+  if (object$separateTimeAndGroup & effect %in% c("both", "group")) {
+    object$ALASCA$score$group[PC %in% component, score := -score]
+    object$ALASCA$loading$group[PC %in% component, loading := -loading]
+  }
+  if (object$validate) {
     if (effect %in% c("both", "time")) {
-      object$ALASCA$score$time$score[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$score[object$ALASCA$score$time$PC == i]
-      object$ALASCA$loading$time$loading[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$loading[object$ALASCA$loading$time$PC == i]
+      object$ALASCA$score$time[PC %in% component, low := -low]
+      object$ALASCA$score$time[PC %in% component, high := -high]
+      object$ALASCA$loading$time[PC %in% component, low := -low]
+      object$ALASCA$loading$time[PC %in% component, high := -high]
     }
     if (object$separateTimeAndGroup & effect %in% c("both", "group")) {
-      object$ALASCA$score$group$score[object$ALASCA$score$group$PC == i] <- -object$ALASCA$score$group$score[object$ALASCA$score$group$PC == i]
-      object$ALASCA$loading$group$loading[object$ALASCA$loading$group$PC == i] <- -object$ALASCA$loading$group$loading[object$ALASCA$loading$group$PC == i]
-    }
-    if (object$validate) {
-      if (effect %in% c("both", "time")) {
-        object$ALASCA$score$time$high[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$high[object$ALASCA$score$time$PC == i]
-        object$ALASCA$loading$time$high[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$high[object$ALASCA$loading$time$PC == i]
-        object$ALASCA$score$time$low[object$ALASCA$score$time$PC == i] <- -object$ALASCA$score$time$low[object$ALASCA$score$time$PC == i]
-        object$ALASCA$loading$time$low[object$ALASCA$loading$time$PC == i] <- -object$ALASCA$loading$time$low[object$ALASCA$loading$time$PC == i]
-      }
-      if (object$separateTimeAndGroup & effect %in% c("both", "group")) {
-        object$ALASCA$score$group$high[object$ALASCA$score$group$PC == i] <- -object$ALASCA$score$group$high[object$ALASCA$score$group$PC == i]
-        object$ALASCA$loading$group$high[object$ALASCA$loading$group$PC == i] <- -object$ALASCA$loading$group$high[object$ALASCA$loading$group$PC == i]
-        object$ALASCA$score$group$low[object$ALASCA$score$group$PC == i] <- -object$ALASCA$score$group$low[object$ALASCA$score$group$PC == i]
-        object$ALASCA$loading$group$low[object$ALASCA$loading$group$PC == i] <- -object$ALASCA$loading$group$low[object$ALASCA$loading$group$PC == i]
-      }
+      object$ALASCA$score$group[PC %in% component, low := -low]
+      object$ALASCA$score$group[PC %in% component, high := -high]
+      object$ALASCA$loading$group[PC %in% component, low := -low]
+      object$ALASCA$loading$group[PC %in% component, high := -high]
     }
   }
 
