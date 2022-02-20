@@ -27,7 +27,6 @@ doPCA <- function(object) {
 #' @param object An ALASCA object
 #' @return An ALASCA object
 doLimmPCA <- function(object){
-  if (sum(object$df[, duplicated(.SD), .SDcols = c(object$allFormulaTerms, "variable")]) > 0) stop("Duplicated cases in df!")
   wide_data <- dcast(data = object$df,
                      as.formula(paste(paste(object$allFormulaTerms, collapse = " + "), "~ variable"))
                      )
