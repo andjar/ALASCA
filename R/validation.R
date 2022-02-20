@@ -664,6 +664,9 @@ prepareValidationRun <- function(object, runN = NA) {
             )
           )
         }
+        write(paste0(bootobject$originalIDs, collapse = ";"),
+              file = getFilename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
+        )
       } else {
         newIDs <- seq(1, length(object$validationIDs[runN, ]))
         bootdf <- rbind(
