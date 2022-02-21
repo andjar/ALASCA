@@ -218,15 +218,14 @@ getRegressionCoefficients <- function(object) {
     fdf$variable <- gsub("modmat", "", fdf$variable, fixed = TRUE)
     colnames(fdf) <- c("estimate", "pvalue", "covar", "variable")
   }
-
+  object$RegressionCoefficients <- fdf
+  
   if (!is.na(object$pAdjustMethod)) {
     cat("Adjusting p values...\n")
-    object$RegressionCoefficients$pvalue_adj <- NA
-    for (i in unique(object$RegressionCoefficients$covar)) {
-      object$RegressionCoefficients$pvalue_adj[object$RegressionCoefficients$covar == i, ] <- p.adjust(object$RegressionCoefficients$pvalue[object$RegressionCoefficients$covar == i, ], method = object$pAdjustMethod)
-    }
+    object$RegressionCoefficients[, pvalue_unadj := pvalue]
+    object$RegressionCoefficients[, pvalue := p.adjust(pvalue, method = object$pAdjustMethod), by = variable]
   }
-  object$RegressionCoefficients <- fdf
+  
   return(object)
 }
 
