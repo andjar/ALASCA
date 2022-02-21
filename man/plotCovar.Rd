@@ -8,12 +8,14 @@ plotCovar(
   object,
   covar = NA,
   xlabel = NA,
+  variables = NA,
+  n.limit = 0,
   return_data = FALSE,
   filetype = NA,
   figsize = NA,
   figunit = NA,
-  myTheme = ggplot2::theme_bw(),
-  pvalue = "shape"
+  myTheme = NA,
+  pvalue = "star"
 )
 }
 \arguments{
@@ -31,7 +33,7 @@ plotCovar(
 
 \item{figunit}{= "mm",}
 
-\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
+\item{myTheme}{A ggplot2 theme}
 }
 \value{
 A ggplot2 objects\.

@@ -6,19 +6,19 @@
 \usage{
 plotPred(
   object,
-  variable = NA,
+  variables = object$variablelist,
   filetype = NA,
   figsize = NA,
   figunit = NA,
   dodgewidth = 0.35,
   plotribbon = TRUE,
-  myTheme = NA
+  as.list = FALSE,
+  plot.ylabel = "value",
+  myTheme = object$plot.myTheme
 )
 }
 \arguments{
 \item{object}{An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.}
-
-\item{variable}{List of variable names to print. If \code{NA}, return all (default).}
 
 \item{filetype}{Which filetype you want to save the figure to}
 
@@ -27,6 +27,8 @@ plotPred(
 \item{figunit}{= "mm",}
 
 \item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
+
+\item{variable}{List of variable names to print. If \code{NA}, return all (default).}
 }
 \value{
 A list with ggplot2 objects.
@@ -39,7 +41,8 @@ load("PE.Rdata")
 plotPred(model, variable = "IL-6")[[1]] + ggplot2::theme_bw()
 do.call(
   ggpubr::ggarrange,
-  c(plotPred(model, variable = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotaxin")), 
-    common.legend = TRUE, legend = "bottom")
+  c(plotPred(model, variable = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotaxin")),
+    common.legend = TRUE, legend = "bottom"
+  )
 )
 }

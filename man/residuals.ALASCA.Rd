@@ -20,5 +20,4 @@ This function returns the residual of the underlying linear mixed models
 \examples{
 load("PE.Rdata")
 residuals(model, variable = c("IL-6", "PlGF"))
-
 }

@@ -16,8 +16,10 @@ ALASCA(
   useSumCoding = FALSE,
   method = NA,
   useRfast = TRUE,
+  stratificationColumn = "group",
   stratificationVector = NA,
   minimizeObject = FALSE,
+  limitsCI = c(0.025, 0.975),
   plot.xlabel = "Time",
   plot.grouplabel = "Group",
   plot.figsize = c(180, 120, 300),
@@ -25,22 +27,28 @@ ALASCA(
   plot.filetype = "png",
   plot.palette = NA,
   plot.loadinggroupcolumn = NA,
-  exploratorylimit = 0.05,
+  plot.loadinggrouplabel = "Variable group",
+  plot.palette.end = 0.8,
+  explanatorylimit = 0.05,
   doDebug = FALSE,
   nValFold = 7,
   nValRuns = 1000,
+  validationQuantileMethod = 2,
   plot.myTheme = ggplot2::theme_classic(),
   keepTerms = c(""),
   save = FALSE,
   validation = FALSE,
   filename = NA,
   filepath = NA,
+  limm.nComps = 100,
   lowerLimit = NA,
   savetodisk = FALSE,
   optimizeScore = TRUE,
   validateRegression = TRUE,
   validationMethod = "bootstrap",
+  validationIDs = NA,
   validationObject = NA,
+  validationAssignNewID = TRUE,
   validationParticipants = NA
 )
 }
@@ -116,6 +124,5 @@ This function builds your ALASCA model. It needs a data frame containing at leas
 }
 \examples{
 load("PE.Rdata")
-model <- ALASCA(df = df, formula = value~time*group + (1|ID))
-
+model <- ALASCA(df = df, formula = value ~ time * group + (1 | ID))
 }

@@ -4,7 +4,7 @@
 \alias{getScores}
 \title{Get scores}
 \usage{
-getScores(object)
+getScores(object, component = 0)
 }
 \arguments{
 \item{object}{An ALASCA object}

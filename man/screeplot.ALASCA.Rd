@@ -7,10 +7,11 @@
 \method{screeplot}{ALASCA}(
   object,
   effect = "both",
-  filetype = NA,
-  figsize = NA,
-  figunit = NA,
-  myTheme = NA
+  nComps = NA,
+  filetype = object$plot.filetype,
+  figsize = object$plot.figsize,
+  figunit = object$plot.figunit,
+  myTheme = object$plot.myTheme
 )
 }
 \arguments{
@@ -33,5 +34,4 @@ This function returns a screeplot for an ALASCA model showing what proportion of
 \examples{
 load("PE.Rdata")
 screeplot(model)
-
 }

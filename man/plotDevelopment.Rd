@@ -12,6 +12,7 @@ plotDevelopment(
   only = "both",
   enlist = FALSE,
   tooDense = NA,
+  tooDense2 = 0,
   highlight = NA,
   xlabel = NA,
   grouplabel = NA,
@@ -19,13 +20,14 @@ plotDevelopment(
   plotzeroline = TRUE,
   filetype = NA,
   figsize = NA,
+  variables = NA,
   dodgewidth = 0.35,
   figunit = NA,
   plotribbon = TRUE,
   loadinggroup = NA,
   limitloading = FALSE,
   sortbyloadinggroup = TRUE,
-  myTheme = NA
+  myTheme = object$plot.myTheme
 )
 }
 \arguments{
@@ -76,5 +78,4 @@ plot(model, component = "PC2")
 plot(model, only = "score", effect = "time")
 plot(model, tooDense = 5)
 plot(model, highlight = c("PlGF", "IL-1b", "IL-6"))
-
 }

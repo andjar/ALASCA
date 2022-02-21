@@ -23,5 +23,4 @@ This function performs leave-one-out robustness testing of your ALASCA model. If
 load("PE.Rdata")
 model$nValRuns <- 10
 model.val <- validate(model, participantColumn = "ID")
-
 }

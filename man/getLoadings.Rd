@@ -4,10 +4,12 @@
 \alias{getLoadings}
 \title{Get loadings}
 \usage{
-getLoadings(object, limitloading = FALSE)
+getLoadings(object, limitloading = FALSE, n.limit = 0)
 }
 \arguments{
 \item{object}{An ALASCA object}
+
+\item{n.limit}{Returns the n highest and lowest loadings by PC (i.e., 2*n.limit loadings per PC)}
 }
 \value{
 A list with loadings for time (and group), and the exploratory power for each component

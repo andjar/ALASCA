@@ -11,7 +11,7 @@ plotProjection(
   filetype = NA,
   figsize = NA,
   figunit = NA,
-  myTheme = ggplot2::theme_bw()
+  myTheme = NA
 )
 }
 \arguments{
@@ -23,9 +23,9 @@ plotProjection(
 
 \item{filetype}{Which filetype you want to save the figure to}
 
-\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
+\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(120, 80, 300)})}
 
-\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
+\item{myTheme}{A ggplot2 theme to use}
 }
 \value{
 A ggplot2 objects.

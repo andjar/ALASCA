@@ -6,22 +6,23 @@
 \usage{
 plotParts(
   object,
-  variable = NA,
+  variables = NA,
   participantColumn = FALSE,
   xlabel = NA,
   grouplabel = NA,
   valueColumn = FALSE,
   timeColumn = "time",
   addSmooth = "loess",
-  filetype = "png",
-  figsize = c(12, 8, 300),
-  myTheme = NA
+  filetype = object$plot.filetype,
+  figunit = object$plot.figunit,
+  plot.ylabel = "value",
+  as.list = FALSE,
+  figsize = object$plot.figsize,
+  myTheme = object$plot.myTheme
 )
 }
 \arguments{
 \item{object}{An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.}
-
-\item{variable}{List of variable names to print. If \code{NA}, return all (default).}
 
 \item{participantColumn}{Specify the column with participant identifier. Not necessary if you have already provided it to the ALASCA object}
 
@@ -35,6 +36,8 @@ plotParts(
 
 \item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 
+\item{variable}{List of variable names to print. If \code{NA}, return all (default).}
+
 \item{addSmooth.}{Specify which geom_smooth model you want to apply, eg. \code{lm}, \code{glm}, \code{gam}, \code{loess} (default). Set to \code{NA} to remove.}
 }
 \value{
@@ -47,11 +50,13 @@ This function returns the scores for an ALASCA model
 load("PE.Rdata")
 plotParts(df, variable = "IL-6", participantColumn = "ID", valueColumn = "value")
 do.call(
-    ggpubr::ggarrange,
-    c(plotParts(df, participantColumn = "ID", timeColumn = "GA", valueColumn = "value", addSmooth = NA, 
-    variable = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotaxin")), 
-      common.legend = TRUE, legend = "bottom")
+  ggpubr::ggarrange,
+  c(plotParts(df,
+    participantColumn = "ID", timeColumn = "GA", valueColumn = "value", addSmooth = NA,
+    variable = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotaxin")
+  ),
+  common.legend = TRUE, legend = "bottom"
   )
+)
 plotParts(model, variable = "IL-6", participantColumn = "ID", timeColumn = "GA")[[1]] + ggplot2::labs(x = "GA")
-
 }

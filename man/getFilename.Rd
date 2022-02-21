@@ -10,7 +10,8 @@ getFilename(
   filepath = NA,
   prefix = "",
   suffix = "",
-  filetype = ""
+  filetype = "",
+  overwrite = FALSE
 )
 }
 \arguments{

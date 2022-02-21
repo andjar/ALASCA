@@ -237,8 +237,8 @@ RMASCA <- function(...) {
 #' @return String
 #' @export
 printVer <- function(object = FALSE, get = NA, print = TRUE) {
-  ALASCA.version <- "0.0.0.110"
-  ALASCA.version.date <- "2022-02-13"
+  ALASCA.version <- "0.0.0.111"
+  ALASCA.version.date <- "2022-02-22"
   if (is.list(object)) {
     ALASCA.version <- object$ALASCA.version
     ALASCA.version.date <- object$ALASCA.version.date
@@ -612,8 +612,12 @@ summary.ALASCA <- function(object, file = "", sessioninfo = FALSE) {
   }
   cat("\nRegression model: ", as.character(object$rawFormula)[2], as.character(object$rawFormula)[1], as.character(object$rawFormula)[3], "\n", file = file, append = TRUE)
   cat("Separating time and group effects: ", object$separateTimeAndGroup, "\n", file = file, append = TRUE)
-  cat("Force equal baseline: ", object$forceEqualBaseline, "\n\n", file = file, append = TRUE)
-  cat("\nPCs explaining at least 5% of variation:\n   Time: ",
+  cat("Force equal baseline: ", object$forceEqualBaseline, "\n", file = file, append = TRUE)
+  cat("Using Rfast: ", object$useRfast, "\n", file = file, append = TRUE)
+  if (!object$useRfast) {
+    cat("Adjustment of p-values: ", object$pAdjustMethod, "\n", file = file, append = TRUE)
+  }
+  cat("\n\nPCs explaining at least 5% of variation:\n   Time: ",
     paste(getRelevantPCs(object = object, effect = "time"), collapse = ", "), " (",
     paste(round(100 * object$pca$score$explained$time[getRelevantPCs(object = object, effect = "time")], 2), collapse = "%, "), "%)",
     ifelse(object$separateTimeAndGroup, paste0(
