@@ -1178,7 +1178,7 @@ plotCovar <- function(object,
                       figsize = NA,
                       figunit = NA,
                       myTheme = NA,
-                      pvalue = "shape") {
+                      pvalue = "star") {
   if (any(is.na(myTheme))) {
     myTheme <- object$plot.myTheme
   }
@@ -1197,47 +1197,77 @@ plotCovar <- function(object,
   for (i in seq_len(length(covar))) {
     df$xlabel[df$variable == covar[i]] <- xlabel[i]
   }
+  if (!is.na(object$plot.loadinggroupcolumn)) {
+    df_covar_labels <- data.frame(
+      covargroup = object$df[, get(object$plot.loadinggroupcolumn)],
+      covar = object$df[, get("variable")]
+    )
+    df_covar_labels <- df_covar_labels[!duplicated(df_covar_labels), ]
+    df <- merge(df, df_covar_labels, by = "covar")
+  } else {
+    df$covargroup <- NA
+  }
   if (!object$useRfast) {
+    # lmer and lm provide p values
     df$pvalue_label <- ifelse(df$pvalue >= 0.05, "Not significant", ifelse(df$pvalue < 0.001, "< 0.001", ifelse(df$pvalue < 0.01, "< 0.01", "< 0.05")))
     df$pvalue_sign <- ifelse(df$pvalue >= 0.05, "", ifelse(df$pvalue < 0.001, "***", ifelse(df$pvalue < 0.01, "**", "*")))
     if (return_data) {
       return(df)
     } else {
       if (pvalue == "shape") {
+        object$plot.loadinggroupcolumn <- NA # Cannot use shape for both loadinggroup and significance
         g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, shape = pvalue_label)) +
-          ggplot2::geom_point() +
-          ggplot2::geom_vline(xintercept = 0) +
           ggplot2::scale_shape_manual(values = c("Not significant" = 3, "< 0.05" = 15, "< 0.01" = 16, "< 0.001" = 17, "Baseline" = 5))
       } else if (pvalue == "star" | pvalue == "asterisk" | pvalue == "stars") {
-        g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, label = pvalue_sign)) +
-          ggplot2::geom_point() +
-          ggplot2::geom_vline(xintercept = 0) +
-          ggplot2::geom_text(hjust = 0.5, vjust = 0)
+        if (is.na(object$plot.loadinggroupcolumn)) {
+          g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, label = pvalue_sign)) +
+            ggplot2::geom_text(hjust = 0.5, vjust = 0, show.legend = FALSE)
+        } else {
+          g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, label = pvalue_sign, color = covargroup, shape = covargroup)) +
+            ggplot2::geom_text(hjust = 0.5, vjust = 0, show.legend = FALSE)
+        }
       } else {
-        g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar)) +
-          ggplot2::geom_point() +
-          ggplot2::geom_vline(xintercept = 0)
+        g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar))
       }
       g <- g +
+        ggplot2::geom_point() +
+        ggplot2::geom_vline(xintercept = 0) +
         ggplot2::facet_wrap(~xlabel, scales = "free_y") + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
         myTheme + ggplot2::theme(legend.position = "bottom", legend.box = "vertical", legend.margin = ggplot2::margin())
 
+      if (!is.na(object$plot.loadinggroupcolumn)) {
+        g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
+          ggplot2::labs(color = object$plot.loadinggrouplabel, shape = object$plot.loadinggrouplabel) +
+          ggplot2::theme(legend.position = "bottom") # ggplot2::scale_color_brewer(palette = "Dark2")
+      }
+      
       if (object$save) {
         saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
       }
       return(g)
     }
   } else {
+    # Rfast does not provide p values, use bootstrap intervals
     df$covar <- factor(df$covar, levels = unique(df$covar[order(df$estimate)]))
     if (return_data) {
       return(df)
     } else {
       if (object$validate) {
-        g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, xmin = low, xmax = high)) +
-          ggplot2::geom_pointrange()
+        if (is.na(object$plot.loadinggroupcolumn)) {
+          g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, xmin = low, xmax = high)) +
+            ggplot2::geom_pointrange()
+        } else {
+          g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, xmin = low, xmax = high, color = covargroup, shape = covargroup)) +
+            ggplot2::geom_pointrange()
+        }
       } else {
-        g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar)) +
-          ggplot2::geom_point()
+        if (is.na(object$plot.loadinggroupcolumn)) {
+          g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar)) +
+            ggplot2::geom_point()
+        } else {
+          g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, color = covargroup, shape = covargroup)) +
+            ggplot2::geom_point()
+        }
       }
       
       g <- g + 
@@ -1245,6 +1275,12 @@ plotCovar <- function(object,
         ggplot2::facet_wrap(~xlabel, scales = "free_y") +
         ggplot2::labs(x = "Coefficient", y = "") +
         myTheme
+      
+      if (!is.na(object$plot.loadinggroupcolumn)) {
+        g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
+          ggplot2::labs(color = object$plot.loadinggrouplabel, shape = object$plot.loadinggrouplabel) +
+          ggplot2::theme(legend.position = "bottom") # ggplot2::scale_color_brewer(palette = "Dark2")
+      }
 
       if (object$save) {
         saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
