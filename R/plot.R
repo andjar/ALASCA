@@ -627,9 +627,9 @@ getScorePlot <- function(object,
           score <- merge(score, pvals, by.x = "time", by.y = "effect", all.x = TRUE, all.y = FALSE)
           score$p.value.str <- ifelse(score$p.value > .05, "", ifelse(score$p.value < .001, "***", ifelse(score$p.value < .01, "**", "*")))
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, label = p.value.str)) +
-            ggplot2::geom_point(position = ggplot2::position_dodge(width = 0.5)) +
-            ggplot2::geom_text(vjust = 0, hjust = 0.5, position = ggplot2::position_dodge(width = 0.5), show.legend = FALSE) +
-            ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.5))
+            ggplot2::geom_point(position = ggplot2::position_dodge(width = dodgewidth)) +
+            ggplot2::geom_text(vjust = 0, hjust = 0.5, position = ggplot2::position_dodge(width = dodgewidth), show.legend = FALSE) +
+            ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
         } else {
           if (any(colnames(score) == "model")) {
             g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = model, linetype = model, shape = model, ymin = low, ymax = high)) +
@@ -637,9 +637,9 @@ getScorePlot <- function(object,
               ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
           } else {
             g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
-              ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
-              ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
-            if (plotribbon) {
+              ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth))
+            if ("group" %in% object$formulaTerms) g <- g + ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
+            if (plotribbon && "group" %in% object$formulaTerms) {
               g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = group),
                 alpha = .1,
                 position = ggplot2::position_dodge(width = dodgewidth), color = NA
@@ -657,8 +657,8 @@ getScorePlot <- function(object,
             ggplot2::geom_line()
         } else {
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group)) +
-            ggplot2::geom_point() +
-            ggplot2::geom_line()
+            ggplot2::geom_point()
+          if ("group" %in% object$formulaTerms) g <- g + ggplot2::geom_line()
         }
       }
     } else {
@@ -675,9 +675,9 @@ getScorePlot <- function(object,
             ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.5))
         } else {
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group, ymin = low, ymax = high)) +
-            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
-            ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
-          if (plotribbon) {
+            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth))
+            if ("group" %in% object$formulaTerms) g <- g + ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
+          if (plotribbon && "group" %in% object$formulaTerms) {
             g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = group),
               alpha = .1,
               position = ggplot2::position_dodge(width = dodgewidth), color = NA
@@ -692,15 +692,15 @@ getScorePlot <- function(object,
             ggplot2::geom_line()
         } else {
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group)) +
-            ggplot2::geom_point() +
-            ggplot2::geom_line()
+            ggplot2::geom_point()
+          if ("group" %in% object$formulaTerms) g <- g + ggplot2::geom_line()
         }
       }
     }
     g <- g + myTheme +
-      ggplot2::scale_color_manual(values = getPlotPalette(object)) +
-      ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
-      ggplot2::theme(legend.position = "bottom") +
+      ggplot2::scale_color_manual(values = getPlotPalette(object))
+    if ("group" %in% object$formulaTerms) g <- g + ggplot2::scale_linetype_manual(values = getPlotLinetypes(object))
+    g <- g + ggplot2::theme(legend.position = "bottom") +
       ggplot2::labs(
         x = object$plot.xlabel,
         group = object$plot.grouplabel, color = object$plot.grouplabel, linetype = object$plot.grouplabel,
@@ -1198,10 +1198,18 @@ plotCovar <- function(object,
     df$xlabel[df$variable == covar[i]] <- xlabel[i]
   }
   if (!is.na(object$plot.loadinggroupcolumn)) {
-    df_covar_labels <- data.frame(
-      covargroup = object$df[, get(object$plot.loadinggroupcolumn)],
-      covar = object$df[, get("variable")]
-    )
+    if (object$method %in% c("Limm", "Lim")) {
+      df_covar_labels <- data.frame(
+        covargroup = object$Limm$df[, get(object$plot.loadinggroupcolumn)],
+        covar = object$Limm$df[, get("variable")]
+      )
+    } else {
+      df_covar_labels <- data.frame(
+        covargroup = object$df[, get(object$plot.loadinggroupcolumn)],
+        covar = object$df[, get("variable")]
+      )
+    }
+    
     df_covar_labels <- df_covar_labels[!duplicated(df_covar_labels), ]
     df <- merge(df, df_covar_labels, by = "covar")
   } else {
