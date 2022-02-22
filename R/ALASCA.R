@@ -281,7 +281,7 @@ sanitizeObject <- function(object) {
 
     # Check formula from user
     object$formulaTerms <- colnames(attr(terms.formula(object$formula), "factors"))
-    object$allFormulaTerms <- unlist(strsplit(c(object$formulaTerms, object$participantColumn, object$stratificationColumn), split = "\\:|\\+|\\||\\*"))
+    object$allFormulaTerms <- unlist(strsplit(c(object$formulaTerms, object$participantColumn, object$stratificationColumn, "group"), split = "\\:|\\+|\\||\\*"))
     object$allFormulaTerms <- gsub(" ", "", object$allFormulaTerms)
     object$allFormulaTerms <- unique(object$allFormulaTerms[object$allFormulaTerms != "1"])
 
