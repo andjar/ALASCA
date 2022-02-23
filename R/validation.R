@@ -233,6 +233,7 @@ rotateMatrixOptimizeScore <- function(object, target) {
   if (object$doDebug) currentTs <- Sys.time()
   # We are only looking at components explaining more than a predefined value
   PCloading <- getRelevantPCs(target, effect = "time")
+  PCloading_t <- paste0("PC", PCloading)
 
   # PCA can give loadings with either sign, so we have to check whether switching signs improves the rotation
   N <- length(PCloading) # Number of components to look at
@@ -245,11 +246,11 @@ rotateMatrixOptimizeScore <- function(object, target) {
   # Test all combinations and calculate residuals
   signVar <- Reduce(cbind, lapply(seq_len(nrow(signMatrix) / 2), function(i) {
     c <- .procrustes(
-      loadings = as.matrix(t(t(object$pca$loading$time[target$pca$loading$time, ..PCloading]) * signMatrix[i, ])),
-      target = as.matrix(target$pca$loading$time[, ..PCloading])
+      loadings = as.matrix(t(t(object$pca$loading$time[target$pca$loading$time, ..PCloading_t]) * signMatrix[i, ])),
+      target = as.matrix(target$pca$loading$time[, ..PCloading_t])
     )
-    sum((target$pca$score$time[, ..PCloading] - 
-           as.matrix(t(t(object$pca$score$time[target$pca$score$time, ..PCloading]) * signMatrix[i, ])) %*% solve(c$t1))^2)
+    sum((target$pca$score$time[, ..PCloading_t] - 
+           as.matrix(t(t(object$pca$score$time[target$pca$score$time, ..PCloading_t]) * signMatrix[i, ])) %*% solve(c$t1))^2)
   }))
   if (target$doDebug) cat("SignVar time: ", signVar, "\n")
   
@@ -258,23 +259,25 @@ rotateMatrixOptimizeScore <- function(object, target) {
   
   # Switch signs
   for (i in PCloading){
-    object$pca$loading$time[, (i) := t(t(.SD) * signMatrix[minSignVar, i]), .SDcols = i]
-    object$pca$score$time[, (i) := t(t(.SD) * signMatrix[minSignVar, i]), .SDcols = i]
+    set(object$pca$loading$time, j = PCloading_t[i], value = object$pca$loading$time[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
+    set(object$pca$score$time, j = PCloading_t[i], value = object$pca$score$time[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
   }
 
   # Final rotation
   c <- .procrustes(
-    loadings = as.matrix(object$pca$loading$time[target$pca$loading$time, ..PCloading]),
-    target = as.matrix(target$pca$loading$time[, ..PCloading])
+    loadings = as.matrix(object$pca$loading$time[target$pca$loading$time, ..PCloading_t]),
+    target = as.matrix(target$pca$loading$time[, ..PCloading_t])
   )
-  object$pca$loading$time[target$pca$loading$time, (PCloading) := as.data.frame(c$procrust)]
-  object$pca$score$time[target$pca$score$time, (PCloading) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading]
+
+  object$pca$loading$time[target$pca$loading$time, (PCloading_t) := as.data.table(c$procrust)]
+  object$pca$score$time[target$pca$score$time, (PCloading_t) := as.data.table(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
 
   if (object$doDebug) cat("* Rotating time:", Sys.time() - currentTs, "s\n")
   if (object$separateTimeAndGroup) {
     if (object$doDebug) currentTs <- Sys.time()
     # We are only looking at components explaining more than a set limit
     PCloading <- getRelevantPCs(target, effect = "group")
+    PCloading_t <- paste0("PC", PCloading)
 
     # PCA can give loadings with either sign, so we have to check whether swithcing signs improves the rotation
     N <- length(PCloading)
@@ -283,25 +286,25 @@ rotateMatrixOptimizeScore <- function(object, target) {
     signMatrix <- as.matrix(expand.grid(lst))
     signVar <- Reduce(cbind, lapply(seq_len(nrow(signMatrix) / 2), function(i) {
       c <- .procrustes(
-        loadings = as.matrix(t(t(object$pca$loading$group[target$pca$loading$group, ..PCloading]) * signMatrix[i, ])),
-        target = as.matrix(target$pca$loading$group[, ..PCloading])
+        loadings = as.matrix(t(t(object$pca$loading$group[target$pca$loading$group, ..PCloading_t]) * signMatrix[i, ])),
+        target = as.matrix(target$pca$loading$group[, ..PCloading_t])
       )
-      sum((target$pca$score$group[, ..PCloading] - 
-             as.matrix(t(t(object$pca$score$group[target$pca$score$group, ..PCloading]) * signMatrix[i, ])) %*% solve(c$t1))^2)
+      sum((target$pca$score$group[, ..PCloading_t] - 
+             as.matrix(t(t(object$pca$score$group[target$pca$score$group, ..PCloading_t]) * signMatrix[i, ])) %*% solve(c$t1))^2)
     }))
     if (target$doDebug) cat("SignVar group: ", signVar, "\n")
     minSignVar <- which(signVar == min(signVar))[1]
     for (i in PCloading){
-      object$pca$loading$group[, (i) := t(t(.SD) * signMatrix[minSignVar, i]), .SDcols = i]
-      object$pca$score$group[, (i) := t(t(.SD) * signMatrix[minSignVar, i]), .SDcols = i]
+      set(object$pca$loading$group, j = PCloading_t[i], value = object$pca$loading$group[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
+      set(object$pca$score$group, j = PCloading_t[i], value = object$pca$score$group[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
     }
     
     c <- .procrustes(
-      loadings = as.matrix(object$pca$loading$group[target$pca$loading$group, ..PCloading]),
-      target = as.matrix(target$pca$loading$group[, ..PCloading])
+      loadings = as.matrix(object$pca$loading$group[target$pca$loading$group, ..PCloading_t]),
+      target = as.matrix(target$pca$loading$group[, ..PCloading_t])
     )
-    object$pca$loading$group[target$pca$loading$group, (PCloading) := as.data.frame(c$procrust)]
-    object$pca$score$group[target$pca$score$group, (PCloading) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading]
+    object$pca$loading$group[target$pca$loading$group, (PCloading_t) := as.data.table(c$procrust)]
+    object$pca$score$group[target$pca$score$group, (PCloading_t) := as.data.table(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
     if (object$doDebug) cat("* Rotating group:", Sys.time() - currentTs, "s\n")
   }
 

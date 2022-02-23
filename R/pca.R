@@ -74,7 +74,6 @@ cleanPCA <- function(object) {
   loading_time <- as.data.frame(object$pca$time$rotation)
   loading_time$covars <- rownames(loading_time)
   object$pca$loading$time <- setDT(loading_time)
-  setkey(object$pca$loading$time, covars)
 
   PC_time <- as.data.frame(object$pca$time$x)
   PC_time$time <- object$parts$time
@@ -97,12 +96,19 @@ cleanPCA <- function(object) {
     object$pca$loading$time[, (i) := sVar * .SD, .SDcols = i ]
     object$pca$score$time[, (i) := sVar * .SD, .SDcols = i ]
   }
+  
+  if(object$method %in% c("Limm", "Lim")){
+    # Loadings must be back-transformed
+    object$pca$loading$time <- setDT(as.data.frame(as.matrix(object$Limm$loadings) %*% as.matrix(object$pca$loading$time[, !"covars"])), keep.rownames="covars")
+    object$variablelist <- unique(object$pca$loading$time$covars)
+  }
+  
+  setkey(object$pca$loading$time, covars)
 
   if (object$separateTimeAndGroup) {
     loading_group <- as.data.frame(object$pca$group$rotation)
     loading_group$covars <- rownames(loading_group)
     object$pca$loading$group <- setDT(loading_group)
-    setkey(object$pca$loading$group, covars)
     
     PC_group <- as.data.frame(object$pca$group$x)
     PC_group$time <- rownames(PC_group)
@@ -122,6 +128,13 @@ cleanPCA <- function(object) {
       object$pca$loading$group[, (i) := sVar * .SD, .SDcols = i ]
       object$pca$score$group[, (i) := sVar * .SD, .SDcols = i ]
     }
+    
+    if(object$method %in% c("Limm", "Lim")){
+      # Loadings must be back-transformed
+      object$pca$loading$group <- setDT(as.data.frame(as.matrix(object$Limm$loadings) %*% as.matrix(object$pca$loading$group[, !"covars"])), keep.rownames="covars")
+    }
+    
+    setkey(object$pca$loading$group, covars)
   }
 
   return(object)
@@ -142,17 +155,6 @@ cleanALASCA <- function(object) {
   object$ALASCA$loading$time <- object$pca$loading$time
   object$ALASCA$loading$time <- melt(object$ALASCA$loading$time, id.vars = "covars")
   colnames(object$ALASCA$loading$time) <- c("covars", "PC", "loading")
-  if(object$method %in% c("Limm", "Lim")){
-    object$ALASCA$loading$time <- rbindlist(lapply(unique(object$ALASCA$loading$time$PC), function(selPC){
-      ref <- object$ALASCA$loading$time[PC == selPC,]
-      data.frame(
-        covars = rownames(object$Limm$loadings),
-        PC = selPC,
-        loading = rowSums(object$Limm$loadings*ref$loading[match(colnames(object$Limm$loadings), ref$covars)][col(object$Limm$loadings)])
-      )
-    }))
-    object$variablelist <- unique(object$ALASCA$loading$time$covars)
-  }
   object$ALASCA$loading$time[, PC := as.numeric(gsub("PC", "", PC)), ]
 
   object$ALASCA$score$time <- object$pca$score$time
@@ -180,16 +182,6 @@ cleanALASCA <- function(object) {
     colnames(object$ALASCA$score$group) <- c("time", "group", "PC", "score")
     object$ALASCA$score$group[, time := factor(time, levels = object$timelist), ]
     object$ALASCA$score$group[, group := factor(group, levels = object$grouplist), ]
-    if(object$method %in% c("Limm", "Lim")){
-      object$ALASCA$loading$group <- rbindlist(lapply(unique(object$ALASCA$loading$group$PC), function(selPC){
-        ref <- object$ALASCA$loading$group[PC == selPC,]
-        data.frame(
-          covars = rownames(object$Limm$loadings),
-          PC = selPC,
-          loading = rowSums(object$Limm$loadings*ref$loading[match(colnames(object$Limm$loadings), ref$covars)][col(object$Limm$loadings)])
-        )
-      }))
-    }
     object$ALASCA$score$group[, PC := as.numeric(gsub("PC", "", PC)), ]
 
     object$ALASCA$score$explained$group <- object$pca$score$explained$group
