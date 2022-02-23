@@ -638,8 +638,8 @@ getScorePlot <- function(object,
           } else {
             g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
               ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth))
-            if ("group" %in% object$formulaTerms) g <- g + ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
-            if (plotribbon && "group" %in% object$formulaTerms) {
+            if (any(grepl("group", object$formulaTerms))) g <- g + ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
+            if (plotribbon && any(grepl("group", object$formulaTerms))) {
               g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = group),
                 alpha = .1,
                 position = ggplot2::position_dodge(width = dodgewidth), color = NA
@@ -658,7 +658,7 @@ getScorePlot <- function(object,
         } else {
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group)) +
             ggplot2::geom_point()
-          if ("group" %in% object$formulaTerms) g <- g + ggplot2::geom_line()
+          if (any(grepl("group", object$formulaTerms))) g <- g + ggplot2::geom_line()
         }
       }
     } else {
@@ -676,8 +676,8 @@ getScorePlot <- function(object,
         } else {
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group, ymin = low, ymax = high)) +
             ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth))
-            if ("group" %in% object$formulaTerms) g <- g + ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
-          if (plotribbon && "group" %in% object$formulaTerms) {
+            if (any(grepl("group", object$formulaTerms))) g <- g + ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
+          if (plotribbon && any(grepl("group", object$formulaTerms))) {
             g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = group),
               alpha = .1,
               position = ggplot2::position_dodge(width = dodgewidth), color = NA
@@ -693,13 +693,13 @@ getScorePlot <- function(object,
         } else {
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group)) +
             ggplot2::geom_point()
-          if ("group" %in% object$formulaTerms) g <- g + ggplot2::geom_line()
+          if (any(grepl("group", object$formulaTerms))) g <- g + ggplot2::geom_line()
         }
       }
     }
     g <- g + myTheme +
       ggplot2::scale_color_manual(values = getPlotPalette(object))
-    if ("group" %in% object$formulaTerms) g <- g + ggplot2::scale_linetype_manual(values = getPlotLinetypes(object))
+    if (any(grepl("group", object$formulaTerms))) g <- g + ggplot2::scale_linetype_manual(values = getPlotLinetypes(object))
     g <- g + ggplot2::theme(legend.position = "bottom") +
       ggplot2::labs(
         x = object$plot.xlabel,
@@ -775,7 +775,7 @@ getScorePlot <- function(object,
 #' @param valueColumn Specify column with values (y axis). Not necessary to provide if you are plotting an ALASCA object.
 #' @param timeColumn Specify column with times (x axis). Defaults to `time`.
 #' @param filetype Which filetype you want to save the figure to
-#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
+#' @param figsize A vector containing `c(width,height,dpi)` (default: `c(120, 80, 300)`)
 #' @param addSmooth. Specify which geom_smooth model you want to apply, eg. `lm`, `glm`, `gam`, `loess` (default). Set to `NA` to remove.
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A list with ggplot2 objects.
