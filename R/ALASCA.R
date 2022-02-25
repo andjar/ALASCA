@@ -286,6 +286,9 @@ sanitizeObject <- function(object) {
     object$allFormulaTerms <- unlist(strsplit(c(object$formulaTerms, object$participantColumn, object$stratificationColumn, "group"), split = "\\:|\\+|\\||\\*"))
     object$allFormulaTerms <- gsub(" ", "", object$allFormulaTerms)
     object$allFormulaTerms <- unique(object$allFormulaTerms[object$allFormulaTerms != "1"])
+    
+    ## We need to keep original IDs to have a unique identifier later on
+    if (object$validationMethod == "bootstrap") object$allFormulaTerms <- c(object$allFormulaTerms,originalIDbeforeBootstrap)
 
     if (!is.na(object$method)) {
       # The user has specified a method to use
