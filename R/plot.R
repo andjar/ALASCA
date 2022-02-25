@@ -343,7 +343,7 @@ screeplot.ALASCA <- function(object,
 #' @param n.limit Returns the n highest and lowest loadings by PC (i.e., 2*n.limit loadings per PC)
 #' @return A list with loadings for time (and group), and the exploratory power for each component
 #' @export
-getLoadings <- function(object, limitloading = FALSE, n.limit = 0) {
+getLoadings <- function(object, limitloading = FALSE, n.limit = 0, component = 0) {
   if ( !limitloading || !object$validate ) {
     if ( n.limit > 0 ) {
       dfl <- object$ALASCA$loading
@@ -357,9 +357,8 @@ getLoadings <- function(object, limitloading = FALSE, n.limit = 0) {
           object$ALASCA$loading$group[order(loading, decreasing = TRUE), tail(.SD, n.limit), by = PC]
         )
       }
-      return(dfl)
     } else {
-      return(object$ALASCA$loading)
+      dfl <- object$ALASCA$loading
     }
   } else {
     dfl <- object$ALASCA$loading
@@ -369,8 +368,14 @@ getLoadings <- function(object, limitloading = FALSE, n.limit = 0) {
       dfl$group <- na.omit(dfl$group)
       dfl$group <- subset(dfl$group, sign(low) == sign(high))
     }
-    return(dfl)
   }
+  if (component > 0) {
+    dfl$time <- dfl$time[PC == component]
+    if (object$separateTimeAndGroup) {
+      dfl$group <- dfl$group[PC == component]
+    }
+  }
+  return(dfl)
 }
 
 #' Get scores
@@ -1048,70 +1053,100 @@ plotVal <- function(object,
                     filetype = NA,
                     figsize = NA,
                     figunit = NA,
-                    myTheme = ggplot2::theme_bw()) {
-  if (!object$validate) {
-    stop("You must validate the model first.")
-  }
+                    decreasingLoadings = FALSE,
+                    plotzeroline = TRUE,
+                    myTheme = NA,
+                    flipaxes = TRUE,
+                    plot.alpha = 0.3) {
+  if (!object$validate) stop("You must validate the model first")
+  if (any(is.na(myTheme)))  myTheme <- object$plot.myTheme
+  
   if (object$separateTimeAndGroup) {
     # Score plots
     ## Time
-    dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
+    dff <- rbindlist(lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
         subset(getScores(object$validation$temp_objects[[x]])$time, PC == component),
         model = x
       )
     }))
-    gst <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = model)) +
-      ggplot2::geom_point(alpha = 0.2) +
-      ggplot2::geom_line(alpha = 0.2) +
-      ggplot2::labs(x = object$plot.xlabel) +
-      myTheme
-
+    dfm <- getScores(object, component = component)$time
+    gst <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = model, color = group, linetype = group)) +
+      ggplot2::geom_point(alpha = plot.alpha)
+    if (any(grepl("group", object$formulaTerms))) gst <- gst + ggplot2::geom_line(alpha = plot.alpha)
+    gst <- gst + ggplot2::geom_point(data = dfm, group = NA, alpha = 1, color = "black")
+    if (any(grepl("group", object$formulaTerms))) gst <- gst + ggplot2::geom_line(data = dfm, group = dfm$group, alpha = 1, color = "black")
+    gst <- gst + ggplot2::labs(x = object$plot.xlabel,
+                               color = object$plot.grouplabel, linetype = object$plot.grouplabel,
+                               y = .getExpLabel(object, component = component, effect = "time", type = "Score")) +
+      ggplot2::scale_color_manual(values = getPlotPalette(object)) +
+      ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
+      myTheme + ggplot2::theme(legend.position = "none")
+    
     ## Group
-    dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
+    dff <- rbindlist(lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
         subset(getScores(object$validation$temp_objects[[x]])$group, PC == component),
         model = x
       )
     }))
+    dfm <- getScores(object, component = component)$group
     dff$plotGroup <- paste0(dff$model, "-", dff$group)
-    gsg <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group)) +
-      ggplot2::geom_point(alpha = 0.2) +
-      ggplot2::geom_line(alpha = 0.2) +
-      ggplot2::geom_point(data = subset(getScores(object)$group, PC == component), group = NA, alpha = 1, color = "black") +
-      ggplot2::geom_line(data = subset(getScores(object)$group, PC == component), group = subset(getScores(object)$group, PC == component)$group, alpha = 1, color = "black") +
-      ggplot2::scale_color_manual(values = getPlotPalette(object)) +
-      ggplot2::labs(x = object$plot.xlabel) +
-      myTheme
+    gsg <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group, linetype = group)) +
+      ggplot2::geom_point(alpha = plot.alpha)
+    if (any(grepl("group", object$formulaTerms))) gsg <- gsg + ggplot2::geom_line(alpha = plot.alpha)
+    gsg <- gsg + ggplot2::geom_point(data = dfm, group = NA, alpha = 1, color = "black")
+    if (any(grepl("group", object$formulaTerms))) gsg <- gsg + ggplot2::geom_line(data = dfm, group = dfm$group, alpha = 1, color = "black")
+    gsg <- gsg +   ggplot2::scale_color_manual(values = getPlotPalette(object)) +
+      ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
+      ggplot2::labs(x = object$plot.xlabel,
+                    y = .getExpLabel(object, component = component, effect = "group", type = "Score")) +
+      myTheme + ggplot2::theme(legend.position = "bottom")
 
     # Loading plot
     ## Time
-    dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
+    dff <- rbindlist(lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        subset(getLoadings(object$validation$temp_objects[[x]])$time, PC == component)
+        getLoadings(object$validation$temp_objects[[x]], component = component)$time
       )
     }))
+    dff$covars <- factor(dff$covars, levels = unique(dff$covars[order(dff$loading, decreasing = decreasingLoadings)]))
+    dfm <- getLoadings(object, component = component)$time
+    dfm$covars <- factor(dfm$covars, levels = unique(dfm$covars[order(dfm$loading, decreasing = decreasingLoadings)]))
     glt <- ggplot2::ggplot(dff, ggplot2::aes(x = covars, y = loading)) +
-      ggplot2::geom_point(alpha = 0.2, color = "black") +
-      ggplot2::geom_point(data = subset(getLoadings(object)$time, PC == component), alpha = 1, color = "red") +
-      ggplot2::scale_color_manual(values = getPlotPalette(object)) +
-      ggplot2::labs(x = "Variable") +
+      ggplot2::geom_point(data = dfm, alpha = 1, color = "black") +
+      ggplot2::geom_linerange(data = dfm, ggplot2::aes(ymax = high, ymin = low), alpha = 0.3, color = "black") +
+      ggplot2::geom_linerange(data = dfm, ggplot2::aes(xmax = as.numeric(covars) + 0.5, xmin = as.numeric(covars) - 0.5), alpha = 1, color = "black") +
+      ggplot2::geom_point(alpha = 0.2, color = "black")
+    if (plotzeroline) glt <- glt + ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
+    if (flipaxes) glt <- glt + ggplot2::coord_flip()
+      glt <- glt + ggplot2::labs(x = "Variable",
+                    y = .getExpLabel(object, component = component, effect = "time", type = "Loading")) +
+      ggplot2::theme(legend.position = "none") +
       myTheme
 
     ## Group
-    dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
+    dff <- rbindlist(lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        subset(getLoadings(object$validation$temp_objects[[x]])$group, PC == component)
+        getLoadings(object$validation$temp_objects[[x]], component = component)$group
       )
     }))
+    dff$covars <- factor(dff$covars, levels = unique(dff$covars[order(dff$loading, decreasing = decreasingLoadings)]))
+    dfm <- getLoadings(object, component = component)$group
+    dfm$covars <- factor(dfm$covars, levels = unique(dfm$covars[order(dfm$loading, decreasing = decreasingLoadings)]))
     glg <- ggplot2::ggplot(dff, ggplot2::aes(x = covars, y = loading)) +
-      ggplot2::geom_point(alpha = 0.2, color = "black") +
-      ggplot2::geom_point(data = subset(getLoadings(object)$group, PC == component), alpha = 1, color = "red") +
-      ggplot2::scale_color_manual(values = getPlotPalette(object)) +
-      ggplot2::labs(x = "Variable") +
+      ggplot2::geom_point(data = dfm, alpha = 1, color = "black") +
+      ggplot2::geom_linerange(data = dfm, ggplot2::aes(ymax = high, ymin = low), alpha = 0.3, color = "black") +
+      ggplot2::geom_linerange(data = dfm, ggplot2::aes(xmax = as.numeric(covars) + 0.5, xmin = as.numeric(covars) - 0.5), alpha = 1, color = "black") +
+      ggplot2::geom_point(alpha = 0.2, color = "black")
+    if (plotzeroline) glg <- glg + ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
+    if (flipaxes) glg <- glg + ggplot2::coord_flip()
+    glg <- glg + ggplot2::labs(x = "Variable",
+                    y = .getExpLabel(object, component = component, effect = "group", type = "Loading")) +
+      ggplot2::theme(legend.position = "bottom") +
       myTheme
 
-    g <- ggpubr::ggarrange(gst, glt, gsg, glg, nrow = 2, ncol = 2, widths = c(1, 2, 1, 2))
+    g <- ggpubr::ggarrange(gst, glt, gsg, glg, nrow = 2, ncol = 2, widths = c(2, 3, 2, 3), common.legend = TRUE, legend = "bottom")
   } else {
     # Score plot
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
@@ -1121,13 +1156,17 @@ plotVal <- function(object,
       )
     }))
     dff$plotGroup <- paste0(dff$model, "-", dff$group)
-    gs <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group)) +
-      ggplot2::geom_point(alpha = 0.2) +
-      ggplot2::geom_line(alpha = 0.2) +
-      ggplot2::geom_point(data = subset(getScores(object)$time, PC == component), group = NA, alpha = 1, color = "black") +
-      ggplot2::geom_line(data = subset(getScores(object)$time, PC == component), group = subset(getScores(object)$time, PC == component)$group, alpha = 1, color = "black") +
-      ggplot2::scale_color_manual(values = getPlotPalette(object)) +
-      ggplot2::labs(x = object$plot.xlabel) +
+    dfm <- getScores(object, component = component)$time
+    gs <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group, linetype = group)) +
+      ggplot2::geom_point(alpha = plot.alpha)
+      if (any(grepl("group", object$formulaTerms))) gs <- gs + ggplot2::geom_line(alpha = plot.alpha)
+      gs <- gs + ggplot2::geom_point(data = dfm, group = NA, alpha = 1, color = "black")
+      if (any(grepl("group", object$formulaTerms))) gs <- gs + ggplot2::geom_line(data = dfm, group = dfm$group, alpha = 1, color = "black")
+      gs <- gs + ggplot2::scale_color_manual(values = getPlotPalette(object)) +
+      ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
+      ggplot2::labs(x = object$plot.xlabel,
+                    color = object$plot.grouplabel, linetype = object$plot.grouplabel,
+                    y = .getExpLabel(object, component = component, effect = "time", type = "Score")) +
       myTheme +
       ggplot2::theme(legend.position = "bottom")
 
@@ -1137,14 +1176,22 @@ plotVal <- function(object,
         subset(getLoadings(object$validation$temp_objects[[x]])$time, PC == component)
       )
     }))
+    dff$covars <- factor(dff$covars, levels = unique(dff$covars[order(dff$loading, decreasing = decreasingLoadings)]))
+    dfm <- getLoadings(object, component = component)$time
+    dfm$covars <- factor(dfm$covars, levels = unique(dfm$covars[order(dfm$loading, decreasing = decreasingLoadings)]))
     gl <- ggplot2::ggplot(dff, ggplot2::aes(x = covars, y = loading)) +
-      ggplot2::geom_point(alpha = 0.2, color = "black") +
-      ggplot2::geom_point(data = subset(getLoadings(object)$time, PC == component), alpha = 1, color = "red") +
-      ggplot2::scale_color_manual(values = getPlotPalette(object)) +
-      ggplot2::labs(x = object$plot.xlabel) +
+      ggplot2::geom_point(data = dfm, alpha = 1, color = "black") +
+      ggplot2::geom_linerange(data = dfm, ggplot2::aes(ymax = high, ymin = low), alpha = 0.3, color = "black") +
+      ggplot2::geom_linerange(data = dfm, ggplot2::aes(xmax = as.numeric(covars) + 0.5, xmin = as.numeric(covars) - 0.5), alpha = 1, color = "black") +
+      ggplot2::geom_point(alpha = 0.2, color = "black")
+    if (plotzeroline) gl <- gl + ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
+    if (flipaxes) gl <- gl + ggplot2::coord_flip()
+    gl <- gl + ggplot2::labs(x = "Variable",
+                    color = object$plot.grouplabel,
+                    y = .getExpLabel(object, component = component, effect = "time", type = "Loading")) +
       myTheme
 
-    g <- ggpubr::ggarrange(gs, gl, nrow = 1, ncol = 2, widths = c(1, 2))
+    g <- ggpubr::ggarrange(gs, gl, nrow = 1, ncol = 2, widths = c(2, 3), common.legend = TRUE, legend = "bottom")
   }
   if (object$save) {
     saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
@@ -1183,6 +1230,7 @@ plotCovar <- function(object,
     myTheme <- object$plot.myTheme
   }
   df <- getCovars(object, n.limit = n.limit)
+  if ( nrow(df) == 0 ) stop("No covariates to plot")
   df$covar <- factor(df$covar, levels = unique(df$covar[order(df$estimate)]))
   if (any(is.na(covar))) {
     covar <- unique(df$variable)
