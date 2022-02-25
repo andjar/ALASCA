@@ -678,7 +678,7 @@ prepareValidationRun <- function(object, runN = NA) {
         newIDs <- seq(1, length(object$validationIDs[runN, ]))
         bootdf <- rbind(
           bootdf,
-          data.table::rbindlist(
+          rbindlist(
             lapply(seq_along(object$validationIDs[runN, ]), function(x) {
               seldf <- bootdf_temp[bootdf_temp$ID == object$validationIDs[runN, x], ]
               seldf$originalIDbeforeBootstrap <- seldf$ID
