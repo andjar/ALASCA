@@ -71,10 +71,7 @@ doLimmPCA <- function(object){
 #' @param object An ALASCA object to be sanitized
 #' @return An ALASCA object
 cleanPCA <- function(object) {
-  loading_time <- as.data.frame(object$pca$time$rotation)
-  loading_time$covars <- rownames(loading_time)
-  object$pca$loading$time <- setDT(loading_time)
-
+  # Clean scores ----
   PC_time <- as.data.frame(object$pca$time$x)
   PC_time$time <- object$parts$time
   if (object$separateTimeAndGroup) {
@@ -85,17 +82,10 @@ cleanPCA <- function(object) {
   object$pca$score$time <- setDT(PC_time[!duplicated(paste(PC_time$time, PC_time$group)),])
   setkey(object$pca$score$time, time, group)
   object$pca$score$explained$time <- object$pca$time$sdev^2 / sum(object$pca$time$sdev^2)
+  
+  # Clean loadings ----
+  object$pca$loading$time <- setDT(as.data.frame(object$pca$time$rotation), keep.rownames="covars")
   object$pca$loading$explained$time <- object$pca$score$explained$time
-
-  PCloading <- getRelevantPCs(object = object, effect = "time")
-  for (i in PCloading) {
-    # Ensure that the highest loading has positive sign
-    nVar <- which(abs(object$pca$loading$time[, ..i]) == max(abs(object$pca$loading$time[, ..i])))[1]
-    mVar <- object$pca$loading$time$covars[[nVar]]
-    sVar <- sign(object$pca$loading$time[[nVar, i]])
-    object$pca$loading$time[, (i) := sVar * .SD, .SDcols = i ]
-    object$pca$score$time[, (i) := sVar * .SD, .SDcols = i ]
-  }
   
   if(object$method %in% c("Limm", "Lim")){
     # Loadings must be back-transformed
@@ -104,12 +94,18 @@ cleanPCA <- function(object) {
   }
   
   setkey(object$pca$loading$time, covars)
+  
+  PCloading <- paste0("PC", getRelevantPCs(object = object, effect = "time"))
+  for (i in PCloading) {
+    # Ensure that the highest loading has positive sign
+    nVar <- object$pca$loading$time[, .I[which.max(abs(get(i)))]]
+    sVar <- object$pca$loading$time[nVar, sign(get(i))]
+    set(object$pca$loading$time, j = (i), value = object$pca$loading$time[, get(i)] * sVar)
+    set(object$pca$score$time, j = (i), value = object$pca$score$time[, get(i)] * sVar)
+  }
 
   if (object$separateTimeAndGroup) {
-    loading_group <- as.data.frame(object$pca$group$rotation)
-    loading_group$covars <- rownames(loading_group)
-    object$pca$loading$group <- setDT(loading_group)
-    
+    # Clean scores ----
     PC_group <- as.data.frame(object$pca$group$x)
     PC_group$time <- rownames(PC_group)
     PC_group$group <- object$parts$group
@@ -117,17 +113,10 @@ cleanPCA <- function(object) {
     object$pca$score$group <- setDT(PC_group[!duplicated(paste(PC_group$time, PC_group$group)),])
     setkey(object$pca$score$group, time, group)
     object$pca$score$explained$group <- object$pca$group$sdev^2 / sum(object$pca$group$sdev^2)
+    
+    # Clean loadings ----
+    object$pca$loading$group <- setDT(as.data.frame(object$pca$group$rotation), keep.rownames="covars")
     object$pca$loading$explained$group <- object$pca$score$explained$group
-
-    PCloading <- getRelevantPCs(object = object, effect = "group")
-    for (i in PCloading) {
-      # Ensure that the highest loading has positive sign
-      nVar <- which(abs(object$pca$loading$group[, ..i]) == max(abs(object$pca$loading$group[, ..i])))[1]
-      mVar <- object$pca$loading$group$covars[[nVar]]
-      sVar <- sign(object$pca$loading$group[[nVar, i]])
-      object$pca$loading$group[, (i) := sVar * .SD, .SDcols = i ]
-      object$pca$score$group[, (i) := sVar * .SD, .SDcols = i ]
-    }
     
     if(object$method %in% c("Limm", "Lim")){
       # Loadings must be back-transformed
@@ -135,6 +124,15 @@ cleanPCA <- function(object) {
     }
     
     setkey(object$pca$loading$group, covars)
+
+    PCloading <- paste0("PC", getRelevantPCs(object = object, effect = "group"))
+    for (i in PCloading) {
+      # Ensure that the highest loading has positive sign
+      nVar <- object$pca$loading$group[, .I[which.max(abs(get(i)))]]
+      sVar <- object$pca$loading$time[nVar, sign(get(i))]
+      set(object$pca$loading$group, j = (i), value = object$pca$loading$group[, get(i)] * sVar)
+      set(object$pca$score$group, j = (i), value = object$pca$score$group[, get(i)] * sVar)
+    }
   }
 
   return(object)
@@ -153,19 +151,19 @@ cleanALASCA <- function(object) {
   # Clean up a copy
   # Time effect
   object$ALASCA$loading$time <- object$pca$loading$time
-  object$ALASCA$loading$time <- melt(object$ALASCA$loading$time, id.vars = "covars")
+  object$ALASCA$loading$time <- melt(object$ALASCA$loading$time, id.vars = "covars", variable.factor = FALSE)
   colnames(object$ALASCA$loading$time) <- c("covars", "PC", "loading")
-  object$ALASCA$loading$time[, PC := as.numeric(gsub("PC", "", PC)), ]
+  object$ALASCA$loading$time[, PC := as.numeric(substr(PC, 3, nchar(PC))), ]
 
   object$ALASCA$score$time <- object$pca$score$time
   if (object$separateTimeAndGroup) {
     object$ALASCA$score$time$group <- object$grouplist[1]
   }
-  object$ALASCA$score$time <- melt(object$ALASCA$score$time, id.vars = c("time", "group"))
+  object$ALASCA$score$time <- melt(object$ALASCA$score$time, id.vars = c("time", "group"), variable.factor = FALSE)
   colnames(object$ALASCA$score$time) <- c("time", "group", "PC", "score")
   object$ALASCA$score$time[, time := factor(time, levels = object$timelist), ]
   object$ALASCA$score$time[, group := factor(group, levels = object$grouplist), ]
-  object$ALASCA$score$time[, PC := as.numeric(gsub("PC", "", PC)), ]
+  object$ALASCA$score$time[, PC := as.numeric(substr(PC, 3, nchar(PC))), ]
 
   object$ALASCA$score$explained$time <- object$pca$score$explained$time
   object$ALASCA$loading$explained$time <- object$pca$loading$explained$time
@@ -173,16 +171,16 @@ cleanALASCA <- function(object) {
   if (object$separateTimeAndGroup) {
     # Group effect
     object$ALASCA$loading$group <- object$pca$loading$group
-    object$ALASCA$loading$group <- melt(object$ALASCA$loading$group, id.vars = "covars")
+    object$ALASCA$loading$group <- melt(object$ALASCA$loading$group, id.vars = "covars", variable.factor = FALSE)
     colnames(object$ALASCA$loading$group) <- c("covars", "PC", "loading")
-    object$ALASCA$loading$group[, PC := as.numeric(gsub("PC", "", PC)), ]
+    object$ALASCA$loading$group[, PC := as.numeric(substr(PC, 3, nchar(PC))), ]
 
     object$ALASCA$score$group <- object$pca$score$group
-    object$ALASCA$score$group <- melt(object$ALASCA$score$group, id.vars = c("time", "group"))
+    object$ALASCA$score$group <- melt(object$ALASCA$score$group, id.vars = c("time", "group"), variable.factor = FALSE)
     colnames(object$ALASCA$score$group) <- c("time", "group", "PC", "score")
     object$ALASCA$score$group[, time := factor(time, levels = object$timelist), ]
     object$ALASCA$score$group[, group := factor(group, levels = object$grouplist), ]
-    object$ALASCA$score$group[, PC := as.numeric(gsub("PC", "", PC)), ]
+    object$ALASCA$score$group[, PC := as.numeric(substr(PC, 3, nchar(PC))), ]
 
     object$ALASCA$score$explained$group <- object$pca$score$explained$group
     object$ALASCA$loading$explained$group <- object$pca$loading$explained$group
