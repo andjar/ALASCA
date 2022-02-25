@@ -320,23 +320,25 @@ rotateMatrixOptimizeScore <- function(object, target) {
 #' @return An ALASCA object
 rotateMatrix <- function(object, target) {
   PCloading <- getRelevantPCs(target, effect = "time")
+  PCloading_t <- paste0("PC", PCloading)
   c <- .procrustes(
-    loadings = as.matrix(object$pca$loading$time[target$pca$loading$time, ..PCloading]),
-    target = as.matrix(target$pca$loading$time[, ..PCloading])
+    loadings = as.matrix(object$pca$loading$time[target$pca$loading$time, PCloading_t]),
+    target = as.matrix(target$pca$loading$time[, PCloading_t])
   )
 
-  object$pca$loading$time[target$pca$loading$time, (PCloading) := as.data.frame(c$procrust)]
-  object$pca$score$time[target$pca$score$time, (PCloading) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading]
+  object$pca$loading$time[target$pca$loading$time, (PCloading_t) := as.data.frame(c$procrust)]
+  object$pca$score$time[target$pca$score$time, (PCloading_t) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
 
   if (object$separateTimeAndGroup) {
     PCloading <- getRelevantPCs(target, effect = "group")
+    PCloading_t <- paste0("PC", PCloading)
     c <- .procrustes(
-      loadings = as.matrix(object$pca$loading$group[target$pca$loading$group, ..PCloading]),
-      target = as.matrix(target$pca$loading$group[, ..PCloading])
+      loadings = as.matrix(object$pca$loading$group[target$pca$loading$group, PCloading_t]),
+      target = as.matrix(target$pca$loading$group[, PCloading_t])
     )
 
-    object$pca$loading$group[target$pca$loading$group, (PCloading) := as.data.frame(c$procrust)]
-    object$pca$score$group[target$pca$score$group, (PCloading) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading]
+    object$pca$loading$group[target$pca$loading$group, (PCloading_t) := as.data.frame(c$procrust)]
+    object$pca$score$group[target$pca$score$group, (PCloading_t) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
   }
 
   return(object)
@@ -667,9 +669,11 @@ prepareValidationRun <- function(object, runN = NA) {
             )
           )
         }
-        write(paste0(bootobject$originalIDs, collapse = ";"),
-              file = getFilename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
-        )
+        if (object$saveValidationIDs) {
+          write(paste0(bootobject$originalIDs, collapse = ";"),
+                file = getFilename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
+          )
+        }
       } else {
         newIDs <- seq(1, length(object$validationIDs[runN, ]))
         bootdf <- rbind(
