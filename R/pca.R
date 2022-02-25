@@ -89,7 +89,7 @@ cleanPCA <- function(object) {
   
   if(object$method %in% c("Limm", "Lim")){
     # Loadings must be back-transformed
-    object$pca$loading$time <- setDT(as.data.frame(as.matrix(object$Limm$loadings) %*% as.matrix(object$pca$loading$time[, !"covars"])), keep.rownames="covars")
+    object$pca$loading$time <- setDT(as.data.frame(as.matrix(object$Limm$loadings) %*% as.matrix(object$pca$loading$time[order(as.numeric(substr(covars, 3, nchar(covars)))), !"covars"])), keep.rownames="covars")
     object$variablelist <- unique(object$pca$loading$time$covars)
   }
   
@@ -120,7 +120,7 @@ cleanPCA <- function(object) {
     
     if(object$method %in% c("Limm", "Lim")){
       # Loadings must be back-transformed
-      object$pca$loading$group <- setDT(as.data.frame(as.matrix(object$Limm$loadings) %*% as.matrix(object$pca$loading$group[, !"covars"])), keep.rownames="covars")
+      object$pca$loading$group <- setDT(as.data.frame(as.matrix(object$Limm$loadings) %*% as.matrix(object$pca$loading$group[order(as.numeric(substr(covars, 3, nchar(covars)))), !"covars"])), keep.rownames="covars")
     }
     
     setkey(object$pca$loading$group, covars)

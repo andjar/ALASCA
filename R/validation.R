@@ -644,6 +644,7 @@ prepareValidationRun <- function(object, runN = NA) {
       # Loop through all the groups and create a new dataframe with resampled values
       bootobject$newIDs <- c()
       bootobject$originalIDs <- c()
+      if (object$doDebug) currentTs <- Sys.time()
       if (any(is.na(object$validationIDs))) {
         for (i in unique(object$stratificationVector)) {
           # Get ID of all members of stratification group
@@ -689,7 +690,8 @@ prepareValidationRun <- function(object, runN = NA) {
         )
       }
       bootobject$dfRaw <- bootdf
-
+      if (object$doDebug) cat(".. Prepare bootstrap sample:", Sys.time() - currentTs, "s\n")
+      
       temp_object <- ALASCA(
         validationObject = bootobject,
         validationParticipants = rep(TRUE, nrow(bootobject$dfRaw))
