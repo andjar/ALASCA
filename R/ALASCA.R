@@ -287,6 +287,7 @@ sanitizeObject <- function(object) {
     object$formulaTerms <- colnames(attr(terms.formula(object$formula), "factors"))
     object$allFormulaTerms <- unlist(strsplit(c(object$formulaTerms, object$participantColumn, object$stratificationColumn, object$keepColumn, "group"), split = "\\:|\\+|\\||\\*"))
     object$allFormulaTerms <- gsub(" ", "", object$allFormulaTerms)
+    if (any(!is.na(object$plot.loadinggroupcolumn))) object$allFormulaTerms <- c(object$allFormulaTerms, object$plot.loadinggroupcolumn)
     object$allFormulaTerms <- unique(object$allFormulaTerms[object$allFormulaTerms != "1"])
     
     ## We need to keep original IDs to have a unique identifier later on
