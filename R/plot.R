@@ -1053,6 +1053,7 @@ plotVal <- function(object,
                     filetype = NA,
                     figsize = NA,
                     figunit = NA,
+                    n.limit = 0,
                     decreasingLoadings = FALSE,
                     plotzeroline = TRUE,
                     myTheme = NA,
@@ -1105,14 +1106,15 @@ plotVal <- function(object,
 
     # Loading plot
     ## Time
+    dfm <- getLoadings(object, component = component, n.limit = n.limit)$time
+    dfm$covars <- factor(dfm$covars, levels = unique(dfm$covars[order(dfm$loading, decreasing = decreasingLoadings)]))
     dff <- rbindlist(lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        getLoadings(object$validation$temp_objects[[x]], component = component)$time
+        subset(getLoadings(object$validation$temp_objects[[x]], component = component)$time, covars %in% dfm$covars)
       )
     }))
     dff$covars <- factor(dff$covars, levels = unique(dff$covars[order(dff$loading, decreasing = decreasingLoadings)]))
-    dfm <- getLoadings(object, component = component)$time
-    dfm$covars <- factor(dfm$covars, levels = unique(dfm$covars[order(dfm$loading, decreasing = decreasingLoadings)]))
+    
     glt <- ggplot2::ggplot(dff, ggplot2::aes(x = covars, y = loading)) +
       ggplot2::geom_point(data = dfm, alpha = 1, color = "black") +
       ggplot2::geom_linerange(data = dfm, ggplot2::aes(ymax = high, ymin = low), alpha = 0.3, color = "black") +
@@ -1126,14 +1128,14 @@ plotVal <- function(object,
       myTheme
 
     ## Group
+    dfm <- getLoadings(object, component = component, n.limit = n.limit)$group
+    dfm$covars <- factor(dfm$covars, levels = unique(dfm$covars[order(dfm$loading, decreasing = decreasingLoadings)]))
     dff <- rbindlist(lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        getLoadings(object$validation$temp_objects[[x]], component = component)$group
+        subset(getLoadings(object$validation$temp_objects[[x]], component = component)$group, covars %in% dfm$covars)
       )
     }))
     dff$covars <- factor(dff$covars, levels = unique(dff$covars[order(dff$loading, decreasing = decreasingLoadings)]))
-    dfm <- getLoadings(object, component = component)$group
-    dfm$covars <- factor(dfm$covars, levels = unique(dfm$covars[order(dfm$loading, decreasing = decreasingLoadings)]))
     glg <- ggplot2::ggplot(dff, ggplot2::aes(x = covars, y = loading)) +
       ggplot2::geom_point(data = dfm, alpha = 1, color = "black") +
       ggplot2::geom_linerange(data = dfm, ggplot2::aes(ymax = high, ymin = low), alpha = 0.3, color = "black") +
@@ -1171,14 +1173,15 @@ plotVal <- function(object,
       ggplot2::theme(legend.position = "bottom")
 
     # Loading plot
+    dfm <- getLoadings(object, component = component, n.limit = n.limit)$time
+    dfm$covars <- factor(dfm$covars, levels = unique(dfm$covars[order(dfm$loading, decreasing = decreasingLoadings)]))
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        subset(getLoadings(object$validation$temp_objects[[x]])$time, PC == component)
+        subset(getLoadings(object$validation$temp_objects[[x]], component = component)$time, covars %in% dfm$covars)
       )
     }))
     dff$covars <- factor(dff$covars, levels = unique(dff$covars[order(dff$loading, decreasing = decreasingLoadings)]))
-    dfm <- getLoadings(object, component = component)$time
-    dfm$covars <- factor(dfm$covars, levels = unique(dfm$covars[order(dfm$loading, decreasing = decreasingLoadings)]))
+    
     gl <- ggplot2::ggplot(dff, ggplot2::aes(x = covars, y = loading)) +
       ggplot2::geom_point(data = dfm, alpha = 1, color = "black") +
       ggplot2::geom_linerange(data = dfm, ggplot2::aes(ymax = high, ymin = low), alpha = 0.3, color = "black") +
