@@ -632,6 +632,9 @@ summary.ALASCA <- function(object, file = "", sessioninfo = FALSE) {
   if (!object$useRfast) {
     cat("Adjustment of p-values: ", object$pAdjustMethod, "\n", file = file, append = TRUE)
   }
+  if (!is.null(object$limm.nComps)) {
+    cat("Kept",object$limm.nComps,"components from initial PCA, explaining",100*cumsum(object$limm.explanatory_power)[object$limm.nComps],"% of variation\n", file = file, append = TRUE)
+  }
   cat("\n\nPCs explaining at least 5% of variation:\n   Time: ",
     paste(getRelevantPCs(object = object, effect = "time"), collapse = ", "), " (",
     paste(round(100 * object$pca$score$explained$time[getRelevantPCs(object = object, effect = "time")], 2), collapse = "%, "), "%)",
