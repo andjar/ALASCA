@@ -37,7 +37,13 @@ doLimmPCA <- function(object){
     center = TRUE)
   if (object$doDebug) cat("* First PCA:", Sys.time() - currentTs, "s\n")
   
+  explanatory_power <- temp_pca_values$sdev^2 / sum(temp_pca_values$sdev^2)
+  
   # Remove surplus columns
+  if (is.null(object$limm.nComps)) {
+    object$limm.nComps <- which(cumsum(explanatory_power) >= object$limm.limit)[1]
+    cat("-- Keeping",object$limm.nComps,"components from initial PCA, explaining",100*cumsum(explanatory_power)[object$limm.nComps],"% of variation\n")
+  }
   if(ncol(temp_pca_values$rotation) > object$limm.nComps){
     temp_pca_values$rotation <- temp_pca_values$rotation[,-c((object$limm.nComps+1):ncol(temp_pca_values$rotation))]
     temp_pca_values$x <- temp_pca_values$x[, -c((object$limm.nComps+1):ncol(temp_pca_values$x))]

@@ -77,7 +77,8 @@ ALASCA <- function(df,
                    validation = FALSE,
                    filename = NA,
                    filepath = NA,
-                   limm.nComps= 100,
+                   limm.nComps= NULL,
+                   limm.limit = 0.95,
                    lowerLimit = NA,
                    savetodisk = FALSE,
                    optimizeScore = TRUE,
@@ -136,6 +137,7 @@ ALASCA <- function(df,
       plot.palette = plot.palette,
       plot.palette.end = plot.palette.end,
       limm.nComps = limm.nComps,
+      limm.limit = limm.limit,
       plot.loadinggroupcolumn = plot.loadinggroupcolumn,
       plot.loadinggrouplabel = plot.loadinggrouplabel,
       plot.myTheme = plot.myTheme,
@@ -291,9 +293,9 @@ sanitizeObject <- function(object) {
     
     ## We need to keep original IDs to have a unique identifier later on
     if (object$validationMethod == "bootstrap") object$allFormulaTerms <- unique(c(object$allFormulaTerms,"originalIDbeforeBootstrap"))
-    if (!"originalIDbeforeBootstrap" %in% colnames(object$df)) object$df[, originalIDbeforeBootstrap:= NA]
+    if (!"originalIDbeforeBootstrap" %in% colnames(object$df)) object$df[, originalIDbeforeBootstrap := -1]
     if (object$validationMethod == "bootstrap") object$allFormulaTerms <- unique(c(object$allFormulaTerms,"uniqueIDforBootstrap"))
-    if (!"uniqueIDforBootstrap" %in% colnames(object$df)) object$df[, uniqueIDforBootstrap:= NA]
+    if (!"uniqueIDforBootstrap" %in% colnames(object$df)) object$df[, uniqueIDforBootstrap := -1]
     
     # Remove surplus data for efficiency
     object$df <- object$df[, .SD, .SDcols = c(object$allFormulaTerms, "variable", "value", ifelse(is.na(object$plot.loadinggroupcolumn), NULL, object$plot.loadinggroupcolumn))]
