@@ -72,7 +72,7 @@ ALASCA <- function(df,
                    validationQuantileMethod = 2,
                    plot.myTheme = ggplot2::theme_classic(),
                    keepTerms = c(""),
-                   keepColumn = NULL,
+                   keepColumn = "",
                    save = FALSE,
                    validation = FALSE,
                    filename = NA,
@@ -298,7 +298,12 @@ sanitizeObject <- function(object) {
     if (!"uniqueIDforBootstrap" %in% colnames(object$df)) object$df[, uniqueIDforBootstrap := -1]
     
     # Remove surplus data for efficiency
-    object$df <- object$df[, .SD, .SDcols = c(object$allFormulaTerms, "variable", "value", ifelse(is.na(object$plot.loadinggroupcolumn), NULL, object$plot.loadinggroupcolumn))]
+    if (is.na(object$plot.loadinggroupcolumn)) {
+      object$df <- object$df[, .SD, .SDcols = c(object$allFormulaTerms, "variable", "value")]
+    } else {
+      object$df <- object$df[, .SD, .SDcols = c(object$allFormulaTerms, "variable", "value", object$plot.loadinggroupcolumn)]
+    }
+    
     
     if (!is.na(object$method)) {
       # The user has specified a method to use
