@@ -66,7 +66,7 @@ plotDevelopment <- function(object,
                             only = "both",
                             enlist = FALSE,
                             tooDense = NA,
-                            tooDense2 = 0,
+                            n.limit = 0,
                             highlight = NA,
                             xlabel = NA,
                             grouplabel = NA,
@@ -128,7 +128,7 @@ plotDevelopment <- function(object,
         flipaxes = flipaxes,
         plotzeroline = plotzeroline,
         tooDense = tooDense,
-        tooDense2 = tooDense2,
+        n.limit = n.limit,
         highlight = highlight,
         variables = variables,
         loadinggroup = loadinggroup,
@@ -143,7 +143,7 @@ plotDevelopment <- function(object,
         flipaxes = flipaxes,
         plotzeroline = plotzeroline,
         tooDense = tooDense,
-        tooDense2 = tooDense2,
+        n.limit = n.limit,
         variables = variables,
         highlight = highlight,
         limitloading = limitloading,
@@ -160,7 +160,7 @@ plotDevelopment <- function(object,
         flipaxes = flipaxes,
         plotzeroline = plotzeroline,
         tooDense = tooDense,
-        tooDense2 = tooDense2,
+        n.limit = n.limit,
         variables = variables,
         limitloading = limitloading,
         loadinggroup = loadinggroup,
@@ -177,7 +177,7 @@ plotDevelopment <- function(object,
         flipaxes = flipaxes,
         plotzeroline = plotzeroline,
         tooDense = tooDense,
-        tooDense2 = tooDense2,
+        n.limit = n.limit,
         limitloading = limitloading,
         highlight = highlight,
         loadinggroup = loadinggroup,
@@ -191,7 +191,7 @@ plotDevelopment <- function(object,
         flipaxes = flipaxes,
         plotzeroline = plotzeroline,
         tooDense = tooDense,
-        tooDense2 = tooDense2,
+        n.limit = n.limit,
         variables = variables,
         highlight = highlight,
         limitloading = limitloading,
@@ -235,7 +235,7 @@ plotDevelopment <- function(object,
         flipaxes = flipaxes,
         plotzeroline = plotzeroline,
         tooDense = tooDense,
-        tooDense2 = tooDense2,
+        n.limit = n.limit,
         variables = variables,
         limitloading = limitloading,
         highlight = highlight,
@@ -437,7 +437,7 @@ getLoadingPlot <- function(object,
                            effect = "time",
                            decreasingLoadings = TRUE,
                            tooDense = NA,
-                           tooDense2 = 0,
+                           n.limit = 0,
                            highlight = NA,
                            filetype = NA,
                            flipaxes = TRUE,
@@ -469,9 +469,9 @@ getLoadingPlot <- function(object,
   }
   pointSize <- 0.4
   if (effect == "time") {
-    loadings <- subset(getLoadings(object, limitloading = limitloading, n.limit = tooDense2)$time, PC == component & covars %in% variables)
+    loadings <- subset(getLoadings(object, limitloading = limitloading, n.limit = n.limit)$time, PC == component & covars %in% variables)
   } else {
-    loadings <- subset(getLoadings(object, limitloading = limitloading, n.limit = tooDense2)$group, PC == component & covars %in% variables)
+    loadings <- subset(getLoadings(object, limitloading = limitloading, n.limit = n.limit)$group, PC == component & covars %in% variables)
   }
   if (!is.na(object$plot.loadinggroupcolumn)) {
     if (object$method %in% c("Limm", "Lim")) {
@@ -531,8 +531,8 @@ getLoadingPlot <- function(object,
   if (plotzeroline) {
     g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
   }
-  if (tooDense2 > 0 & !sortbyloadinggroup) {
-    g <- g + ggplot2::geom_vline(xintercept = tooDense2 + 0.5, linetype = "dotted")
+  if (n.limit > 0 & !sortbyloadinggroup) {
+    g <- g + ggplot2::geom_vline(xintercept = n.limit + 0.5, linetype = "dotted")
   }
   if (flipaxes) {
     g <- g + ggplot2::coord_flip()
