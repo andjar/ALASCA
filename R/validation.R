@@ -663,8 +663,9 @@ prepareValidationRun <- function(object, runN = NA) {
             rbindlist(
               lapply(seq_along(selectedParts_temp_selected), function(x) {
                 seldf <- bootdf_temp[bootdf_temp$ID == selectedParts_temp_selected[x], ]
-                seldf$originalIDbeforeBootstrap <- seldf$ID
-                if (object$validationAssignNewID) seldf$ID <- newIDs[x] # Replace ID
+                seldf[, originalIDbeforeBootstrap := ID]
+                seldf[, uniqueIDforBootstrap := newIDs[x]]
+                if (object$validationAssignNewID) seldf[, ID := newIDs[x]] # Replace ID
                 seldf
               })
             )

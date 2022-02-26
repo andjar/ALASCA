@@ -290,8 +290,10 @@ sanitizeObject <- function(object) {
     object$allFormulaTerms <- unique(object$allFormulaTerms[object$allFormulaTerms != "1"])
     
     ## We need to keep original IDs to have a unique identifier later on
-    if (object$validationMethod == "bootstrap") object$allFormulaTerms <- c(object$allFormulaTerms,"originalIDbeforeBootstrap")
-    object$df[, originalIDbeforeBootstrap:= NA]
+    if (object$validationMethod == "bootstrap") object$allFormulaTerms <- unique(c(object$allFormulaTerms,"originalIDbeforeBootstrap"))
+    if (!"originalIDbeforeBootstrap" %in% colnames(object$df)) object$df[, originalIDbeforeBootstrap:= NA]
+    if (object$validationMethod == "bootstrap") object$allFormulaTerms <- unique(c(object$allFormulaTerms,"uniqueIDforBootstrap"))
+    if (!"uniqueIDforBootstrap" %in% colnames(object$df)) object$df[, uniqueIDforBootstrap:= NA]
     
     # Remove surplus data for efficiency
     object$df <- object$df[, .SD, .SDcols = c(object$allFormulaTerms, "variable", "value", ifelse(is.na(object$plot.loadinggroupcolumn), NULL, object$plot.loadinggroupcolumn))]
