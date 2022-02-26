@@ -287,7 +287,6 @@ sanitizeObject <- function(object) {
     object$formulaTerms <- colnames(attr(terms.formula(object$formula), "factors"))
     object$allFormulaTerms <- unlist(strsplit(c(object$formulaTerms, object$participantColumn, object$stratificationColumn, object$keepColumn, "group"), split = "\\:|\\+|\\||\\*"))
     object$allFormulaTerms <- gsub(" ", "", object$allFormulaTerms)
-    if (any(!is.na(object$plot.loadinggroupcolumn))) object$allFormulaTerms <- c(object$allFormulaTerms, object$plot.loadinggroupcolumn)
     object$allFormulaTerms <- unique(object$allFormulaTerms[object$allFormulaTerms != "1"])
     
     ## We need to keep original IDs to have a unique identifier later on
@@ -295,7 +294,7 @@ sanitizeObject <- function(object) {
     object$df[, originalIDbeforeBootstrap:= NA]
     
     # Remove surplus data for efficiency
-    object$df <- object$df[, .SD, .SDcols = c(object$allFormulaTerms, "variable", "value")]
+    object$df <- object$df[, .SD, .SDcols = c(object$allFormulaTerms, "variable", "value", ifelse(is.na(object$plot.loadinggroupcolumn), NULL, object$plot.loadinggroupcolumn))]
     
     if (!is.na(object$method)) {
       # The user has specified a method to use
