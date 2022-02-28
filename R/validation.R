@@ -558,11 +558,19 @@ getRegressionPredictions <- function(object) {
   object$mod.pred <- data.table::rbindlist(
     lapply(object$variablelist, function(x) {
       regCoeff <- as.matrix(regCoeffAll[regCoeffAll$covar == x, -1])
-      data.frame(
-        object$df[as.numeric(rownames(regModel)), .SD, .SDcols = c("time", "group", object$keepTerms)],
-        pred = colSums(regCoeff[, colnames(regModel)] * t(regModel)),
-        variable = x
-      )
+      if (object$keepTerms != "") {
+        data.frame(
+          object$df[as.numeric(rownames(regModel)), .SD, .SDcols = c("time", "group", object$keepTerms)],
+          pred = colSums(regCoeff[, colnames(regModel)] * t(regModel)),
+          variable = x
+        )
+      } else {
+        data.frame(
+          object$df[as.numeric(rownames(regModel)), .SD, .SDcols = c("time", "group")],
+          pred = colSums(regCoeff[, colnames(regModel)] * t(regModel)),
+          variable = x
+        )
+      }
     })
   )
   

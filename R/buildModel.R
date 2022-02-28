@@ -28,17 +28,7 @@ buildModel <- function(object) {
     # This is not a validation run
     cat("Finished calculating regression coefficients!\n")
   }
-  if (object$method %in% c("LM", "LMM")) {
-    if (object$minimizeObject) {
-      if (object$validateRegression) {
-        object <- getRegressionPredictions(object)
-      }
-    } else {
-      if (object$validateRegression) {
-        object <- getRegressionPredictions(object)
-      }
-    }
-  }
+  
   if (object$doDebug) currentTs <- Sys.time()
   object <- removeCovars(object)
   if (object$doDebug) cat("* removeCovars:", Sys.time() - currentTs, "s\n")
@@ -57,6 +47,17 @@ buildModel <- function(object) {
   if (object$doDebug) currentTs <- Sys.time()
   object <- cleanALASCA(object)
   if (object$doDebug) cat("* cleanALASCA:", Sys.time() - currentTs, "s\n")
+  if (object$method %in% c("LM", "LMM")) {
+    if (object$minimizeObject) {
+      if (object$validateRegression) {
+        object <- getRegressionPredictions(object)
+      }
+    } else {
+      if (object$validateRegression) {
+        object <- getRegressionPredictions(object)
+      }
+    }
+  }
 
   return(object)
 }
