@@ -65,16 +65,16 @@ plotResiduals <- function(object, variable = NA, plottitle = TRUE, myTheme = ggp
 plotHistogram <- function(object,
                           component = 1,
                           bins = object$nValRuns / 10,
+                          n.limit = 0,
                           variable = NA,
                           filename = NA,
                           effect = "time",
                           orderbyname = FALSE) {
-  
   if (!is.na(filename)) object$filename <- filename
-  
+
   if (effect == "time" | effect == "group") {
     g_s <- plothistogram_score(object = object, component = component, bins = bins, effect = effect)
-    g_l <- plothistogram_loading(object = object, component = component, bins = bins, variable = variable, effect = effect, orderbyname = orderbyname)
+    g_l <- plothistogram_loading(object = object, component = component, bins = bins, variable = variable, effect = effect, orderbyname = orderbyname, n.limit = n.limit)
     g <- ggpubr::ggarrange(
       g_s, g_l,
       nrow = 2, heights = c(1, 3), labels = "AUTO"
@@ -176,7 +176,12 @@ plothistogram_score <- function(object, component = 1, bins = object$nValRuns / 
 #' @return A list of ggplot2 objects per variable
 #'
 #' @export
-plothistogram_loading <- function(object, component = 1, bins = object$nValRuns / 10, variable = NA, effect = "time", orderbyname = FALSE) {
+plothistogram_loading <- function(object, component = 1,
+                                  bins = object$nValRuns / 10,
+                                  variable = NA,
+                                  effect = "time",
+                                  orderbyname = FALSE,
+                                  n.limit = 0) {
   if (!object$validate) stop("Model not validated")
   if (any(is.na(variable))) {
     variable <- object$variablelist
@@ -184,7 +189,7 @@ plothistogram_loading <- function(object, component = 1, bins = object$nValRuns 
   if (effect == "time") {
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        subset(getLoadings(object$validation$temp_objects[[x]])$time, PC == component),
+        getLoadings(object$validation$temp_objects[[x]], component = component, n.limit = n.limit)$time,
         model = x
       )
     }))
@@ -192,7 +197,7 @@ plothistogram_loading <- function(object, component = 1, bins = object$nValRuns 
   } else {
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        subset(getLoadings(object$validation$temp_objects[[x]])$group, PC == component),
+        getLoadings(object$validation$temp_objects[[x]], component = component, n.limit = n.limit)$group,
         model = x
       )
     }))
