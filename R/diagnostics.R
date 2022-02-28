@@ -62,7 +62,16 @@ plotResiduals <- function(object, variable = NA, plottitle = TRUE, myTheme = ggp
 #' @return A list of ggplot2 objects per variable
 #'
 #' @export
-plotHistogram <- function(object, component = 1, bins = object$nValRuns / 10, variable = NA, effect = "time", orderbyname = FALSE) {
+plotHistogram <- function(object,
+                          component = 1,
+                          bins = object$nValRuns / 10,
+                          variable = NA,
+                          filename = NA,
+                          effect = "time",
+                          orderbyname = FALSE) {
+  
+  if (!is.na(filename)) object$filename <- filename
+  
   if (effect == "time" | effect == "group") {
     g_s <- plothistogram_score(object = object, component = component, bins = bins, effect = effect)
     g_l <- plothistogram_loading(object = object, component = component, bins = bins, variable = variable, effect = effect, orderbyname = orderbyname)
@@ -137,6 +146,7 @@ plothistogram_score <- function(object, component = 1, bins = object$nValRuns / 
         ggplot2::scale_fill_manual(values = getPlotPalette(object)) +
         ggplot2::scale_color_manual(values = getPlotPalette(object)) +
         ggplot2::facet_wrap(~time) +
+        ggplot2::labs(x = "Score", fill = object$plot.grouplabel, color = object$plot.grouplabel) +
         object$plot.myTheme +
         ggplot2::theme(legend.position = "bottom")
     } else {
@@ -146,6 +156,7 @@ plothistogram_score <- function(object, component = 1, bins = object$nValRuns / 
         ggplot2::scale_fill_manual(values = getPlotPalette(object)) +
         ggplot2::scale_color_manual(values = getPlotPalette(object)) +
         ggplot2::facet_wrap(~time) +
+        ggplot2::labs(x = "Score", fill = object$plot.grouplabel, color = object$plot.grouplabel) +
         object$plot.myTheme +
         ggplot2::theme(legend.position = "bottom")
       g <- ggpubr::ggarrange(g, gg, nrow = 2, labels = "AUTO", common.legend = TRUE)
@@ -198,6 +209,7 @@ plothistogram_loading <- function(object, component = 1, bins = object$nValRuns 
     ggplot2::geom_vline(data = df_temp, ggplot2::aes(xintercept = loading)) +
     ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
     ggplot2::facet_wrap(~covars) +
+    ggplot2::labs(x = "Loading") +
     object$plot.myTheme +
     ggplot2::theme(legend.position = "bottom")
   if (object$save) saveALASCAPlot(object, g, prefix = "plot/", suffix = paste0("_histo_loading"))
