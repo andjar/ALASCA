@@ -555,23 +555,21 @@ getRegressionPredictions <- function(object) {
     regModel <- regModel[, !grepl(paste0("time", levels(object$df$time)[1]), colnames(regModel))]
   }
   regModel <- regModel[, grepl(paste0(c("time", "group", object$keepTerms), collapse = "|"), colnames(regModel))]
-  newdata <- data.table::rbindlist(
+  object$mod.pred <- data.table::rbindlist(
     lapply(object$variablelist, function(x) {
       regCoeff <- as.matrix(regCoeffAll[regCoeffAll$covar == x, -1])
       data.frame(
-        time = object$df$time[as.numeric(rownames(regModel))],
-        group = object$df$group[as.numeric(rownames(regModel))],
+        object$df[as.numeric(rownames(regModel)), .SD, .SDcols = c("time", "group", object$keepTerms)],
         pred = colSums(regCoeff[, colnames(regModel)] * t(regModel)),
         variable = x
       )
     })
   )
-  if(any(object$keepTerms != "")){
-    object$mod.pred <- newdata[, .(pred = mean(pred)), by = c("variable", "time", "group", object$keepTerms)]
-  }else{
-    object$mod.pred <- newdata[, .(pred = mean(pred)), by = c("variable", "time", "group")]
-  }
   
+  if (object$keepTerms != "") {
+    object$mod.pred[, group := apply(.SD, 1, paste, collapse = " - "), .SDcols = c("group", object$keepTerms)]
+    object$mod.pred[, group := factor(group, levels = object$grouplist)]
+  } 
 
   if (!object$minimizeObject) {
     # This is not a validation run

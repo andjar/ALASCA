@@ -949,7 +949,7 @@ plotPred <- function(object,
                      plot.ylabel = "value",
                      myTheme = object$plot.myTheme) {
   if ( as.list ){
-    if (object$validateRegression) {
+    if (object$validate) {
       gg <- lapply(variables, function(x) {
         g <- ggplot2::ggplot(subset(object$mod.pred, variable == x), ggplot2::aes(
           x = time,
@@ -994,7 +994,7 @@ plotPred <- function(object,
       }
     }
   } else {
-    if (object$validateRegression) {
+    if (object$validate) {
     g <- ggplot2::ggplot(object$mod.pred[object$mod.pred$variable %in% variables,], ggplot2::aes(
       x = time,
       y = pred,
