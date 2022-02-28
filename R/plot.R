@@ -72,6 +72,7 @@ plotDevelopment <- function(object,
                             grouplabel = NA,
                             flipaxes = TRUE,
                             plotzeroline = TRUE,
+                            filename = NA,
                             filetype = NA,
                             figsize = NA,
                             variables = NA,
@@ -82,27 +83,16 @@ plotDevelopment <- function(object,
                             limitloading = FALSE,
                             sortbyloadinggroup = TRUE,
                             myTheme = object$plot.myTheme) {
-  if (!(effect %in% c("both", "time", "group"))) {
-    stop("`effect` has to be `both`, `time` or `group`")
-  }
-  if (!object$separateTimeAndGroup) {
-    effect <- "time"
-  }
-  if (!is.na(xlabel)) {
-    object$plot.xlabel <- xlabel
-  }
-  if (!is.na(grouplabel)) {
-    object$plot.grouplabel <- grouplabel
-  }
-  if (!is.na(filetype)) {
-    object$plot.filetype <- filetype
-  }
-  if (!is.na(figsize)) {
-    object$plot.figsize <- figsize
-  }
-  if (!is.na(figunit)) {
-    object$plot.figunit <- figunit
-  }
+  
+  if (!(effect %in% c("both", "time", "group"))) stop("`effect` has to be `both`, `time` or `group`")
+  if (!object$separateTimeAndGroup) effect <- "time"
+  if (!is.na(xlabel)) object$plot.xlabel <- xlabel
+  if (!is.na(filename)) object$filename <- filename
+  if (!is.na(grouplabel)) object$plot.grouplabel <- grouplabel
+  if (!is.na(filetype)) object$plot.filetype <- filetype
+  if (!is.na(figsize)) object$plot.figsize <- figsize
+  if (!is.na(figunit)) object$plot.figunit <- figunit
+  
   if (flipaxes) {
     plotwidths <- c(2, 3, 2, 3)
     plotalign <- "h"
@@ -293,12 +283,15 @@ plotDevelopment <- function(object,
 screeplot.ALASCA <- function(object,
                              effect = "both",
                              nComps = NA,
+                             filename = "scree_plot",
                              filetype = object$plot.filetype,
                              figsize = object$plot.figsize,
                              figunit = object$plot.figunit,
                              myTheme = object$plot.myTheme) {
   explained <- as.data.frame(getScores(object)$explained)
   explained$component <- seq_len(nrow(explained))
+  if (!is.na(filename)) object$filename <- filename
+  
   if (any(!is.na(nComps))) {
     if (length(nComps) == 1) {
       explained <- subset(explained, component <= nComps)
@@ -448,26 +441,16 @@ getLoadingPlot <- function(object,
                            loadinggroup = NA,
                            limitloading = FALSE,
                            sortbyloadinggroup = TRUE,
+                           pointSize = 0.4,
                            myTheme = NA) {
-  if (any(is.na(myTheme))) {
-    myTheme <- object$plot.myTheme
-  }
-  if (!is.na(filetype)) {
-    object$plot.filetype <- filetype
-  }
-  if (any(is.na(variables))) {
-    variables <- object$variablelist
-  }
-  if (!is.na(figsize)) {
-    object$plot.figsize <- figsize
-  }
-  if (!is.na(figunit)) {
-    object$plot.figunit <- figunit
-  }
-  if (!is.na(loadinggroup)) {
-    object$plot.loadinggroupcolumn <- loadinggroup
-  }
-  pointSize <- 0.4
+  
+  if (any(is.na(myTheme))) myTheme <- object$plot.myTheme
+  if (!is.na(filetype)) object$plot.filetype <- filetype
+  if (any(is.na(variables))) variables <- object$variablelist
+  if (!is.na(figsize)) object$plot.figsize <- figsize
+  if (!is.na(figunit)) object$plot.figunit <- figunit
+  if (!is.na(loadinggroup)) object$plot.loadinggroupcolumn <- loadinggroup
+  
   if (effect == "time") {
     loadings <- subset(getLoadings(object, limitloading = limitloading, n.limit = n.limit)$time, PC == component & covars %in% variables)
   } else {
@@ -580,9 +563,9 @@ getLoadingPlot <- function(object,
       )
     }
   }
-  if (object$save) {
-    saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit, suffix = "_loading")
-  }
+  
+  if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit, suffix = "_loading")
+
   return(g)
 }
 
@@ -608,20 +591,13 @@ getScorePlot <- function(object,
                          figunit = NA,
                          plotribbon = TRUE,
                          dodgewidth = 0.35,
+                         pointSize = 2,
                          myTheme = NA) {
-  if (any(is.na(myTheme))) {
-    myTheme <- object$plot.myTheme
-  }
-  if (!is.na(filetype)) {
-    object$plot.filetype <- filetype
-  }
-  if (any(!is.na(figsize))) {
-    object$plot.figsize <- figsize
-  }
-  if (!is.na(figunit)) {
-    object$plot.figunit <- figunit
-  }
-  pointSize <- 2
+  if (any(is.na(myTheme))) myTheme <- object$plot.myTheme
+  if (!is.na(filetype)) object$plot.filetype <- filetype
+  if (any(!is.na(figsize))) object$plot.figsize <- figsize
+  if (!is.na(figunit)) object$plot.figunit <- figunit
+
   if (effect == "time") {
     if (object$separateTimeAndGroup) {
       score <- getScores(object, component = component)$time
@@ -764,9 +740,9 @@ getScorePlot <- function(object,
         y = .getExpLabel(object, component = component, effect = "group")
       )
   }
-  if (object$save) {
-    saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit, suffix = "_score")
-  }
+  
+  if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit, suffix = "_score")
+  
   return(g)
 }
 
@@ -807,12 +783,16 @@ plotParts <- function(object,
                       valueColumn = FALSE,
                       timeColumn = "time",
                       addSmooth = "loess",
+                      filename = NA,
                       filetype = object$plot.filetype,
                       figunit = object$plot.figunit,
                       plot.ylabel = "value",
                       as.list = FALSE,
                       figsize = object$plot.figsize,
                       myTheme = object$plot.myTheme) {
+  
+  if (!is.na(filename)) object$filename <- filename
+  
   if(as.list){
     if (is.data.frame(object)) {
       df <- object
@@ -846,12 +826,10 @@ plotParts <- function(object,
           participantColumn <- object$participantColumn
         }
       }
-      if (is.na(xlabel)) {
-        xlabel <- object$plot.xlabel
-      }
-      if (is.na(grouplabel)) {
-        grouplabel <- object$plot.grouplabel
-      }
+      
+      if (is.na(xlabel)) xlabel <- object$plot.xlabel
+      if (is.na(grouplabel)) grouplabel <- object$plot.grouplabel
+      
       plotFunction <- function(df, timeColumn, valueColumn, participantColumn, xi, addSmooth, xlabel, grouplabel, myTheme) {
         g <- ggplot2::ggplot(subset(df, variable == xi), ggplot2::aes_string(x = timeColumn, y = valueColumn, color = "group", group = participantColumn)) +
           ggplot2::geom_point(alpha = 0.7) +
@@ -870,9 +848,8 @@ plotParts <- function(object,
       stop("Wrong input object: must be a ALASCA model or a data frame")
     }
   
-    if (any(is.na(variables))) {
-      variables <- unique(df$variable)
-    }
+    if (any(is.na(variables))) variables <- unique(df$variable)
+
     g <- lapply(variables, function(xi) {
       plotFunction(df, timeColumn, valueColumn, participantColumn, xi, addSmooth, xlabel = xlabel, grouplabel = grouplabel, myTheme = myTheme)
     })
@@ -909,9 +886,8 @@ plotParts <- function(object,
         g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group, fill = group), se = TRUE)
       }
 
-    if (object$save) {
-      saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
-    }
+    if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+    
     return(g)
   }
 }
@@ -943,11 +919,15 @@ plotPred <- function(object,
                      filetype = NA,
                      figsize = NA,
                      figunit = NA,
+                     filename = NA,
                      dodgewidth = 0.35,
                      plotribbon = TRUE,
                      as.list = FALSE,
                      plot.ylabel = "value",
                      myTheme = object$plot.myTheme) {
+  
+  if (!is.na(filename)) object$filename <- filename
+  
   if ( as.list ){
     if (object$validate) {
       gg <- lapply(variables, function(x) {
@@ -1051,6 +1031,7 @@ plotPred <- function(object,
 plotVal <- function(object,
                     component = 1,
                     filetype = NA,
+                    filename = NA,
                     figsize = NA,
                     figunit = NA,
                     n.limit = 0,
@@ -1061,6 +1042,7 @@ plotVal <- function(object,
                     plot.alpha = 0.3) {
   if (!object$validate) stop("You must validate the model first")
   if (any(is.na(myTheme)))  myTheme <- object$plot.myTheme
+  if (!is.na(filename)) object$filename <- filename
   
   if (object$separateTimeAndGroup) {
     # Score plots
@@ -1196,9 +1178,9 @@ plotVal <- function(object,
 
     g <- ggpubr::ggarrange(gs, gl, nrow = 1, ncol = 2, widths = c(2, 3), common.legend = TRUE, legend = "bottom")
   }
-  if (object$save) {
-    saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
-  }
+  
+  if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+  
   return(g)
 }
 
@@ -1223,15 +1205,16 @@ plotCovar <- function(object,
                       xlabel = NA,
                       variables = NA,
                       n.limit = 0,
+                      filename = "covars",
                       return_data = FALSE,
                       filetype = NA,
                       figsize = NA,
                       figunit = NA,
                       myTheme = NA,
                       pvalue = "star") {
-  if (any(is.na(myTheme))) {
-    myTheme <- object$plot.myTheme
-  }
+  if (any(is.na(myTheme))) myTheme <- object$plot.myTheme
+  if (!is.na(filename)) object$filename <- filename
+  
   df <- getCovars(object, n.limit = n.limit)
   if ( nrow(df) == 0 ) stop("No covariates to plot")
   df$covar <- factor(df$covar, levels = unique(df$covar[order(df$estimate)]))
@@ -1341,9 +1324,8 @@ plotCovar <- function(object,
           ggplot2::theme(legend.position = "bottom") # ggplot2::scale_color_brewer(palette = "Dark2")
       }
 
-      if (object$save) {
-        saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
-      }
+      if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+      
       return(g)
     }
   }
@@ -1370,6 +1352,7 @@ plotCovar <- function(object,
 #' @export
 plotComponents <- function(object,
                            comps = c(1, 2),
+                           filename = NA,
                            filetype = NA,
                            figsize = NA,
                            figunit = NA,
@@ -1380,6 +1363,7 @@ plotComponents <- function(object,
     g_score, g_loading,
     ncol = 1, nrow = 2
   )
+  if (!is.na(filename)) object$filename <- filename
   if (object$save) {
     saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
   }
@@ -1464,9 +1448,9 @@ plotComponentsLoadings <- function(object,
 
     g <- ggpubr::ggarrange(g, glg)
   }
-  if (object$save) {
-    saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
-  }
+  
+  if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+  
   return(g)
 }
 
@@ -1493,6 +1477,7 @@ plotComponentsScore <- function(object,
                                 comps = c(1, 2),
                                 xlabel = NA,
                                 return_data = FALSE,
+                                filename = NA,
                                 filetype = NA,
                                 figsize = NA,
                                 figunit = NA,
@@ -1503,12 +1488,11 @@ plotComponentsScore <- function(object,
                                 alphavalidate = 0.4,
                                 myTheme = ggplot2::theme_classic(),
                                 ...) {
-  if (!object$validate) {
-    validationshape <- NA
-  }
-  if (any(!comps %in% getRelevantPCs(object = object, effect = "time"))) {
-    warning("Please note: Some components have low explanatory power and HAVE NOT BEEN rotated during rotation. Proceed with care.")
-  }
+  
+  if (!is.na(filename)) object$filename <- filename
+  if (!object$validate) validationshape <- NA
+  if (any(!comps %in% getRelevantPCs(object = object, effect = "time"))) warning("Please note: Some components have low explanatory power and HAVE NOT BEEN rotated during rotation. Proceed with care.")
+  
   if (validationshape == "cross" & !is.na(validationshape)) {
     dff <- subset(getScores(object)$time, PC %in% comps)
     dff$PC <- paste0("PC", dff$PC)
@@ -1660,9 +1644,8 @@ plotComponentsScore <- function(object,
       g <- ggpubr::ggarrange(g, gsg, common.legend = TRUE, legend = "bottom", legend.grob = ggpubr::get_legend(gsg))
     }
   }
-  if (object$save) {
-    saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
-  }
+  if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+  
   return(g)
 }
 
@@ -1713,9 +1696,9 @@ getPlotLinetypes <- function(object) {
       y = .getExpLabel(object, component = comps[2], effect = effect)
     ) +
     myTheme
-  if (!is.na(legend)) {
-    g <- g + ggplot2::theme(legend.position = legend)
-  }
+  
+  if (!is.na(legend)) g <- g + ggplot2::theme(legend.position = legend)
+  
   return(g)
 }
 
@@ -1750,13 +1733,14 @@ getPlotLinetypes <- function(object) {
 plotProjection <- function(object,
                            comp = c(1, 2),
                            return_data = FALSE,
+                           filename = NA,
                            filetype = NA,
                            figsize = NA,
                            figunit = NA,
                            myTheme = NA) {
-  if (any(is.na(myTheme))) {
-    myTheme <- object$plot.myTheme
-  }
+  if (any(is.na(myTheme))) myTheme <- object$plot.myTheme
+  if (!is.na(filename)) object$filename <- filename
+
   df <- object$df
   df$ID <- df[, ID]
   loadings_Time <- subset(getLoadings(object)$time, PC %in% comp)
@@ -1827,9 +1811,9 @@ plotProjection <- function(object,
     if (return_data) {
       return(df_time)
     } else {
-      if (object$save) {
-        saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
-      }
+      
+      if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+      
       return(g)
     }
   }
