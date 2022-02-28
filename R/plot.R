@@ -643,8 +643,8 @@ getScorePlot <- function(object,
           } else {
             g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
               ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth))
-            if (any(grepl("group", object$formulaTerms))) g <- g + ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
-            if (plotribbon && any(grepl("group", object$formulaTerms))) {
+            if (object$method %in% c("Limm", "LMM")) g <- g + ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
+            if (plotribbon && object$method %in% c("Limm", "LMM")) {
               g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = group),
                 alpha = .1,
                 position = ggplot2::position_dodge(width = dodgewidth), color = NA
@@ -663,7 +663,7 @@ getScorePlot <- function(object,
         } else {
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group)) +
             ggplot2::geom_point()
-          if (any(grepl("group", object$formulaTerms))) g <- g + ggplot2::geom_line()
+          if (object$method %in% c("Limm", "LMM")) g <- g + ggplot2::geom_line()
         }
       }
     } else {
@@ -681,8 +681,8 @@ getScorePlot <- function(object,
         } else {
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group, ymin = low, ymax = high)) +
             ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth))
-            if (any(grepl("group", object$formulaTerms))) g <- g + ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
-          if (plotribbon && any(grepl("group", object$formulaTerms))) {
+            if (object$method %in% c("Limm", "LMM")) g <- g + ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
+          if (plotribbon && object$method %in% c("Limm", "LMM")) {
             g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = group),
               alpha = .1,
               position = ggplot2::position_dodge(width = dodgewidth), color = NA
@@ -698,13 +698,13 @@ getScorePlot <- function(object,
         } else {
           g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group)) +
             ggplot2::geom_point()
-          if (any(grepl("group", object$formulaTerms))) g <- g + ggplot2::geom_line()
+          if (object$method %in% c("Limm", "LMM")) g <- g + ggplot2::geom_line()
         }
       }
     }
     g <- g + myTheme +
       ggplot2::scale_color_manual(values = getPlotPalette(object))
-    if (any(grepl("group", object$formulaTerms))) g <- g + ggplot2::scale_linetype_manual(values = getPlotLinetypes(object))
+    if (object$method %in% c("Limm", "LMM")) g <- g + ggplot2::scale_linetype_manual(values = getPlotLinetypes(object))
     g <- g + ggplot2::theme(legend.position = "bottom") +
       ggplot2::labs(
         x = object$plot.xlabel,
@@ -1074,9 +1074,9 @@ plotVal <- function(object,
     dfm <- getScores(object, component = component)$time
     gst <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = model, color = group, linetype = group)) +
       ggplot2::geom_point(alpha = plot.alpha)
-    if (any(grepl("group", object$formulaTerms))) gst <- gst + ggplot2::geom_line(alpha = plot.alpha)
+    if (object$method %in% c("Limm", "LMM")) gst <- gst + ggplot2::geom_line(alpha = plot.alpha)
     gst <- gst + ggplot2::geom_point(data = dfm, group = NA, alpha = 1, color = "black")
-    if (any(grepl("group", object$formulaTerms))) gst <- gst + ggplot2::geom_line(data = dfm, group = dfm$group, alpha = 1, color = "black")
+    if (object$method %in% c("Limm", "LMM")) gst <- gst + ggplot2::geom_line(data = dfm, group = dfm$group, alpha = 1, color = "black")
     gst <- gst + ggplot2::labs(x = object$plot.xlabel,
                                color = object$plot.grouplabel, linetype = object$plot.grouplabel,
                                y = .getExpLabel(object, component = component, effect = "time", type = "Score")) +
@@ -1095,9 +1095,9 @@ plotVal <- function(object,
     dff$plotGroup <- paste0(dff$model, "-", dff$group)
     gsg <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group, linetype = group)) +
       ggplot2::geom_point(alpha = plot.alpha)
-    if (any(grepl("group", object$formulaTerms))) gsg <- gsg + ggplot2::geom_line(alpha = plot.alpha)
+    if (object$method %in% c("Limm", "LMM")) gsg <- gsg + ggplot2::geom_line(alpha = plot.alpha)
     gsg <- gsg + ggplot2::geom_point(data = dfm, group = NA, alpha = 1, color = "black")
-    if (any(grepl("group", object$formulaTerms))) gsg <- gsg + ggplot2::geom_line(data = dfm, group = dfm$group, alpha = 1, color = "black")
+    if (object$method %in% c("Limm", "LMM")) gsg <- gsg + ggplot2::geom_line(data = dfm, group = dfm$group, alpha = 1, color = "black")
     gsg <- gsg +   ggplot2::scale_color_manual(values = getPlotPalette(object)) +
       ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
       ggplot2::labs(x = object$plot.xlabel,
@@ -1161,9 +1161,9 @@ plotVal <- function(object,
     dfm <- getScores(object, component = component)$time
     gs <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group, linetype = group)) +
       ggplot2::geom_point(alpha = plot.alpha)
-      if (any(grepl("group", object$formulaTerms))) gs <- gs + ggplot2::geom_line(alpha = plot.alpha)
+      if (object$method %in% c("Limm", "LMM")) gs <- gs + ggplot2::geom_line(alpha = plot.alpha)
       gs <- gs + ggplot2::geom_point(data = dfm, group = NA, alpha = 1, color = "black")
-      if (any(grepl("group", object$formulaTerms))) gs <- gs + ggplot2::geom_line(data = dfm, group = dfm$group, alpha = 1, color = "black")
+      if (object$method %in% c("Limm", "LMM")) gs <- gs + ggplot2::geom_line(data = dfm, group = dfm$group, alpha = 1, color = "black")
       gs <- gs + ggplot2::scale_color_manual(values = getPlotPalette(object)) +
       ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
       ggplot2::labs(x = object$plot.xlabel,
