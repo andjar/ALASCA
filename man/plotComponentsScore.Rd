@@ -9,6 +9,7 @@ plotComponentsScore(
   comps = c(1, 2),
   xlabel = NA,
   return_data = FALSE,
+  filename = NA,
   filetype = NA,
   figsize = NA,
   figunit = NA,

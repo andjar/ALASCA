@@ -10,7 +10,8 @@ plothistogram_loading(
   bins = object$nValRuns/10,
   variable = NA,
   effect = "time",
-  orderbyname = FALSE
+  orderbyname = FALSE,
+  n.limit = 0
 )
 }
 \arguments{

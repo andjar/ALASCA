@@ -13,6 +13,7 @@ plotParts(
   valueColumn = FALSE,
   timeColumn = "time",
   addSmooth = "loess",
+  filename = NA,
   filetype = object$plot.filetype,
   figunit = object$plot.figunit,
   plot.ylabel = "value",
@@ -32,7 +33,7 @@ plotParts(
 
 \item{filetype}{Which filetype you want to save the figure to}
 
-\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
+\item{figsize}{A vector containing \code{c(width,height,dpi)} (default: \code{c(120, 80, 300)})}
 
 \item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 

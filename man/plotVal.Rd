@@ -8,9 +8,15 @@ plotVal(
   object,
   component = 1,
   filetype = NA,
+  filename = NA,
   figsize = NA,
   figunit = NA,
-  myTheme = ggplot2::theme_bw()
+  n.limit = 0,
+  decreasingLoadings = FALSE,
+  plotzeroline = TRUE,
+  myTheme = NA,
+  flipaxes = TRUE,
+  plot.alpha = 0.3
 )
 }
 \arguments{

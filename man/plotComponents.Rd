@@ -7,6 +7,7 @@
 plotComponents(
   object,
   comps = c(1, 2),
+  filename = NA,
   filetype = NA,
   figsize = NA,
   figunit = NA,

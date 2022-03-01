@@ -7,7 +7,7 @@
 ALASCA(
   df,
   formula,
-  separateTimeAndGroup = TRUE,
+  separateTimeAndGroup = FALSE,
   pAdjustMethod = NA,
   participantColumn = "ID",
   validate = FALSE,
@@ -31,16 +31,19 @@ ALASCA(
   plot.palette.end = 0.8,
   explanatorylimit = 0.05,
   doDebug = FALSE,
+  saveValidationIDs = FALSE,
   nValFold = 7,
   nValRuns = 1000,
   validationQuantileMethod = 2,
   plot.myTheme = ggplot2::theme_classic(),
   keepTerms = c(""),
+  keepColumn = c(""),
   save = FALSE,
   validation = FALSE,
   filename = NA,
   filepath = NA,
-  limm.nComps = 100,
+  limm.nComps = NULL,
+  limm.limit = 0.95,
   lowerLimit = NA,
   savetodisk = FALSE,
   optimizeScore = TRUE,
@@ -48,7 +51,7 @@ ALASCA(
   validationMethod = "bootstrap",
   validationIDs = NA,
   validationObject = NA,
-  validationAssignNewID = TRUE,
+  validationAssignNewID = FALSE,
   validationParticipants = NA
 )
 }

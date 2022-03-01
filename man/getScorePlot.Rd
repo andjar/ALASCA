@@ -13,6 +13,7 @@ getScorePlot(
   figunit = NA,
   plotribbon = TRUE,
   dodgewidth = 0.35,
+  pointSize = 2,
   myTheme = NA
 )
 }

@@ -8,6 +8,7 @@ plotProjection(
   object,
   comp = c(1, 2),
   return_data = FALSE,
+  filename = NA,
   filetype = NA,
   figsize = NA,
   figunit = NA,

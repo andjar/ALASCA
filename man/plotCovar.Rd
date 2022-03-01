@@ -10,6 +10,7 @@ plotCovar(
   xlabel = NA,
   variables = NA,
   n.limit = 0,
+  filename = "covars",
   return_data = FALSE,
   filetype = NA,
   figsize = NA,

@@ -8,6 +8,7 @@
   object,
   effect = "both",
   nComps = NA,
+  filename = "scree_plot",
   filetype = object$plot.filetype,
   figsize = object$plot.figsize,
   figunit = object$plot.figunit,

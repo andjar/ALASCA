@@ -10,6 +10,7 @@ plotPred(
   filetype = NA,
   figsize = NA,
   figunit = NA,
+  filename = NA,
   dodgewidth = 0.35,
   plotribbon = TRUE,
   as.list = FALSE,

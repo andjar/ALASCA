@@ -10,7 +10,7 @@ getLoadingPlot(
   effect = "time",
   decreasingLoadings = TRUE,
   tooDense = NA,
-  tooDense2 = 0,
+  n.limit = 0,
   highlight = NA,
   filetype = NA,
   flipaxes = TRUE,
@@ -21,6 +21,7 @@ getLoadingPlot(
   loadinggroup = NA,
   limitloading = FALSE,
   sortbyloadinggroup = TRUE,
+  pointSize = 0.4,
   myTheme = NA
 )
 }
