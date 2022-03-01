@@ -554,21 +554,30 @@ getRegressionPredictions <- function(object) {
   if (object$forceEqualBaseline) {
     regModel <- regModel[, !grepl(paste0("time", levels(object$df$time)[1]), colnames(regModel))]
   }
-  regModel <- regModel[, grepl(paste0(c("time", "group", object$keepTerms), collapse = "|"), colnames(regModel))]
+  if (object$keepTerms != "") {
+    regModel <- regModel[, grepl(paste0(c("time", "group", object$keepTerms), collapse = "|"), colnames(regModel))]
+  } else {
+    regModel <- regModel[, grepl(paste0(c("time", "group"), collapse = "|"), colnames(regModel))]
+  }
+  
   object$mod.pred <- data.table::rbindlist(
     lapply(object$variablelist, function(x) {
       regCoeff <- as.matrix(regCoeffAll[regCoeffAll$covar == x, -1])
       if (object$keepTerms != "") {
-        data.frame(
-          object$df[as.numeric(rownames(regModel)), .SD, .SDcols = c("time", "group", object$keepTerms)],
-          pred = colSums(regCoeff[, colnames(regModel)] * t(regModel)),
-          variable = x
+        unique(
+          data.frame(
+            object$df[as.numeric(rownames(regModel)), .SD, .SDcols = c("time", "group", object$keepTerms)],
+            pred = colSums(regCoeff[, colnames(regModel)] * t(regModel)),
+            variable = x
+          )
         )
       } else {
-        data.frame(
-          object$df[as.numeric(rownames(regModel)), .SD, .SDcols = c("time", "group")],
-          pred = colSums(regCoeff[, colnames(regModel)] * t(regModel)),
-          variable = x
+        unique(
+          data.frame(
+            object$df[as.numeric(rownames(regModel)), .SD, .SDcols = c("time", "group")],
+            pred = colSums(regCoeff[, colnames(regModel)] * t(regModel)),
+            variable = x
+          )
         )
       }
     })
