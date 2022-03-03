@@ -37,16 +37,16 @@ doLimmPCA <- function(object){
     center = TRUE)
   if (object$doDebug) cat("* First PCA:", Sys.time() - currentTs, "s\n")
   
-  object$limm.explanatory_power <- temp_pca_values$sdev^2 / sum(temp_pca_values$sdev^2)
+  object$reduceDimensions.explanatory_power <- temp_pca_values$sdev^2 / sum(temp_pca_values$sdev^2)
   
   # Remove surplus columns
-  if (is.null(object$limm.nComps)) {
-    object$limm.nComps <- which(cumsum(object$limm.explanatory_power) >= object$limm.limit)[1]
-    cat("-- Keeping",object$limm.nComps,"components from initial PCA, explaining",100*cumsum(object$limm.explanatory_power)[object$limm.nComps],"% of variation\n")
+  if (is.null(object$reduceDimensions.nComps)) {
+    object$reduceDimensions.nComps <- which(cumsum(object$reduceDimensions.explanatory_power) >= object$reduceDimensions.limit)[1]
+    cat("-- Keeping",object$reduceDimensions.nComps,"components from initial PCA, explaining",100*cumsum(object$reduceDimensions.explanatory_power)[object$reduceDimensions.nComps],"% of variation\n")
   }
-  if(ncol(temp_pca_values$rotation) > object$limm.nComps){
-    temp_pca_values$rotation <- temp_pca_values$rotation[,-c((object$limm.nComps+1):ncol(temp_pca_values$rotation))]
-    temp_pca_values$x <- temp_pca_values$x[, -c((object$limm.nComps+1):ncol(temp_pca_values$x))]
+  if(ncol(temp_pca_values$rotation) > object$reduceDimensions.nComps){
+    temp_pca_values$rotation <- temp_pca_values$rotation[,-c((object$reduceDimensions.nComps+1):ncol(temp_pca_values$rotation))]
+    temp_pca_values$x <- temp_pca_values$x[, -c((object$reduceDimensions.nComps+1):ncol(temp_pca_values$x))]
   }
   
   # Check if the pca model needs reflection to better fit the main model
@@ -93,7 +93,7 @@ cleanPCA <- function(object) {
   object$pca$loading$time <- setDT(as.data.frame(object$pca$time$rotation), keep.rownames="covars")
   object$pca$loading$explained$time <- object$pca$score$explained$time
   
-  if(object$method %in% c("Limm", "Lim")){
+  if(object$reduceDimensions){
     # Loadings must be back-transformed
     object$pca$loading$time <- setDT(as.data.frame(as.matrix(object$Limm$loadings) %*% as.matrix(object$pca$loading$time[order(as.numeric(substr(covars, 3, nchar(covars)))), !"covars"])), keep.rownames="covars")
     object$variablelist <- unique(object$pca$loading$time$covars)
@@ -124,7 +124,7 @@ cleanPCA <- function(object) {
     object$pca$loading$group <- setDT(as.data.frame(object$pca$group$rotation), keep.rownames="covars")
     object$pca$loading$explained$group <- object$pca$score$explained$group
     
-    if(object$method %in% c("Limm", "Lim")){
+    if(object$reduceDimensions){
       # Loadings must be back-transformed
       object$pca$loading$group <- setDT(as.data.frame(as.matrix(object$Limm$loadings) %*% as.matrix(object$pca$loading$group[order(as.numeric(substr(covars, 3, nchar(covars)))), !"covars"])), keep.rownames="covars")
     }

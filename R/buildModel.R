@@ -10,7 +10,7 @@ buildModel <- function(object) {
     cat("Calculating ", object$method, " coefficients...\n")
   }
   
-  if (object$method %in% c("Limm", "Lim")) {
+  if (object$reduceDimensions) {
     if (object$doDebug) currentTs <- Sys.time()
     object <- doLimmPCA(object)
     if (object$doDebug) cat("* doLimmPCA:", Sys.time() - currentTs, "s\n")
@@ -69,7 +69,7 @@ buildModel <- function(object) {
 #' @param object An ALASCA object
 #' @return An ALASCA object
 runRegression <- function(object) {
-  if (object$useRfast & object$method %in% c("LMM", "Limm")) {
+  if (object$useRfast & object$method %in% c("LMM")) {
     # start.time <- Sys.time()
     if (any(is.na(object$df[, value]))) {
       stop("Rfast does NOT like NA's! Check your scaling function or value column.")
@@ -97,7 +97,7 @@ runRegression <- function(object) {
     # end.time <- Sys.time()
     # cat("\n\n",end.time - start.time,"\n")
     return(object)
-  } else if (!object$useRfast & object$method %in% c("LM", "Lim")) {
+  } else if (!object$useRfast & object$method %in% c("LM")) {
     object$regr.model <- lapply(object$variablelist, function(x) {
       modmat <- model.matrix(object$formula, data = object$df[variable == x])
       modmat <- modmat[, -1] # Remove intercept
@@ -110,7 +110,7 @@ runRegression <- function(object) {
       attr(regr.model, "name") <- x
       regr.model
     })
-  } else if (object$useRfast & object$method %in% c("LM", "Lim")) {
+  } else if (object$useRfast & object$method %in% c("LM")) {
     # start.time <- Sys.time()
     if (any(is.na(object$df[, value]))) {
       stop("Rfast does NOT like NA's! Check your scaling function or value column.")
@@ -137,7 +137,7 @@ runRegression <- function(object) {
     # end.time <- Sys.time()
     # cat("\n\n",end.time - start.time,"\n")
     return(object)
-  } else if (object$method %in% c("LMM", "Limm")) {
+  } else if (object$method %in% c("LMM")) {
     object$regr.model <- lapply(object$variablelist, function(x) {
       modmat <- model.matrix(object$formula, data = object$df[variable == x])
       modmat <- modmat[, -1] # Remove intercept
@@ -242,7 +242,7 @@ removeCovars <- function(object) {
     object$CovarCoefficients <- rbind(object$CovarCoefficients, subset(object$RegressionCoefficients, substr(variable, 1, nchar(i)) == i))
     object$RegressionCoefficients <- subset(object$RegressionCoefficients, substr(variable, 1, nchar(i)) != i)
   }
-  if(object$method %in% c("Limm", "Lim")){
+  if(object$reduceDimensions){
     object$CovarCoefficients <- rbindlist(lapply(unique(object$CovarCoefficients$variable), function(v){
       ref <- object$CovarCoefficients[variable == v]
       data.frame(

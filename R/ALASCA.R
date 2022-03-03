@@ -27,7 +27,7 @@
 #' @param save Save models and plots automatically (default: `FALSE`)
 #' @param lowerLimit A data frame with lower limits for every variable
 #' @param filename File name to save model and plots (when `save = TRUE`)
-#' @param method Defaults to `NA` where method is either LM or LMM, depending on whether your formula contains a random effect or not. Set to KM or KMM for survival analysis
+#' @param method Defaults to `NA` where method is either LM or LMM, depending on whether your formula contains a random effect or not
 #' @param useRfast Boolean. Defaults to `TRUE`
 #' @param nValFold Partitions when validating
 #' @param nValRuns number of validation runs
@@ -42,14 +42,17 @@
 #' @export
 ALASCA <- function(df,
                    formula,
+                   wide = FALSE,
                    separateTimeAndGroup = FALSE,
                    pAdjustMethod = NA,
                    participantColumn = "ID",
                    validate = FALSE,
                    scaleFun = "sdall",
+                   reduceDimensions = FALSE,
                    forceEqualBaseline = FALSE,
                    useSumCoding = FALSE,
                    method = NA,
+                   ignoreMissing = FALSE,
                    useRfast = TRUE,
                    stratificationColumn = "group",
                    stratificationVector = NA,
@@ -77,8 +80,8 @@ ALASCA <- function(df,
                    validation = FALSE,
                    filename = NA,
                    filepath = NA,
-                   limm.nComps= NULL,
-                   limm.limit = 0.95,
+                   reduceDimensions.nComps= NULL,
+                   reduceDimensions.limit = 0.95,
                    lowerLimit = NA,
                    savetodisk = FALSE,
                    optimizeScore = TRUE,
@@ -96,7 +99,7 @@ ALASCA <- function(df,
 
     ## Unscaled values
     object$df <- validationObject$dfRaw
-    if(object$method %in% c("Limm", "Lim")){
+    if(object$reduceDimensions){
       object$Limm$main$pca <- object$Limm$pca
     }
 
@@ -121,6 +124,7 @@ ALASCA <- function(df,
     object <- list(
       df = setDT(df),
       formula = formula,
+      wide = wide,
       separateTimeAndGroup = separateTimeAndGroup,
       pAdjustMethod = pAdjustMethod,
       participantColumn = participantColumn,
@@ -136,13 +140,15 @@ ALASCA <- function(df,
       plot.filetype = plot.filetype,
       plot.palette = plot.palette,
       plot.palette.end = plot.palette.end,
-      limm.nComps = limm.nComps,
-      limm.limit = limm.limit,
+      reduceDimensions.nComps = reduceDimensions.nComps,
+      reduceDimensions = reduceDimensions,
+      reduceDimensions.limit = reduceDimensions.limit,
       plot.loadinggroupcolumn = plot.loadinggroupcolumn,
       plot.loadinggrouplabel = plot.loadinggrouplabel,
       plot.myTheme = plot.myTheme,
       explanatorylimit = explanatorylimit,
       limitsCI = limitsCI,
+      ignoreMissing = ignoreMissing,
       keepColumn = keepColumn,
       minimizeObject = minimizeObject,
       doDebug = doDebug,
@@ -304,38 +310,7 @@ sanitizeObject <- function(object) {
       object$df <- object$df[, .SD, .SDcols = c(object$allFormulaTerms, "variable", "value", object$plot.loadinggroupcolumn)]
     }
     
-    
-    if (!is.na(object$method)) {
-      # The user has specified a method to use
-      if (object$method == "LMM") {
-        if (!any(grepl("\\|", object$formulaTerms))) {
-          stop("The model must contain at least one random effect. Sure you wanted linear mixed models?")
-        }
-      } else if (object$method == "LM") {
-        if (any(grepl("\\|", object$formulaTerms))) {
-          stop("The model contains at least one random effect. Sure you not wanted linear mixed models instead?")
-        }
-      } else if (object$method %in% c("KM", "KMM", "Limm","Lim")) {
-
-      } else {
-        stop("You entered an undefined method. Use `LMM` or `LM`!")
-      }
-      if (object$useRfast) {
-        cat("Will use Rfast!\n")
-
-        # Validation of regression only works for LMs at the moment
-        object$validateRegression <- FALSE
-      }
-    } else {
-      # Find which default method to use
-      if (any(grepl("\\|", object$formulaTerms))) {
-        object$method <- "LMM"
-        cat("Will use linear mixed models!\n")
-      } else {
-        object$method <- "LM"
-        cat("Will use linear models!\n")
-      }
-    }
+    object <- LM_or_LMM(object)
 
     # Check that the input is as expected
     if (!("time" %in% colnames(object$df))) {
@@ -375,7 +350,7 @@ sanitizeObject <- function(object) {
       ))
     }
 
-    if (object$method %in% c("LMM", "Limm")) {
+    if (object$method %in% c("LMM")) {
       if (object$participantColumn != "ID") {
         object$df$ID <- object$df[, get(object$participantColumn)]
         tmp <- object$formulaTerms[!grepl("\\|", object$formulaTerms)]
@@ -404,7 +379,7 @@ sanitizeObject <- function(object) {
         }
       }
 
-      if (object$method %in% c("LMM", "Limm")) {
+      if (object$method %in% c("LMM")) {
         if (object$useRfast) {
           # Using Rfast
           rterms <- object$formulaTerms[!grepl("\\|", object$formulaTerms)]
@@ -416,7 +391,7 @@ sanitizeObject <- function(object) {
           object$newformula <- formula(paste("value ~ modmat+", paste(rterms, collapse = "+")))
         }
       }
-    } else if (object$method %in% c("LM", "Lim")) {
+    } else if (object$method %in% c("LM")) {
       object$newformula <- value ~ modmat
     }
 
@@ -509,6 +484,72 @@ sanitizeObject <- function(object) {
     }
   }
 
+  return(object)
+}
+
+#' Check if response variables are missing
+#'
+#' ...
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+find_missing_response_variables <- function(object) {
+  if (!ignoreMissing) {
+    if(df[, uniqueN(variable), by = .(ID, time)][, uniqueN(V1)] > 1) stop("Unequal number of variables!")
+  }
+}
+
+#' Determine whether to use LM or LMM
+#'
+#' ...
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+LM_or_LMM <- function(object) {
+  if (!is.na(object$method)) {
+    # The user has specified a method to use
+    if (object$method == "LMM") {
+      if (!any(grepl("\\|", object$formulaTerms))) {
+        stop("The model must contain at least one random effect. Sure you wanted linear mixed models?")
+      }
+    } else if (object$method == "LM") {
+      if (any(grepl("\\|", object$formulaTerms))) {
+        stop("The model contains at least one random effect. Sure you not wanted linear mixed models instead?")
+      }
+    } else {
+      stop("You entered an undefined method. Use `LMM` or `LM`!")
+    }
+    if (object$useRfast) {
+      cat("Will use Rfast!\n")
+      
+      # Validation of regression only works for LMs at the moment
+      object$validateRegression <- FALSE
+    }
+  } else {
+    # Find which default method to use
+    if (any(grepl("\\|", object$formulaTerms))) {
+      object$method <- "LMM"
+      cat("Will use linear mixed models!\n")
+    } else {
+      object$method <- "LM"
+      cat("Will use linear models!\n")
+    }
+  }
+  return(object)
+}
+
+#' Convert wide df to long df
+#'
+#' ...
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+wide_to_long <- function(object) {
+  if (object$wide) {
+    cat("Converting from wide to long!\n")
+    object$df <- melt(object$df, id.vars = c(object$allFormulaTerms[!object$allFormulaTerms %in% c("variable", "value")]))
+    object$wide <- FALSE
+  }
   return(object)
 }
 
@@ -637,8 +678,8 @@ summary.ALASCA <- function(object, file = "", sessioninfo = FALSE) {
   if (!object$useRfast) {
     cat("Adjustment of p-values: ", object$pAdjustMethod, "\n", file = file, append = TRUE)
   }
-  if (!is.null(object$limm.nComps)) {
-    cat("Kept",object$limm.nComps,"components from initial PCA, explaining",100*cumsum(object$limm.explanatory_power)[object$limm.nComps],"% of variation\n", file = file, append = TRUE)
+  if (!is.null(object$reduceDimensions.nComps)) {
+    cat("Kept",object$reduceDimensions.nComps,"components from initial PCA, explaining",100*cumsum(object$limm.explanatory_power)[object$reduceDimensions.nComps],"% of variation\n", file = file, append = TRUE)
   }
   cat("\n\nPCs explaining at least 5% of variation:\n   Time: ",
     paste(getRelevantPCs(object = object, effect = "time"), collapse = ", "), " (",

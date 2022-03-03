@@ -606,7 +606,7 @@ prepareValidationRun <- function(object, runN = NA) {
     # Use leave-one-out validation
     selectedParts <- data.frame()
 
-    if (object$method %in% c("LMM", "Rfast", "Limm")) {
+    if (object$method %in% c("LMM")) {
       if (any(is.na(object$validationIDs))) {
         # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
         selectedParts <- lapply(unique(object$stratificationVector), function(gr) {
@@ -625,7 +625,7 @@ prepareValidationRun <- function(object, runN = NA) {
           validationParticipants = object$df[, ID] %in% object$validationIDs[runN, ]
         )
       }
-    } else if (object$method %in% c("LM", "Lim")) {
+    } else if (object$method %in% c("LM")) {
       object$df$ID <- c(seq_len(nrow(object$df)))
       if (any(is.na(object$validationIDs))) {
         # For each group, divide the participants into nValFold groups, and select nValFold-1 of them
@@ -655,67 +655,63 @@ prepareValidationRun <- function(object, runN = NA) {
     bootdf <- data.frame()
     cc_id <- 0 # Will become the new participant ID
 
-    if (object$method %in% c("LMM", "Limm", "LM", "Lim")) {
-      # Loop through all the groups and create a new dataframe with resampled values
-      bootobject$newIDs <- c()
-      bootobject$originalIDs <- c()
-      if (object$doDebug) currentTs <- Sys.time()
-      if (any(is.na(object$validationIDs))) {
-        for (i in unique(object$stratificationVector)) {
-          # Get ID of all members of stratification group
-          selectedParts_temp_all <- unique(object$df[object$stratificationVector == i, ID])
+    # Loop through all the groups and create a new dataframe with resampled values
+    bootobject$newIDs <- c()
+    bootobject$originalIDs <- c()
+    if (object$doDebug) currentTs <- Sys.time()
+    if (any(is.na(object$validationIDs))) {
+      for (i in unique(object$stratificationVector)) {
+        # Get ID of all members of stratification group
+        selectedParts_temp_all <- unique(object$df[object$stratificationVector == i, ID])
 
-          # Resample participants
-          selectedParts_temp_selected <- sample(selectedParts_temp_all, length(selectedParts_temp_all), replace = TRUE)
-          newIDs <- seq(cc_id + 1, cc_id + length(selectedParts_temp_selected))
-          cc_id <- max(newIDs)
-          bootobject$originalIDs <- c(bootobject$originalIDs, selectedParts_temp_selected)
-          bootobject$newIDs <- c(bootobject$newIDs, newIDs)
+        # Resample participants
+        selectedParts_temp_selected <- sample(selectedParts_temp_all, length(selectedParts_temp_all), replace = TRUE)
+        newIDs <- seq(cc_id + 1, cc_id + length(selectedParts_temp_selected))
+        cc_id <- max(newIDs)
+        bootobject$originalIDs <- c(bootobject$originalIDs, selectedParts_temp_selected)
+        bootobject$newIDs <- c(bootobject$newIDs, newIDs)
 
-          # Create data frame from resampled participants
-          bootdf <- rbind(
-            bootdf,
-            rbindlist(
-              lapply(seq_along(selectedParts_temp_selected), function(x) {
-                seldf <- bootdf_temp[bootdf_temp$ID == selectedParts_temp_selected[x], ]
-                seldf[, originalIDbeforeBootstrap := ID]
-                seldf[, uniqueIDforBootstrap := newIDs[x]]
-                if (object$validationAssignNewID) seldf[, ID := newIDs[x]] # Replace ID
-                seldf
-              })
-            )
-          )
-        }
-        if (object$saveValidationIDs) {
-          write(paste0(bootobject$originalIDs, collapse = ";"),
-                file = getFilename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
-          )
-        }
-      } else {
-        newIDs <- seq(1, length(object$validationIDs[runN, ]))
+        # Create data frame from resampled participants
         bootdf <- rbind(
           bootdf,
           rbindlist(
-            lapply(seq_along(object$validationIDs[runN, ]), function(x) {
-              seldf <- bootdf_temp[bootdf_temp$ID == object$validationIDs[runN, x], ]
-              seldf$originalIDbeforeBootstrap <- seldf$ID
-              if (object$validationAssignNewID) seldf$ID <- newIDs[x] # Replace ID
+            lapply(seq_along(selectedParts_temp_selected), function(x) {
+              seldf <- bootdf_temp[bootdf_temp$ID == selectedParts_temp_selected[x], ]
+              seldf[, originalIDbeforeBootstrap := ID]
+              seldf[, uniqueIDforBootstrap := newIDs[x]]
+              if (object$validationAssignNewID) seldf[, ID := newIDs[x]] # Replace ID
               seldf
             })
           )
         )
       }
-      bootobject$dfRaw <- bootdf
-      if (object$doDebug) cat(".. Prepare bootstrap sample:", Sys.time() - currentTs, "s\n")
-      
-      temp_object <- ALASCA(
-        validationObject = bootobject,
-        validationParticipants = rep(TRUE, nrow(bootobject$dfRaw))
+      if (object$saveValidationIDs) {
+        write(paste0(bootobject$originalIDs, collapse = ";"),
+              file = getFilename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
+        )
+      }
+    } else {
+      newIDs <- seq(1, length(object$validationIDs[runN, ]))
+      bootdf <- rbind(
+        bootdf,
+        rbindlist(
+          lapply(seq_along(object$validationIDs[runN, ]), function(x) {
+            seldf <- bootdf_temp[bootdf_temp$ID == object$validationIDs[runN, x], ]
+            seldf$originalIDbeforeBootstrap <- seldf$ID
+            if (object$validationAssignNewID) seldf$ID <- newIDs[x] # Replace ID
+            seldf
+          })
+        )
       )
-    } else if (object$method == "") {
-      stop("Bootstrapping not implemented for LMs yet")
     }
-  }
+    bootobject$dfRaw <- bootdf
+    if (object$doDebug) cat(".. Prepare bootstrap sample:", Sys.time() - currentTs, "s\n")
+    
+    temp_object <- ALASCA(
+      validationObject = bootobject,
+      validationParticipants = rep(TRUE, nrow(bootobject$dfRaw))
+    )
+  } 
 
   return(temp_object)
 }
