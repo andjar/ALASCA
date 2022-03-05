@@ -321,6 +321,8 @@ sanitizeObject <- function(object) {
     object$grouplist <- levels(object$df$group)
     
     object <- adjust_design_matrix(object)
+    
+    object <- get_scaling_function(object)
 
     if (object$savetodisk) {
       object$db.driver <- RSQLite::dbDriver("SQLite")
@@ -346,8 +348,8 @@ sanitizeObject <- function(object) {
   # Keep a copy of unscaled data
   object$dfRaw <- object$df
   
-  
-  object <- get_scaling_function(object)
+  # Scale data
+  object$df <- object$scaleFun(object$df)
 
   return(object)
 }
@@ -704,21 +706,20 @@ get_scaling_function <- function(object) {
     if (!object$minimizeObject) {
       cat("Scaling data with custom function...\n")
     }
-    object$df <- object$scaleFun(object$df)
     
     # The user do not want to scale
   } else if (object$scaleFun == "none") {
     if (!object$minimizeObject) {
       warning("Not scaling data...\n")
     }
+    object$scaleFun <- identity()
     
     # Use a deafult scaling
   } else if (is.character(object$scaleFun)) {
-    object$scaleFun <- get_scaling_function(scaleFun_string = object$scaleFun, scaleFun.center = object$scaleFun.center)
     if (!object$minimizeObject) {
-      cat("Scaling data...\n")
+      cat("Scaling data with ",object$scaleFun,"...\n")
     }
-    object$df <- object$scaleFun(object$df)
+    object$scaleFun <- get_default_scaling_function(scaleFun_string = object$scaleFun, scaleFun.center = object$scaleFun.center)
     
   } else {
     stop("Unknown scaling function")
