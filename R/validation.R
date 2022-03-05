@@ -322,8 +322,8 @@ rotateMatrix <- function(object, target) {
   PCloading <- getRelevantPCs(target, effect = "time")
   PCloading_t <- paste0("PC", PCloading)
   c <- .procrustes(
-    loadings = as.matrix(object$pca$loading$time[target$pca$loading$time, PCloading_t]),
-    target = as.matrix(target$pca$loading$time[, PCloading_t])
+    loadings = as.matrix(object$pca$loading$time[target$pca$loading$time, ..PCloading_t]),
+    target = as.matrix(target$pca$loading$time[, ..PCloading_t])
   )
 
   object$pca$loading$time[target$pca$loading$time, (PCloading_t) := as.data.frame(c$procrust)]
@@ -333,8 +333,8 @@ rotateMatrix <- function(object, target) {
     PCloading <- getRelevantPCs(target, effect = "group")
     PCloading_t <- paste0("PC", PCloading)
     c <- .procrustes(
-      loadings = as.matrix(object$pca$loading$group[target$pca$loading$group, PCloading_t]),
-      target = as.matrix(target$pca$loading$group[, PCloading_t])
+      loadings = as.matrix(object$pca$loading$group[target$pca$loading$group, ..PCloading_t]),
+      target = as.matrix(target$pca$loading$group[, ..PCloading_t])
     )
 
     object$pca$loading$group[target$pca$loading$group, (PCloading_t) := as.data.frame(c$procrust)]
@@ -697,8 +697,9 @@ prepareValidationRun <- function(object, runN = NA) {
         rbindlist(
           lapply(seq_along(object$validationIDs[runN, ]), function(x) {
             seldf <- bootdf_temp[bootdf_temp$ID == object$validationIDs[runN, x], ]
-            seldf$originalIDbeforeBootstrap <- seldf$ID
-            if (object$validationAssignNewID) seldf$ID <- newIDs[x] # Replace ID
+            seldf[, originalIDbeforeBootstrap := ID]
+            seldf[, uniqueIDforBootstrap := newIDs[x]]
+            if (object$validationAssignNewID) seldf[, ID := newIDs[x]] # Replace ID
             seldf
           })
         )
