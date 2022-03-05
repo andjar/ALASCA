@@ -26,13 +26,13 @@ doPCA <- function(object) {
 #'
 #' @param object An ALASCA object
 #' @return An ALASCA object
-doLimmPCA <- function(object){
+reduce_dimensions <- function(object){
   wide_data <- dcast(data = object$df,
                      as.formula(paste(paste(object$allFormulaTerms, collapse = " + "), "~ variable"))
                      )
   if (object$doDebug) currentTs <- Sys.time()
   temp_pca_values <- prcomp(
-    wide_data[, (length(object$allFormulaTerms)+1):ncol(wide_data)],
+    wide_data[, .SD, .SDcols = -object$allFormulaTerms],
     scale = FALSE,
     center = TRUE)
   if (object$doDebug) cat("* First PCA:", Sys.time() - currentTs, "s\n")
@@ -95,8 +95,23 @@ cleanPCA <- function(object) {
   
   if(object$reduceDimensions){
     # Loadings must be back-transformed
-    object$pca$loading$time <- setDT(as.data.frame(as.matrix(object$Limm$loadings) %*% as.matrix(object$pca$loading$time[order(as.numeric(substr(covars, 3, nchar(covars)))), !"covars"])), keep.rownames="covars")
+    object$pca$loading$time <- setDT(
+      as.data.frame(
+        as.matrix(object$Limm$loadings) %*% as.matrix(object$pca$loading$time[order(as.numeric(substr(covars, 3, nchar(covars)))), !"covars"])
+        ),
+      keep.rownames="covars")
     object$variablelist <- unique(object$pca$loading$time$covars)
+    object$RegressionCoefficients <- rbindlist(
+      lapply(unique(object$RegressionCoefficients$variable), function(x){
+        setDT(
+          data.frame(
+            variable = x,
+            pvalue = NA,
+            estimate = as.matrix(object$Limm$loadings) %*% as.matrix(object$RegressionCoefficients[variable == x & order(as.numeric(substr(covar, 3, nchar(covar)))), "estimate"])
+          ),
+        keep.rownames="covar")
+      })
+    )
   }
   
   setkey(object$pca$loading$time, covars)
@@ -126,7 +141,11 @@ cleanPCA <- function(object) {
     
     if(object$reduceDimensions){
       # Loadings must be back-transformed
-      object$pca$loading$group <- setDT(as.data.frame(as.matrix(object$Limm$loadings) %*% as.matrix(object$pca$loading$group[order(as.numeric(substr(covars, 3, nchar(covars)))), !"covars"])), keep.rownames="covars")
+      object$pca$loading$group <- setDT(
+        as.data.frame(
+          as.matrix(object$Limm$loadings) %*% as.matrix(object$pca$loading$group[order(as.numeric(substr(covars, 3, nchar(covars)))), !"covars"])
+          ),
+        keep.rownames="covars")
     }
     
     setkey(object$pca$loading$group, covars)
