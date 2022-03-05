@@ -48,6 +48,7 @@ ALASCA <- function(df,
                    participantColumn = "ID",
                    validate = FALSE,
                    scaleFun = "sdall",
+                   scaleFun.center = TRUE,
                    reduceDimensions = FALSE,
                    forceEqualBaseline = FALSE,
                    useSumCoding = FALSE,
@@ -136,6 +137,7 @@ ALASCA <- function(df,
       participantColumn = participantColumn,
       validate = ifelse(validate | validation, TRUE, FALSE),
       scaleFun = scaleFun,
+      scaleFun.center = scaleFun.center,
       forceEqualBaseline = forceEqualBaseline,
       useSumCoding = useSumCoding,
       method = method,
@@ -359,7 +361,7 @@ sanitizeObject <- function(object) {
 
     # Use a deafult scaling
   } else if (is.character(object$scaleFun)) {
-    object$scaleFun <- getScaleFun(object$scaleFun)
+    object$scaleFun <- get_scaling_function(scaleFun_string = object$scaleFun, scaleFun.center = scaleFun.center)
     if (!object$minimizeObject) {
       cat("Scaling data...\n")
     }
@@ -380,7 +382,7 @@ sanitizeObject <- function(object) {
 rename_columns_to_standard <- function(object) {
   
   if (object$valCol != "value") {
-    if ("value" %in% colnames(object$df)) stop("Sorry, the value column is reserved by ALASCA; please give it another name or change `xColumn`")
+    if ("value" %in% colnames(object$df)) stop("Sorry, the value column is reserved by ALASCA; please give it another name or change `valCol`")
     warning("Changing", object$valCol, "to `value`.")
     object$df[, value := get(object$valCol)]
     object$formula <- formula(paste(
@@ -656,30 +658,59 @@ removeEmbedded <- function(object) {
 #' Return scaling function
 #'
 #' @param scaleFun_string String to define scaing function: `sdall`, `sdref`, `sdt1`, `sdreft1`
+#' @param scaleFun.center Boolean. Mean centering
 #' @return An ALASCA object
-getScaleFun <- function(scaleFun_string) {
+get_scaling_function <- function(scaleFun_string = "sdall", scaleFun.center = TRUE) {
   if (scaleFun_string == "sdall") {
-    scaleFun <- function(df) {
-      # Scale by the SD of all rows
-      df[, value := as.double(value)][, value := value / sd(value), by = variable]
+    if (scaleFun.center) {
+      scaleFun <- function(df) {
+        # Scale by the SD of all rows
+        df[, value := as.double(value)][, value := (value-mean(value)) / sd(value), by = variable]
+      }
+    } else {
+      scaleFun <- function(df) {
+        # Scale by the SD of all rows
+        df[, value := as.double(value)][, value := value / sd(value), by = variable]
+      }
     }
   } else if (scaleFun_string == "sdref") {
-    scaleFun <- function(df) {
-      # Scale by the SD of all rows in the refence group
-      df[, value := as.double(value)][, value := value / sd(value[group == levels(group)[1]]), by = variable]
+    if (scaleFun.center) {
+      scaleFun <- function(df) {
+        # Scale by the SD of all rows in the refence group
+        df[, value := as.double(value)][, value := (value-mean(value)) / sd(value[group == levels(group)[1]]), by = variable]
+      }
+    } else {
+      scaleFun <- function(df) {
+        # Scale by the SD of all rows in the refence group
+        df[, value := as.double(value)][, value := value / sd(value[group == levels(group)[1]]), by = variable]
+      }
     }
   } else if (scaleFun_string == "sdt1") {
-    scaleFun <- function(df) {
-      # Scale by the SD of all baseline rows
-      df[, value := as.double(value)][, value := value / sd(value[time == levels(time)[1]]), by = variable]
+    if (scaleFun.center) {
+      scaleFun <- function(df) {
+        # Scale by the SD of all baseline rows
+        df[, value := as.double(value)][, value := (value - mean(value)) / sd(value[time == levels(time)[1]]), by = variable]
+      }
+    } else {
+      scaleFun <- function(df) {
+        # Scale by the SD of all baseline rows
+        df[, value := as.double(value)][, value := value / sd(value[time == levels(time)[1]]), by = variable]
+      }
     }
   } else if (scaleFun_string == "sdreft1") {
-    scaleFun <- function(df) {
-      # Scale by the SD of all baseline rows in the reference group
-      df[, value := as.double(value)][, value := value / sd(value[group == levels(group)[1] & time == levels(time)[1]]), by = variable]
+    if (scaleFun.center) {
+      scaleFun <- function(df) {
+        # Scale by the SD of all baseline rows in the reference group
+        df[, value := as.double(value)][, value := (value - mean(value)) / sd(value[group == levels(group)[1] & time == levels(time)[1]]), by = variable]
+      }
+    } else {
+      scaleFun <- function(df) {
+        # Scale by the SD of all baseline rows in the reference group
+        df[, value := as.double(value)][, value := value / sd(value[group == levels(group)[1] & time == levels(time)[1]]), by = variable]
+      }
     }
   } else {
-    stop("Unknown scaling method. Please use of on the following: `none`, `sdall`, `sdref`, `sdreft1`, `sdt1`")
+    stop("Unknown scaling method. Please use of one the following: `none`, `sdall`, `sdref`, `sdreft1`, `sdt1`")
   }
 }
 
