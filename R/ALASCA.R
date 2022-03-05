@@ -345,32 +345,9 @@ sanitizeObject <- function(object) {
 
   # Keep a copy of unscaled data
   object$dfRaw <- object$df
-
-  # The user provided a custom function
-  if (is.function(object$scaleFun)) {
-    if (!object$minimizeObject) {
-      cat("Scaling data with custom function...\n")
-    }
-    object$df <- object$scaleFun(object$df)
-    
-
-    # The user do not want to scale
-  } else if (object$scaleFun == "none") {
-    if (!object$minimizeObject) {
-      warning("Not scaling data...\n")
-    }
-
-    # Use a deafult scaling
-  } else if (is.character(object$scaleFun)) {
-    object$scaleFun <- get_scaling_function(scaleFun_string = object$scaleFun, scaleFun.center = scaleFun.center)
-    if (!object$minimizeObject) {
-      cat("Scaling data...\n")
-    }
-    object$df <- object$scaleFun(object$df)
-    
-  } else {
-    stop("Unknown scaling function")
-  }
+  
+  
+  object <- get_scaling_function(object)
 
   return(object)
 }
@@ -660,8 +637,8 @@ removeEmbedded <- function(object) {
 #'
 #' @param scaleFun_string String to define scaing function: `sdall`, `sdref`, `sdt1`, `sdreft1`
 #' @param scaleFun.center Boolean. Mean centering
-#' @return An ALASCA object
-get_scaling_function <- function(scaleFun_string = "sdall", scaleFun.center = TRUE) {
+#' @return A scaling function
+get_default_scaling_function <- function(scaleFun_string = "sdall", scaleFun.center = TRUE) {
   if (scaleFun_string == "sdall") {
     if (scaleFun.center) {
       scaleFun <- function(df) {
@@ -713,6 +690,40 @@ get_scaling_function <- function(scaleFun_string = "sdall", scaleFun.center = TR
   } else {
     stop("Unknown scaling method. Please use of one the following: `none`, `sdall`, `sdref`, `sdreft1`, `sdt1`")
   }
+}
+
+#' Get a scaling function
+#'
+#' Return scaling function
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+get_scaling_function <- function(object) {
+  # The user provided a custom function
+  if (is.function(object$scaleFun)) {
+    if (!object$minimizeObject) {
+      cat("Scaling data with custom function...\n")
+    }
+    object$df <- object$scaleFun(object$df)
+    
+    # The user do not want to scale
+  } else if (object$scaleFun == "none") {
+    if (!object$minimizeObject) {
+      warning("Not scaling data...\n")
+    }
+    
+    # Use a deafult scaling
+  } else if (is.character(object$scaleFun)) {
+    object$scaleFun <- get_scaling_function(scaleFun_string = object$scaleFun, scaleFun.center = object$scaleFun.center)
+    if (!object$minimizeObject) {
+      cat("Scaling data...\n")
+    }
+    object$df <- object$scaleFun(object$df)
+    
+  } else {
+    stop("Unknown scaling function")
+  }
+  return(object)
 }
 
 #' Flip an ALASCA object
