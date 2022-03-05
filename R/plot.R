@@ -449,7 +449,6 @@ getLoadingPlot <- function(object,
   if (any(is.na(variables))) variables <- object$variablelist
   if (!is.na(figsize)) object$plot.figsize <- figsize
   if (!is.na(figunit)) object$plot.figunit <- figunit
-  if (!is.na(loadinggroup)) object$plot.loadinggroupcolumn <- loadinggroup
   
   if (effect == "time") {
     loadings <- subset(getLoadings(object, limitloading = limitloading, n.limit = n.limit)$time, PC == component & covars %in% variables)
@@ -457,20 +456,7 @@ getLoadingPlot <- function(object,
     loadings <- subset(getLoadings(object, limitloading = limitloading, n.limit = n.limit)$group, PC == component & covars %in% variables)
   }
   if (!is.na(object$plot.loadinggroupcolumn)) {
-    if (object$reduceDimensions) {
-      df_loading_labels <- data.frame(
-        covargroup = object$Limm$df[, get(object$plot.loadinggroupcolumn)],
-        covars = object$Limm$df[, get("variable")]
-      )
-    } else {
-      df_loading_labels <- data.frame(
-        covargroup = object$df[, get(object$plot.loadinggroupcolumn)],
-        covars = object$df[, get("variable")]
-      )
-    }
-    
-    df_loading_labels <- df_loading_labels[!duplicated(df_loading_labels), ]
-    loadings <- merge(loadings, df_loading_labels, by = "covars")
+    loadings <- merge(loadings, object$variable_labels)
   } else {
     loadings$covargroup <- NA
   }
@@ -1232,20 +1218,7 @@ plotCovar <- function(object,
     df$xlabel[df$variable == covar[i]] <- xlabel[i]
   }
   if (!is.na(object$plot.loadinggroupcolumn)) {
-    if (object$reduceDimensions) {
-      df_covar_labels <- data.frame(
-        covargroup = object$Limm$df[, get(object$plot.loadinggroupcolumn)],
-        covar = object$Limm$df[, get("variable")]
-      )
-    } else {
-      df_covar_labels <- data.frame(
-        covargroup = object$df[, get(object$plot.loadinggroupcolumn)],
-        covar = object$df[, get("variable")]
-      )
-    }
-    
-    df_covar_labels <- df_covar_labels[!duplicated(df_covar_labels), ]
-    df <- merge(df, df_covar_labels, by = "covar")
+    loadings <- merge(loadings, object$variable_labels, by.x = "covar", by.y = "covars")
   } else {
     df$covargroup <- NA
   }

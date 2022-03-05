@@ -27,8 +27,8 @@ doPCA <- function(object) {
 #' @param object An ALASCA object
 #' @return An ALASCA object
 reduce_dimensions <- function(object){
-  wide_data <- dcast(data = object$df,
-                     as.formula(paste(paste(object$allFormulaTerms, collapse = " + "), "~ variable"))
+
+  wide_data <- dcast(data = object$df, ...~variable
                      )
   if (object$doDebug) currentTs <- Sys.time()
   temp_pca_values <- prcomp(

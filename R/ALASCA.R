@@ -303,6 +303,12 @@ sanitizeObject <- function(object) {
     object <- rename_columns_to_standard(object)
     object <- wide_to_long(object)
     
+    # Keep variable labels
+    if (!is.na(object$plot.loadinggroupcolumn)) {
+      object$variable_labels <- unique(object$df[, .SD, .SDcols = c("variable", object$plot.loadinggroupcolumn)])
+      colnames(object$variable_labels) <- c("covars", "covargroup")
+    }
+    
     # Remove surplus data for efficiency
     object$df <- object$df[, .SD, .SDcols = c(object$allFormulaTerms, "variable", "value")]
     
@@ -526,11 +532,6 @@ get_info_from_formula <- function(object) {
     object$df[, originalIDbeforeBootstrap := -1]
     object$allFormulaTerms <- unique(c(object$allFormulaTerms, "uniqueIDforBootstrap"))
     object$df[, uniqueIDforBootstrap := -1]
-  }
-  
-  # If variable groups are defined, keep them for later
-  if (!is.na(object$plot.loadinggroupcolumn)) {
-    object$allFormulaTerms <- unique(c(object$allFormulaTerms, object$plot.loadinggroupcolumn))
   }
   
   # Check what terms that is present in formula
