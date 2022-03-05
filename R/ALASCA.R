@@ -11,7 +11,8 @@
 #' @param validate Logical. If `TRUE`, give estimates for robustness
 #' @param participantColumn String. Name of the column containing participant identification
 #' @param minimizeObject Logical. If `TRUE`, remove unnecessary clutter, optimize for validation
-#' @param scaleFun If `TRUE` (default), each variable is scaled to unit SD and zero mean. If `FALSE`, no scaling is performed. You can also provide a custom scaling function that has the data frame `df` as input and output
+#' @param scaleFun Either a custom function or string to define scaling function: `sdall`, `sdref`, `sdt1`, `sdreft1`
+#' @param scaleFun.center Boolean. Mean centering as part of scaling
 #' @param forceEqualBaseline Set to `TRUE` (default) to remove interaction between group and first time point
 #' @param useSumCoding Set to `TRUE` to use sum coding instead of contrast coding for group (defaults to `FALSE`)
 #' @param plot.xlabel Defaults to "Time"
@@ -257,8 +258,8 @@ RMASCA <- function(...) {
 #' @return String
 #' @export
 printVer <- function(object = FALSE, get = NA, print = TRUE) {
-  ALASCA.version <- "0.0.0.9"
-  ALASCA.version.date <- "2022-03-01"
+  ALASCA.version <- "0.0.0.91"
+  ALASCA.version.date <- "2022-03-05"
   if (is.list(object)) {
     ALASCA.version <- object$ALASCA.version
     ALASCA.version.date <- object$ALASCA.version.date

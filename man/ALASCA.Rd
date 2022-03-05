@@ -7,14 +7,20 @@
 ALASCA(
   df,
   formula,
+  wide = FALSE,
   separateTimeAndGroup = FALSE,
   pAdjustMethod = NA,
   participantColumn = "ID",
   validate = FALSE,
   scaleFun = "sdall",
+  scaleFun.center = TRUE,
+  reduceDimensions = FALSE,
   forceEqualBaseline = FALSE,
   useSumCoding = FALSE,
   method = NA,
+  xColumn = "time",
+  ignoreMissing = FALSE,
+  ignoreMissingCovars = FALSE,
   useRfast = TRUE,
   stratificationColumn = "group",
   stratificationVector = NA,
@@ -42,8 +48,8 @@ ALASCA(
   validation = FALSE,
   filename = NA,
   filepath = NA,
-  limm.nComps = NULL,
-  limm.limit = 0.95,
+  reduceDimensions.nComps = NULL,
+  reduceDimensions.limit = 0.95,
   lowerLimit = NA,
   savetodisk = FALSE,
   optimizeScore = TRUE,
@@ -68,13 +74,15 @@ ALASCA(
 
 \item{validate}{Logical. If \code{TRUE}, give estimates for robustness}
 
-\item{scaleFun}{If \code{TRUE} (default), each variable is scaled to unit SD and zero mean. If \code{FALSE}, no scaling is performed. You can also provide a custom scaling function that has the data frame \code{df} as input and output}
+\item{scaleFun}{Either a custom function or string to define scaling function: \code{sdall}, \code{sdref}, \code{sdt1}, \code{sdreft1}}
+
+\item{scaleFun.center}{Boolean. Mean centering as part of scaling}
 
 \item{forceEqualBaseline}{Set to \code{TRUE} (default) to remove interaction between group and first time point}
 
 \item{useSumCoding}{Set to \code{TRUE} to use sum coding instead of contrast coding for group (defaults to \code{FALSE})}
 
-\item{method}{Defaults to \code{NA} where method is either LM or LMM, depending on whether your formula contains a random effect or not. Set to KM or KMM for survival analysis}
+\item{method}{Defaults to \code{NA} where method is either LM or LMM, depending on whether your formula contains a random effect or not}
 
 \item{useRfast}{Boolean. Defaults to \code{TRUE}}
 
