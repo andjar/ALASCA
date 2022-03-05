@@ -12,8 +12,8 @@ buildModel <- function(object) {
   
   if (object$reduceDimensions) {
     if (object$doDebug) currentTs <- Sys.time()
-    object <- doLimmPCA(object)
-    if (object$doDebug) cat("* doLimmPCA:", Sys.time() - currentTs, "s\n")
+    object <- reduce_dimensions(object)
+    if (object$doDebug) cat("* reduce_dimensions:", Sys.time() - currentTs, "s\n")
   }
 
   if (object$doDebug) currentTs <- Sys.time()
@@ -181,44 +181,24 @@ runRegression <- function(object) {
 #' @param object An ALASCA object
 #' @return An ALASCA object
 getRegressionCoefficients <- function(object) {
-  if (object$method %in% c("KM", "KMM")) {
-    # Kaplan Meier
-    fdf <- data.table::rbindlist(lapply(object$regr.model, function(y) {
-      sc <- as.data.frame(y$coefficients)
-      sc$variable <- rownames(sc)
-      colnames(sc) <- c("estimate", "variable")
-      sc$covar <- attr(y, "name")
-      sc$pvalue <- ifelse(object$method == "KM", summary(y)[["coefficients"]][, 5], NA)
-      rownames(sc) <- NULL
-      rbind(
-        sc,
-        data.frame(
-          estimate = 0,
-          variable = "(Intercept)",
-          pvalue = NA,
-          covar = attr(y, "name")
-        )
-      )
-    }))
-  } else {
-    fdf <- data.table::rbindlist(
-      lapply(object$regr.model, function(y) {
-        if (object$method %in% c("LM", "Lim")) {
-          tmp_ef <- coef(y)
-          a <- as.data.frame(summary(y)[["coefficients"]][, c(1, 4)])
-        } else {
-          tmp_ef <- lme4::fixef(y)
-          a <- as.data.frame(summary(y)[["coefficients"]][, c(1, 5)])
-        }
-        a$covar <- as.character(attr(y, "name"))
-        a$variable <- rownames(a)
-        rownames(a) <- NULL
-        a
-      })
-    )
-    fdf$variable <- gsub("modmat", "", fdf$variable, fixed = TRUE)
-    colnames(fdf) <- c("estimate", "pvalue", "covar", "variable")
-  }
+
+  fdf <- data.table::rbindlist(
+    lapply(object$regr.model, function(y) {
+      if (object$method %in% c("LM", "Lim")) {
+        tmp_ef <- coef(y)
+        a <- as.data.frame(summary(y)[["coefficients"]][, c(1, 4)])
+      } else {
+        tmp_ef <- lme4::fixef(y)
+        a <- as.data.frame(summary(y)[["coefficients"]][, c(1, 5)])
+      }
+      a$covar <- as.character(attr(y, "name"))
+      a$variable <- rownames(a)
+      rownames(a) <- NULL
+      a
+    })
+  )
+  fdf$variable <- gsub("modmat", "", fdf$variable, fixed = TRUE)
+  colnames(fdf) <- c("estimate", "pvalue", "covar", "variable")
   object$RegressionCoefficients <- fdf
   
   if (!is.na(object$pAdjustMethod)) {
@@ -242,7 +222,7 @@ removeCovars <- function(object) {
     object$CovarCoefficients <- rbind(object$CovarCoefficients, subset(object$RegressionCoefficients, substr(variable, 1, nchar(i)) == i))
     object$RegressionCoefficients <- subset(object$RegressionCoefficients, substr(variable, 1, nchar(i)) != i)
   }
-  if(object$reduceDimensions){
+  if (object$reduceDimensions) {
     object$CovarCoefficients <- rbindlist(lapply(unique(object$CovarCoefficients$variable), function(v){
       ref <- object$CovarCoefficients[variable == v]
       data.frame(
