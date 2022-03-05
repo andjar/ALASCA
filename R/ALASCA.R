@@ -52,7 +52,9 @@ ALASCA <- function(df,
                    forceEqualBaseline = FALSE,
                    useSumCoding = FALSE,
                    method = NA,
+                   xColumn = "time",
                    ignoreMissing = FALSE,
+                   ignoreMissingCovars = FALSE,
                    useRfast = TRUE,
                    stratificationColumn = "group",
                    stratificationVector = NA,
@@ -101,6 +103,7 @@ ALASCA <- function(df,
     object$df <- validationObject$dfRaw
     if(object$reduceDimensions){
       object$Limm$main$pca <- object$Limm$pca
+      object$Limm$pca <- NULL
     }
 
     ## Avoid recursion
@@ -118,6 +121,9 @@ ALASCA <- function(df,
     object$variablelist <- unique(object$df$variable)
     object$timelist <- levels(object$df$time)
     object$grouplist <- levels(object$df$group)
+    
+    object$df <- object$df[object$validationParticipants]
+    #object$df[, ID := factor(ID)]
 
     #object$doDebug <- FALSE
   } else {
@@ -133,6 +139,7 @@ ALASCA <- function(df,
       forceEqualBaseline = forceEqualBaseline,
       useSumCoding = useSumCoding,
       method = method,
+      xColumn = xColumn,
       plot.xlabel = plot.xlabel,
       plot.grouplabel = plot.grouplabel,
       plot.figsize = plot.figsize,
@@ -149,6 +156,7 @@ ALASCA <- function(df,
       explanatorylimit = explanatorylimit,
       limitsCI = limitsCI,
       ignoreMissing = ignoreMissing,
+      ignoreMissingCovars = ignoreMissingCovars,
       keepColumn = keepColumn,
       minimizeObject = minimizeObject,
       doDebug = doDebug,
@@ -174,45 +182,43 @@ ALASCA <- function(df,
       validationAssignNewID = validationAssignNewID,
       validationIDs = validationIDs,
       validationQuantileMethod = validationQuantileMethod,
-      variablelist = unique(df$variable),
-      timelist = levels(df$time),
-      grouplist = levels(df$group),
       ALASCA.version = printVer(get = "version"),
       ALASCA.version.date = printVer(get = "date")
     )
     object$stratificationVector = object$df[, get(object$stratificationColumn)]
+    class(object) <- "ALASCA"
     printVer()
   }
-  class(object) <- "ALASCA"
+  
+  # Clean input ----
   if (object$doDebug) {
     cat(".. Has initialized the ALASCA model. Next step is to clean it and check input\n")
     currentTs <- Sys.time()
   }
-
-  # Clean input
   object <- sanitizeObject(object)
+  if (object$doDebug) cat("..* sanitizeObject:", Sys.time() - currentTs, "s\n")
 
+  # Build the ALASCA model ----
   if (object$doDebug) {
-    cat("..* sanitizeObject:", Sys.time() - currentTs, "s\n")
     cat(".. Has cleaned the ALASCA model. Next step is building it\n")
     currentTs <- Sys.time()
   }
-  # Build the ALASCA model
+  
   object <- buildModel(object)
   if (object$doDebug) cat("..* buildModel:", Sys.time() - currentTs, "s\n")
 
+  # To save space, we remove unnecessary embedded data ----
   if (object$minimizeObject) {
-    # To save space, we remove unnecessary embedded data
     if (object$doDebug) currentTs <- Sys.time()
     object <- removeEmbedded(object)
     if (object$doDebug) cat("..* removeEmbedded:", Sys.time() - currentTs, "s\n")
   }
 
-  # Validate the model
+  # Validate the model ----
   if (object$validate) {
     if (object$doDebug) {
       cat(".. You chose to validate the model. Starting validation\n")
-      if (object$doDebug) currentTs <- Sys.time()
+      currentTs <- Sys.time()
     }
     object <- validate(object)
     if (object$doDebug) cat("..* validate:", Sys.time() - currentTs, "s\n")
@@ -289,152 +295,42 @@ SMASCA <- function(...) {
 #' @return An ALASCA object
 sanitizeObject <- function(object) {
   if (!object$minimizeObject) {
-    object$valCol <- as.character(object$formula)[2]
-
-    # Check formula from user
-    object$formulaTerms <- colnames(attr(terms.formula(object$formula), "factors"))
-    object$allFormulaTerms <- unlist(strsplit(c(object$formulaTerms, object$participantColumn, object$stratificationColumn, object$keepColumn, "group"), split = "\\:|\\+|\\||\\*"))
-    object$allFormulaTerms <- gsub(" ", "", object$allFormulaTerms)
-    object$allFormulaTerms <- unique(object$allFormulaTerms[object$allFormulaTerms != "1"])
     
-    ## We need to keep original IDs to have a unique identifier later on
-    if (object$validationMethod == "bootstrap") object$allFormulaTerms <- unique(c(object$allFormulaTerms,"originalIDbeforeBootstrap"))
-    if (!"originalIDbeforeBootstrap" %in% colnames(object$df)) object$df[, originalIDbeforeBootstrap := -1]
-    if (object$validationMethod == "bootstrap") object$allFormulaTerms <- unique(c(object$allFormulaTerms,"uniqueIDforBootstrap"))
-    if (!"uniqueIDforBootstrap" %in% colnames(object$df)) object$df[, uniqueIDforBootstrap := -1]
+    object <- get_info_from_formula(object)
+    object <- rename_columns_to_standard(object)
+    object <- wide_to_long(object)
     
     # Remove surplus data for efficiency
-    if (is.na(object$plot.loadinggroupcolumn)) {
-      object$df <- object$df[, .SD, .SDcols = c(object$allFormulaTerms, "variable", "value")]
-    } else {
-      object$df <- object$df[, .SD, .SDcols = c(object$allFormulaTerms, "variable", "value", object$plot.loadinggroupcolumn)]
-    }
+    object$df <- object$df[, .SD, .SDcols = c(object$allFormulaTerms, "variable", "value")]
     
-    object <- LM_or_LMM(object)
-
-    # Check that the input is as expected
-    if (!("time" %in% colnames(object$df))) {
-      stop("The dataframe must contain a column names 'time'")
+    check_that_columns_are_valid(object)
+    
+    if (object$doDebug) {
+      cat(".... Making factors for time, group and variable\n")
     }
-    if (!("group" %in% colnames(object$df))) {
-      stop("The dataframe must contain a column names 'group'")
-    }
-    if (!("variable" %in% colnames(object$df))) {
-      stop("The dataframe must contain a column names 'variable'")
-    }
-
-    if (all(is.na(object$stratificationVector))) {
-      cat("Using group for stratification.\n")
-      object$stratificationVector <- object$df$group
-    }
-    if (object$method %in% c("KM", "KMM")) {
-      if (!is.data.frame(object$lowerLimit) | any(!(unique(object$df$variable) %in% unique(object$lowerLimit$variable)))) {
-        stop("Some lower limits are not specified!")
-      }
-      for (i in unique(object$df$variable)) {
-        maxValue <- max(object$df$value[object$df$variable == i])
-        object$df$value[object$df$variable == i] <- maxValue - object$df$value[object$df$variable == i]
-        object$lowerLimit$value[object$lowerLimit$variable == i] <- maxValue - object$lowerLimit$value[object$lowerLimit$variable == i]
-        object$df$belowLowerLimit[object$df$variable == i] <- object$df$value[object$df$variable == i] > object$lowerLimit$value[object$lowerLimit$variable == i]
-        object$df$value[object$df$variable == i & object$df$belowLowerLimit[object$df$variable == i]] <- object$lowerLimit$value[object$lowerLimit$variable == i]
-      }
-    }
-
-    # Change value column if necessary
-    if (as.character(object$formula)[2] != "value") {
-      cat("Changing", as.character(object$formula)[2], "to `value`.\n")
-      object$df$value <- object$df[, get(object$valCol)]
-      object$formula <- formula(paste(
-        "value ~",
-        as.character(object$formula)[3]
-      ))
-    }
-
-    if (object$method %in% c("LMM")) {
-      if (object$participantColumn != "ID") {
-        object$df$ID <- object$df[, get(object$participantColumn)]
-        tmp <- object$formulaTerms[!grepl("\\|", object$formulaTerms)]
-        object$formula <- formula(paste(
-          "value ~",
-          paste(tmp, collapse = "+")
-        ))
-      } else if (any(grepl("\\|", object$formulaTerms))) {
-        if (sum(grepl("\\|", object$formulaTerms)) > 1) {
-          stop("Multiple random effects, couldn't determine participant-id. Please specify `participantColumn`")
-        } else {
-          tmp <- object$formulaTerms[grepl("\\|", object$formulaTerms)]
-          tmp <- gsub(" ", "", tmp)
-          tmp <- strsplit(tmp, "\\|")
-          object$participantColumn <- tmp[[1]][2]
-          object$df$ID <- object$df[, get(object$participantColumn)]
-          tmp <- object$formulaTerms[!grepl("\\|", object$formulaTerms)]
-          object$formula <- formula(paste(
-            "value ~",
-            paste(tmp, collapse = "+")
-          ))
-        }
-      } else if (object$participantColumn == "ID") {
-        if (!("ID" %in% colnames(object$df))) {
-          stop("Please specify participant-id in `participantColumn`")
-        }
-      }
-
-      if (object$method %in% c("LMM")) {
-        if (object$useRfast) {
-          # Using Rfast
-          rterms <- object$formulaTerms[!grepl("\\|", object$formulaTerms)]
-          object$newformula <- formula(paste("value ~ ", paste(rterms, collapse = "+")))
-        } else {
-          # Using lme4
-          rterms <- object$formulaTerms[grepl("\\|", object$formulaTerms)]
-          rterms <- paste0("(", rterms, ")")
-          object$newformula <- formula(paste("value ~ modmat+", paste(rterms, collapse = "+")))
-        }
-      }
-    } else if (object$method %in% c("LM")) {
-      object$newformula <- value ~ modmat
-    }
+    object$df[, time := factor(time, levels = object$timelist), ]
+    object$df[, group := factor(group, levels = object$grouplist), ]
+    object$df[, variable := factor(variable, levels = object$variablelist), ]
+    
+    # List of levels
+    object$variablelist <- unique(object$df$variable)
+    object$timelist <- levels(object$df$time)
+    object$grouplist <- levels(object$df$group)
+    
+    object <- adjust_design_matrix(object)
 
     if (object$savetodisk) {
       object$db.driver <- RSQLite::dbDriver("SQLite")
       object$db.filename <- getFilename(object, prefix = "validation/", filetype = "db")
       object$db.con <- DBI::dbConnect(object$db.driver, dbname = object$db.filename)
-      # object$numvariablelist <- 1:length(object$variablelist)
-      # names(object$numvariablelist) <- object$variablelist
-      # DBI::dbWriteTable(object$db.con, "covars", data.frame(id = object$numvariablelist, covar = object$variablelist))
-
-      # object$timelist <- unique(object$df$time)
-      # object$numtimelist <- 1:length(object$timelist)
-      # names(object$numtimelist) <- object$timelist
-      # DBI::dbWriteTable(object$db.con, "time", data.frame(id = object$numtimelist, time = object$timelist))
-
-      # object$grouplist <- unique(object$df$group)
-      # object$numgrouplist <- 1:length(object$grouplist)
-      # names(object$numgrouplist) <- object$grouplist
-      # DBI::dbWriteTable(object$db.con, "group", data.frame(id = object$numgrouplist, group = object$grouplist))
     }
-  }
-
-  if (object$doDebug) {
-    cat(".... Making factors for time, group and variable\n")
-  }
-  object$df[, time := factor(time, levels = object$timelist), ]
-  object$df[, group := factor(group, levels = object$grouplist), ]
-  object$df[, variable := factor(variable, levels = object$variablelist), ]
-
-  if (object$minimizeObject) {
-    # This is usually a validation object
-    object$df <- object$df[object$validationParticipants]
-    object$df$ID <- factor(object$df$ID)
   }
 
   if (object$doDebug) {
     cat(".... Checking for missing information\n")
   }
-  if (any(is.na(object$df$time) | is.na(object$df$group))) {
-    warning("\n\n!!! -> Oh dear, at least on of your rows is missing either time or group. I have removed it/them for now, but you should check if this is a problem...\n\n")
-    object$df <- object$df[!is.na(time) & !is.na(group)]
-  }
+  
+  find_missing_predictor_variables(object)
 
   # Use sum coding?
   if (object$useSumCoding) {
@@ -453,7 +349,7 @@ sanitizeObject <- function(object) {
       cat("Scaling data with custom function...\n")
     }
     object$df <- object$scaleFun(object$df)
-    object$df$value <- object$df[, get(object$valCol)]
+    
 
     # The user do not want to scale
   } else if (object$scaleFun == "none") {
@@ -468,22 +364,49 @@ sanitizeObject <- function(object) {
       cat("Scaling data...\n")
     }
     object$df <- object$scaleFun(object$df)
-    object$df$value <- object$df[, get(object$valCol)]
+    
   } else {
     stop("Unknown scaling function")
   }
-  if (!object$minimizeObject) {
-    # Check what terms that is present in formula
-    object$hasGroupTerm <- ifelse(any(object$formulaTerms == "group"), TRUE, FALSE)
-    object$hasInteractionTerm <- ifelse(any(object$formulaTerms == "group:time" | object$formulaTerms == "time:group"), TRUE, FALSE)
-    object$covars <- object$formulaTerms[!(object$formulaTerms %in% c("time", "group", "group:time", "time:group", object$keepTerms))]
-    if (object$doDebug) {
-      cat(".... Group term in formula? ", object$hasGroupTerm, "\n")
-      cat(".... Interaction term in formula? ", object$hasInteractionTerm, "\n")
-      cat(".... Identified the following covariates in addition to time and troup: ", object$covars, "\n")
-    }
-  }
 
+  return(object)
+}
+
+#' Check if columns are missing
+#'
+#' ...
+#'
+#' @param object An ALASCA object
+rename_columns_to_standard <- function(object) {
+  
+  if (object$valCol != "value") {
+    if ("value" %in% colnames(object$df)) stop("Sorry, the value column is reserved by ALASCA; please give it another name or change `xColumn`")
+    warning("Changing", object$valCol, "to `value`.")
+    object$df[, value := get(object$valCol)]
+    object$formula <- formula(paste(
+      "value ~",
+      as.character(object$formula)[3]
+    ))
+    object <- get_info_from_formula(object)
+  }
+  
+  if (object$xColumn != "time") {
+    if ("time" %in% colnames(object$df)) stop("Sorry, the time column is reserved by ALASCA; please give it another name or change `xColumn`")
+    object$df[, time := get(object$xColumn)]
+    object <- replace_term_in_formula(object, oldTerm = object$xColumn, newTerm = "time")
+  }
+  
+  if (!"group" %in% colnames(object$df)) {
+    object$df[, group := factor("NA")]
+  }
+  
+  object$variablelist <- unique(object$df$variable)
+  object$timelist <- levels(object$df$time)
+  object$grouplist <- levels(object$df$group)
+  
+  cat("Using",object$stratificationColumn,"for stratification.\n")
+  
+  
   return(object)
 }
 
@@ -494,9 +417,153 @@ sanitizeObject <- function(object) {
 #' @param object An ALASCA object
 #' @return An ALASCA object
 find_missing_response_variables <- function(object) {
-  if (!ignoreMissing) {
-    if(df[, uniqueN(variable), by = .(ID, time)][, uniqueN(V1)] > 1) stop("Unequal number of variables!")
+  if(object$df[, uniqueN(variable), by = .(ID, time)][, uniqueN(V1)] > 1) {
+    if (object$ignoreMissing) {
+      warning("Response variables missing for some samples! Continue with caution!")
+    } else {
+      stop("Response variables missing for some samples! To ignore this, use `ignoreMissing = TRUE`")
+    }
   }
+}
+
+#' Check if predictor variables are missing
+#'
+#' ...
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+find_missing_predictor_variables <- function(object) {
+  if (any(is.na(object$df))) {
+    if (object$ignoreMissingCovars) {
+      warning("Predictor variables missing for some samples! Continue with caution!")
+    } else {
+      stop("Predictor variables missing for some samples! To ignore this, use `ignoreMissingCovars = TRUE`")
+    }
+  }
+}
+
+#' Check if response variables are missing
+#'
+#' ...
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+replace_term_in_formula <- function(object, oldTerm, newTerm) {
+  old_formula <- as.character(object$formula)[3]
+  new_formula <- gsub(oldTerm, newTerm, old_formula)
+  cat("New formula:",new_formula, "\n")
+  object$formula <- formula(paste(
+    "value ~",
+    new_formula
+  ))
+  object <- get_info_from_formula(object)
+}
+
+#' Check if columns are missing
+#'
+#' ...
+#'
+#' @param object An ALASCA object
+check_that_columns_are_valid <- function(object) {
+  if (any(!object$allFormulaTerms %in% colnames(object$df))) {
+    stop("Column(s) missing:\n", paste0(object$allFormulaTerms[!object$allFormulaTerms %in% colnames(object$df)], collapse = "\n* "), "\nYou may want to use `keepColumn`")
+  }
+}
+
+#' Check if columns are missing
+#'
+#' ...
+#'
+#' @param object An ALASCA object
+adjust_design_matrix <- function(object) {
+  if (object$method %in% c("LMM")) {
+    if (object$participantColumn != "ID") {
+      
+      # The user has specified a column
+      object$df[, ID := get(object$participantColumn)]
+      object <- replace_term_in_formula(object, oldTerm = object$participantColumn, newTerm = "ID")
+      
+    } else if (any(grepl("\\|ID", object$formulaTerms))) {
+      
+      # Use ID for participants!
+      
+    } else if (sum(grepl("\\|", object$formulaTerms)) > 1) {
+        stop("Multiple random effects, couldn't determine participant-id. Please specify `participantColumn`")
+    } else {
+        
+        # Try to find ID column from formula
+        tmp <- object$formulaTerms[grepl("\\|", object$formulaTerms)]
+        tmp <- gsub(" ", "", tmp)
+        tmp <- strsplit(tmp, "\\|")
+        object$participantColumn <- tmp[[1]][2]
+        object$df[, ID := get(object$participantColumn)]
+        object <- replace_term_in_formula(object, oldTerm = object$participantColumn, newTerm = "ID")
+    }
+    
+    if (object$useRfast) {
+      # Using Rfast
+      fixed_terms <- object$formulaTerms[!grepl("\\|", object$formulaTerms)]
+      object$newformula <- formula(paste("value ~ ", paste(fixed_terms, collapse = "+")))
+    } else {
+      # Using lme4
+      rterms <- object$formulaTerms[grepl("\\|", object$formulaTerms)]
+      rterms <- paste0("(", rterms, ")")
+      object$newformula <- formula(paste("value ~ modmat+", paste(rterms, collapse = "+")))
+    }
+  }else if (object$method %in% c("LM")) {
+    object$newformula <- value ~ modmat
+  } else {
+    stop("Sorry, an error occurred! Please check your model")
+  }
+  return(object)
+}
+
+#' Get information from formula
+#'
+#' ...
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+get_info_from_formula <- function(object) {
+  
+  # Response variable
+  object$valCol <- as.character(object$formula)[2]
+  
+  # Terms in the regression model
+  object$formulaTerms <- gsub(" ", "", colnames(attr(terms.formula(object$formula), "factors")))
+  
+  # Get a list of all predictors
+  object$allFormulaTerms <- unlist(strsplit(object$formulaTerms, split = "\\:|\\+|\\||\\*"))
+  object$allFormulaTerms <- c(object$allFormulaTerms, object$participantColumn, object$stratificationColumn, object$keepColumn, "group")
+  object$allFormulaTerms <- gsub(" ", "", object$allFormulaTerms)
+  object$allFormulaTerms <- unique(object$allFormulaTerms[!object$allFormulaTerms %in% c("1", "")])
+  
+  ## We need to keep original IDs to have a unique identifier later on
+  if (object$validationMethod == "bootstrap") {
+    object$allFormulaTerms <- unique(c(object$allFormulaTerms, "originalIDbeforeBootstrap"))
+    object$df[, originalIDbeforeBootstrap := -1]
+    object$allFormulaTerms <- unique(c(object$allFormulaTerms, "uniqueIDforBootstrap"))
+    object$df[, uniqueIDforBootstrap := -1]
+  }
+  
+  # If variable groups are defined, keep them for later
+  if (!is.na(object$plot.loadinggroupcolumn)) {
+    object$allFormulaTerms <- unique(c(object$allFormulaTerms, object$plot.loadinggroupcolumn))
+  }
+  
+  # Check what terms that is present in formula
+  object$hasGroupTerm <- ifelse(any(object$formulaTerms == "group"), TRUE, FALSE)
+  object$hasInteractionTerm <- ifelse(any(object$formulaTerms == "group:time" | object$formulaTerms == "time:group"), TRUE, FALSE)
+  object$covars <- object$formulaTerms[!(object$formulaTerms %in% c("time", "group", "group:time", "time:group", object$keepTerms))]
+  if (object$doDebug) {
+    cat(".... Group term in formula? ", object$hasGroupTerm, "\n")
+    cat(".... Interaction term in formula? ", object$hasInteractionTerm, "\n")
+    cat(".... Identified the following covariates in addition to time and group: ", object$covars, "\n")
+  }
+  
+  object <- LM_or_LMM(object)
+  
+  return(object)
 }
 
 #' Determine whether to use LM or LMM
@@ -506,34 +573,37 @@ find_missing_response_variables <- function(object) {
 #' @param object An ALASCA object
 #' @return An ALASCA object
 LM_or_LMM <- function(object) {
-  if (!is.na(object$method)) {
-    # The user has specified a method to use
-    if (object$method == "LMM") {
-      if (!any(grepl("\\|", object$formulaTerms))) {
-        stop("The model must contain at least one random effect. Sure you wanted linear mixed models?")
-      }
-    } else if (object$method == "LM") {
-      if (any(grepl("\\|", object$formulaTerms))) {
-        stop("The model contains at least one random effect. Sure you not wanted linear mixed models instead?")
-      }
-    } else {
-      stop("You entered an undefined method. Use `LMM` or `LM`!")
-    }
-    if (object$useRfast) {
-      cat("Will use Rfast!\n")
-      
-      # Validation of regression only works for LMs at the moment
-      object$validateRegression <- FALSE
-    }
-  } else {
+  if (is.na(object$method)) {
     # Find which default method to use
     if (any(grepl("\\|", object$formulaTerms))) {
       object$method <- "LMM"
       cat("Will use linear mixed models!\n")
+      if (sum(grepl("\\|", object$formulaTerms)) > 1 && object$useRfast) {
+        stop("Cannot use Rfast with multiple random effects. Use lme4 with `useRfast = FALSE` instead!\n")
+      }
+      if (!any(grepl("1\\|ID", object$formulaTerms)) && object$useRfast) {
+        stop("Rfast only supports a single random intercept. Use lme4 with `useRfast = FALSE` instead!\n")
+      }
     } else {
       object$method <- "LM"
       cat("Will use linear models!\n")
     }
+  } else {
+    # The user has specified a method to use
+    if (object$method == "LMM") {
+      if (!any(grepl("\\|", object$formulaTerms))) {
+        stop("The model must contain at least one random effect. Are you sure you wanted linear mixed models?")
+      }
+    } else if (object$method == "LM") {
+      if (any(grepl("\\|", object$formulaTerms))) {
+        stop("The model contains at least one random effect. Are you sure you wanted linear models?")
+      }
+    } else {
+      stop("You entered an undefined method. Use `LMM` or `LM`!")
+    }
+  }
+  if (object$useRfast) {
+    cat("Will use Rfast!\n")
   }
   return(object)
 }
@@ -547,8 +617,11 @@ LM_or_LMM <- function(object) {
 wide_to_long <- function(object) {
   if (object$wide) {
     cat("Converting from wide to long!\n")
-    object$df <- melt(object$df, id.vars = c(object$allFormulaTerms[!object$allFormulaTerms %in% c("variable", "value")]))
+    object$df <- melt(object$df, id.vars = c(object$allFormulaTerms[!object$allFormulaTerms %in% c("variable", "value")]), value.name = object$valCol)
+    cat("Found",length(unique(object$df$variable)),"variables\n")
     object$wide <- FALSE
+    object$variablelist <- unique(object$df$variable)
+    object$stratificationVector = object$df[, get(object$stratificationColumn)]
   }
   return(object)
 }
