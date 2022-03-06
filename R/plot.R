@@ -437,7 +437,7 @@ getLoadingPlot <- function(object,
                            loadinggroup = NA,
                            limit_loading = FALSE,
                            sortbyloadinggroup = TRUE,
-                           pointSize = 0.4,
+                           point_size = 0.4,
                            myTheme = NA) {
   
   if (any(is.na(myTheme))) myTheme <- object$plot.myTheme
@@ -447,9 +447,9 @@ getLoadingPlot <- function(object,
   if (!is.na(figunit)) object$plot.figunit <- figunit
   
   if (effect == "time") {
-    loadings <- subset(get_loadings(object, limit_loading = limit_loading, n.limit = n.limit)$time, PC == component & covars %in% variables)
+    loadings <- subset(get_loadings(object, limit_loading = limit_loading, n.limit = n.limit, component = component)$time, covars %in% variables)
   } else {
-    loadings <- subset(get_loadings(object, limit_loading = limit_loading, n.limit = n.limit)$group, PC == component & covars %in% variables)
+    loadings <- subset(get_loadings(object, limit_loading = limit_loading, n.limit = n.limit, component = component)$group, covars %in% variables)
   }
   if (!is.na(object$plot.loadinggroupcolumn)) {
     loadings <- merge(loadings, object$variable_labels)
@@ -464,14 +464,14 @@ getLoadingPlot <- function(object,
   if (object$validate) {
     if (any(colnames(loadings) == "model")) {
       g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high, shape = model)) +
-        ggplot2::geom_pointrange(size = pointSize)
+        ggplot2::geom_pointrange(size = point_size)
     } else {
       if (is.na(object$plot.loadinggroupcolumn)) {
         g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high)) +
-          ggplot2::geom_pointrange(size = pointSize)
+          ggplot2::geom_pointrange(size = point_size)
       } else {
         g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high, color = covargroup, shape = covargroup)) +
-          ggplot2::geom_pointrange(size = pointSize)
+          ggplot2::geom_pointrange(size = point_size)
       }
     }
   } else {
@@ -573,7 +573,7 @@ getScorePlot <- function(object,
                          figunit = NA,
                          plotribbon = TRUE,
                          dodgewidth = 0.35,
-                         pointSize = 2,
+                         point_size = 2,
                          myTheme = NA) {
   if (any(is.na(myTheme))) myTheme <- object$plot.myTheme
   if (!is.na(filetype)) object$plot.filetype <- filetype

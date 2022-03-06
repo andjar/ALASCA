@@ -175,10 +175,9 @@ clean_alasca <- function(object) {
 
   # Clean up a copy
   # Time effect
-  object$ALASCA$loading$time <- object$pca$loading$time
-  object$ALASCA$loading$time <- melt(object$ALASCA$loading$time, id.vars = "covars", variable.factor = FALSE)
+  object$ALASCA$loading$time <- melt(object$pca$loading$time, id.vars = "covars", variable.factor = FALSE)
   colnames(object$ALASCA$loading$time) <- c("covars", "PC", "loading")
-  object$ALASCA$loading$time[, PC := as.numeric(substr(PC, 3, nchar(PC))), ]
+  object$ALASCA$loading$time[, PC := as.integer(substr(PC, 3, nchar(PC))), ]
 
   object$ALASCA$score$time <- object$pca$score$time
   if (object$separateTimeAndGroup) {
@@ -188,24 +187,23 @@ clean_alasca <- function(object) {
   colnames(object$ALASCA$score$time) <- c("time", "group", "PC", "score")
   object$ALASCA$score$time[, time := factor(time, levels = object$timelist), ]
   object$ALASCA$score$time[, group := factor(group, levels = object$grouplist), ]
-  object$ALASCA$score$time[, PC := as.numeric(substr(PC, 3, nchar(PC))), ]
+  object$ALASCA$score$time[, PC := as.integer(substr(PC, 3, nchar(PC))), ]
 
   object$ALASCA$score$explained$time <- object$pca$score$explained$time
   object$ALASCA$loading$explained$time <- object$pca$loading$explained$time
 
   if (object$separateTimeAndGroup) {
     # Group effect
-    object$ALASCA$loading$group <- object$pca$loading$group
-    object$ALASCA$loading$group <- melt(object$ALASCA$loading$group, id.vars = "covars", variable.factor = FALSE)
+    object$ALASCA$loading$group <- melt(object$pca$loading$group, id.vars = "covars", variable.factor = FALSE)
     colnames(object$ALASCA$loading$group) <- c("covars", "PC", "loading")
-    object$ALASCA$loading$group[, PC := as.numeric(substr(PC, 3, nchar(PC))), ]
+    object$ALASCA$loading$group[, PC := as.integer(substr(PC, 3, nchar(PC))), ]
 
     object$ALASCA$score$group <- object$pca$score$group
     object$ALASCA$score$group <- melt(object$ALASCA$score$group, id.vars = c("time", "group"), variable.factor = FALSE)
     colnames(object$ALASCA$score$group) <- c("time", "group", "PC", "score")
     object$ALASCA$score$group[, time := factor(time, levels = object$timelist), ]
     object$ALASCA$score$group[, group := factor(group, levels = object$grouplist), ]
-    object$ALASCA$score$group[, PC := as.numeric(substr(PC, 3, nchar(PC))), ]
+    object$ALASCA$score$group[, PC := as.integer(substr(PC, 3, nchar(PC))), ]
 
     object$ALASCA$score$explained$group <- object$pca$score$explained$group
     object$ALASCA$loading$explained$group <- object$pca$loading$explained$group

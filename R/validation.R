@@ -56,7 +56,7 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
           temp_object <- rotate_matrix(object = temp_object, target = object)
         }
 
-        temp_object <- cleanALASCA(temp_object)
+        temp_object <- clean_alasca(temp_object)
 
         # Save to disk
         fname <- paste0("val_", ii)
@@ -96,7 +96,7 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
 
         # Make resampled model
         temp_object <- prepare_validation_run(object)
-        gc()
+        if (nrow(object$df) > 100000) gc()
 
         # Rotate new loadings/scores to the original model
         if (object$optimize_score) {
@@ -104,7 +104,7 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
         } else {
           temp_object <- rotate_matrix(object = temp_object, target = object)
         }
-        temp_object <- cleanALASCA(temp_object)
+        temp_object <- clean_alasca(temp_object)
 
         time_all <- difftime(Sys.time(), start.time.all, units = c("secs")) / ii
         cat("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((object$nValRuns - ii) * time_all, 2), " seconds \n")
@@ -135,7 +135,7 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
           temp_object <- rotate_matrix(object = temp_object, target = object)
         }
 
-        temp_object <- cleanALASCA(temp_object)
+        temp_object <- clean_alasca(temp_object)
 
         # Save to disk
         fname <- paste0("val_", ii)
@@ -183,7 +183,7 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
         } else {
           temp_object <- rotate_matrix(object = temp_object, target = object)
         }
-        temp_object <- cleanALASCA(temp_object)
+        temp_object <- clean_alasca(temp_object)
 
         time_all <- difftime(Sys.time(), start.time.all, units = c("secs")) / ii
         cat("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((object$nValRuns - ii) * time_all, 2), " seconds \n")
@@ -615,12 +615,12 @@ prepare_validation_run <- function(object, runN = NA) {
         })
         temp_object <- ALASCA(
           validation_object = object,
-          validation_participants = object$df[, ID] %in% unlist(selectedParts)
+          validation_participants = object$df_raw[, ID] %in% unlist(selectedParts)
         )
       } else {
         temp_object <- ALASCA(
           validation_object = object,
-          validation_participants = object$df[, ID] %in% object$validationIDs[runN, ]
+          validation_participants = object$df_raw[, ID] %in% object$validationIDs[runN, ]
         )
       }
     } else if (object$method %in% c("LM")) {
@@ -648,62 +648,25 @@ prepare_validation_run <- function(object, runN = NA) {
   } else if (object$validationMethod == "bootstrap") {
     # Use bootstrap validation
     # When using bootstrapping, we resample participants with replacement
-    bootobject <- object
-    bootdf_temp <- object$df_raw
-    bootdf <- data.frame()
-    cc_id <- 0 # Will become the new participant ID
-
-    # Loop through all the groups and create a new dataframe with resampled values
-    bootobject$newIDs <- c()
-    bootobject$originalIDs <- c()
+    
     if (object$do_debug) currentTs <- Sys.time()
-    if (any(is.na(object$validationIDs))) {
-      for (i in unique(object$stratificationVector)) {
-        # Get ID of all members of stratification group
-        selectedParts_temp_all <- unique(object$df[object$stratificationVector == i, ID])
-
-        # Resample participants
-        selectedParts_temp_selected <- sample(selectedParts_temp_all, length(selectedParts_temp_all), replace = TRUE)
-        newIDs <- seq(cc_id + 1, cc_id + length(selectedParts_temp_selected))
-        cc_id <- max(newIDs)
-        bootobject$originalIDs <- c(bootobject$originalIDs, selectedParts_temp_selected)
-        bootobject$newIDs <- c(bootobject$newIDs, newIDs)
-
-        # Create data frame from resampled participants
-        bootdf <- rbind(
-          bootdf,
-          rbindlist(
-            lapply(seq_along(selectedParts_temp_selected), function(x) {
-              seldf <- bootdf_temp[bootdf_temp$ID == selectedParts_temp_selected[x], ]
-              seldf[, originalIDbeforeBootstrap := ID]
-              seldf[, uniqueIDforBootstrap := newIDs[x]]
-              if (object$validationAssignNewID) seldf[, ID := newIDs[x]] # Replace ID
-              seldf
-            })
-          )
-        )
-      }
-      if (object$saveValidationIDs) {
-        write(paste0(bootobject$originalIDs, collapse = ";"),
-              file = getFilename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
-        )
-      }
-    } else {
-      newIDs <- seq(1, length(object$validationIDs[runN, ]))
-      bootdf <- rbind(
-        bootdf,
-        rbindlist(
-          lapply(seq_along(object$validationIDs[runN, ]), function(x) {
-            seldf <- bootdf_temp[bootdf_temp$ID == object$validationIDs[runN, x], ]
-            seldf[, originalIDbeforeBootstrap := ID]
-            seldf[, uniqueIDforBootstrap := newIDs[x]]
-            if (object$validationAssignNewID) seldf[, ID := newIDs[x]] # Replace ID
-            seldf
-          })
-        )
+    participants_in_bootstrap <- get_bootstrap_ids(object)
+    
+    # Create bootstrap object without data
+    bootobject <- object
+    bootobject$df <- NULL
+    bootobject$df_raw <- get_bootstrap_data(df_raw = object$df_raw, participants_in_bootstrap)
+    
+    if (object$validationAssignNewID) {
+      bootobject$df_raw[, ID := uniqueIDforBootstrap] # Replace ID
+    }
+    
+    if (object$saveValidationIDs) {
+      write(paste0(participants_in_bootstrap$old_id, collapse = ";"),
+            file = getFilename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
       )
     }
-    bootobject$df_raw <- bootdf
+    
     if (object$do_debug) cat(".. Prepare bootstrap sample:", Sys.time() - currentTs, "s\n")
     
     temp_object <- ALASCA(
@@ -713,4 +676,54 @@ prepare_validation_run <- function(object, runN = NA) {
   } 
 
   return(temp_object)
+}
+
+#' Make bootstrap sample
+#'
+#' Get data frame with new and old IDs
+#'
+#' @param object An ALASCA object
+#' @return A data frame
+get_bootstrap_ids <- function(object) {
+  if (any(is.na(object$validationIDs))) {
+    participants_in_bootstrap <- data.frame(
+      new_id = seq(object$df[, uniqueN(ID)]),
+      old_id = rbindlist(
+        lapply(unique(object$stratificationVector), function(stratification_group){
+          list(
+            old_id = sample(
+              unique(object$df[object$stratificationVector == stratification_group, ID]),
+              replace = TRUE)
+          )
+        })
+      )
+    )
+  } else {
+    participants_in_bootstrap <- data.frame(
+      new_id = seq(object$validationIDs[runN, ]),
+      old_id = object$validationIDs[runN, ]
+    )
+  }
+  return(participants_in_bootstrap)
+}
+
+#' Make bootstrap dataset
+#'
+#' Get data frame
+#'
+#' @param object An ALASCA object
+#' @return A data frame
+get_bootstrap_data <- function(df_raw, participants_in_bootstrap) {
+  selected_rows <- rbindlist(
+    lapply(participants_in_bootstrap$new_id, function(participant){
+      data.frame(
+        new_id = participant,
+        row_nr = df_raw[, .I[ID == participants_in_bootstrap$old_id[participant]]]
+      )
+    })
+  )
+  selected_data <- df_raw[selected_rows$row_nr]
+  selected_data[, uniqueIDforBootstrap := selected_rows$new_id]
+  selected_data[, originalIDbeforeBootstrap := ID]
+  return(selected_data)
 }

@@ -43,10 +43,10 @@ buildModel <- function(object) {
   if (object$do_debug) cat("* doPCA:", Sys.time() - currentTs, "s\n")
   if (object$do_debug) currentTs <- Sys.time()
   object <- clean_pca(object)
-  if (object$do_debug) cat("* cleanPCA:", Sys.time() - currentTs, "s\n")
+  if (object$do_debug) cat("* clean_pca:", Sys.time() - currentTs, "s\n")
   if (object$do_debug) currentTs <- Sys.time()
   object <- clean_alasca(object)
-  if (object$do_debug) cat("* cleanALASCA:", Sys.time() - currentTs, "s\n")
+  if (object$do_debug) cat("* clean_alasca:", Sys.time() - currentTs, "s\n")
   if (object$method %in% c("LM", "LMM")) {
     if (object$minimize_object) {
       if (object$validateRegression) {
@@ -69,23 +69,23 @@ buildModel <- function(object) {
 #' @param object An ALASCA object
 #' @return An ALASCA object
 run_regression <- function(object) {
-  if (object$useRfast & object$method %in% c("LMM")) {
+  df_by_variable <- split(object$df, object$df$variable)
+  if (object$useRfast && object$method %in% c("LMM")) {
     # start.time <- Sys.time()
     if (any(is.na(object$df[, value]))) {
       stop("Rfast does NOT like NA's! Check your scaling function or value column.")
     }
     object$regression_coefficients <- rbindlist(
       lapply(object$variablelist, function(x) {
-        df <- object$df[variable == x]
-        modmat <- model.matrix(object$new_formula, data = df)
+        modmat <- model.matrix(object$new_formula, data = df_by_variable[[x]])
         if (object$forceEqualBaseline) {
-          modmat <- modmat[, !grepl(paste0("time", levels(object$df$time)[1]), colnames(modmat))]
+          modmat <- modmat[, !grepl(paste0("time", object$timelist[1]), colnames(modmat))]
         }
         data.frame(
           estimate = Rfast::rint.reg(
-            y = df[, value],
+            y = df_by_variable[[x]][, value],
             x = modmat[, 2:ncol(modmat)],
-            id = as.numeric(factor(df[, ID])),
+            id = as.numeric(factor(df_by_variable[[x]][, ID])),
             ranef = FALSE
           )$be,
           pvalue = NA,
@@ -99,14 +99,14 @@ run_regression <- function(object) {
     return(object)
   } else if (!object$useRfast & object$method %in% c("LM")) {
     object$regression_model <- lapply(object$variablelist, function(x) {
-      modmat <- model.matrix(object$formula, data = object$df[variable == x])
+      modmat <- model.matrix(object$formula, data = df_by_variable[[x]])
       modmat <- modmat[, -1] # Remove intercept
       if (object$forceEqualBaseline) {
         # Remove interaction between group and first time point
-        modmat <- modmat[, !grepl(paste0("time", unique(object$df$time)[1]), colnames(modmat))]
+        modmat <- modmat[, !grepl(paste0("time", object$timelist[1]), colnames(modmat))]
       }
       environment(object$new_formula) <- environment()
-      regression_model <- lm(object$new_formula, data = object$df[variable == x])
+      regression_model <- lm(object$new_formula, data = df_by_variable[[x]])
       attr(regression_model, "name") <- x
       regression_model
     })
@@ -117,15 +117,14 @@ run_regression <- function(object) {
     }
     object$regression_coefficients <- rbindlist(
       lapply(object$variablelist, function(x) {
-        df <- object$df[variable == x]
-        modmat <- model.matrix(object$formula, data = object$df[variable == x])
+        modmat <- model.matrix(object$formula, data = df_by_variable[[x]])
         if (object$forceEqualBaseline) {
           # Remove interaction between group and first time point
-          modmat <- modmat[, !grepl(paste0("time", unique(object$df$time)[1]), colnames(modmat))]
+          modmat <- modmat[, !grepl(paste0("time", object$timelist[1]), colnames(modmat))]
         }
         data.frame(
           estimate = Rfast::lmfit(
-            y = df[, value],
+            y = df_by_variable[[x]][, value],
             x = modmat
           )$be,
           pvalue = NA,
@@ -139,15 +138,15 @@ run_regression <- function(object) {
     return(object)
   } else if (object$method %in% c("LMM")) {
     object$regression_model <- lapply(object$variablelist, function(x) {
-      modmat <- model.matrix(object$formula, data = object$df[variable == x])
+      modmat <- model.matrix(object$formula, data = df_by_variable[[x]])
       modmat <- modmat[, -1] # Remove intercept
       if (object$forceEqualBaseline) {
         # Remove interaction between group and first time point
-        modmat <- modmat[, !grepl(paste0("time", levels(object$df$time)[1]), colnames(modmat), fixed = TRUE)]
+        modmat <- modmat[, !grepl(paste0("time", object$timelist[1]), colnames(modmat), fixed = TRUE)]
       }
       # modmat <- modmat[,ncol(modmat):1]
       environment(object$new_formula) <- environment()
-      regression_model <- lmerTest::lmer(object$new_formula, data = object$df[variable == x])
+      regression_model <- lmerTest::lmer(object$new_formula, data = df_by_variable[[x]])
       attr(regression_model, "name") <- x
       regression_model
     })
@@ -179,6 +178,7 @@ get_regression_coefficients <- function(object) {
       a
     })
   )
+  
   fdf$variable <- gsub("modmat", "", fdf$variable, fixed = TRUE)
   colnames(fdf) <- c("estimate", "pvalue", "covar", "variable")
   object$regression_coefficients <- fdf
