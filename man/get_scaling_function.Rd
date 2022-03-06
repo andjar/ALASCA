@@ -4,12 +4,10 @@
 \alias{get_scaling_function}
 \title{Get a scaling function}
 \usage{
-get_scaling_function(scaleFun_string = "sdall", scaleFun.center = TRUE)
+get_scaling_function(object)
 }
 \arguments{
-\item{scaleFun_string}{String to define scaing function: \code{sdall}, \code{sdref}, \code{sdt1}, \code{sdreft1}}
-
-\item{scaleFun.center}{Boolean. Mean centering}
+\item{object}{An ALASCA object}
 }
 \value{
 An ALASCA object

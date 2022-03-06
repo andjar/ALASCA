@@ -4,7 +4,7 @@
 \alias{replace_term_in_formula}
 \title{Check if response variables are missing}
 \usage{
-replace_term_in_formula(object, oldTerm, newTerm)
+replace_term_in_formula(object, old_term, new_term)
 }
 \arguments{
 \item{object}{An ALASCA object}

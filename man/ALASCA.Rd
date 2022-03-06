@@ -16,7 +16,7 @@ ALASCA(
   scaleFun.center = TRUE,
   reduceDimensions = FALSE,
   forceEqualBaseline = FALSE,
-  useSumCoding = FALSE,
+  sum_coding = FALSE,
   method = NA,
   xColumn = "time",
   ignoreMissing = FALSE,
@@ -24,7 +24,7 @@ ALASCA(
   useRfast = TRUE,
   stratificationColumn = "group",
   stratificationVector = NA,
-  minimizeObject = FALSE,
+  minimize_object = FALSE,
   limitsCI = c(0.025, 0.975),
   plot.xlabel = "Time",
   plot.grouplabel = "Group",
@@ -36,7 +36,7 @@ ALASCA(
   plot.loadinggrouplabel = "Variable group",
   plot.palette.end = 0.8,
   explanatorylimit = 0.05,
-  doDebug = FALSE,
+  do_debug = FALSE,
   saveValidationIDs = FALSE,
   nValFold = 7,
   nValRuns = 1000,
@@ -51,14 +51,14 @@ ALASCA(
   reduceDimensions.nComps = NULL,
   reduceDimensions.limit = 0.95,
   lowerLimit = NA,
-  savetodisk = FALSE,
-  optimizeScore = TRUE,
+  save_to_disk = FALSE,
+  optimize_score = TRUE,
   validateRegression = TRUE,
   validationMethod = "bootstrap",
   validationIDs = NA,
-  validationObject = NA,
+  validation_object = NA,
   validationAssignNewID = FALSE,
-  validationParticipants = NA
+  validation_participants = NA
 )
 }
 \arguments{
@@ -80,7 +80,7 @@ ALASCA(
 
 \item{forceEqualBaseline}{Set to \code{TRUE} (default) to remove interaction between group and first time point}
 
-\item{useSumCoding}{Set to \code{TRUE} to use sum coding instead of contrast coding for group (defaults to \code{FALSE})}
+\item{sum_coding}{Set to \code{TRUE} to use sum coding instead of contrast coding for group (defaults to \code{FALSE})}
 
 \item{method}{Defaults to \code{NA} where method is either LM or LMM, depending on whether your formula contains a random effect or not}
 
@@ -88,7 +88,7 @@ ALASCA(
 
 \item{stratificationVector}{Vector of same length as \code{df} that specifies stratification groups during validation. Defaults to \code{NA}, where the group column is used.}
 
-\item{minimizeObject}{Logical. If \code{TRUE}, remove unnecessary clutter, optimize for validation}
+\item{minimize_object}{Logical. If \code{TRUE}, remove unnecessary clutter, optimize for validation}
 
 \item{plot.xlabel}{Defaults to "Time"}
 
@@ -102,7 +102,7 @@ ALASCA(
 
 \item{plot.palette}{List of colors, named by group}
 
-\item{doDebug}{Print what happens (default: \code{FALSE})}
+\item{do_debug}{Print what happens (default: \code{FALSE})}
 
 \item{nValFold}{Partitions when validating}
 
@@ -120,9 +120,9 @@ ALASCA(
 
 \item{validationMethod}{among  \code{loo} (leave-one-out, default)}
 
-\item{validationObject}{Don't worry about me:)}
+\item{validation_object}{Don't worry about me:)}
 
-\item{validationParticipants}{Don't worry about me:)}
+\item{validation_participants}{Don't worry about me:)}
 }
 \value{
 An ALASCA object

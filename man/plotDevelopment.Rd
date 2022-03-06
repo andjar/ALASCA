@@ -26,7 +26,7 @@ plotDevelopment(
   figunit = NA,
   plotribbon = TRUE,
   loadinggroup = NA,
-  limitloading = FALSE,
+  limit_loading = FALSE,
   sortbyloadinggroup = TRUE,
   myTheme = object$plot.myTheme
 )
@@ -62,7 +62,7 @@ plotDevelopment(
 
 \item{figunit}{Unit for figure size (default: \code{mm})}
 
-\item{limitloading}{Only list robust loadings}
+\item{limit_loading}{Only list robust loadings}
 
 \item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }

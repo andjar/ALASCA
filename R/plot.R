@@ -913,7 +913,7 @@ plotPred <- function(object,
   if ( as.list ){
     if (object$validate) {
       gg <- lapply(variables, function(x) {
-        g <- ggplot2::ggplot(subset(object$mod.pred, variable == x), ggplot2::aes(
+        g <- ggplot2::ggplot(subset(object$model_prediction, variable == x), ggplot2::aes(
           x = time,
           y = pred,
           color = group,
@@ -939,7 +939,7 @@ plotPred <- function(object,
       })
     } else {
       gg <- lapply(variables, function(x) {
-        g <- ggplot2::ggplot(subset(object$mod.pred, variable == x), ggplot2::aes(x = time, y = pred, color = group, linetype = group, group = group)) +
+        g <- ggplot2::ggplot(subset(object$model_prediction, variable == x), ggplot2::aes(x = time, y = pred, color = group, linetype = group, group = group)) +
           ggplot2::geom_point() +
           ggplot2::geom_line() +
           ggplot2::scale_color_manual(values = getPlotPalette(object)) +
@@ -957,7 +957,7 @@ plotPred <- function(object,
     }
   } else {
     if (object$validate) {
-    g <- ggplot2::ggplot(object$mod.pred[object$mod.pred$variable %in% variables,], ggplot2::aes(
+    g <- ggplot2::ggplot(object$model_prediction[object$model_prediction$variable %in% variables,], ggplot2::aes(
       x = time,
       y = pred,
       color = group,
@@ -981,7 +981,7 @@ plotPred <- function(object,
         ggplot2::scale_fill_manual(values = getPlotPalette(object)) + ggplot2::labs(fill = object$plot.grouplabel)
     }
     } else {
-      g <- ggplot2::ggplot(object$mod.pred[object$mod.pred$variable %in% variables,], ggplot2::aes(x = time, y = pred, color = group, linetype = group, group = group)) +
+      g <- ggplot2::ggplot(object$model_prediction[object$model_prediction$variable %in% variables,], ggplot2::aes(x = time, y = pred, color = group, linetype = group, group = group)) +
         ggplot2::geom_point() +
         ggplot2::geom_line() +
         ggplot2::scale_color_manual(values = getPlotPalette(object)) +

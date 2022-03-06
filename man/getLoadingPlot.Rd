@@ -19,9 +19,9 @@ getLoadingPlot(
   figunit = NA,
   variables = NA,
   loadinggroup = NA,
-  limitloading = FALSE,
+  limit_loading = FALSE,
   sortbyloadinggroup = TRUE,
-  pointSize = 0.4,
+  point_size = 0.4,
   myTheme = NA
 )
 }

@@ -82,7 +82,7 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
           DBI::dbWriteTable(object$db.con, "group.score", scores, append = T, overwrite = F)
         }
         if (object$validateRegression) {
-          DBI::dbWriteTable(object$db.con, "mod.pred", data.frame(temp_object$mod.pred, model = ii), append = T, overwrite = F)
+          DBI::dbWriteTable(object$db.con, "model_prediction", data.frame(temp_object$model_prediction, model = ii), append = T, overwrite = F)
         }
 
         time_all <- difftime(Sys.time(), start.time.all, units = c("secs")) / ii
@@ -161,7 +161,7 @@ validate <- function(object, participantColumn = FALSE, validateRegression = FAL
           DBI::dbWriteTable(object$db.con, "group.score", scores, append = T, overwrite = F)
         }
         if (object$validateRegression) {
-          DBI::dbWriteTable(object$db.con, "mod.pred", data.frame(temp_object$mod.pred, model = ii), append = T, overwrite = F)
+          DBI::dbWriteTable(object$db.con, "model_prediction", data.frame(temp_object$model_prediction, model = ii), append = T, overwrite = F)
         }
 
         time_all <- difftime(Sys.time(), start.time.all, units = c("secs")) / ii
@@ -390,16 +390,16 @@ get_validation_percentiles <- function(object, objectlist) {
 #' @return An ALASCA object
 get_validation_percentiles_regression <- function(object, objectlist) {
   if (object$save_to_disk) {
-    res <- DBI::dbSendQuery(object$db.con, "SELECT * FROM 'mod.pred'")
+    res <- DBI::dbSendQuery(object$db.con, "SELECT * FROM 'model_prediction'")
     df <- setDT(DBI::dbFetch(res))
     DBI::dbClearResult(res)
   } else {
-    df <- rbindlist(lapply(objectlist, function(x) x$mod.pred))
+    df <- rbindlist(lapply(objectlist, function(x) x$model_prediction))
   }
   df <- df[, as.list(quantile(pred, probs = object$limitsCI, type = object$validationQuantileMethod)), by = .(group, time, variable)]
   colnames(df) <- c("group", "time", "variable", "low", "high")
 
-  object$mod.pred <- merge(object$mod.pred, df)
+  object$model_prediction <- merge(object$model_prediction, df)
   return(object)
 }
 
@@ -558,10 +558,10 @@ get_regression_predictions <- function(object) {
     regModel <- regModel[, grepl(paste0(c("time", "group"), collapse = "|"), colnames(regModel))]
   }
   
-  object$mod.pred <- data.table::rbindlist(
-    lapply(object$variablelist, function(x) {
-      regCoeff <- as.matrix(regCoeffAll[regCoeffAll$covar == x, -1])
-      if (object$keepTerms != "") {
+  if (object$keepTerms != "") {
+    object$model_prediction <- data.table::rbindlist(
+      lapply(object$variablelist, function(x) {
+        regCoeff <- as.matrix(regCoeffAll[regCoeffAll$covar == x, -1])
         unique(
           data.frame(
             object$df[as.numeric(rownames(regModel)), .SD, .SDcols = c("time", "group", object$keepTerms)],
@@ -569,7 +569,11 @@ get_regression_predictions <- function(object) {
             variable = x
           )
         )
-      } else {
+    }))
+  } else {
+    object$model_prediction <- data.table::rbindlist(
+      lapply(object$variablelist, function(x) {
+        regCoeff <- as.matrix(regCoeffAll[regCoeffAll$covar == x, -1])
         unique(
           data.frame(
             object$df[as.numeric(rownames(regModel)), .SD, .SDcols = c("time", "group")],
@@ -577,13 +581,12 @@ get_regression_predictions <- function(object) {
             variable = x
           )
         )
-      }
-    })
-  )
+    }))
+  }
   
   if (object$keepTerms != "") {
-    object$mod.pred[, group := apply(.SD, 1, paste, collapse = " - "), .SDcols = c("group", object$keepTerms)]
-    object$mod.pred[, group := factor(group, levels = object$grouplist)]
+    object$model_prediction[, group := apply(.SD, 1, paste, collapse = " - "), .SDcols = c("group", object$keepTerms)]
+    object$model_prediction[, group := factor(group, levels = object$grouplist)]
   } 
 
   if (!object$minimize_object) {
@@ -653,8 +656,7 @@ prepare_validation_run <- function(object, runN = NA) {
     participants_in_bootstrap <- get_bootstrap_ids(object)
     
     # Create bootstrap object without data
-    bootobject <- object
-    bootobject$df <- NULL
+    bootobject <- object[!names(object) %in% c("df", "df_raw")]
     bootobject$df_raw <- get_bootstrap_data(df_raw = object$df_raw, participants_in_bootstrap)
     
     if (object$validationAssignNewID) {
