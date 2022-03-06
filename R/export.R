@@ -139,7 +139,7 @@ save_to_csv <- function(object, filename = NA, filepath = NA, saveCSV = TRUE, sa
     } else {
       stop("Unkown input to `csv`")
     }
-    cat(paste0("- Saved csv's to ", getFilename(object = object, filename = filename, filepath = filepath), "\n"))
+    cat(paste0("- Saved csv's to ", get_filename(object = object, filename = filename, filepath = filepath), "\n"))
   }
 }
 
@@ -151,7 +151,7 @@ save_to_csv <- function(object, filename = NA, filepath = NA, saveCSV = TRUE, sa
 #' @return Full file name of the saved object (String)
 #' @export
 saveALASCAModel <- function(object, filename = NA, filepath = NA) {
-  fname <- getFilename(object = object, filename = filename, filepath = filepath, filetype = ".rds")
+  fname <- get_filename(object = object, filename = filename, filepath = filepath, filetype = ".rds")
   saveRDS(object, file = fname)
   cat(paste0("- Saved model to ", fname, "\n"))
   return(fname)
@@ -175,7 +175,7 @@ saveALASCAPlot <- function(object, g, filetype = NA, figsize = NA, prefix = "plo
   }
 
   for (i in filetype) {
-    fname <- getFilename(object = object, prefix = prefix, suffix = suffix, filetype = i)
+    fname <- get_filename(object = object, prefix = prefix, suffix = suffix, filetype = i)
     ggplot2::ggsave(plot = g, filename = fname, width = figsize[1], height = figsize[2], dpi = figsize[3], unit = figunit)
     cat(paste0("- Saved ", fname, "\n"))
   }

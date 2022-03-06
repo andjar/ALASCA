@@ -665,7 +665,7 @@ prepare_validation_run <- function(object, runN = NA) {
     
     if (object$saveValidationIDs) {
       write(paste0(participants_in_bootstrap$old_id, collapse = ";"),
-            file = getFilename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
+            file = get_filename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
       )
     }
     

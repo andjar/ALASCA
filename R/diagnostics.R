@@ -121,8 +121,8 @@ plothistogram_score <- function(object, component = 1, bins = object$nValRuns / 
     g <- ggplot2::ggplot(dff, ggplot2::aes(score, fill = group)) +
       ggplot2::geom_histogram(alpha = 0.6, position = "identity", bins = bins) +
       ggplot2::geom_vline(data = df_temp, ggplot2::aes(xintercept = score, color = group)) +
-      ggplot2::scale_fill_manual(values = getPlotPalette(object)) +
-      ggplot2::scale_color_manual(values = getPlotPalette(object)) +
+      ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
+      ggplot2::scale_color_manual(values = get_plot_palette(object)) +
       ggplot2::facet_wrap(~time) +
       object$plot.myTheme +
       ggplot2::theme(legend.position = "bottom")
@@ -143,8 +143,8 @@ plothistogram_score <- function(object, component = 1, bins = object$nValRuns / 
       g <- ggplot2::ggplot(dff, ggplot2::aes(score, fill = group)) +
         ggplot2::geom_histogram(alpha = 0.6, position = "identity", bins = bins) +
         ggplot2::geom_vline(data = df_temp, ggplot2::aes(xintercept = score, color = group)) +
-        ggplot2::scale_fill_manual(values = getPlotPalette(object)) +
-        ggplot2::scale_color_manual(values = getPlotPalette(object)) +
+        ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
+        ggplot2::scale_color_manual(values = get_plot_palette(object)) +
         ggplot2::facet_wrap(~time) +
         ggplot2::labs(x = "Score", fill = object$plot.grouplabel, color = object$plot.grouplabel) +
         object$plot.myTheme +
@@ -153,8 +153,8 @@ plothistogram_score <- function(object, component = 1, bins = object$nValRuns / 
       gg <- ggplot2::ggplot(dff, ggplot2::aes(score, fill = group)) +
         ggplot2::geom_histogram(alpha = 0.6, position = "identity", bins = bins) +
         ggplot2::geom_vline(data = df_temp, ggplot2::aes(xintercept = score, color = group)) +
-        ggplot2::scale_fill_manual(values = getPlotPalette(object)) +
-        ggplot2::scale_color_manual(values = getPlotPalette(object)) +
+        ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
+        ggplot2::scale_color_manual(values = get_plot_palette(object)) +
         ggplot2::facet_wrap(~time) +
         ggplot2::labs(x = "Score", fill = object$plot.grouplabel, color = object$plot.grouplabel) +
         object$plot.myTheme +

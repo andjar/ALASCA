@@ -2,7 +2,7 @@
 #'
 #' This function plots your ALASCA model
 #'
-#' @inheritParams plotDevelopment
+#' @inheritParams plot_development
 #' @inheritParams plotComponents
 #' @return An ggplot2 object (or a list og ggplot objects)
 #'
@@ -18,7 +18,7 @@ plot.ALASCA <- function(object,
                         component = 1,
                         ...) {
   if (length(component) == 1) {
-    plotDevelopment(object = object, component = component, ...)
+    plot_development(object = object, component = component, ...)
   } else if (length(component) == 2) {
     plotComponents(object = object, comps = component, ...)
   } else {
@@ -59,7 +59,7 @@ plot.ALASCA <- function(object,
 #' plot(model, tooDense = 5)
 #' plot(model, highlight = c("PlGF", "IL-1b", "IL-6"))
 #' @export
-plotDevelopment <- function(object,
+plot_development <- function(object,
                             component = 1,
                             effect = "both",
                             decreasingLoadings = TRUE,
@@ -103,15 +103,15 @@ plotDevelopment <- function(object,
   }
   if (only == "score") {
     if (effect == "both") {
-      g_score_time <- getScorePlot(object, component = component, effect = "time", plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
-      g_score_group <- getScorePlot(object, component = component, effect = "group", plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
+      g_score_time <- get_score_plot(object, component = component, effect = "time", plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
+      g_score_group <- get_score_plot(object, component = component, effect = "group", plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
       g <- list(g_score_time, g_score_group)
     } else {
-      g <- getScorePlot(object, component = component, effect = effect, plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
+      g <- get_score_plot(object, component = component, effect = effect, plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
     }
   } else if (only == "loading") {
     if (effect == "both") {
-      g_loading_time <- getLoadingPlot(object,
+      g_loading_time <- get_loading_plot(object,
         component = component,
         effect = "time",
         decreasingLoadings = decreasingLoadings,
@@ -126,7 +126,7 @@ plotDevelopment <- function(object,
         sortbyloadinggroup = sortbyloadinggroup,
         myTheme = myTheme
       )
-      g_loading_group <- getLoadingPlot(object,
+      g_loading_group <- get_loading_plot(object,
         component = component,
         effect = "group",
         decreasingLoadings = decreasingLoadings,
@@ -143,7 +143,7 @@ plotDevelopment <- function(object,
       )
       g <- list(g_loading_time, g_loading_group)
     } else {
-      g <- getLoadingPlot(object,
+      g <- get_loading_plot(object,
         component = component,
         effect = effect,
         decreasingLoadings = decreasingLoadings,
@@ -160,7 +160,7 @@ plotDevelopment <- function(object,
     }
   } else {
     if (effect == "both") {
-      g_loading_time <- getLoadingPlot(object,
+      g_loading_time <- get_loading_plot(object,
         component = component,
         effect = "time",
         decreasingLoadings = decreasingLoadings,
@@ -174,7 +174,7 @@ plotDevelopment <- function(object,
         sortbyloadinggroup = sortbyloadinggroup,
         myTheme = myTheme
       )
-      g_loading_group <- getLoadingPlot(object,
+      g_loading_group <- get_loading_plot(object,
         component = component,
         effect = "group",
         decreasingLoadings = decreasingLoadings,
@@ -189,8 +189,8 @@ plotDevelopment <- function(object,
         sortbyloadinggroup = sortbyloadinggroup,
         myTheme = myTheme
       )
-      g_score_time <- getScorePlot(object, component = component, effect = "time", plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
-      g_score_group <- getScorePlot(object, component = component, effect = "group", plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
+      g_score_time <- get_score_plot(object, component = component, effect = "time", plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
+      g_score_group <- get_score_plot(object, component = component, effect = "group", plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
       if (enlist) {
         g <- list(g_score_time, g_loading_time, g_score_group, g_loading_group)
       } else {
@@ -218,7 +218,7 @@ plotDevelopment <- function(object,
         }
       }
     } else {
-      g_loading <- getLoadingPlot(object,
+      g_loading <- get_loading_plot(object,
         component = component,
         effect = effect,
         decreasingLoadings = decreasingLoadings,
@@ -233,7 +233,7 @@ plotDevelopment <- function(object,
         sortbyloadinggroup = sortbyloadinggroup,
         myTheme = myTheme
       )
-      g_score <- getScorePlot(object, component = component, effect = effect, plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
+      g_score <- get_score_plot(object, component = component, effect = effect, plotribbon = plotribbon, dodgewidth = dodgewidth, myTheme = myTheme)
       if (enlist) {
         g <- list(g_score, g_loading)
       } else {
@@ -421,7 +421,7 @@ get_covars <- function(object, n.limit = 0) {
 #' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
 #' @return A ggplot object
-getLoadingPlot <- function(object,
+get_loading_plot <- function(object,
                            component = 1,
                            effect = "time",
                            decreasingLoadings = TRUE,
@@ -565,7 +565,7 @@ getLoadingPlot <- function(object,
 #' @param figsize A vector containing `c(width,height,dpi)` (default: `c(120, 80, 300)`)
 #' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::scale_color_viridis_d(end = 0.9) + ggplot2::theme_bw()`
 #' @return A ggplot object
-getScorePlot <- function(object,
+get_score_plot <- function(object,
                          component = 1,
                          effect = "time",
                          filetype = NA,
@@ -607,7 +607,7 @@ getScorePlot <- function(object,
                 alpha = .1,
                 position = ggplot2::position_dodge(width = dodgewidth), color = NA
               ) +
-                ggplot2::scale_fill_manual(values = getPlotPalette(object)) +
+                ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
                 ggplot2::labs(fill = object$plot.grouplabel)
             }
           }
@@ -645,7 +645,7 @@ getScorePlot <- function(object,
               alpha = .1,
               position = ggplot2::position_dodge(width = dodgewidth), color = NA
             ) +
-              ggplot2::scale_fill_manual(values = getPlotPalette(object)) + ggplot2::labs(fill = object$plot.grouplabel)
+              ggplot2::scale_fill_manual(values = get_plot_palette(object)) + ggplot2::labs(fill = object$plot.grouplabel)
           }
         }
       } else {
@@ -661,8 +661,8 @@ getScorePlot <- function(object,
       }
     }
     g <- g + myTheme +
-      ggplot2::scale_color_manual(values = getPlotPalette(object))
-    if (object$method %in% c("LMM")) g <- g + ggplot2::scale_linetype_manual(values = getPlotLinetypes(object))
+      ggplot2::scale_color_manual(values = get_plot_palette(object))
+    if (object$method %in% c("LMM")) g <- g + ggplot2::scale_linetype_manual(values = get_plot_linetypes(object))
     g <- g + ggplot2::theme(legend.position = "bottom") +
       ggplot2::labs(
         x = object$plot.xlabel,
@@ -696,7 +696,7 @@ getScorePlot <- function(object,
               alpha = .1,
               position = ggplot2::position_dodge(width = dodgewidth), color = NA
             ) +
-              ggplot2::scale_fill_manual(values = getPlotPalette(object)) +
+              ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
               ggplot2::labs(fill = object$plot.grouplabel)
           }
         }
@@ -713,8 +713,8 @@ getScorePlot <- function(object,
       }
     }
     g <- g + myTheme +
-      ggplot2::scale_color_manual(values = getPlotPalette(object)) +
-      ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
+      ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+      ggplot2::scale_linetype_manual(values = get_plot_linetypes(object)) +
       ggplot2::theme(legend.position = "bottom") +
       ggplot2::labs(
         x = object$plot.xlabel,
@@ -788,8 +788,8 @@ plotParts <- function(object,
         g <- ggplot2::ggplot(subset(df, variable == xi), ggplot2::aes_string(x = timeColumn, y = valueColumn, color = "group", group = participantColumn)) +
           ggplot2::geom_point(alpha = 0.7) +
           ggplot2::geom_line(alpha = 0.3) +
-          ggplot2::scale_color_manual(values = getPlotPalette(list(df = df))) +
-          ggplot2::scale_fill_manual(values = getPlotPalette(list(df = df))) +
+          ggplot2::scale_color_manual(values = get_plot_palette(list(df = df))) +
+          ggplot2::scale_fill_manual(values = get_plot_palette(list(df = df))) +
           myTheme +
           ggplot2::theme(legend.position = "bottom") +
           ggplot2::labs(x = xlabel, y = xi, color = grouplabel, fill = grouplabel)
@@ -816,8 +816,8 @@ plotParts <- function(object,
         g <- ggplot2::ggplot(subset(df, variable == xi), ggplot2::aes_string(x = timeColumn, y = valueColumn, color = "group", group = participantColumn)) +
           ggplot2::geom_point(alpha = 0.7) +
           ggplot2::geom_line(alpha = 0.3) +
-          ggplot2::scale_color_manual(values = getPlotPalette(object)) +
-          ggplot2::scale_fill_manual(values = getPlotPalette(object)) +
+          ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+          ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
           myTheme +
           ggplot2::theme(legend.position = "bottom") +
           ggplot2::labs(x = xlabel, y = xi, color = grouplabel, fill = grouplabel)
@@ -858,8 +858,8 @@ plotParts <- function(object,
       g <- ggplot2::ggplot(subset(df, variable %in% variables), ggplot2::aes(x = time, y = value, color = group, group = ID)) +
         ggplot2::geom_point(alpha = 0.7) +
         ggplot2::geom_line(alpha = 0.3) +
-        ggplot2::scale_color_manual(values = getPlotPalette(object)) +
-        ggplot2::scale_fill_manual(values = getPlotPalette(object)) +
+        ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+        ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
         myTheme +
         ggplot2::facet_wrap(~variable, scales = "free_y") +
         ggplot2::theme(legend.position = "bottom") +
@@ -924,7 +924,7 @@ plotPred <- function(object,
         )) +
           ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
           ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth)) +
-          ggplot2::scale_color_manual(values = getPlotPalette(object)) +
+          ggplot2::scale_color_manual(values = get_plot_palette(object)) +
           myTheme +
           ggplot2::theme(legend.position = "bottom") +
           ggplot2::labs(x = object$plot.xlabel, y = plot.ylabel, color = object$plot.grouplabel, linetype = object$plot.grouplabel)
@@ -933,7 +933,7 @@ plotPred <- function(object,
             alpha = .1,
             position = ggplot2::position_dodge(width = dodgewidth), color = NA
           ) +
-            ggplot2::scale_fill_manual(values = getPlotPalette(object)) + ggplot2::labs(fill = object$plot.grouplabel)
+            ggplot2::scale_fill_manual(values = get_plot_palette(object)) + ggplot2::labs(fill = object$plot.grouplabel)
         }
         g
       })
@@ -942,7 +942,7 @@ plotPred <- function(object,
         g <- ggplot2::ggplot(subset(object$model_prediction, variable == x), ggplot2::aes(x = time, y = pred, color = group, linetype = group, group = group)) +
           ggplot2::geom_point() +
           ggplot2::geom_line() +
-          ggplot2::scale_color_manual(values = getPlotPalette(object)) +
+          ggplot2::scale_color_manual(values = get_plot_palette(object)) +
           myTheme +
           ggplot2::theme(legend.position = "bottom") +
           ggplot2::labs(x = object$plot.xlabel, y = plot.ylabel, color = object$plot.grouplabel, linetype = object$plot.grouplabel)
@@ -968,7 +968,7 @@ plotPred <- function(object,
     )) +
       ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
       ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth)) +
-      ggplot2::scale_color_manual(values = getPlotPalette(object)) +
+      ggplot2::scale_color_manual(values = get_plot_palette(object)) +
       myTheme +
       ggplot2::facet_wrap(~variable, scales = "free_y") +
       ggplot2::theme(legend.position = "bottom") +
@@ -978,13 +978,13 @@ plotPred <- function(object,
                                     alpha = .1,
                                     position = ggplot2::position_dodge(width = dodgewidth), color = NA
       ) +
-        ggplot2::scale_fill_manual(values = getPlotPalette(object)) + ggplot2::labs(fill = object$plot.grouplabel)
+        ggplot2::scale_fill_manual(values = get_plot_palette(object)) + ggplot2::labs(fill = object$plot.grouplabel)
     }
     } else {
       g <- ggplot2::ggplot(object$model_prediction[object$model_prediction$variable %in% variables,], ggplot2::aes(x = time, y = pred, color = group, linetype = group, group = group)) +
         ggplot2::geom_point() +
         ggplot2::geom_line() +
-        ggplot2::scale_color_manual(values = getPlotPalette(object)) +
+        ggplot2::scale_color_manual(values = get_plot_palette(object)) +
         myTheme +
         ggplot2::facet_wrap(~variable, scales = "free_y") +
         ggplot2::theme(legend.position = "bottom") +
@@ -1044,8 +1044,8 @@ plotVal <- function(object,
     gst <- gst + ggplot2::labs(x = object$plot.xlabel,
                                color = object$plot.grouplabel, linetype = object$plot.grouplabel,
                                y = .getExpLabel(object, component = component, effect = "time", type = "Score")) +
-      ggplot2::scale_color_manual(values = getPlotPalette(object)) +
-      ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
+      ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+      ggplot2::scale_linetype_manual(values = get_plot_linetypes(object)) +
       myTheme + ggplot2::theme(legend.position = "none")
     
     ## Group
@@ -1062,8 +1062,8 @@ plotVal <- function(object,
     if (object$method %in% c("LMM")) gsg <- gsg + ggplot2::geom_line(alpha = plot.alpha)
     gsg <- gsg + ggplot2::geom_point(data = dfm, group = NA, alpha = 1, color = "black")
     if (object$method %in% c("LMM")) gsg <- gsg + ggplot2::geom_line(data = dfm, group = dfm$group, alpha = 1, color = "black")
-    gsg <- gsg +   ggplot2::scale_color_manual(values = getPlotPalette(object)) +
-      ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
+    gsg <- gsg +   ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+      ggplot2::scale_linetype_manual(values = get_plot_linetypes(object)) +
       ggplot2::labs(x = object$plot.xlabel,
                     y = .getExpLabel(object, component = component, effect = "group", type = "Score")) +
       myTheme + ggplot2::theme(legend.position = "bottom")
@@ -1128,8 +1128,8 @@ plotVal <- function(object,
       if (object$method %in% c("LMM")) gs <- gs + ggplot2::geom_line(alpha = plot.alpha)
       gs <- gs + ggplot2::geom_point(data = dfm, group = NA, alpha = 1, color = "black")
       if (object$method %in% c("LMM")) gs <- gs + ggplot2::geom_line(data = dfm, group = dfm$group, alpha = 1, color = "black")
-      gs <- gs + ggplot2::scale_color_manual(values = getPlotPalette(object)) +
-      ggplot2::scale_linetype_manual(values = getPlotLinetypes(object)) +
+      gs <- gs + ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+      ggplot2::scale_linetype_manual(values = get_plot_linetypes(object)) +
       ggplot2::labs(x = object$plot.xlabel,
                     color = object$plot.grouplabel, linetype = object$plot.grouplabel,
                     y = .getExpLabel(object, component = component, effect = "time", type = "Score")) +
@@ -1480,7 +1480,7 @@ plotComponentsScore <- function(object,
       ggplot2::geom_line() +
       ggplot2::geom_pointrange(ggplot2::aes_string(xmin = paste0("PC", comps[1], "_low"), xmax = paste0("PC", comps[1], "_high"))) +
       ggplot2::geom_pointrange(ggplot2::aes_string(ymin = paste0("PC", comps[2], "_low"), ymax = paste0("PC", comps[2], "_high")))
-    g <- .getPlotHandle(
+    g <- .get_plot_handle(
       g = g,
       object = object,
       myTheme = myTheme,
@@ -1506,7 +1506,7 @@ plotComponentsScore <- function(object,
         ggplot2::geom_line() +
         ggplot2::geom_pointrange(ggplot2::aes_string(xmin = paste0("PC", comps[1], "_low"), xmax = paste0("PC", comps[1], "_high"))) +
         ggplot2::geom_pointrange(ggplot2::aes_string(ymin = paste0("PC", comps[2], "_low"), ymax = paste0("PC", comps[2], "_high")))
-      gsg <- .getPlotHandle(
+      gsg <- .get_plot_handle(
         g = gsg,
         object = object,
         myTheme = myTheme,
@@ -1549,7 +1549,7 @@ plotComponentsScore <- function(object,
         ggplot2::aes(label = time), hjust = texthjust
       )
     }
-    g <- .getPlotHandle(g = g, object = object, myTheme = myTheme, comp = comps, effect = "time")
+    g <- .get_plot_handle(g = g, object = object, myTheme = myTheme, comp = comps, effect = "time")
     if (object$separateTimeAndGroup) {
       ## Group
       dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
@@ -1578,7 +1578,7 @@ plotComponentsScore <- function(object,
         gsg <- gsg + ggplot2::geom_text(data = subset(dfff, model == 0), color = "black", ggplot2::aes(label = time), hjust = texthjust)
       }
 
-      gsg <- .getPlotHandle(g = gsg, object = object, myTheme = myTheme, comp = comps, effect = "group", legend = "bottom")
+      gsg <- .get_plot_handle(g = gsg, object = object, myTheme = myTheme, comp = comps, effect = "group", legend = "bottom")
 
       g <- ggpubr::ggarrange(g, gsg, common.legend = TRUE, legend = "bottom", legend.grob = ggpubr::get_legend(gsg), align = "hv")
     }
@@ -1591,7 +1591,7 @@ plotComponentsScore <- function(object,
     g <- ggplot2::ggplot(dff, ggplot2::aes_string(x = paste0("PC", comps[1]), y = paste0("PC", comps[2]), shape = "time", color = "group", group = "group", linetype = "group")) +
       ggplot2::geom_line() +
       ggplot2::geom_point()
-    g <- .getPlotHandle(g = g, object = object, myTheme = myTheme, comp = comps, effect = "time")
+    g <- .get_plot_handle(g = g, object = object, myTheme = myTheme, comp = comps, effect = "time")
     if (object$separateTimeAndGroup) {
       dff <- subset(get_scores(object)$group, PC %in% comps)
       dff$PC <- paste0("PC", dff$PC)
@@ -1601,7 +1601,7 @@ plotComponentsScore <- function(object,
       gsg <- ggplot2::ggplot(dff, ggplot2::aes_string(x = paste0("PC", comps[1]), y = paste0("PC", comps[2]), shape = "time", color = "group", "group" = "group", linetype = "group")) +
         ggplot2::geom_line() +
         ggplot2::geom_point()
-      gsg <- .getPlotHandle(
+      gsg <- .get_plot_handle(
         g = gsg,
         object = object,
         myTheme = myTheme,
@@ -1626,7 +1626,7 @@ plotComponentsScore <- function(object,
 #' @return A list with colors
 #'
 #' @export
-getPlotPalette <- function(object) {
+get_plot_palette <- function(object) {
   if (any(is.na(object$plot.palette)) || any(is.null(object$plot.palette))) {
     plotColors <- scales::viridis_pal(end = object$plot.palette.end)(length(object$grouplist))
     names(plotColors) <- object$grouplist
@@ -1644,7 +1644,7 @@ getPlotPalette <- function(object) {
 #' @return A list with linetypes
 #'
 #' @export
-getPlotLinetypes <- function(object) {
+get_plot_linetypes <- function(object) {
   plotLinestypes <- scales::linetype_pal()(length(object$grouplist))
   names(plotLinestypes) <- object$grouplist
   return(plotLinestypes)
@@ -1658,8 +1658,8 @@ getPlotLinetypes <- function(object) {
 #' @return A list with colors
 #'
 #' @export
-.getPlotHandle <- function(g, object, myTheme, effect = "time", comps = c(1, 2), legend = NA) {
-  g <- g + ggplot2::scale_color_manual(values = getPlotPalette(object)) +
+.get_plot_handle <- function(g, object, myTheme, effect = "time", comps = c(1, 2), legend = NA) {
+  g <- g + ggplot2::scale_color_manual(values = get_plot_palette(object)) +
     ggplot2::labs(
       x = .getExpLabel(object, component = comps[1], effect = effect),
       y = .getExpLabel(object, component = comps[2], effect = effect)
