@@ -43,7 +43,7 @@ plot.ALASCA <- function(object,
 #' @param grouplabel Defaults to "Group" if not specified here or  during model setup
 #' @param flipaxes When `TRUE` (default), list the variable loadings vertical instead of horizontal
 #' @param plotzeroline When `TRUE` (default), plot a zero line in the loading plot
-#' @param limitloading Only list robust loadings
+#' @param limit_loading Only list robust loadings
 #' @param filetype Which file type you want to save the figure to (default: `png`)
 #' @param figsize A vector containing `c(width,height,dpi)` (default: `c(120, 80, 300)`)
 #' @param figunit Unit for figure size (default: `mm`)
@@ -80,7 +80,7 @@ plotDevelopment <- function(object,
                             figunit = NA,
                             plotribbon = TRUE,
                             loadinggroup = NA,
-                            limitloading = FALSE,
+                            limit_loading = FALSE,
                             sortbyloadinggroup = TRUE,
                             myTheme = object$plot.myTheme) {
   
@@ -122,7 +122,7 @@ plotDevelopment <- function(object,
         highlight = highlight,
         variables = variables,
         loadinggroup = loadinggroup,
-        limitloading = limitloading,
+        limit_loading = limit_loading,
         sortbyloadinggroup = sortbyloadinggroup,
         myTheme = myTheme
       )
@@ -136,7 +136,7 @@ plotDevelopment <- function(object,
         n.limit = n.limit,
         variables = variables,
         highlight = highlight,
-        limitloading = limitloading,
+        limit_loading = limit_loading,
         loadinggroup = loadinggroup,
         sortbyloadinggroup = sortbyloadinggroup,
         myTheme = myTheme
@@ -152,7 +152,7 @@ plotDevelopment <- function(object,
         tooDense = tooDense,
         n.limit = n.limit,
         variables = variables,
-        limitloading = limitloading,
+        limit_loading = limit_loading,
         loadinggroup = loadinggroup,
         sortbyloadinggroup = sortbyloadinggroup,
         myTheme = myTheme
@@ -168,7 +168,7 @@ plotDevelopment <- function(object,
         plotzeroline = plotzeroline,
         tooDense = tooDense,
         n.limit = n.limit,
-        limitloading = limitloading,
+        limit_loading = limit_loading,
         highlight = highlight,
         loadinggroup = loadinggroup,
         sortbyloadinggroup = sortbyloadinggroup,
@@ -184,7 +184,7 @@ plotDevelopment <- function(object,
         n.limit = n.limit,
         variables = variables,
         highlight = highlight,
-        limitloading = limitloading,
+        limit_loading = limit_loading,
         loadinggroup = loadinggroup,
         sortbyloadinggroup = sortbyloadinggroup,
         myTheme = myTheme
@@ -227,7 +227,7 @@ plotDevelopment <- function(object,
         tooDense = tooDense,
         n.limit = n.limit,
         variables = variables,
-        limitloading = limitloading,
+        limit_loading = limit_loading,
         highlight = highlight,
         loadinggroup = loadinggroup,
         sortbyloadinggroup = sortbyloadinggroup,
@@ -336,38 +336,34 @@ screeplot.ALASCA <- function(object,
 #' @param n.limit Returns the n highest and lowest loadings by PC (i.e., 2*n.limit loadings per PC)
 #' @return A list with loadings for time (and group), and the exploratory power for each component
 #' @export
-get_loadings <- function(object, limitloading = FALSE, n.limit = 0, component = 0) {
-  if ( !limitloading || !object$validate ) {
-    if ( n.limit > 0 ) {
-      dfl <- object$ALASCA$loading
-      dfl$time <- rbind(
-        object$ALASCA$loading$time[order(loading, decreasing = FALSE), tail(.SD, n.limit), by = PC],
-        object$ALASCA$loading$time[order(loading, decreasing = TRUE), tail(.SD, n.limit), by = PC]
-      )
-      if (object$separateTimeAndGroup) {
-        dfl$group <- rbind(
-          object$ALASCA$loading$group[order(loading, decreasing = FALSE), tail(.SD, n.limit), by = PC],
-          object$ALASCA$loading$group[order(loading, decreasing = TRUE), tail(.SD, n.limit), by = PC]
-        )
-      }
-    } else {
-      dfl <- object$ALASCA$loading
+get_loadings <- function(object, limit_loading = FALSE, n.limit = 0L, component = c(0)) {
+  dfl <- list()
+  if (component[[1]] > 0 || length(component) > 1) {
+    dfl$time <- object$ALASCA$loading$time[PC %in% component]
+    if (object$separateTimeAndGroup) {
+      dfl$group <- object$ALASCA$loading$group[PC %in% component]
     }
   } else {
-    dfl <- object$ALASCA$loading
-    dfl$time <- na.omit(dfl$time)
-    dfl$time <- subset(dfl$time, sign(low) == sign(high))
+    dfl$time <- object$ALASCA$loading$time
     if (object$separateTimeAndGroup) {
-      dfl$group <- na.omit(dfl$group)
-      dfl$group <- subset(dfl$group, sign(low) == sign(high))
+      dfl$group <- object$ALASCA$loading$group
     }
   }
-  if (component > 0) {
-    dfl$time <- dfl$time[PC == component]
+  if (limit_loading && object$validate) {
+    dfl$time <- dfl$time[!is.na(low) & sign(low) == sign(high)]
     if (object$separateTimeAndGroup) {
-      dfl$group <- dfl$group[PC == component]
+      dfl$group <- dfl$group[!is.na(low) & sign(low) == sign(high)]
+    }
+  } else {
+    if (n.limit > 0L) {
+      index_head_and_tail <- c(seq(n.limit), length(object$variablelist)+1-seq(n.limit))
+      dfl$time <- dfl$time[dfl$time[order(loading, decreasing = TRUE), .I[index_head_and_tail], by = PC]$V1]
+      if (object$separateTimeAndGroup) {
+        dfl$group <- dfl$group[dfl$group[order(loading, decreasing = TRUE), .I[index_head_and_tail], by = PC]$V1]
+      }
     }
   }
+
   return(dfl)
 }
 
@@ -439,7 +435,7 @@ getLoadingPlot <- function(object,
                            figunit = NA,
                            variables = NA,
                            loadinggroup = NA,
-                           limitloading = FALSE,
+                           limit_loading = FALSE,
                            sortbyloadinggroup = TRUE,
                            pointSize = 0.4,
                            myTheme = NA) {
@@ -451,9 +447,9 @@ getLoadingPlot <- function(object,
   if (!is.na(figunit)) object$plot.figunit <- figunit
   
   if (effect == "time") {
-    loadings <- subset(get_loadings(object, limitloading = limitloading, n.limit = n.limit)$time, PC == component & covars %in% variables)
+    loadings <- subset(get_loadings(object, limit_loading = limit_loading, n.limit = n.limit)$time, PC == component & covars %in% variables)
   } else {
-    loadings <- subset(get_loadings(object, limitloading = limitloading, n.limit = n.limit)$group, PC == component & covars %in% variables)
+    loadings <- subset(get_loadings(object, limit_loading = limit_loading, n.limit = n.limit)$group, PC == component & covars %in% variables)
   }
   if (!is.na(object$plot.loadinggroupcolumn)) {
     loadings <- merge(loadings, object$variable_labels)
