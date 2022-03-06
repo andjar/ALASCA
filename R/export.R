@@ -1,26 +1,26 @@
 #' Save ALASCA object
 #'
 #' @inheritParams saveALASCAModel
-#' @inheritParams savetocsv
+#' @inheritParams save_to_csv
 #' @return An ALASCA object
 #' @export
 saveALASCA <- function(object, filename = NA, filepath = NA, saveCSV = TRUE, saveScores = TRUE, saveLoadings = TRUE, saveCovars = TRUE, csv = "csv", ...) {
   saveALASCAModel(object = object, filename = filename, filepath = NA)
-  savetocsv(object = object, filename = filename, filepath = filepath, saveCSV = saveCSV, saveScores = saveScores, saveLoadings = saveLoadings, saveCovars = saveCovars, csv = "csv", ...)
-  summary.ALASCA(object = object, file = getFilename(object = object, filetype = "txt"), sessioninfo = TRUE)
+  save_to_csv(object = object, filename = filename, filepath = filepath, saveCSV = saveCSV, saveScores = saveScores, saveLoadings = saveLoadings, saveCovars = saveCovars, csv = "csv", ...)
+  summary.ALASCA(object = object, file = get_filename(object = object, filetype = "txt"), sessioninfo = TRUE)
 }
 
 #' Save ALASCA object
 #'
 #' @inheritParams saveALASCAModel
-#' @inheritParams savetocsv
+#' @inheritParams save_to_csv
 #' @return An ALASCA object
 #' @export
 saveBootstrapID <- function(object) {
   if (!(object$validate && object$validationMethod == "bootstrap")) stop("Please validate with bootstrapping")
   for (i in seq_along(object$validation$temp_object)) {
     write(paste0(object$validation$temp_object[[i]]$originalIDs, collapse = ";"),
-      file = getFilename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
+      file = get_filename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
     )
   }
 }
@@ -28,14 +28,14 @@ saveBootstrapID <- function(object) {
 #' Save ALASCA object
 #'
 #' @inheritParams saveALASCAModel
-#' @inheritParams savetocsv
+#' @inheritParams save_to_csv
 #' @return An ALASCA object
 #' @export
 saveJackKnifeID <- function(object) {
   if (!(object$validate && object$validationMethod %in% c("loo", "jack-knife", "jackknife"))) stop("Please validate with jack-knife")
   for (i in seq_along(object$validation$temp_object)) {
     write(paste0(unique(object$validation$temp_object[[i]]$partID), collapse = ";"),
-          file = getFilename(object = object, prefix = "jackknifeID_", filetype = ".csv", overwrite = TRUE), append = TRUE
+          file = get_filename(object = object, prefix = "jackknifeID_", filetype = ".csv", overwrite = TRUE), append = TRUE
     )
   }
 }
@@ -46,93 +46,93 @@ saveJackKnifeID <- function(object) {
 #' @param filepath
 #' @param filename
 #' @export
-savetocsv <- function(object, filename = NA, filepath = NA, saveCSV = TRUE, saveScores = TRUE, saveLoadings = TRUE, saveCovars = TRUE, csv = "csv", ...) {
+save_to_csv <- function(object, filename = NA, filepath = NA, saveCSV = TRUE, saveScores = TRUE, saveLoadings = TRUE, saveCovars = TRUE, csv = "csv", ...) {
   if (saveCSV) {
     if (csv == "csv") {
       if (object$separateTimeAndGroup) {
         if (saveScores) {
-          write.csv(getScores(object)$time,
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_time_scores", filetype = ".csv"), ...
+          write.csv(get_scores(object)$time,
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_time_scores", filetype = ".csv"), ...
           )
         }
         if (saveLoadings) {
-          write.csv(getLoadings(object)$time,
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_time_loadings", filetype = ".csv"), ...
+          write.csv(get_loadings(object)$time,
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_time_loadings", filetype = ".csv"), ...
           )
         }
         if (saveScores) {
-          write.csv(getScores(object)$group,
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_group_scores", filetype = ".csv"), ...
+          write.csv(get_scores(object)$group,
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_group_scores", filetype = ".csv"), ...
           )
         }
         if (saveLoadings) {
-          write.csv(getLoadings(object)$group,
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_group_loadings", filetype = ".csv"), ...
+          write.csv(get_loadings(object)$group,
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_group_loadings", filetype = ".csv"), ...
           )
         }
         if (saveCovars) {
-          write.csv(getCovars(object),
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_covars", filetype = ".csv"), ...
+          write.csv(get_covars(object),
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_covars", filetype = ".csv"), ...
           )
         }
       } else {
         if (saveScores) {
-          write.csv(getScores(object)$time,
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_scores", filetype = ".csv"), ...
+          write.csv(get_scores(object)$time,
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_scores", filetype = ".csv"), ...
           )
         }
         if (saveLoadings) {
-          write.csv(getLoadings(object)$time,
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_loadings", filetype = ".csv"), ...
+          write.csv(get_loadings(object)$time,
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_loadings", filetype = ".csv"), ...
           )
         }
         if (saveCovars) {
-          write.csv(getCovars(object),
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_covars", filetype = ".csv"), ...
+          write.csv(get_covars(object),
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_covars", filetype = ".csv"), ...
           )
         }
       }
     } else if (csv == "csv2") {
       if (object$separateTimeAndGroup) {
         if (saveScores) {
-          write.csv2(getScores(object)$time,
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_time_scores", filetype = ".csv"), ...
+          write.csv2(get_scores(object)$time,
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_time_scores", filetype = ".csv"), ...
           )
         }
         if (saveLoadings) {
-          write.csv2(getLoadings(object)$time,
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_time_loadings", filetype = ".csv"), ...
+          write.csv2(get_loadings(object)$time,
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_time_loadings", filetype = ".csv"), ...
           )
         }
         if (saveScores) {
-          write.csv2(getScores(object)$group,
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_scores_scores", filetype = ".csv"), ...
+          write.csv2(get_scores(object)$group,
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_scores_scores", filetype = ".csv"), ...
           )
         }
         if (saveLoadings) {
-          write.csv2(getLoadings(object)$group,
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_scores_loadings", filetype = ".csv"), ...
+          write.csv2(get_loadings(object)$group,
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_scores_loadings", filetype = ".csv"), ...
           )
         }
         if (saveCovars) {
-          write.csv2(getCovars(object),
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_covars", filetype = ".csv"), ...
+          write.csv2(get_covars(object),
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_covars", filetype = ".csv"), ...
           )
         }
       } else {
         if (saveScores) {
-          write.csv2(getScores(object)$time,
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_scores", filetype = ".csv"), ...
+          write.csv2(get_scores(object)$time,
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_scores", filetype = ".csv"), ...
           )
         }
         if (saveLoadings) {
-          write.csv2(getLoadings(object)$time,
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_loadings", filetype = ".csv"), ...
+          write.csv2(get_loadings(object)$time,
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_loadings", filetype = ".csv"), ...
           )
         }
         if (saveCovars) {
-          write.csv2(getCovars(object),
-            file = getFilename(object = object, filename = filename, filepath = filepath, suffix = "_covars", filetype = ".csv"), ...
+          write.csv2(get_covars(object),
+            file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_covars", filetype = ".csv"), ...
           )
         }
       }

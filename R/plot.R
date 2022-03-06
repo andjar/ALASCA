@@ -288,7 +288,7 @@ screeplot.ALASCA <- function(object,
                              figsize = object$plot.figsize,
                              figunit = object$plot.figunit,
                              myTheme = object$plot.myTheme) {
-  explained <- as.data.frame(getScores(object)$explained)
+  explained <- as.data.frame(get_scores(object)$explained)
   explained$component <- seq_len(nrow(explained))
   if (!is.na(filename)) object$filename <- filename
   
@@ -336,7 +336,7 @@ screeplot.ALASCA <- function(object,
 #' @param n.limit Returns the n highest and lowest loadings by PC (i.e., 2*n.limit loadings per PC)
 #' @return A list with loadings for time (and group), and the exploratory power for each component
 #' @export
-getLoadings <- function(object, limitloading = FALSE, n.limit = 0, component = 0) {
+get_loadings <- function(object, limitloading = FALSE, n.limit = 0, component = 0) {
   if ( !limitloading || !object$validate ) {
     if ( n.limit > 0 ) {
       dfl <- object$ALASCA$loading
@@ -375,10 +375,10 @@ getLoadings <- function(object, limitloading = FALSE, n.limit = 0, component = 0
 #'
 #' This function returns the scores for an ALASCA model
 #'
-#' @inheritParams getLoadings
+#' @inheritParams get_loadings
 #' @return A list with scores for time (and group), and the exploratory power for each component
 #' @export
-getScores <- function(object, component = 0) {
+get_scores <- function(object, component = 0) {
   if(any(component > 0)){
     object$ALASCA$score$time <- object$ALASCA$score$time[ PC %in% component]
     if (object$separateTimeAndGroup) {
@@ -392,19 +392,19 @@ getScores <- function(object, component = 0) {
 #'
 #' This function returns the other covariables in an ALASCA model
 #'
-#' @inheritParams getLoadings
+#' @inheritParams get_loadings
 #' @return A list with scores for time (and group), and the exploratory power for each component
 #' @export
-getCovars <- function(object, n.limit = 0) {
+get_covars <- function(object, n.limit = 0) {
   if (n.limit > 0) {
     return(
       rbind(
-        object$CovarCoefficients[order(estimate, decreasing = TRUE), head(.SD, n.limit), by = variable],
-        object$CovarCoefficients[order(estimate, decreasing = FALSE), head(.SD, n.limit), by = variable]
+        object$covar_coefficients[order(estimate, decreasing = TRUE), head(.SD, n.limit), by = variable],
+        object$covar_coefficients[order(estimate, decreasing = FALSE), head(.SD, n.limit), by = variable]
       )
     )
   } else {
-    return(object$CovarCoefficients)
+    return(object$covar_coefficients)
   }
 }
 
@@ -451,9 +451,9 @@ getLoadingPlot <- function(object,
   if (!is.na(figunit)) object$plot.figunit <- figunit
   
   if (effect == "time") {
-    loadings <- subset(getLoadings(object, limitloading = limitloading, n.limit = n.limit)$time, PC == component & covars %in% variables)
+    loadings <- subset(get_loadings(object, limitloading = limitloading, n.limit = n.limit)$time, PC == component & covars %in% variables)
   } else {
-    loadings <- subset(getLoadings(object, limitloading = limitloading, n.limit = n.limit)$group, PC == component & covars %in% variables)
+    loadings <- subset(get_loadings(object, limitloading = limitloading, n.limit = n.limit)$group, PC == component & covars %in% variables)
   }
   if (!is.na(object$plot.loadinggroupcolumn)) {
     loadings <- merge(loadings, object$variable_labels)
@@ -586,7 +586,7 @@ getScorePlot <- function(object,
 
   if (effect == "time") {
     if (object$separateTimeAndGroup) {
-      score <- getScores(object, component = component)$time
+      score <- get_scores(object, component = component)$time
       if (object$validate) {
         # Show error bars
         if (grepl("permutation", object$validationMethod)) {
@@ -629,7 +629,7 @@ getScorePlot <- function(object,
         }
       }
     } else {
-      score <- getScores(object, component = component)$time
+      score <- get_scores(object, component = component)$time
       if (object$validate) {
         if (grepl("permutation", object$validationMethod)) {
           pvals <- object$pvals
@@ -675,7 +675,7 @@ getScorePlot <- function(object,
       )
   } else {
     # Group effect
-    score <- getScores(object, component = component)$group
+    score <- get_scores(object, component = component)$group
     if (object$validate) {
       if (grepl("permutation", object$validationMethod)) {
         pvals <- object$pvals
@@ -803,7 +803,7 @@ plotParts <- function(object,
         return(g)
       }
     } else if (is(object, "ALASCA")) {
-      df <- object$dfRaw
+      df <- object$df_raw
       valueColumn <- as.character(object$formula)[2]
       if (any(participantColumn == FALSE)) {
         if (any(object$participantColumn == FALSE)) {
@@ -852,7 +852,7 @@ plotParts <- function(object,
       if (any(is.na(variables))) {
         variables <- object$variablelist
       }
-      df <- object$dfRaw
+      df <- object$df_raw
       if (is.na(xlabel)) {
         xlabel <- object$plot.xlabel
       }
@@ -1035,11 +1035,11 @@ plotVal <- function(object,
     ## Time
     dff <- rbindlist(lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        subset(getScores(object$validation$temp_objects[[x]])$time, PC == component),
+        subset(get_scores(object$validation$temp_objects[[x]])$time, PC == component),
         model = x
       )
     }))
-    dfm <- getScores(object, component = component)$time
+    dfm <- get_scores(object, component = component)$time
     gst <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = model, color = group, linetype = group)) +
       ggplot2::geom_point(alpha = plot.alpha)
     if (object$method %in% c("LMM")) gst <- gst + ggplot2::geom_line(alpha = plot.alpha)
@@ -1055,11 +1055,11 @@ plotVal <- function(object,
     ## Group
     dff <- rbindlist(lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        subset(getScores(object$validation$temp_objects[[x]])$group, PC == component),
+        subset(get_scores(object$validation$temp_objects[[x]])$group, PC == component),
         model = x
       )
     }))
-    dfm <- getScores(object, component = component)$group
+    dfm <- get_scores(object, component = component)$group
     dff$plotGroup <- paste0(dff$model, "-", dff$group)
     gsg <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group, linetype = group)) +
       ggplot2::geom_point(alpha = plot.alpha)
@@ -1074,11 +1074,11 @@ plotVal <- function(object,
 
     # Loading plot
     ## Time
-    dfm <- getLoadings(object, component = component, n.limit = n.limit)$time
+    dfm <- get_loadings(object, component = component, n.limit = n.limit)$time
     dfm$covars <- factor(dfm$covars, levels = unique(dfm$covars[order(dfm$loading, decreasing = decreasingLoadings)]))
     dff <- rbindlist(lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        subset(getLoadings(object$validation$temp_objects[[x]], component = component)$time, covars %in% dfm$covars)
+        subset(get_loadings(object$validation$temp_objects[[x]], component = component)$time, covars %in% dfm$covars)
       )
     }))
     dff$covars <- factor(dff$covars, levels = unique(dff$covars[order(dff$loading, decreasing = decreasingLoadings)]))
@@ -1096,11 +1096,11 @@ plotVal <- function(object,
       myTheme
 
     ## Group
-    dfm <- getLoadings(object, component = component, n.limit = n.limit)$group
+    dfm <- get_loadings(object, component = component, n.limit = n.limit)$group
     dfm$covars <- factor(dfm$covars, levels = unique(dfm$covars[order(dfm$loading, decreasing = decreasingLoadings)]))
     dff <- rbindlist(lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        subset(getLoadings(object$validation$temp_objects[[x]], component = component)$group, covars %in% dfm$covars)
+        subset(get_loadings(object$validation$temp_objects[[x]], component = component)$group, covars %in% dfm$covars)
       )
     }))
     dff$covars <- factor(dff$covars, levels = unique(dff$covars[order(dff$loading, decreasing = decreasingLoadings)]))
@@ -1121,12 +1121,12 @@ plotVal <- function(object,
     # Score plot
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        subset(getScores(object$validation$temp_objects[[x]])$time, PC == component),
+        subset(get_scores(object$validation$temp_objects[[x]])$time, PC == component),
         model = x
       )
     }))
     dff$plotGroup <- paste0(dff$model, "-", dff$group)
-    dfm <- getScores(object, component = component)$time
+    dfm <- get_scores(object, component = component)$time
     gs <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group, linetype = group)) +
       ggplot2::geom_point(alpha = plot.alpha)
       if (object$method %in% c("LMM")) gs <- gs + ggplot2::geom_line(alpha = plot.alpha)
@@ -1141,11 +1141,11 @@ plotVal <- function(object,
       ggplot2::theme(legend.position = "bottom")
 
     # Loading plot
-    dfm <- getLoadings(object, component = component, n.limit = n.limit)$time
+    dfm <- get_loadings(object, component = component, n.limit = n.limit)$time
     dfm$covars <- factor(dfm$covars, levels = unique(dfm$covars[order(dfm$loading, decreasing = decreasingLoadings)]))
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        subset(getLoadings(object$validation$temp_objects[[x]], component = component)$time, covars %in% dfm$covars)
+        subset(get_loadings(object$validation$temp_objects[[x]], component = component)$time, covars %in% dfm$covars)
       )
     }))
     dff$covars <- factor(dff$covars, levels = unique(dff$covars[order(dff$loading, decreasing = decreasingLoadings)]))
@@ -1201,7 +1201,7 @@ plotCovar <- function(object,
   if (any(is.na(myTheme))) myTheme <- object$plot.myTheme
   if (!is.na(filename)) object$filename <- filename
   
-  df <- getCovars(object, n.limit = n.limit)
+  df <- get_covars(object, n.limit = n.limit)
   if ( nrow(df) == 0 ) stop("No covariates to plot")
   df$covar <- factor(df$covar, levels = unique(df$covar[order(df$estimate)]))
   if (any(is.na(covar))) {
@@ -1351,11 +1351,11 @@ plotComponentsLoadings <- function(object,
                                    validationshape = NA,
                                    myTheme = ggplot2::theme_classic(),
                                    ...) {
-  if (any(!comps %in% getRelevantPCs(object = object, effect = "time"))) {
+  if (any(!comps %in% get_relevant_pcs(object = object, effect = "time"))) {
     warning("Please note: Some components have low explanatory power and HAVE NOT BEEN rotated during rotation. Proceed with care.")
   }
 
-  dff <- subset(getLoadings(object)$time, PC %in% comps)
+  dff <- subset(get_loadings(object)$time, PC %in% comps)
   dff$PC <- paste0("PC", dff$PC)
   dff <- reshape2::melt(data = dff, id.vars = c("PC", "covars"))
   dff <- reshape2::dcast(data = dff, covars ~ PC + variable, value.var = "value")
@@ -1388,7 +1388,7 @@ plotComponentsLoadings <- function(object,
     myTheme
 
   if (object$separateTimeAndGroup) {
-    dff <- subset(getLoadings(object)$group, PC %in% comps)
+    dff <- subset(get_loadings(object)$group, PC %in% comps)
     dff$PC <- paste0("PC", dff$PC)
     dff <- reshape2::melt(data = dff, id.vars = c("PC", "covars"))
     dff <- reshape2::dcast(data = dff, covars ~ PC + variable, value.var = "value")
@@ -1464,10 +1464,10 @@ plotComponentsScore <- function(object,
   
   if (!is.na(filename)) object$filename <- filename
   if (!object$validate) validationshape <- NA
-  if (any(!comps %in% getRelevantPCs(object = object, effect = "time"))) warning("Please note: Some components have low explanatory power and HAVE NOT BEEN rotated during rotation. Proceed with care.")
+  if (any(!comps %in% get_relevant_pcs(object = object, effect = "time"))) warning("Please note: Some components have low explanatory power and HAVE NOT BEEN rotated during rotation. Proceed with care.")
   
   if (validationshape == "cross" & !is.na(validationshape)) {
-    dff <- subset(getScores(object)$time, PC %in% comps)
+    dff <- subset(get_scores(object)$time, PC %in% comps)
     dff$PC <- paste0("PC", dff$PC)
     dff <- reshape2::melt(data = dff, id.vars = c("PC", "time", "group"))
     dff <- reshape2::dcast(data = dff, time + group ~ PC + variable, value.var = "value")
@@ -1493,7 +1493,7 @@ plotComponentsScore <- function(object,
     )
 
     if (object$separateTimeAndGroup) {
-      dff <- subset(getScores(object)$group, PC %in% comps)
+      dff <- subset(get_scores(object)$group, PC %in% comps)
       dff$PC <- paste0("PC", dff$PC)
       dff <- reshape2::melt(data = dff, id.vars = c("PC", "time", "group"))
       dff <- reshape2::dcast(data = dff, time + group ~ PC + variable, value.var = "value")
@@ -1526,11 +1526,11 @@ plotComponentsScore <- function(object,
     ## Time
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        subset(getScores(object$validation$temp_objects[[x]])$time, PC %in% comps),
+        subset(get_scores(object$validation$temp_objects[[x]])$time, PC %in% comps),
         model = x
       )
     }))
-    df_temp <- subset(getScores(object)$time, PC %in% comps)
+    df_temp <- subset(get_scores(object)$time, PC %in% comps)
     df_temp$model <- 0
     df_temp$low <- NULL
     df_temp$high <- NULL
@@ -1558,11 +1558,11 @@ plotComponentsScore <- function(object,
       ## Group
       dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
         data.frame(
-          subset(getScores(object$validation$temp_objects[[x]])$group, PC %in% comps),
+          subset(get_scores(object$validation$temp_objects[[x]])$group, PC %in% comps),
           model = x
         )
       }))
-      df_temp <- subset(getScores(object)$group, PC %in% comps)
+      df_temp <- subset(get_scores(object)$group, PC %in% comps)
       df_temp$model <- 0
       df_temp$low <- NULL
       df_temp$high <- NULL
@@ -1587,7 +1587,7 @@ plotComponentsScore <- function(object,
       g <- ggpubr::ggarrange(g, gsg, common.legend = TRUE, legend = "bottom", legend.grob = ggpubr::get_legend(gsg), align = "hv")
     }
   } else {
-    dff <- subset(getScores(object)$time, PC %in% comps)
+    dff <- subset(get_scores(object)$time, PC %in% comps)
     dff$PC <- paste0("PC", dff$PC)
     dff <- reshape2::dcast(data = dff, time + group ~ PC, value.var = "score")
     dff$time <- factor(dff$time, levels = object$timelist)
@@ -1597,7 +1597,7 @@ plotComponentsScore <- function(object,
       ggplot2::geom_point()
     g <- .getPlotHandle(g = g, object = object, myTheme = myTheme, comp = comps, effect = "time")
     if (object$separateTimeAndGroup) {
-      dff <- subset(getScores(object)$group, PC %in% comps)
+      dff <- subset(get_scores(object)$group, PC %in% comps)
       dff$PC <- paste0("PC", dff$PC)
       dff <- reshape2::dcast(data = dff, time + group ~ PC, value.var = "score")
       dff$time <- factor(dff$time, levels = object$timelist)
@@ -1716,7 +1716,7 @@ plotProjection <- function(object,
 
   df <- object$df
   df$ID <- df[, ID]
-  loadings_Time <- subset(getLoadings(object)$time, PC %in% comp)
+  loadings_Time <- subset(get_loadings(object)$time, PC %in% comp)
   loadings_Time <- reshape2::dcast(data = loadings_Time, covars ~ paste0("PC", PC), value.var = "loading")
   df_time <- merge(df, loadings_Time, by.x = "variable", by.y = "covars")
   if (object$separateTimeAndGroup) {
@@ -1736,7 +1736,7 @@ plotProjection <- function(object,
         ggplot2::geom_line(alpha = 0.7, arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(0.20, "cm"))) +
         myTheme
     }
-    loadings_group <- subset(getLoadings(object)$group, PC %in% comp)
+    loadings_group <- subset(get_loadings(object)$group, PC %in% comp)
     loadings_group <- reshape2::dcast(data = loadings_group, covars ~ paste0("PC", PC), value.var = "loading")
     df_group <- merge(df, loadings_group, by.x = "variable", by.y = "covars")
     df_group <- Reduce(rbind, lapply(unique(paste0(df_time$ID, df_time$time)), function(x) {

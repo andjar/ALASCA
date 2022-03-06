@@ -4,16 +4,16 @@
 #'
 #' @param object An ALASCA object to be sanitized
 #' @return An ALASCA object
-doPCA <- function(object) {
+do_pca <- function(object) {
   object$pca$time <- prcomp(
-    object$effect.matrix[object$effect.matrix$comp == "TIME",
-                         seq_len(ncol(object$effect.matrix) - 1)],
+    object$effect_matrix[object$effect_matrix$comp == "TIME",
+                         seq_len(ncol(object$effect_matrix) - 1)],
     scale = FALSE,
     center = TRUE)
   if (object$separateTimeAndGroup) {
     object$pca$group <- prcomp(
-      object$effect.matrix[object$effect.matrix$comp == "GROUP",
-                           seq_len(ncol(object$effect.matrix) - 1)],
+      object$effect_matrix[object$effect_matrix$comp == "GROUP",
+                           seq_len(ncol(object$effect_matrix) - 1)],
       scale = FALSE,
       center = TRUE)
   }
@@ -30,12 +30,12 @@ reduce_dimensions <- function(object){
 
   wide_data <- dcast(data = object$df, ...~variable
                      )
-  if (object$doDebug) currentTs <- Sys.time()
+  if (object$do_debug) currentTs <- Sys.time()
   temp_pca_values <- prcomp(
-    wide_data[, .SD, .SDcols = -object$allFormulaTerms],
+    wide_data[, .SD, .SDcols = -object$all_formula_terms],
     scale = FALSE,
     center = TRUE)
-  if (object$doDebug) cat("* First PCA:", Sys.time() - currentTs, "s\n")
+  if (object$do_debug) cat("* First PCA:", Sys.time() - currentTs, "s\n")
   
   object$reduceDimensions.explanatory_power <- temp_pca_values$sdev^2 / sum(temp_pca_values$sdev^2)
   
@@ -50,7 +50,7 @@ reduce_dimensions <- function(object){
   }
   
   # Check if the pca model needs reflection to better fit the main model
-  if (object$doDebug) currentTs <- Sys.time()
+  if (object$do_debug) currentTs <- Sys.time()
   for (i in seq_len(ncol(temp_pca_values$rotation))) {
     V1 <- sum((temp_pca_values$rotation[,i] - object$Limm$main$pca$rotation[,i])^2)
     V2 <- sum((-temp_pca_values$rotation[,i] - object$Limm$main$pca$rotation[,i])^2)
@@ -59,12 +59,12 @@ reduce_dimensions <- function(object){
       temp_pca_values$x[,i] = -temp_pca_values$x[,i]
     }
   }
-  if (object$doDebug) cat("* Remove surplus PCs:", Sys.time() - currentTs, "s\n")
+  if (object$do_debug) cat("* Remove surplus PCs:", Sys.time() - currentTs, "s\n")
   
   object$Limm$loadings <- temp_pca_values$rotation
   object$Limm$pca <- temp_pca_values
   object$Limm$df <- object$df
-  object$df <- melt(data = cbind(wide_data[, .SD, .SDcols = object$allFormulaTerms], temp_pca_values$x), id.vars = object$allFormulaTerms, variable.factor = FALSE)
+  object$df <- melt(data = cbind(wide_data[, .SD, .SDcols = object$all_formula_terms], temp_pca_values$x), id.vars = object$all_formula_terms, variable.factor = FALSE)
   object$variablelist <- unique(object$df$variable)
   object$stratificationVector <- object$df[, get(object$stratificationColumn)]
   return(object)
@@ -76,7 +76,7 @@ reduce_dimensions <- function(object){
 #'
 #' @param object An ALASCA object to be sanitized
 #' @return An ALASCA object
-cleanPCA <- function(object) {
+clean_pca <- function(object) {
   # Clean scores ----
   PC_time <- as.data.frame(object$pca$time$x)
   PC_time$time <- object$parts$time
@@ -101,13 +101,13 @@ cleanPCA <- function(object) {
         ),
       keep.rownames="covars")
     object$variablelist <- unique(object$pca$loading$time$covars)
-    object$RegressionCoefficients <- rbindlist(
-      lapply(unique(object$RegressionCoefficients$variable), function(x){
+    object$regression_coefficients <- rbindlist(
+      lapply(unique(object$regression_coefficients$variable), function(x){
         setDT(
           data.frame(
             variable = x,
             pvalue = NA,
-            estimate = as.matrix(object$Limm$loadings) %*% as.matrix(object$RegressionCoefficients[variable == x & order(as.numeric(substr(covar, 3, nchar(covar)))), "estimate"])
+            estimate = as.matrix(object$Limm$loadings) %*% as.matrix(object$regression_coefficients[variable == x & order(as.numeric(substr(covar, 3, nchar(covar)))), "estimate"])
           ),
         keep.rownames="covar")
       })
@@ -116,7 +116,7 @@ cleanPCA <- function(object) {
   
   setkey(object$pca$loading$time, covars)
   
-  PCloading <- paste0("PC", getRelevantPCs(object = object, effect = "time"))
+  PCloading <- paste0("PC", get_relevant_pcs(object = object, effect = "time"))
   for (i in PCloading) {
     # Ensure that the highest loading has positive sign
     nVar <- object$pca$loading$time[, .I[which.max(abs(get(i)))]]
@@ -150,7 +150,7 @@ cleanPCA <- function(object) {
     
     setkey(object$pca$loading$group, covars)
 
-    PCloading <- paste0("PC", getRelevantPCs(object = object, effect = "group"))
+    PCloading <- paste0("PC", get_relevant_pcs(object = object, effect = "group"))
     for (i in PCloading) {
       # Ensure that the highest loading has positive sign
       nVar <- object$pca$loading$group[, .I[which.max(abs(get(i)))]]
@@ -163,7 +163,7 @@ cleanPCA <- function(object) {
   return(object)
 }
 
-cleanALASCA <- function(object) {
+clean_alasca <- function(object) {
   # We need to create new group names for the combined group and keepTerms
   if (object$keepTerms != "") {
     if (object$separateTimeAndGroup) {

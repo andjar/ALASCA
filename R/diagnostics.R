@@ -12,15 +12,15 @@
 #' @export
 residuals.ALASCA <- function(object, variable = NA) {
   if (any(is.na(variable))) {
-    return(lapply(object$regr.model, residuals))
+    return(lapply(object$regression_model, residuals))
   } else {
-    varList <- names(object$regr.model)
-    resList <- lapply(seq_along(object$regr.model), function(x) {
+    varList <- names(object$regression_model)
+    resList <- lapply(seq_along(object$regression_model), function(x) {
       if (varList[x] %in% variable) {
-        residuals(object$regr.model[[x]])
+        residuals(object$regression_model[[x]])
       }
     })
-    names(resList) <- names(object$regr.model)
+    names(resList) <- names(object$regression_model)
     resList[vapply(resList, is.null)] <- NULL
     return(resList)
   }
@@ -105,11 +105,11 @@ plothistogram_score <- function(object, component = 1, bins = object$nValRuns / 
   if (effect == "time" | effect == "both") {
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        subset(getScores(object$validation$temp_objects[[x]])$time, PC == component),
+        subset(get_scores(object$validation$temp_objects[[x]])$time, PC == component),
         model = x
       )
     }))
-    df_temp <- subset(getScores(object)$time, PC == component)
+    df_temp <- subset(get_scores(object)$time, PC == component)
     df_temp$model <- 0
     df_temp$low <- NULL
     df_temp$high <- NULL
@@ -130,11 +130,11 @@ plothistogram_score <- function(object, component = 1, bins = object$nValRuns / 
   if (effect == "group" | effect == "both") {
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        subset(getScores(object$validation$temp_objects[[x]])$group, PC == component),
+        subset(get_scores(object$validation$temp_objects[[x]])$group, PC == component),
         model = x
       )
     }))
-    df_temp <- subset(getScores(object)$group, PC == component)
+    df_temp <- subset(get_scores(object)$group, PC == component)
     df_temp$model <- 0
     df_temp$low <- NULL
     df_temp$high <- NULL
@@ -189,19 +189,19 @@ plothistogram_loading <- function(object, component = 1,
   if (effect == "time") {
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        getLoadings(object$validation$temp_objects[[x]], component = component, n.limit = n.limit)$time,
+        get_loadings(object$validation$temp_objects[[x]], component = component, n.limit = n.limit)$time,
         model = x
       )
     }))
-    df_temp <- subset(getLoadings(object)$time, PC == component & covars %in% variable)
+    df_temp <- subset(get_loadings(object)$time, PC == component & covars %in% variable)
   } else {
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        getLoadings(object$validation$temp_objects[[x]], component = component, n.limit = n.limit)$group,
+        get_loadings(object$validation$temp_objects[[x]], component = component, n.limit = n.limit)$group,
         model = x
       )
     }))
-    df_temp <- subset(getLoadings(object)$group, PC == component & covars %in% variable)
+    df_temp <- subset(get_loadings(object)$group, PC == component & covars %in% variable)
   }
 
   df_temp$model <- 0
