@@ -192,7 +192,7 @@ saveALASCAPlot <- function(object, g, filetype = NA, figsize = NA, prefix = "plo
 #' @return A ggplot2 objects.
 #'
 #' @export
-getFilename <- function(object, filename = NA, filepath = NA, prefix = "", suffix = "", filetype = "", overwrite = FALSE) {
+get_filename <- function(object, filename = NA, filepath = NA, prefix = "", suffix = "", filetype = "", overwrite = FALSE) {
   # Use arguments if defined
   if (any(!is.na(filename))) {
     object$filename <- filename
