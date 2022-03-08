@@ -188,7 +188,8 @@ ALASCA <- function(df,
       validationIDs = validationIDs,
       validationQuantileMethod = validationQuantileMethod,
       ALASCA.version = print_version(get = "version"),
-      ALASCA.version.date = print_version(get = "date")
+      ALASCA.version.date = print_version(get = "date"),
+      log = data.frame(level = "INFO", time = Sys.time(), message = "Initializing ALASCA")
     )
     object$stratificationVector = object$df[, get(object$stratificationColumn)]
     class(object) <- "ALASCA"
@@ -602,9 +603,9 @@ LM_or_LMM <- function(object) {
 #' @return An ALASCA object
 wide_to_long <- function(object) {
   if (object$wide) {
-    cat("Converting from wide to long!\n")
+    object <- add_to_log(object, message = "Converting from wide to long!", print = TRUE)
     object$df <- melt(object$df, id.vars = c(object$all_formula_terms[!object$all_formula_terms %in% c("variable", "value")]), value.name = object$valCol)
-    cat("Found",length(unique(object$df$variable)),"variables\n")
+    object <- add_to_log(object, message = paste0("Found ",length(unique(object$df$variable))," variables"), print = TRUE)
     object$wide <- FALSE
     object$variablelist <- unique(object$df$variable)
     object$stratificationVector = object$df[, get(object$stratificationColumn)]
@@ -708,25 +709,25 @@ get_scaling_function <- function(object) {
   # The user provided a custom function
   if (is.function(object$scaleFun)) {
     if (!object$minimize_object) {
-      cat("Scaling data with custom function...\n")
+      object <- add_to_log(object, message = "Scaling data with custom function...", print = TRUE)
     }
     
     # The user do not want to scale
   } else if (object$scaleFun == "none") {
     if (!object$minimize_object) {
-      warning("Not scaling data...\n")
+      object <- add_to_log(object, message = "Not scaling data...", level = "WARNING")
     }
     object$scaleFun <- identity()
     
     # Use a deafult scaling
   } else if (is.character(object$scaleFun)) {
     if (!object$minimize_object) {
-      cat("Scaling data with ",object$scaleFun,"...\n")
+      object <- add_to_log(object, message = paste("Scaling data with",object$scaleFun,"..."), print = TRUE)
     }
     object$scaleFun <- get_default_scaling_function(scaleFun_string = object$scaleFun, scaleFun.center = object$scaleFun.center)
     
   } else {
-    stop("Unknown scaling function")
+    object <- add_to_log(object, message = "Unknown scaling function", level = "STOP")
   }
   return(object)
 }
@@ -834,12 +835,28 @@ get_pca_function <- function (object) {
     object$function.pca <- object$pca_function
   } else if (is.character(object$pca_function)) {
     if (object$pca_function == "prcomp") {
-      object$function.pca <- function(df, center = TRUE) prcomp(df, scale = FALSE, center = center)
+      object$function.pca <- function(df, center = TRUE) {
+        prcomp(df, scale = FALSE, center = center)
+      }
     } else if (object$pca_function == "irlba") {
       object$function.pca <- function(df, center = TRUE) {
-        k <- irlba::prcomp_irlba(df, scale = FALSE, center = center, n = floor(0.5*min(dim(df))))
+        k <- irlba::prcomp_irlba(df, scale = FALSE, center = center, n = floor(0.9*min(dim(df))))
         rownames(k$rotation) <- colnames(df)
         k
+      }
+    } else if (object$pca_function == "princomp") {
+      object$function.pca <- function(df, center = TRUE) {
+        k <- princomp(df)
+        l <- k$loadings
+        s <- k$scores
+        out <- list(
+          rotation = data.frame(matrix(as.numeric(l), attributes(l)$dim, dimnames=attributes(l)$dimnames)),
+          x = data.frame(matrix(as.numeric(s), attributes(s)$dim, dimnames=attributes(s)$dimnames)),
+          sdev = k$sdev
+        )
+        colnames(out$x) <- gsub("Comp.", "PC", colnames(out$x), fixed = TRUE)
+        colnames(out$rotation) <- gsub("Comp.", "PC", colnames(out$rotation), fixed = TRUE)
+        return(out)
       }
     } else {
       stop("Unknown PCA function")

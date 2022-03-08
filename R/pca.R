@@ -8,15 +8,13 @@ do_pca <- function(object) {
   object$pca$time <- prcomp(
     object$effect_matrix[object$effect_matrix$comp == "TIME",
                          seq_len(ncol(object$effect_matrix) - 1)],
-    scale = FALSE,
-    center = !object$scaleFun.center
+    scale = FALSE, center = !object$scaleFun.center
     )
   if (object$separateTimeAndGroup) {
     object$pca$group <- prcomp(
       object$effect_matrix[object$effect_matrix$comp == "GROUP",
                            seq_len(ncol(object$effect_matrix) - 1)],
-      scale = FALSE,
-      center = !object$scaleFun.center
+      scale = FALSE, center = !object$scaleFun.center
     )
   }
   return(object)
@@ -29,6 +27,9 @@ do_pca <- function(object) {
 #' @param object An ALASCA object
 #' @return An ALASCA object
 reduce_dimensions <- function(object){
+  
+  object <- add_to_log(object,
+                       message = "Starting reduce_dimensions")
 
   wide_data <- dcast(data = object$df, ...~variable
                      )
@@ -38,14 +39,18 @@ reduce_dimensions <- function(object){
     center = !object$scaleFun.center
   )
   
-  if (object$do_debug) cat("* First PCA:", Sys.time() - currentTs, "s\n")
-  
   object$reduceDimensions.explanatory_power <- temp_pca_values$sdev^2 / sum(temp_pca_values$sdev^2)
   
   # Remove surplus columns
   if (is.null(object$reduceDimensions.nComps)) {
     object$reduceDimensions.nComps <- which(cumsum(object$reduceDimensions.explanatory_power) >= object$reduceDimensions.limit)[1]
-    cat("-- Keeping",object$reduceDimensions.nComps,"components from initial PCA, explaining",100*cumsum(object$reduceDimensions.explanatory_power)[object$reduceDimensions.nComps],"% of variation\n")
+    object <- add_to_log(object,
+                         message = paste("Keeping",
+                                         object$reduceDimensions.nComps,
+                                         "components from initial PCA, explaining",
+                                         100*cumsum(object$reduceDimensions.explanatory_power)[object$reduceDimensions.nComps],
+                                         "% of variation"),
+                         print = TRUE)
   }
   if(ncol(temp_pca_values$rotation) > object$reduceDimensions.nComps){
     temp_pca_values$rotation <- temp_pca_values$rotation[,-c((object$reduceDimensions.nComps+1):ncol(temp_pca_values$rotation))]
@@ -62,7 +67,8 @@ reduce_dimensions <- function(object){
       temp_pca_values$x[,i] = -temp_pca_values$x[,i]
     }
   }
-  if (object$do_debug) cat("* Remove surplus PCs:", Sys.time() - currentTs, "s\n")
+  object <- add_to_log(object,
+                       message = "Remove surplus PCs")
   
   object$Limm$loadings <- temp_pca_values$rotation
   object$Limm$pca <- temp_pca_values
@@ -70,6 +76,8 @@ reduce_dimensions <- function(object){
   object$df <- melt(data = cbind(wide_data[, .SD, .SDcols = object$all_formula_terms], temp_pca_values$x), id.vars = object$all_formula_terms, variable.factor = FALSE)
   object$variablelist <- unique(object$df$variable)
   object$stratificationVector <- object$df[, get(object$stratificationColumn)]
+  object <- add_to_log(object,
+                       message = "Completed reduce_dimensions")
   return(object)
 }
 
@@ -80,6 +88,9 @@ reduce_dimensions <- function(object){
 #' @param object An ALASCA object to be sanitized
 #' @return An ALASCA object
 clean_pca <- function(object) {
+  object <- add_to_log(object,
+                       message = "Starting clean_pca")
+  
   # Clean scores ----
   PC_time <- as.data.frame(object$pca$time$x)
   PC_time$time <- object$parts$time
@@ -163,10 +174,14 @@ clean_pca <- function(object) {
     }
   }
 
+  object <- add_to_log(object,
+                       message = "Completed clean_pca")
   return(object)
 }
 
 clean_alasca <- function(object) {
+  object <- add_to_log(object,
+                       message = "Starting clean_alasca")
   # We need to create new group names for the combined group and keepTerms
   if (object$keepTerms != "") {
     if (object$separateTimeAndGroup) {
@@ -211,6 +226,9 @@ clean_alasca <- function(object) {
     object$ALASCA$score$explained$group <- object$pca$score$explained$group
     object$ALASCA$loading$explained$group <- object$pca$loading$explained$group
   }
+  
+  object <- add_to_log(object,
+                       message = "Starting clean_alasca")
 
   return(object)
 }
