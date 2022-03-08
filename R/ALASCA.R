@@ -49,7 +49,7 @@ ALASCA <- function(df,
                    participantColumn = "ID",
                    validate = FALSE,
                    scaleFun = "sdall",
-                   scaleFun.center = TRUE,
+                   scaleFun.center = FALSE,
                    reduceDimensions = FALSE,
                    forceEqualBaseline = FALSE,
                    sum_coding = FALSE,
@@ -62,6 +62,7 @@ ALASCA <- function(df,
                    stratificationVector = NA,
                    minimize_object = FALSE,
                    limitsCI = c(0.025, 0.975),
+                   pca_function = "prcomp",
                    plot.xlabel = "Time",
                    plot.grouplabel = "Group",
                    plot.figsize = c(180, 120, 300),
@@ -158,6 +159,7 @@ ALASCA <- function(df,
       plot.myTheme = plot.myTheme,
       explanatorylimit = explanatorylimit,
       limitsCI = limitsCI,
+      pca_function = pca_function,
       ignoreMissing = ignoreMissing,
       ignoreMissingCovars = ignoreMissingCovars,
       keepColumn = keepColumn,
@@ -329,6 +331,7 @@ sanitize_object <- function(object) {
     object <- adjust_design_matrix(object)
     
     object <- get_scaling_function(object)
+    object <- get_pca_function(object)
 
     if (object$save_to_disk) {
       object$db.driver <- RSQLite::dbDriver("SQLite")
@@ -818,4 +821,31 @@ summary.ALASCA <- function(object, file = "", sessioninfo = FALSE) {
   if (sessioninfo & file != "") {
     write(capture.output(devtools::session_info()), file = file, append = TRUE)
   }
+}
+
+#' Summary
+#'
+#' Gives some general information
+#'
+#' @param object
+#' @return An ALASCA object
+get_pca_function <- function (object) {
+  if (is.function(object$pca_function)) {
+    object$function.pca <- object$pca_function
+  } else if (is.character(object$pca_function)) {
+    if (object$pca_function == "prcomp") {
+      object$function.pca <- function(df, center = TRUE) prcomp(df, scale = FALSE, center = center)
+    } else if (object$pca_function == "irlba") {
+      object$function.pca <- function(df, center = TRUE) {
+        k <- irlba::prcomp_irlba(df, scale = FALSE, center = center, n = floor(0.5*min(dim(df))))
+        rownames(k$rotation) <- colnames(df)
+        k
+      }
+    } else {
+      stop("Unknown PCA function")
+    }
+  } else {
+    stop("Unknown PCA function")
+  }
+  return(object)
 }

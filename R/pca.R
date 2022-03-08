@@ -9,13 +9,15 @@ do_pca <- function(object) {
     object$effect_matrix[object$effect_matrix$comp == "TIME",
                          seq_len(ncol(object$effect_matrix) - 1)],
     scale = FALSE,
-    center = TRUE)
+    center = !object$scaleFun.center
+    )
   if (object$separateTimeAndGroup) {
     object$pca$group <- prcomp(
       object$effect_matrix[object$effect_matrix$comp == "GROUP",
                            seq_len(ncol(object$effect_matrix) - 1)],
       scale = FALSE,
-      center = TRUE)
+      center = !object$scaleFun.center
+    )
   }
   return(object)
 }
@@ -31,10 +33,11 @@ reduce_dimensions <- function(object){
   wide_data <- dcast(data = object$df, ...~variable
                      )
   if (object$do_debug) currentTs <- Sys.time()
-  temp_pca_values <- prcomp(
+  temp_pca_values <- object$function.pca(
     wide_data[, .SD, .SDcols = -object$all_formula_terms],
-    scale = FALSE,
-    center = TRUE)
+    center = !object$scaleFun.center
+  )
+  
   if (object$do_debug) cat("* First PCA:", Sys.time() - currentTs, "s\n")
   
   object$reduceDimensions.explanatory_power <- temp_pca_values$sdev^2 / sum(temp_pca_values$sdev^2)
