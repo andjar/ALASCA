@@ -652,7 +652,7 @@ prepare_validation_run <- function(object, runN = NA) {
     # When using bootstrapping, we resample participants with replacement
     
     object <- add_to_log(object, message = "Completed preparation of bootstrap sample")
-    participants_in_bootstrap <- get_bootstrap_ids(object)
+    participants_in_bootstrap <- get_bootstrap_ids(object, runN = runN)
     
     # Create bootstrap object without data
     bootobject <- object[!names(object) %in% c("df", "df_raw")]
@@ -686,7 +686,7 @@ prepare_validation_run <- function(object, runN = NA) {
 #'
 #' @param object An ALASCA object
 #' @return A data frame
-get_bootstrap_ids <- function(object) {
+get_bootstrap_ids <- function(object, runN = NA) {
   if (any(is.na(object$validation_ids))) {
     participants_in_bootstrap <- data.frame(
       new_id = seq(object$df[, uniqueN(ID)]),
