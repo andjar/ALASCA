@@ -7,7 +7,7 @@
 plotCovar(
   object,
   covar = NA,
-  xlabel = NA,
+  x_label = NA,
   variables = NA,
   n.limit = 0,
   filename = "covars",
@@ -24,7 +24,7 @@ plotCovar(
 
 \item{covar}{Which covariable(s) to plot (default: \code{NA} which prints all)}
 
-\item{xlabel}{Alternative names for the covariables}
+\item{x_label}{Alternative names for the covariables}
 
 \item{return_data}{Set to \code{TRUE} to return data instead of plot}
 

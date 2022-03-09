@@ -5,16 +5,18 @@
 #' @param object An ALASCA object to be sanitized
 #' @return An ALASCA object
 do_pca <- function(object) {
-  object$pca$time <- prcomp(
+  object[["pca"]][["time"]] <- prcomp(
     object$effect_matrix[object$effect_matrix$comp == "TIME",
                          seq_len(ncol(object$effect_matrix) - 1)],
-    scale = FALSE, center = !object$scale_function.center
+    scale = FALSE,
+    center = !object$scale_function.center
     )
   if (object$separate_time_and_group) {
-    object$pca$group <- prcomp(
+    object[["pca"]][["group"]] <- prcomp(
       object$effect_matrix[object$effect_matrix$comp == "GROUP",
                            seq_len(ncol(object$effect_matrix) - 1)],
-      scale = FALSE, center = !object$scale_function.center
+      scale = FALSE,
+      center = !object$scale_function.center
     )
   }
   return(object)

@@ -16,10 +16,12 @@ saveALASCA <- function(object, filename = NA, filepath = NA, saveCSV = TRUE, sav
 #' @inheritParams save_to_csv
 #' @return An ALASCA object
 #' @export
-saveBootstrapID <- function(object) {
-  if (!(object$validate && object$validation_method == "bootstrap")) stop("Please validate with bootstrapping")
+save_bootstrap_ids <- function(object) {
+  if (!(object$validate && object$validation_method == "bootstrap")) {
+    stop("Please validate with bootstrapping")
+  }
   for (i in seq_along(object$validation$temp_object)) {
-    write(paste0(object$validation$temp_object[[i]]$originalIDs, collapse = ";"),
+    write(paste0(object$validation$temp_object[[i]]$validation$original_ids, collapse = ";"),
       file = get_filename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
     )
   }
@@ -79,7 +81,7 @@ print.ALASCA <- function(object) {
 #' @inheritParams save_to_csv
 #' @return An ALASCA object
 #' @export
-saveJackKnifeID <- function(object) {
+save_jackknife_ids <- function(object) {
   if (!(object$validate && object$validation_method %in% c("loo", "jack-knife", "jackknife"))) stop("Please validate with jack-knife")
   for (i in seq_along(object$validation$temp_object)) {
     write(paste0(unique(object$validation$temp_object[[i]]$partID), collapse = ";"),

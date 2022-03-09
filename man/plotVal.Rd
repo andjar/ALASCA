@@ -11,11 +11,11 @@ plotVal(
   filename = NA,
   figsize = NA,
   figunit = NA,
-  n.limit = 0,
-  decreasingLoadings = FALSE,
-  plotzeroline = TRUE,
+  n_limit = 0,
+  decreasing_loadings = FALSE,
+  plot_zeroline = TRUE,
   my_theme = NA,
-  flipaxes = TRUE,
+  flip_axes = TRUE,
   plot.alpha = 0.3
 )
 }

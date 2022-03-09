@@ -27,14 +27,14 @@ ALASCA(
   minimize_object = FALSE,
   limitsCI = c(0.025, 0.975),
   pca_function = "prcomp",
-  plot.xlabel = "Time",
-  plot.grouplabel = "Group",
+  plot.x_label = "Time",
+  plot.group_label = "Group",
   plot.figsize = c(180, 120, 300),
   plot.figunit = "mm",
   plot.filetype = "png",
   plot.palette = NA,
   plot.loadinggroupcolumn = NA,
-  plot.loadinggrouplabel = "Variable group",
+  plot.loadinggroup_label = "Variable group",
   plot.palette.end = 0.8,
   explanatorylimit = 0.05,
   do_debug = FALSE,
@@ -89,9 +89,9 @@ ALASCA(
 
 \item{minimize_object}{Logical. If \code{TRUE}, remove unnecessary clutter, optimize for validation}
 
-\item{plot.xlabel}{Defaults to "Time"}
+\item{plot.x_label}{Defaults to "Time"}
 
-\item{plot.grouplabel}{Defaults to "Group"}
+\item{plot.group_label}{Defaults to "Group"}
 
 \item{plot.figsize}{A vector containing \code{c(width,height,dpi)} (default: \code{c(180, 120, 300)})}
 

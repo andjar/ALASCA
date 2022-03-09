@@ -24,7 +24,6 @@ Imports:
 	ggpubr,
 	lme4,
 	lmerTest,
-	reshape2,
 	ggrepel,
 	Rfast,
 	data.table,

@@ -65,7 +65,7 @@ plotResiduals <- function(object, variable = NA, plottitle = TRUE, my_theme = gg
 plotHistogram <- function(object,
                           component = 1,
                           bins = object$n_validation_runs / 10,
-                          n.limit = 0,
+                          n_limit = 0,
                           variable = NA,
                           filename = NA,
                           effect = "time",
@@ -74,7 +74,7 @@ plotHistogram <- function(object,
 
   if (effect == "time" | effect == "group") {
     g_s <- plothistogram_score(object = object, component = component, bins = bins, effect = effect)
-    g_l <- plothistogram_loading(object = object, component = component, bins = bins, variable = variable, effect = effect, orderbyname = orderbyname, n.limit = n.limit)
+    g_l <- plothistogram_loading(object = object, component = component, bins = bins, variable = variable, effect = effect, orderbyname = orderbyname, n_limit = n_limit)
     g <- ggpubr::ggarrange(
       g_s, g_l,
       nrow = 2, heights = c(1, 3), labels = "AUTO"
@@ -146,7 +146,7 @@ plothistogram_score <- function(object, component = 1, bins = object$n_validatio
         ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
         ggplot2::scale_color_manual(values = get_plot_palette(object)) +
         ggplot2::facet_wrap(~time) +
-        ggplot2::labs(x = "Score", fill = object$plot.grouplabel, color = object$plot.grouplabel) +
+        ggplot2::labs(x = "Score", fill = object$plot.group_label, color = object$plot.group_label) +
         object$plot.my_theme +
         ggplot2::theme(legend.position = "bottom")
     } else {
@@ -156,7 +156,7 @@ plothistogram_score <- function(object, component = 1, bins = object$n_validatio
         ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
         ggplot2::scale_color_manual(values = get_plot_palette(object)) +
         ggplot2::facet_wrap(~time) +
-        ggplot2::labs(x = "Score", fill = object$plot.grouplabel, color = object$plot.grouplabel) +
+        ggplot2::labs(x = "Score", fill = object$plot.group_label, color = object$plot.group_label) +
         object$plot.my_theme +
         ggplot2::theme(legend.position = "bottom")
       g <- ggpubr::ggarrange(g, gg, nrow = 2, labels = "AUTO", common.legend = TRUE)
@@ -181,7 +181,7 @@ plothistogram_loading <- function(object, component = 1,
                                   variable = NA,
                                   effect = "time",
                                   orderbyname = FALSE,
-                                  n.limit = 0) {
+                                  n_limit = 0) {
   if (!object$validate) stop("Model not validated")
   if (any(is.na(variable))) {
     variable <- object$variablelist
@@ -189,7 +189,7 @@ plothistogram_loading <- function(object, component = 1,
   if (effect == "time") {
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        get_loadings(object$validation$temp_objects[[x]], component = component, n.limit = n.limit)$time,
+        get_loadings(object$validation$temp_objects[[x]], component = component, n_limit = n_limit)$time,
         model = x
       )
     }))
@@ -197,7 +197,7 @@ plothistogram_loading <- function(object, component = 1,
   } else {
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(
-        get_loadings(object$validation$temp_objects[[x]], component = component, n.limit = n.limit)$group,
+        get_loadings(object$validation$temp_objects[[x]], component = component, n_limit = n_limit)$group,
         model = x
       )
     }))

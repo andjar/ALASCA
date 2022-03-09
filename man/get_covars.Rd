@@ -4,12 +4,12 @@
 \alias{get_covars}
 \title{Get covariables}
 \usage{
-get_covars(object, n.limit = 0)
+get_covars(object, n_limit = 0)
 }
 \arguments{
 \item{object}{An ALASCA object}
 
-\item{n.limit}{Returns the n highest and lowest loadings by PC (i.e., 2*n.limit loadings per PC)}
+\item{n_limit}{Returns the n highest and lowest loadings by PC (i.e., 2*n_limit loadings per PC)}
 }
 \value{
 A list with scores for time (and group), and the exploratory power for each component

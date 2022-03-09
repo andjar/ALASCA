@@ -250,7 +250,7 @@ get_effect_matrix <- function(object) {
 
   if (object$separate_time_and_group) {
     BmatrixTime <- object$regression_coefficients[object$regression_coefficients$comp == "TIME", c("covar", "estimate", "variable")]
-    BmatrixTime <- reshape2::dcast(BmatrixTime, formula = variable ~ covar, value.var = "estimate")
+    BmatrixTime <- dcast(BmatrixTime, formula = variable ~ covar, value.var = "estimate")
     selectDColumnsTime <- colnames(Dmatrix) %in% BmatrixTime$variable
     rowOrder <- c()
     for (i in seq_len(nrow(BmatrixTime))) {
@@ -264,7 +264,7 @@ get_effect_matrix <- function(object) {
     AmatrixTime$comp <- "TIME"
 
     BmatrixGroup <- object$regression_coefficients[object$regression_coefficients$comp == "GROUP", c("covar", "estimate", "variable")]
-    BmatrixGroup <- reshape2::dcast(BmatrixGroup, formula = variable ~ covar, value.var = "estimate")
+    BmatrixGroup <- dcast(BmatrixGroup, formula = variable ~ covar, value.var = "estimate")
     selectDColumnsGroup <- colnames(Dmatrix) %in% BmatrixGroup$variable
     rowOrder <- c()
     for (i in seq_len(nrow(BmatrixGroup))) {
@@ -279,7 +279,7 @@ get_effect_matrix <- function(object) {
     object$effect_matrix <- rbind(AmatrixTime, AmatrixGroup)
   } else {
     BmatrixTime <- object$regression_coefficients[object$regression_coefficients$comp == "TIME", c("covar", "estimate", "variable")]
-    BmatrixTime <- reshape2::dcast(BmatrixTime, formula = variable ~ covar, value.var = "estimate")
+    BmatrixTime <- dcast(BmatrixTime, formula = variable ~ covar, value.var = "estimate")
 
     selectDColumnsTime <- colnames(Dmatrix) %in% BmatrixTime$variable
     rowOrder <- c()

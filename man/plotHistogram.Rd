@@ -8,7 +8,7 @@ plotHistogram(
   object,
   component = 1,
   bins = object$n_validation_runs/10,
-  n.limit = 0,
+  n_limit = 0,
   variable = NA,
   filename = NA,
   effect = "time",

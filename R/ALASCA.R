@@ -15,8 +15,8 @@
 #' @param scale_function.center Boolean. Mean centering as part of scaling
 #' @param equal_baseline Set to `TRUE` (default) to remove interaction between group and first time point
 #' @param sum_coding Set to `TRUE` to use sum coding instead of contrast coding for group (defaults to `FALSE`)
-#' @param plot.xlabel Defaults to "Time"
-#' @param plot.grouplabel Defaults to "Group"
+#' @param plot.x_label Defaults to "Time"
+#' @param plot.group_label Defaults to "Group"
 #' @param plot.figsize A vector containing `c(width,height,dpi)` (default: `c(180, 120, 300)`)
 #' @param plot.figunit Defaults to "mm"
 #' @param plot.filetype Which filetype you want to save the figure to (default: `png`)
@@ -62,14 +62,14 @@ ALASCA <- function(df,
                    minimize_object = FALSE,
                    limitsCI = c(0.025, 0.975),
                    pca_function = "prcomp",
-                   plot.xlabel = "Time",
-                   plot.grouplabel = "Group",
+                   plot.x_label = "Time",
+                   plot.group_label = "Group",
                    plot.figsize = c(180, 120, 300),
                    plot.figunit = "mm",
                    plot.filetype = "png",
                    plot.palette = NA,
                    plot.loadinggroupcolumn = NA,
-                   plot.loadinggrouplabel = "Variable group",
+                   plot.loadinggroup_label = "Variable group",
                    plot.palette.end = 0.8,
                    explanatorylimit = 0.05,
                    do_debug = FALSE,

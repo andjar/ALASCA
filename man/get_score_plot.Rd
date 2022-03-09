@@ -11,7 +11,7 @@ get_score_plot(
   filetype = NA,
   figsize = NA,
   figunit = NA,
-  plotribbon = TRUE,
+  plot_ribbon = TRUE,
   dodgewidth = 0.35,
   point_size = 2,
   my_theme = NA

@@ -8,26 +8,26 @@ plot_development(
   object,
   component = 1,
   effect = "both",
-  decreasingLoadings = TRUE,
+  decreasing_loadings = TRUE,
   only = "both",
   enlist = FALSE,
-  tooDense = NA,
-  n.limit = 0,
+  too_dense = NA,
+  n_limit = ifelse(length(object$variablelist) < 40, 0, 20),
   highlight = NA,
-  xlabel = NA,
-  grouplabel = NA,
-  flipaxes = TRUE,
-  plotzeroline = TRUE,
+  x_label = NA,
+  group_label = NA,
+  flip_axes = TRUE,
+  plot_zeroline = TRUE,
   filename = NA,
   filetype = NA,
   figsize = NA,
   variables = NA,
   dodgewidth = 0.35,
   figunit = NA,
-  plotribbon = TRUE,
+  plot_ribbon = TRUE,
   loadinggroup = NA,
   limit_loading = FALSE,
-  sortbyloadinggroup = TRUE,
+  sort_by_loadinggroup = FALSE,
   my_theme = object$plot.my_theme
 )
 }
@@ -38,23 +38,23 @@ plot_development(
 
 \item{effect}{String stating which effect to return; \code{time}, \code{group}, \code{both} (default)}
 
-\item{decreasingLoadings}{Sort the loadings in decreasing (\code{TRUE}, default) or increasing order (\code{FALSE})}
+\item{decreasing_loadings}{Sort the loadings in decreasing (\code{TRUE}, default) or increasing order (\code{FALSE})}
 
 \item{only}{String stating which plot to return; \code{both} (default), \code{score} or \code{loading}}
 
 \item{enlist}{Logical. If \code{TRUE}, the plots are returned as a list and not as a composed figure (default)}
 
-\item{tooDense}{Integer, If > 0, only name this number of covariables}
+\item{too_dense}{Integer, If > 0, only name this number of covariables}
 
 \item{highlight}{Vector of strings with variables to highlight in the loadings plot}
 
-\item{xlabel}{Defaults to "Time" if not specified here or during model setup}
+\item{x_label}{Defaults to "Time" if not specified here or during model setup}
 
-\item{grouplabel}{Defaults to "Group" if not specified here or  during model setup}
+\item{group_label}{Defaults to "Group" if not specified here or  during model setup}
 
-\item{flipaxes}{When \code{TRUE} (default), list the variable loadings vertical instead of horizontal}
+\item{flip_axes}{When \code{TRUE} (default), list the variable loadings vertical instead of horizontal}
 
-\item{plotzeroline}{When \code{TRUE} (default), plot a zero line in the loading plot}
+\item{plot_zeroline}{When \code{TRUE} (default), plot a zero line in the loading plot}
 
 \item{filetype}{Which file type you want to save the figure to (default: \code{png})}
 
@@ -77,6 +77,6 @@ load("PE.Rdata")
 plot(model.val)
 plot(model, component = "PC2")
 plot(model, only = "score", effect = "time")
-plot(model, tooDense = 5)
+plot(model, too_dense = 5)
 plot(model, highlight = c("PlGF", "IL-1b", "IL-6"))
 }

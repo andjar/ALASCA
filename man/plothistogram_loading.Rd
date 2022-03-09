@@ -11,7 +11,7 @@ plothistogram_loading(
   variable = NA,
   effect = "time",
   orderbyname = FALSE,
-  n.limit = 0
+  n_limit = 0
 )
 }
 \arguments{

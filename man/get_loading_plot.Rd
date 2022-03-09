@@ -8,19 +8,19 @@ get_loading_plot(
   object,
   component = 1,
   effect = "time",
-  decreasingLoadings = TRUE,
-  tooDense = NA,
-  n.limit = 0,
+  decreasing_loadings = TRUE,
+  too_dense = NA,
+  n_limit = 0,
   highlight = NA,
   filetype = NA,
-  flipaxes = TRUE,
-  plotzeroline = TRUE,
+  flip_axes = TRUE,
+  plot_zeroline = TRUE,
   figsize = NA,
   figunit = NA,
   variables = NA,
   loadinggroup = NA,
   limit_loading = FALSE,
-  sortbyloadinggroup = TRUE,
+  sort_by_loadinggroup = TRUE,
   point_size = 0.4,
   my_theme = NA
 )
@@ -32,13 +32,13 @@ get_loading_plot(
 
 \item{effect}{Plot time or group}
 
-\item{decreasingLoadings}{Logical. Should loadings be sorted in decreasing order?}
+\item{decreasing_loadings}{Logical. Should loadings be sorted in decreasing order?}
 
 \item{filetype}{Which filetype you want to save the figure to}
 
-\item{flipaxes}{When \code{TRUE} (default), list the variable loadings vertical instead of horizontal}
+\item{flip_axes}{When \code{TRUE} (default), list the variable loadings vertical instead of horizontal}
 
-\item{plotzeroline}{When \code{TRUE} (default), plot a zero line in the loading plot}
+\item{plot_zeroline}{When \code{TRUE} (default), plot a zero line in the loading plot}
 
 \item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
 

@@ -674,6 +674,7 @@ prepare_validation_run <- function(object, runN = NA) {
       validation_object = bootobject,
       validation_participants = rep(TRUE, nrow(bootobject$df_raw))
     )
+    temp_object$validation$original_ids <- participants_in_bootstrap$old_id
   } 
 
   return(temp_object)

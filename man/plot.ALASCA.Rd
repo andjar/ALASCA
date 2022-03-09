@@ -22,6 +22,6 @@ load("PE.Rdata")
 plot(model.val)
 plot(model, component = "PC2")
 plot(model, only = "score", effect = "time")
-plot(model, tooDense = 5)
+plot(model, too_dense = 5)
 plot(model, highlight = c("PlGF", "IL-1b", "IL-6"))
 }

@@ -12,7 +12,7 @@ plotPred(
   figunit = NA,
   filename = NA,
   dodgewidth = 0.35,
-  plotribbon = TRUE,
+  plot_ribbon = TRUE,
   as.list = FALSE,
   plot.ylabel = "value",
   my_theme = object$plot.my_theme
