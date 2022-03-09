@@ -15,7 +15,7 @@ plotCovar(
   filetype = NA,
   figsize = NA,
   figunit = NA,
-  myTheme = NA,
+  my_theme = NA,
   pvalue = "star"
 )
 }
@@ -34,7 +34,7 @@ plotCovar(
 
 \item{figunit}{= "mm",}
 
-\item{myTheme}{A ggplot2 theme}
+\item{my_theme}{A ggplot2 theme}
 }
 \value{
 A ggplot2 objects\.

@@ -4,12 +4,12 @@
 \alias{get_default_scaling_function}
 \title{Get a scaling function}
 \usage{
-get_default_scaling_function(scaleFun_string = "sdall", scaleFun.center = TRUE)
+get_default_scaling_function(object)
 }
 \arguments{
-\item{scaleFun_string}{String to define scaing function: \code{sdall}, \code{sdref}, \code{sdt1}, \code{sdreft1}}
+\item{scale_function_string}{String to define scaing function: \code{sdall}, \code{sdref}, \code{sdt1}, \code{sdreft1}}
 
-\item{scaleFun.center}{Boolean. Mean centering}
+\item{scale_function.center}{Boolean. Mean centering}
 }
 \value{
 A scaling function

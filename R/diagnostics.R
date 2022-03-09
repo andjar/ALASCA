@@ -36,7 +36,7 @@ residuals.ALASCA <- function(object, variable = NA) {
 #' @return A list of ggplot2 objects per variable
 #'
 #' @export
-plotResiduals <- function(object, variable = NA, plottitle = TRUE, myTheme = ggplot2::theme_classic()) {
+plotResiduals <- function(object, variable = NA, plottitle = TRUE, my_theme = ggplot2::theme_classic()) {
   resList <- residuals(object, variable = variable)
   lapply(seq_along(resList), function(x) {
     g <- ggplot2::ggplot(
@@ -46,7 +46,7 @@ plotResiduals <- function(object, variable = NA, plottitle = TRUE, myTheme = ggp
       ggplot2::stat_qq() +
       ggplot2::stat_qq_line()
     if (plottitle) g <- g + ggplot2::labs(title = names(resList)[x], x = "Theoretical", y = "Sample")
-    g <- g + myTheme
+    g <- g + my_theme
     if (object$save) saveALASCAPlot(object, g, prefix = "plot/", suffix = paste0("_qq_plot_", names(resList)[x]))
     g
   })
@@ -64,7 +64,7 @@ plotResiduals <- function(object, variable = NA, plottitle = TRUE, myTheme = ggp
 #' @export
 plotHistogram <- function(object,
                           component = 1,
-                          bins = object$nValRuns / 10,
+                          bins = object$n_validation_runs / 10,
                           n.limit = 0,
                           variable = NA,
                           filename = NA,
@@ -100,7 +100,7 @@ plotHistogram <- function(object,
 #' @return A list of ggplot2 objects per variable
 #'
 #' @export
-plothistogram_score <- function(object, component = 1, bins = object$nValRuns / 10, effect = "time") {
+plothistogram_score <- function(object, component = 1, bins = object$n_validation_runs / 10, effect = "time") {
   if (!object$validate) stop("Model not validated")
   if (effect == "time" | effect == "both") {
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
@@ -113,7 +113,7 @@ plothistogram_score <- function(object, component = 1, bins = object$nValRuns / 
     df_temp$model <- 0
     df_temp$low <- NULL
     df_temp$high <- NULL
-    if (object$separateTimeAndGroup) {
+    if (object$separate_time_and_group) {
       dff$group <- levels(object$df$group)[1]
       df_temp$group <- levels(object$df$group)[1]
     }
@@ -124,7 +124,7 @@ plothistogram_score <- function(object, component = 1, bins = object$nValRuns / 
       ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
       ggplot2::scale_color_manual(values = get_plot_palette(object)) +
       ggplot2::facet_wrap(~time) +
-      object$plot.myTheme +
+      object$plot.my_theme +
       ggplot2::theme(legend.position = "bottom")
   }
   if (effect == "group" | effect == "both") {
@@ -147,7 +147,7 @@ plothistogram_score <- function(object, component = 1, bins = object$nValRuns / 
         ggplot2::scale_color_manual(values = get_plot_palette(object)) +
         ggplot2::facet_wrap(~time) +
         ggplot2::labs(x = "Score", fill = object$plot.grouplabel, color = object$plot.grouplabel) +
-        object$plot.myTheme +
+        object$plot.my_theme +
         ggplot2::theme(legend.position = "bottom")
     } else {
       gg <- ggplot2::ggplot(dff, ggplot2::aes(score, fill = group)) +
@@ -157,7 +157,7 @@ plothistogram_score <- function(object, component = 1, bins = object$nValRuns / 
         ggplot2::scale_color_manual(values = get_plot_palette(object)) +
         ggplot2::facet_wrap(~time) +
         ggplot2::labs(x = "Score", fill = object$plot.grouplabel, color = object$plot.grouplabel) +
-        object$plot.myTheme +
+        object$plot.my_theme +
         ggplot2::theme(legend.position = "bottom")
       g <- ggpubr::ggarrange(g, gg, nrow = 2, labels = "AUTO", common.legend = TRUE)
     }
@@ -177,7 +177,7 @@ plothistogram_score <- function(object, component = 1, bins = object$nValRuns / 
 #'
 #' @export
 plothistogram_loading <- function(object, component = 1,
-                                  bins = object$nValRuns / 10,
+                                  bins = object$n_validation_runs / 10,
                                   variable = NA,
                                   effect = "time",
                                   orderbyname = FALSE,
@@ -215,7 +215,7 @@ plothistogram_loading <- function(object, component = 1,
     ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
     ggplot2::facet_wrap(~covars) +
     ggplot2::labs(x = "Loading") +
-    object$plot.myTheme +
+    object$plot.my_theme +
     ggplot2::theme(legend.position = "bottom")
   if (object$save) saveALASCAPlot(object, g, prefix = "plot/", suffix = paste0("_histo_loading"))
   return(g)

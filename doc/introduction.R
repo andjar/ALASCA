@@ -92,8 +92,8 @@ plot(res.simple, component = "PC2")
 screeplot(res.simple)
 
 ## ----RMASCA_custom_plot-------------------------------------------------------
-scores <- getScores(res.simple)
-loadings <- getLoadings(res.simple)
+scores <- get_scores(res.simple)
+loadings <- get_loadings(res.simple)
 
 gst_1 <- ggplot2::ggplot(scores$time, ggplot2::aes(x = time, y = PC1, group = NA)) + 
   ggplot2::geom_point() + 
@@ -150,9 +150,9 @@ ggpubr::ggarrange(
 )
 
 ## ----robustness---------------------------------------------------------------
-res.simple$nValRuns <- 50 # the more, the better
+res.simple$n_validation_runs <- 50 # the more, the better
 
-res.simple <- validate(res.simple, participantColumn = "partid")
+res.simple <- validate(res.simple, participant_column = "partid")
 
 plot(res.simple)
 
@@ -166,7 +166,7 @@ plot(res.mod2, component = "PC2")
 
 ## ----RMASCA_model_3-----------------------------------------------------------
 model.formula <- value ~ time + time:group + (1|partid)
-res.mod3 <- RMASCA(df = df, formula = model.formula, separateTimeAndGroup = FALSE)
+res.mod3 <- RMASCA(df = df, formula = model.formula, separate_time_and_group = FALSE)
 plot(res.mod3)
 plot(res.mod3, component = "PC2")
 

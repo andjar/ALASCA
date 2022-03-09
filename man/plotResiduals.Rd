@@ -8,7 +8,7 @@ plotResiduals(
   object,
   variable = NA,
   plottitle = TRUE,
-  myTheme = ggplot2::theme_classic()
+  my_theme = ggplot2::theme_classic()
 )
 }
 \arguments{

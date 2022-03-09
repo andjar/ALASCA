@@ -7,7 +7,7 @@
 plothistogram_score(
   object,
   component = 1,
-  bins = object$nValRuns/10,
+  bins = object$n_validation_runs/10,
   effect = "time"
 )
 }

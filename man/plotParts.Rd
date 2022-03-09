@@ -7,7 +7,7 @@
 plotParts(
   object,
   variables = NA,
-  participantColumn = FALSE,
+  participant_column = FALSE,
   xlabel = NA,
   grouplabel = NA,
   valueColumn = FALSE,
@@ -19,13 +19,13 @@ plotParts(
   plot.ylabel = "value",
   as.list = FALSE,
   figsize = object$plot.figsize,
-  myTheme = object$plot.myTheme
+  my_theme = object$plot.my_theme
 )
 }
 \arguments{
 \item{object}{An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.}
 
-\item{participantColumn}{Specify the column with participant identifier. Not necessary if you have already provided it to the ALASCA object}
+\item{participant_column}{Specify the column with participant identifier. Not necessary if you have already provided it to the ALASCA object}
 
 \item{valueColumn}{Specify column with values (y axis). Not necessary to provide if you are plotting an ALASCA object.}
 
@@ -35,7 +35,7 @@ plotParts(
 
 \item{figsize}{A vector containing \code{c(width,height,dpi)} (default: \code{c(120, 80, 300)})}
 
-\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
+\item{my_theme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 
 \item{variable}{List of variable names to print. If \code{NA}, return all (default).}
 
@@ -49,15 +49,15 @@ This function returns the scores for an ALASCA model
 }
 \examples{
 load("PE.Rdata")
-plotParts(df, variable = "IL-6", participantColumn = "ID", valueColumn = "value")
+plotParts(df, variable = "IL-6", participant_column = "ID", valueColumn = "value")
 do.call(
   ggpubr::ggarrange,
   c(plotParts(df,
-    participantColumn = "ID", timeColumn = "GA", valueColumn = "value", addSmooth = NA,
+    participant_column = "ID", timeColumn = "GA", valueColumn = "value", addSmooth = NA,
     variable = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotaxin")
   ),
   common.legend = TRUE, legend = "bottom"
   )
 )
-plotParts(model, variable = "IL-6", participantColumn = "ID", timeColumn = "GA")[[1]] + ggplot2::labs(x = "GA")
+plotParts(model, variable = "IL-6", participant_column = "ID", timeColumn = "GA")[[1]] + ggplot2::labs(x = "GA")
 }

@@ -15,7 +15,7 @@ plotPred(
   plotribbon = TRUE,
   as.list = FALSE,
   plot.ylabel = "value",
-  myTheme = object$plot.myTheme
+  my_theme = object$plot.my_theme
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ plotPred(
 
 \item{figunit}{= "mm",}
 
-\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
+\item{my_theme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 
 \item{variable}{List of variable names to print. If \code{NA}, return all (default).}
 }

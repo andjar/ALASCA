@@ -8,22 +8,22 @@ ALASCA(
   df,
   formula,
   wide = FALSE,
-  separateTimeAndGroup = FALSE,
-  pAdjustMethod = NA,
-  participantColumn = "ID",
-  validate = FALSE,
-  scaleFun = "sdall",
-  scaleFun.center = FALSE,
-  reduceDimensions = FALSE,
-  forceEqualBaseline = FALSE,
+  separate_time_and_group = FALSE,
+  scale_function = "sdall",
+  reduce_dimensions = FALSE,
+  equal_baseline = FALSE,
   sum_coding = FALSE,
   method = NA,
-  xColumn = "time",
-  ignoreMissing = FALSE,
-  ignoreMissingCovars = FALSE,
-  useRfast = TRUE,
-  stratificationColumn = "group",
-  stratificationVector = NA,
+  use_Rfast = TRUE,
+  p_adjust_method = NA,
+  participant_column = "ID",
+  x_column = "time",
+  ignore_missing = FALSE,
+  ignore_missing_covars = FALSE,
+  silent = FALSE,
+  scale_function.center = FALSE,
+  stratification_column = "group",
+  stratification_vector = NA,
   minimize_object = FALSE,
   limitsCI = c(0.025, 0.975),
   pca_function = "prcomp",
@@ -38,27 +38,27 @@ ALASCA(
   plot.palette.end = 0.8,
   explanatorylimit = 0.05,
   do_debug = FALSE,
-  saveValidationIDs = FALSE,
-  nValFold = 7,
-  nValRuns = 1000,
-  validationQuantileMethod = 2,
-  plot.myTheme = ggplot2::theme_classic(),
-  keepTerms = c(""),
-  keepColumn = c(""),
-  save = FALSE,
-  validation = FALSE,
+  n_validation_folds = 7,
+  n_validation_runs = 1000,
+  validation_quantile_method = 2,
+  plot.my_theme = ggplot2::theme_classic(),
+  keep_columns = c(""),
+  keep_terms = c(""),
   filename = NA,
   filepath = NA,
-  reduceDimensions.nComps = NULL,
-  reduceDimensions.limit = 0.95,
-  lowerLimit = NA,
+  reduce_dimensions.nComps = NULL,
+  reduce_dimensions.limit = 0.95,
+  save = FALSE,
   save_to_disk = FALSE,
+  save_validation_ids = FALSE,
   optimize_score = TRUE,
-  validateRegression = TRUE,
-  validationMethod = "bootstrap",
-  validationIDs = NA,
+  validate = FALSE,
+  validate_regression = TRUE,
+  validation = FALSE,
+  validation_method = "bootstrap",
+  validation_ids = NA,
   validation_object = NA,
-  validationAssignNewID = FALSE,
+  validation_assign_new_ids = FALSE,
   validation_participants = NA
 )
 }
@@ -67,27 +67,25 @@ ALASCA(
 
 \item{formula}{Regression model}
 
-\item{separateTimeAndGroup}{Logical: should time and group effect be separated?}
+\item{separate_time_and_group}{Logical: should time and group effect be separated?}
 
-\item{pAdjustMethod}{Method for correcting p values for multiple testing, see p.adjust.methods}
+\item{scale_function}{Either a custom function or string to define scaling function: \code{sdall}, \code{sdref}, \code{sdt1}, \code{sdreft1}}
 
-\item{participantColumn}{String. Name of the column containing participant identification}
-
-\item{validate}{Logical. If \code{TRUE}, give estimates for robustness}
-
-\item{scaleFun}{Either a custom function or string to define scaling function: \code{sdall}, \code{sdref}, \code{sdt1}, \code{sdreft1}}
-
-\item{scaleFun.center}{Boolean. Mean centering as part of scaling}
-
-\item{forceEqualBaseline}{Set to \code{TRUE} (default) to remove interaction between group and first time point}
+\item{equal_baseline}{Set to \code{TRUE} (default) to remove interaction between group and first time point}
 
 \item{sum_coding}{Set to \code{TRUE} to use sum coding instead of contrast coding for group (defaults to \code{FALSE})}
 
 \item{method}{Defaults to \code{NA} where method is either LM or LMM, depending on whether your formula contains a random effect or not}
 
-\item{useRfast}{Boolean. Defaults to \code{TRUE}}
+\item{use_Rfast}{Boolean. Defaults to \code{TRUE}}
 
-\item{stratificationVector}{Vector of same length as \code{df} that specifies stratification groups during validation. Defaults to \code{NA}, where the group column is used.}
+\item{p_adjust_method}{Method for correcting p values for multiple testing, see p.adjust.methods}
+
+\item{participant_column}{String. Name of the column containing participant identification}
+
+\item{scale_function.center}{Boolean. Mean centering as part of scaling}
+
+\item{stratification_vector}{Vector of same length as \code{df} that specifies stratification groups during validate_ Defaults to \code{NA}, where the group column is used.}
 
 \item{minimize_object}{Logical. If \code{TRUE}, remove unnecessary clutter, optimize for validation}
 
@@ -105,21 +103,21 @@ ALASCA(
 
 \item{do_debug}{Print what happens (default: \code{FALSE})}
 
-\item{nValFold}{Partitions when validating}
+\item{n_validation_folds}{Partitions when validating}
 
-\item{nValRuns}{number of validation runs}
+\item{n_validation_runs}{number of validation runs}
 
-\item{keepTerms}{Additional terms to keep in the model matrix}
-
-\item{save}{Save models and plots automatically (default: \code{FALSE})}
+\item{keep_terms}{Additional terms to keep in the model matrix}
 
 \item{filename}{File name to save model and plots (when \code{save = TRUE})}
 
-\item{lowerLimit}{A data frame with lower limits for every variable}
+\item{save}{Save models and plots automatically (default: \code{FALSE})}
 
-\item{validateRegression}{Whether to validate regression predictions or not (only if \code{validate} is \code{TRUE})}
+\item{validate}{Logical. If \code{TRUE}, give estimates for robustness}
 
-\item{validationMethod}{among  \code{loo} (leave-one-out, default)}
+\item{validate_regression}{Whether to validate regression predictions or not (only if \code{validate} is \code{TRUE})}
+
+\item{validation_method}{among  \code{loo} (leave-one-out, default)}
 
 \item{validation_object}{Don't worry about me:)}
 

@@ -14,7 +14,7 @@ plotVal(
   n.limit = 0,
   decreasingLoadings = FALSE,
   plotzeroline = TRUE,
-  myTheme = NA,
+  my_theme = NA,
   flipaxes = TRUE,
   plot.alpha = 0.3
 )
@@ -28,7 +28,7 @@ plotVal(
 
 \item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(120, 80, 300)})}
 
-\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
+\item{my_theme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }
 \value{
 A list with ggplot2 objects.

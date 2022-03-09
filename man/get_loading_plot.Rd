@@ -22,7 +22,7 @@ get_loading_plot(
   limit_loading = FALSE,
   sortbyloadinggroup = TRUE,
   point_size = 0.4,
-  myTheme = NA
+  my_theme = NA
 )
 }
 \arguments{
@@ -42,7 +42,7 @@ get_loading_plot(
 
 \item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
 
-\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
+\item{my_theme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }
 \value{
 A ggplot object

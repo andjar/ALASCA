@@ -8,13 +8,13 @@ do_pca <- function(object) {
   object$pca$time <- prcomp(
     object$effect_matrix[object$effect_matrix$comp == "TIME",
                          seq_len(ncol(object$effect_matrix) - 1)],
-    scale = FALSE, center = !object$scaleFun.center
+    scale = FALSE, center = !object$scale_function.center
     )
-  if (object$separateTimeAndGroup) {
+  if (object$separate_time_and_group) {
     object$pca$group <- prcomp(
       object$effect_matrix[object$effect_matrix$comp == "GROUP",
                            seq_len(ncol(object$effect_matrix) - 1)],
-      scale = FALSE, center = !object$scaleFun.center
+      scale = FALSE, center = !object$scale_function.center
     )
   }
   return(object)
@@ -36,25 +36,25 @@ reduce_dimensions <- function(object){
   if (object$do_debug) currentTs <- Sys.time()
   temp_pca_values <- object$function.pca(
     wide_data[, .SD, .SDcols = -object$all_formula_terms],
-    center = !object$scaleFun.center
+    center = !object$scale_function.center
   )
   
-  object$reduceDimensions.explanatory_power <- temp_pca_values$sdev^2 / sum(temp_pca_values$sdev^2)
+  object$reduce_dimensions.explanatory_power <- temp_pca_values$sdev^2 / sum(temp_pca_values$sdev^2)
   
   # Remove surplus columns
-  if (is.null(object$reduceDimensions.nComps)) {
-    object$reduceDimensions.nComps <- which(cumsum(object$reduceDimensions.explanatory_power) >= object$reduceDimensions.limit)[1]
+  if (is.null(object$reduce_dimensions.nComps)) {
+    object$reduce_dimensions.nComps <- which(cumsum(object$reduce_dimensions.explanatory_power) >= object$reduce_dimensions.limit)[1]
     object <- add_to_log(object,
                          message = paste("Keeping",
-                                         object$reduceDimensions.nComps,
+                                         object$reduce_dimensions.nComps,
                                          "components from initial PCA, explaining",
-                                         100*cumsum(object$reduceDimensions.explanatory_power)[object$reduceDimensions.nComps],
+                                         100*cumsum(object$reduce_dimensions.explanatory_power)[object$reduce_dimensions.nComps],
                                          "% of variation"),
                          print = TRUE)
   }
-  if(ncol(temp_pca_values$rotation) > object$reduceDimensions.nComps){
-    temp_pca_values$rotation <- temp_pca_values$rotation[,-c((object$reduceDimensions.nComps+1):ncol(temp_pca_values$rotation))]
-    temp_pca_values$x <- temp_pca_values$x[, -c((object$reduceDimensions.nComps+1):ncol(temp_pca_values$x))]
+  if(ncol(temp_pca_values$rotation) > object$reduce_dimensions.nComps){
+    temp_pca_values$rotation <- temp_pca_values$rotation[,-c((object$reduce_dimensions.nComps+1):ncol(temp_pca_values$rotation))]
+    temp_pca_values$x <- temp_pca_values$x[, -c((object$reduce_dimensions.nComps+1):ncol(temp_pca_values$x))]
   }
   
   # Check if the pca model needs reflection to better fit the main model
@@ -75,7 +75,7 @@ reduce_dimensions <- function(object){
   object$Limm$df <- object$df
   object$df <- melt(data = cbind(wide_data[, .SD, .SDcols = object$all_formula_terms], temp_pca_values$x), id.vars = object$all_formula_terms, variable.factor = FALSE)
   object$variablelist <- unique(object$df$variable)
-  object$stratificationVector <- object$df[, get(object$stratificationColumn)]
+  object$stratification_vector <- object$df[, get(object$stratification_column)]
   object <- add_to_log(object,
                        message = "Completed reduce_dimensions")
   return(object)
@@ -94,7 +94,7 @@ clean_pca <- function(object) {
   # Clean scores ----
   PC_time <- as.data.frame(object$pca$time$x)
   PC_time$time <- object$parts$time
-  if (object$separateTimeAndGroup) {
+  if (object$separate_time_and_group) {
     PC_time$group <- object$grouplist[1]
   }else{
     PC_time$group <- object$parts$group
@@ -107,7 +107,7 @@ clean_pca <- function(object) {
   object$pca$loading$time <- setDT(as.data.frame(object$pca$time$rotation), keep.rownames="covars")
   object$pca$loading$explained$time <- object$pca$score$explained$time
   
-  if(object$reduceDimensions){
+  if(object$reduce_dimensions){
     # Loadings must be back-transformed
     object$pca$loading$time <- setDT(
       as.data.frame(
@@ -139,7 +139,7 @@ clean_pca <- function(object) {
     set(object$pca$score$time, j = (i), value = object$pca$score$time[, get(i)] * sVar)
   }
 
-  if (object$separateTimeAndGroup) {
+  if (object$separate_time_and_group) {
     # Clean scores ----
     PC_group <- as.data.frame(object$pca$group$x)
     PC_group$time <- rownames(PC_group)
@@ -153,7 +153,7 @@ clean_pca <- function(object) {
     object$pca$loading$group <- setDT(as.data.frame(object$pca$group$rotation), keep.rownames="covars")
     object$pca$loading$explained$group <- object$pca$score$explained$group
     
-    if(object$reduceDimensions){
+    if(object$reduce_dimensions){
       # Loadings must be back-transformed
       object$pca$loading$group <- setDT(
         as.data.frame(
@@ -182,9 +182,9 @@ clean_pca <- function(object) {
 clean_alasca <- function(object) {
   object <- add_to_log(object,
                        message = "Starting clean_alasca")
-  # We need to create new group names for the combined group and keepTerms
-  if (object$keepTerms != "") {
-    if (object$separateTimeAndGroup) {
+  # We need to create new group names for the combined group and keep_terms
+  if (object$keep_terms != "") {
+    if (object$separate_time_and_group) {
       object$grouplist <- unique(object$pca$score$group$group)
     } else {
       object$grouplist <- unique(object$pca$score$time$group)
@@ -198,7 +198,7 @@ clean_alasca <- function(object) {
   object$ALASCA$loading$time[, PC := as.integer(substr(PC, 3, nchar(PC))), ]
 
   object$ALASCA$score$time <- object$pca$score$time
-  if (object$separateTimeAndGroup) {
+  if (object$separate_time_and_group) {
     object$ALASCA$score$time$group <- object$grouplist[1]
   }
   object$ALASCA$score$time <- melt(object$ALASCA$score$time, id.vars = c("time", "group"), variable.factor = FALSE)
@@ -210,7 +210,7 @@ clean_alasca <- function(object) {
   object$ALASCA$score$explained$time <- object$pca$score$explained$time
   object$ALASCA$loading$explained$time <- object$pca$loading$explained$time
 
-  if (object$separateTimeAndGroup) {
+  if (object$separate_time_and_group) {
     # Group effect
     object$ALASCA$loading$group <- melt(object$pca$loading$group, id.vars = "covars", variable.factor = FALSE)
     colnames(object$ALASCA$loading$group) <- c("covars", "PC", "loading")

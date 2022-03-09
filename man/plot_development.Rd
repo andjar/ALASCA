@@ -28,7 +28,7 @@ plot_development(
   loadinggroup = NA,
   limit_loading = FALSE,
   sortbyloadinggroup = TRUE,
-  myTheme = object$plot.myTheme
+  my_theme = object$plot.my_theme
 )
 }
 \arguments{
@@ -64,7 +64,7 @@ plot_development(
 
 \item{limit_loading}{Only list robust loadings}
 
-\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
+\item{my_theme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }
 \value{
 An ggplot2 object (or a list og ggplot objects)

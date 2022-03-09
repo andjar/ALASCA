@@ -17,7 +17,7 @@ saveALASCA <- function(object, filename = NA, filepath = NA, saveCSV = TRUE, sav
 #' @return An ALASCA object
 #' @export
 saveBootstrapID <- function(object) {
-  if (!(object$validate && object$validationMethod == "bootstrap")) stop("Please validate with bootstrapping")
+  if (!(object$validate && object$validation_method == "bootstrap")) stop("Please validate with bootstrapping")
   for (i in seq_along(object$validation$temp_object)) {
     write(paste0(object$validation$temp_object[[i]]$originalIDs, collapse = ";"),
       file = get_filename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
@@ -36,19 +36,23 @@ add_to_log <- function(object, message = "", time = Sys.time(), level = "INFO", 
     log_item <- data.frame(
       level = level,
       time = time,
-      message = message
+      message = message,
+      caller = as.character(as.list(sys.call(-1))[[1]])
     )
-    if (print || level == "STOP") {
-      print_log(log_item)
-    }
+    
     object$log <- rbind(
       object$log,
       log_item
     )
+
     if (level == "STOP") {
-      stop("[", log_item$level, "] ", log_item$time, " - ", log_item$message)
+      stop("[", log_item$level, "] ", format(log_item$time, "%Y-%m-%d %X"), " - ", log_item$message, " (", log_item$caller, ")")
+    } else {
+      if ((print || object$do_debug || level == "WARNING") && !object$silent) {
+        print_log(log_item)
+      }
+      return(object)
     }
-    return(object)
   }
 }
 
@@ -56,7 +60,7 @@ add_to_log <- function(object, message = "", time = Sys.time(), level = "INFO", 
 #'
 #' @param object An ALASCA object
 print_log <- function(log_item) {
-    cat("[", log_item$level, "] ", log_item$time, " - ", log_item$message,"\n")
+    cat("[", log_item$level, "] ", format(log_item$time, "%Y-%m-%d %X"), " - ", log_item$message, "\n")
 }
 
 #' Print log
@@ -76,7 +80,7 @@ print.ALASCA <- function(object) {
 #' @return An ALASCA object
 #' @export
 saveJackKnifeID <- function(object) {
-  if (!(object$validate && object$validationMethod %in% c("loo", "jack-knife", "jackknife"))) stop("Please validate with jack-knife")
+  if (!(object$validate && object$validation_method %in% c("loo", "jack-knife", "jackknife"))) stop("Please validate with jack-knife")
   for (i in seq_along(object$validation$temp_object)) {
     write(paste0(unique(object$validation$temp_object[[i]]$partID), collapse = ";"),
           file = get_filename(object = object, prefix = "jackknifeID_", filetype = ".csv", overwrite = TRUE), append = TRUE
@@ -93,7 +97,7 @@ saveJackKnifeID <- function(object) {
 save_to_csv <- function(object, filename = NA, filepath = NA, saveCSV = TRUE, saveScores = TRUE, saveLoadings = TRUE, saveCovars = TRUE, csv = "csv", ...) {
   if (saveCSV) {
     if (csv == "csv") {
-      if (object$separateTimeAndGroup) {
+      if (object$separate_time_and_group) {
         if (saveScores) {
           write.csv(get_scores(object)$time,
             file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_time_scores", filetype = ".csv"), ...
@@ -137,7 +141,7 @@ save_to_csv <- function(object, filename = NA, filepath = NA, saveCSV = TRUE, sa
         }
       }
     } else if (csv == "csv2") {
-      if (object$separateTimeAndGroup) {
+      if (object$separate_time_and_group) {
         if (saveScores) {
           write.csv2(get_scores(object)$time,
             file = get_filename(object = object, filename = filename, filepath = filepath, suffix = "_time_scores", filetype = ".csv"), ...

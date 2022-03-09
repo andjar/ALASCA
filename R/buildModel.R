@@ -7,10 +7,10 @@
 buildModel <- function(object) {
   if (!object$minimize_object) {
     # This is not a validation run
-    cat("Calculating ", object$method, " coefficients...\n")
+    object <- add_to_log(object, message = paste0("Calculating ", object$method, " coefficients"), print = TRUE)
   }
   
-  if (object$reduceDimensions) {
+  if (object$reduce_dimensions) {
     if (object$do_debug) currentTs <- Sys.time()
     object <- reduce_dimensions(object)
     if (object$do_debug) cat("* reduce_dimensions:", Sys.time() - currentTs, "s\n")
@@ -19,14 +19,14 @@ buildModel <- function(object) {
   if (object$do_debug) currentTs <- Sys.time()
   object <- run_regression(object)
   if (object$do_debug) cat("* runRegression:", Sys.time() - currentTs, "s\n")
-  if (!object$useRfast) {
+  if (!object$use_Rfast) {
     # With Rfast, we've already got the coefficients
     object <- get_regression_coefficients(object)
   }
 
   if (!object$minimize_object) {
     # This is not a validation run
-    cat("Finished calculating regression coefficients!\n")
+    object <- add_to_log(object, message = "Finished calculating regression coefficients!", print = TRUE)
   }
   
   if (object$do_debug) currentTs <- Sys.time()
@@ -49,11 +49,11 @@ buildModel <- function(object) {
   if (object$do_debug) cat("* clean_alasca:", Sys.time() - currentTs, "s\n")
   if (object$method %in% c("LM", "LMM")) {
     if (object$minimize_object) {
-      if (object$validateRegression) {
+      if (object$validate_regression) {
         object <- get_regression_predictions(object)
       }
     } else {
-      if (object$validateRegression) {
+      if (object$validate_regression) {
         object <- get_regression_predictions(object)
       }
     }
@@ -70,15 +70,15 @@ buildModel <- function(object) {
 #' @return An ALASCA object
 run_regression <- function(object) {
   df_by_variable <- split(object$df, object$df$variable)
-  if (object$useRfast && object$method %in% c("LMM")) {
+  if (object$use_Rfast && object$method %in% c("LMM")) {
     # start.time <- Sys.time()
     if (any(is.na(object$df[, value]))) {
-      stop("Rfast does NOT like NA's! Check your scaling function or value column.")
+      add_to_log(object, message = "Rfast does NOT like NA's! Check your scaling function or value column.", level = "STOP")
     }
     object$regression_coefficients <- rbindlist(
       lapply(object$variablelist, function(x) {
         modmat <- model.matrix(object$new_formula, data = df_by_variable[[x]])
-        if (object$forceEqualBaseline) {
+        if (object$equal_baseline) {
           modmat <- modmat[, !grepl(paste0("time", object$timelist[1]), colnames(modmat))]
         }
         data.frame(
@@ -97,11 +97,11 @@ run_regression <- function(object) {
     # end.time <- Sys.time()
     # cat("\n\n",end.time - start.time,"\n")
     return(object)
-  } else if (!object$useRfast & object$method %in% c("LM")) {
+  } else if (!object$use_Rfast & object$method %in% c("LM")) {
     object$regression_model <- lapply(object$variablelist, function(x) {
       modmat <- model.matrix(object$formula, data = df_by_variable[[x]])
       modmat <- modmat[, -1] # Remove intercept
-      if (object$forceEqualBaseline) {
+      if (object$equal_baseline) {
         # Remove interaction between group and first time point
         modmat <- modmat[, !grepl(paste0("time", object$timelist[1]), colnames(modmat))]
       }
@@ -110,15 +110,15 @@ run_regression <- function(object) {
       attr(regression_model, "name") <- x
       regression_model
     })
-  } else if (object$useRfast & object$method %in% c("LM")) {
+  } else if (object$use_Rfast & object$method %in% c("LM")) {
     # start.time <- Sys.time()
     if (any(is.na(object$df[, value]))) {
-      stop("Rfast does NOT like NA's! Check your scaling function or value column.")
+      add_to_log(object, message = "Rfast does NOT like NA's! Check your scaling function or value column.", level = "STOP")
     }
     object$regression_coefficients <- rbindlist(
       lapply(object$variablelist, function(x) {
         modmat <- model.matrix(object$formula, data = df_by_variable[[x]])
-        if (object$forceEqualBaseline) {
+        if (object$equal_baseline) {
           # Remove interaction between group and first time point
           modmat <- modmat[, !grepl(paste0("time", object$timelist[1]), colnames(modmat))]
         }
@@ -140,7 +140,7 @@ run_regression <- function(object) {
     object$regression_model <- lapply(object$variablelist, function(x) {
       modmat <- model.matrix(object$formula, data = df_by_variable[[x]])
       modmat <- modmat[, -1] # Remove intercept
-      if (object$forceEqualBaseline) {
+      if (object$equal_baseline) {
         # Remove interaction between group and first time point
         modmat <- modmat[, !grepl(paste0("time", object$timelist[1]), colnames(modmat), fixed = TRUE)]
       }
@@ -183,10 +183,10 @@ get_regression_coefficients <- function(object) {
   colnames(fdf) <- c("estimate", "pvalue", "covar", "variable")
   object$regression_coefficients <- fdf
   
-  if (!is.na(object$pAdjustMethod)) {
-    cat("Adjusting p values...\n")
+  if (!is.na(object$p_adjust_method)) {
+    object <- add_to_log(object, message = "Adjusting p values", print = TRUE)
     object$regression_coefficients[, pvalue_unadj := pvalue]
-    object$regression_coefficients[, pvalue := p.adjust(pvalue, method = object$pAdjustMethod), by = variable]
+    object$regression_coefficients[, pvalue := p.adjust(pvalue, method = object$p_adjust_method), by = variable]
   }
   
   return(object)
@@ -204,7 +204,7 @@ remove_covars <- function(object) {
     object$covar_coefficients <- rbind(object$covar_coefficients, subset(object$regression_coefficients, substr(variable, 1, nchar(i)) == i))
     object$regression_coefficients <- subset(object$regression_coefficients, substr(variable, 1, nchar(i)) != i)
   }
-  if (object$reduceDimensions) {
+  if (object$reduce_dimensions) {
     object$covar_coefficients <- rbindlist(lapply(unique(object$covar_coefficients$variable), function(v){
       ref <- object$covar_coefficients[variable == v]
       data.frame(
@@ -220,13 +220,13 @@ remove_covars <- function(object) {
 
 #' Separate time and group effects
 #'
-#' This function separates time and group variables if separateTimeAndGroup = TRUE
+#' This function separates time and group variables if separate_time_and_group = TRUE
 #'
 #' @param object An ALASCA object to be sanitized
 #' @return An ALASCA object
 separate_regression_coefficients <- function(object) {
   object$regression_coefficients$comp <- "TIME"
-  if (object$separateTimeAndGroup) {
+  if (object$separate_time_and_group) {
     object$regression_coefficients$comp[!(object$regression_coefficients$variable == "(Intercept)" |
       (substr(object$regression_coefficients$variable, 1, 4) == "time" & !grepl(":", object$regression_coefficients$variable, fixed = "TRUE")))] <- "GROUP"
   }
@@ -241,14 +241,14 @@ separate_regression_coefficients <- function(object) {
 #' @return An ALASCA object
 get_effect_matrix <- function(object) {
   if (!object$minimize_object) {
-    cat("Calculating effect matrix\n")
+    object <- add_to_log(object, message = "Calculating effect matrix", print = TRUE)
   }
   parts <- object$df[variable == object$variablelist[1]]
   # parts <- object$df[!duplicated(cbind(object$df$ID, object$df$time))]
   Dmatrix <- model.matrix(object$formula, data = object$df[variable == object$variablelist[1]])
   # Dmatrix <- Dmatrix[,ncol(Dmatrix):1]
 
-  if (object$separateTimeAndGroup) {
+  if (object$separate_time_and_group) {
     BmatrixTime <- object$regression_coefficients[object$regression_coefficients$comp == "TIME", c("covar", "estimate", "variable")]
     BmatrixTime <- reshape2::dcast(BmatrixTime, formula = variable ~ covar, value.var = "estimate")
     selectDColumnsTime <- colnames(Dmatrix) %in% BmatrixTime$variable
@@ -296,14 +296,14 @@ get_effect_matrix <- function(object) {
   }
 
   object$parts$time <- parts$time
-  if (object$keepTerms != "") {
-    keepTerms <- c("group", object$keepTerms)
-    object$parts$group <- apply(parts[, ..keepTerms], 1, paste, collapse = " - ")
+  if (object$keep_terms != "") {
+    keep_terms <- c("group", object$keep_terms)
+    object$parts$group <- apply(parts[, ..keep_terms], 1, paste, collapse = " - ")
   } else {
     object$parts$group <- parts$group
   }
   if (!object$minimize_object) {
-    cat("Finished calculating effect matrix!\n")
+    object <- add_to_log(object, message = "Finished calculating effect matrix!", print = TRUE)
   }
   return(object)
 }

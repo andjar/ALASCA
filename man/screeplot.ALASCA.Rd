@@ -12,7 +12,7 @@
   filetype = object$plot.filetype,
   figsize = object$plot.figsize,
   figunit = object$plot.figunit,
-  myTheme = object$plot.myTheme
+  my_theme = object$plot.my_theme
 )
 }
 \arguments{
@@ -24,7 +24,7 @@
 
 \item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
 
-\item{myTheme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
+\item{my_theme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
 }
 \value{
 An ggplot2 object (or a list og ggplot objects)

@@ -13,5 +13,5 @@ separate_regression_coefficients(object)
 An ALASCA object
 }
 \description{
-This function separates time and group variables if separateTimeAndGroup = TRUE
+This function separates time and group variables if separate_time_and_group = TRUE
 }

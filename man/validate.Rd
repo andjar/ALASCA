@@ -4,23 +4,23 @@
 \alias{validate}
 \title{Validate the ALASCA model LMM}
 \usage{
-validate(object, participantColumn = FALSE, validateRegression = FALSE)
+validate(object, participant_column = FALSE, validate_regression = FALSE)
 }
 \arguments{
 \item{object}{An ALASCA object}
 
-\item{participantColumn}{The name of the column containing participant identifier. Needed if not set during initialization of the model.}
+\item{participant_column}{The name of the column containing participant identifier. Needed if not set during initialization of the model.}
 
-\item{validateRegression}{Whether to validate regression models}
+\item{validate_regression}{Whether to validate regression models}
 }
 \value{
 An ALASCA object
 }
 \description{
-This function performs leave-one-out robustness testing of your ALASCA model. If you didn't specify the number of runs \code{nValRuns} when initializing the model (see \code{\link{ALASCA}}), you can do it by running for example \code{model$nValRuns <- 100} prior to calling \code{validate}. Your dataset is divided into \code{nValFold} partitions, keeping group proportions, and one of these are left out. \code{nValFold} is set the same way as  \code{nValRuns}.
+This function performs leave-one-out robustness testing of your ALASCA model. If you didn't specify the number of runs \code{n_validation_runs} when initializing the model (see \code{\link{ALASCA}}), you can do it by running for example \code{model$n_validation_runs <- 100} prior to calling \code{validate}. Your dataset is divided into \code{n_validation_folds} partitions, keeping group proportions, and one of these are left out. \code{n_validation_folds} is set the same way as  \code{n_validation_runs}.
 }
 \examples{
 load("PE.Rdata")
-model$nValRuns <- 10
-model.val <- validate(model, participantColumn = "ID")
+model$n_validation_runs <- 10
+model.val <- validate(model, participant_column = "ID")
 }
