@@ -76,10 +76,10 @@ run_regression <- function(object) {
       add_to_log(object, message = "Rfast does NOT like NA's! Check your scaling function or value column.", level = "STOP")
     }
     object$regression_coefficients <- rbindlist(
-      lapply(object$variablelist, function(x) {
-        modmat <- model.matrix(object$new_formula, data = df_by_variable[[x]])
-        if (object$equal_baseline) {
-          modmat <- modmat[, !grepl(paste0("time", object$timelist[1]), colnames(modmat))]
+      lapply(object[["variablelist"]], function(x) {
+        modmat <- model.matrix(object[["new_formula"]], data = df_by_variable[[x]])
+        if (object[["equal_baseline"]]) {
+          modmat <- modmat[, !grepl(paste0("time", object[["timelist"]][1]), colnames(modmat))]
         }
         data.frame(
           estimate = Rfast::rint.reg(
@@ -98,15 +98,15 @@ run_regression <- function(object) {
     # cat("\n\n",end.time - start.time,"\n")
     return(object)
   } else if (!object$use_Rfast & object$method %in% c("LM")) {
-    object$regression_model <- lapply(object$variablelist, function(x) {
-      modmat <- model.matrix(object$formula, data = df_by_variable[[x]])
+    object$regression_model <- lapply(object[["variablelist"]], function(x) {
+      modmat <- model.matrix(object[["formula"]], data = df_by_variable[[x]])
       modmat <- modmat[, -1] # Remove intercept
-      if (object$equal_baseline) {
+      if (object[["equal_baseline"]]) {
         # Remove interaction between group and first time point
-        modmat <- modmat[, !grepl(paste0("time", object$timelist[1]), colnames(modmat))]
+        modmat <- modmat[, !grepl(paste0("time", object[["timelist"]][1]), colnames(modmat))]
       }
       environment(object$new_formula) <- environment()
-      regression_model <- lm(object$new_formula, data = df_by_variable[[x]])
+      regression_model <- lm(object[["new_formula"]], data = df_by_variable[[x]])
       attr(regression_model, "name") <- x
       regression_model
     })
@@ -116,11 +116,11 @@ run_regression <- function(object) {
       add_to_log(object, message = "Rfast does NOT like NA's! Check your scaling function or value column.", level = "STOP")
     }
     object$regression_coefficients <- rbindlist(
-      lapply(object$variablelist, function(x) {
-        modmat <- model.matrix(object$formula, data = df_by_variable[[x]])
-        if (object$equal_baseline) {
+      lapply(object[["variablelist"]], function(x) {
+        modmat <- model.matrix(object[["formula"]], data = df_by_variable[[x]])
+        if (object[["equal_baseline"]]) {
           # Remove interaction between group and first time point
-          modmat <- modmat[, !grepl(paste0("time", object$timelist[1]), colnames(modmat))]
+          modmat <- modmat[, !grepl(paste0("time", object[["timelist"]][1]), colnames(modmat))]
         }
         data.frame(
           estimate = Rfast::lmfit(
@@ -137,16 +137,16 @@ run_regression <- function(object) {
     # cat("\n\n",end.time - start.time,"\n")
     return(object)
   } else if (object$method %in% c("LMM")) {
-    object$regression_model <- lapply(object$variablelist, function(x) {
-      modmat <- model.matrix(object$formula, data = df_by_variable[[x]])
+    object$regression_model <- lapply(object[["variablelist"]], function(x) {
+      modmat <- model.matrix(object[["formula"]], data = df_by_variable[[x]])
       modmat <- modmat[, -1] # Remove intercept
-      if (object$equal_baseline) {
+      if (object[["equal_baseline"]]) {
         # Remove interaction between group and first time point
-        modmat <- modmat[, !grepl(paste0("time", object$timelist[1]), colnames(modmat), fixed = TRUE)]
+        modmat <- modmat[, !grepl(paste0("time", object[["timelist"]][1]), colnames(modmat), fixed = TRUE)]
       }
       # modmat <- modmat[,ncol(modmat):1]
       environment(object$new_formula) <- environment()
-      regression_model <- lmerTest::lmer(object$new_formula, data = df_by_variable[[x]])
+      regression_model <- lmerTest::lmer(object[["new_formula"]], data = df_by_variable[[x]])
       attr(regression_model, "name") <- x
       regression_model
     })

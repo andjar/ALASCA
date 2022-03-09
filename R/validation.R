@@ -687,7 +687,7 @@ prepare_validation_run <- function(object, runN = NA) {
 #' @param object An ALASCA object
 #' @return A data frame
 get_bootstrap_ids <- function(object, runN = NA) {
-  if (any(is.na(object$validation_ids))) {
+  if (is.na(runN)) {
     participants_in_bootstrap <- data.frame(
       new_id = seq(object$df[, uniqueN(ID)]),
       old_id = rbindlist(
@@ -703,13 +703,13 @@ get_bootstrap_ids <- function(object, runN = NA) {
   } else {
     participants_in_bootstrap <- data.frame(
       new_id = seq(object$validation_ids[runN, ]),
-      old_id = object$validation_ids[runN, ]
+      old_id = matrix(object$validation_ids[runN, ])
     )
   }
   return(participants_in_bootstrap)
 }
 
-#' Make bootstrap dataset
+#' Make bootstrap data set
 #'
 #' Get data frame
 #'
