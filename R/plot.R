@@ -1197,7 +1197,7 @@ plotCovar <- function(object,
                       covar = NA,
                       x_label = NA,
                       variables = NA,
-                      n.limit = 0,
+                      n_limit = 0,
                       filename = "covars",
                       return_data = FALSE,
                       filetype = NA,
@@ -1208,7 +1208,7 @@ plotCovar <- function(object,
   if (any(is.na(my_theme))) my_theme <- object$plot.my_theme
   if (!is.na(filename)) object$filename <- filename
   
-  df <- get_covars(object, n.limit = n.limit)
+  df <- get_covars(object, n_limit = n_limit)
   if ( nrow(df) == 0 ) add_to_log(object, message = "No covariates to plot", level = "STOP")
   df$covar <- factor(df$covar, levels = unique(df$covar[order(df$estimate)]))
   if (any(is.na(covar))) {
