@@ -1222,7 +1222,7 @@ plotCovar <- function(object,
     x_label <- covar
   }
   for (i in seq_len(length(covar))) {
-    df$xlabel[df$variable == covar[i]] <- xlabel[i]
+    df$x_label[df$variable == covar[i]] <- x_label[i]
   }
   if (!is.na(object$plot.loadinggroupcolumn)) {
     df <- merge(df, object$variable_labels, by.x = "covar", by.y = "covars")
@@ -1254,7 +1254,7 @@ plotCovar <- function(object,
       g <- g +
         ggplot2::geom_point() +
         ggplot2::geom_vline(xintercept = 0) +
-        ggplot2::facet_wrap(~xlabel, scales = "free_y") + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
+        ggplot2::facet_wrap(~x_label, scales = "free_y") + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
         my_theme + ggplot2::theme(legend.position = "bottom", legend.box = "vertical", legend.margin = ggplot2::margin())
 
       if (!is.na(object$plot.loadinggroupcolumn)) {
@@ -1294,7 +1294,7 @@ plotCovar <- function(object,
       
       g <- g + 
         ggplot2::geom_vline(xintercept = 0) +
-        ggplot2::facet_wrap(~xlabel, scales = "free_y") +
+        ggplot2::facet_wrap(~x_label, scales = "free_y") +
         ggplot2::labs(x = "Coefficient", y = "") +
         my_theme
       
