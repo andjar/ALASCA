@@ -328,7 +328,10 @@ rename_columns_to_standard <- function(object) {
     object <- replace_term_in_formula(object, old_term = object$x_column, new_term = "time")
   }
   
-  if (!"group" %in% colnames(object$df)) {
+  if (object$method == "LM" && !"group" %in% colnames(object$df)) {
+    object$grouplist <- object$timelist
+    object$df[, group := time]
+  } else if (!"group" %in% colnames(object$df)) {
     object$df[, group := factor("NA")]
   }
   
