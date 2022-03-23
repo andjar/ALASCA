@@ -36,7 +36,7 @@ residuals.ALASCA <- function(object, variable = NA) {
 #' @return A list of ggplot2 objects per variable
 #'
 #' @export
-plotResiduals <- function(object, variable = NA, plottitle = TRUE, my_theme = ggplot2::theme_classic()) {
+plot_residuals <- function(object, variable = NA, plottitle = TRUE, my_theme = ggplot2::theme_classic()) {
   resList <- residuals(object, variable = variable)
   lapply(seq_along(resList), function(x) {
     g <- ggplot2::ggplot(
@@ -62,7 +62,7 @@ plotResiduals <- function(object, variable = NA, plottitle = TRUE, my_theme = gg
 #' @return A list of ggplot2 objects per variable
 #'
 #' @export
-plotHistogram <- function(object,
+plot_histogram <- function(object,
                           component = 1,
                           bins = object$n_validation_runs / 10,
                           n_limit = 0,
@@ -73,8 +73,8 @@ plotHistogram <- function(object,
   if (!is.na(filename)) object$filename <- filename
 
   if (effect == "time" | effect == "group") {
-    g_s <- plothistogram_score(object = object, component = component, bins = bins, effect = effect)
-    g_l <- plothistogram_loading(object = object, component = component, bins = bins, variable = variable, effect = effect, orderbyname = orderbyname, n_limit = n_limit)
+    g_s <- plot_histogram_score(object = object, component = component, bins = bins, effect = effect)
+    g_l <- plot_histogram_loading(object = object, component = component, bins = bins, variable = variable, effect = effect, orderbyname = orderbyname, n_limit = n_limit)
     g <- ggpubr::ggarrange(
       g_s, g_l,
       nrow = 2, heights = c(1, 3), labels = "AUTO"
@@ -82,8 +82,8 @@ plotHistogram <- function(object,
     if (object$save) saveALASCAPlot(object, g, prefix = "plot/", suffix = paste0("_histo"), figsize = c(200, 240, 300))
   } else {
     g <- list(
-      time = plothistogram(object = object, component = component, bins = bins, variable = variable, effect = "time", orderbyname = orderbyname),
-      group = plothistogram(object = object, component = component, bins = bins, variable = variable, effect = "group", orderbyname = orderbyname)
+      time = plot_histogram(object = object, component = component, bins = bins, variable = variable, effect = "time", orderbyname = orderbyname),
+      group = plot_histogram(object = object, component = component, bins = bins, variable = variable, effect = "group", orderbyname = orderbyname)
     )
   }
 
@@ -100,7 +100,7 @@ plotHistogram <- function(object,
 #' @return A list of ggplot2 objects per variable
 #'
 #' @export
-plothistogram_score <- function(object, component = 1, bins = object$n_validation_runs / 10, effect = "time") {
+plot_histogram_score <- function(object, component = 1, bins = object$n_validation_runs / 10, effect = "time") {
   if (!object$validate) stop("Model not validated")
   if (effect == "time" | effect == "both") {
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
@@ -176,7 +176,7 @@ plothistogram_score <- function(object, component = 1, bins = object$n_validatio
 #' @return A list of ggplot2 objects per variable
 #'
 #' @export
-plothistogram_loading <- function(object, component = 1,
+plot_histogram_loading <- function(object, component = 1,
                                   bins = object$n_validation_runs / 10,
                                   variable = NA,
                                   effect = "time",
@@ -229,7 +229,7 @@ plothistogram_loading <- function(object, component = 1,
 #' @return A list of data frames
 #'
 #' @export
-countParts <- function(object) {
+count_participants <- function(object) {
   wideDF <- dcast(data = object$df, ID + group ~ time + variable, fun.aggregate = length)
   samples.by.participant <- data.frame(
     ID = wideDF$ID,

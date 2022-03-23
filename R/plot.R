@@ -1180,6 +1180,18 @@ plot_validation <- function(object,
 #'
 #' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
 #'
+#' @param inheritParams plot_validation
+#' @return A ggplot2 object.
+#'
+#' @export
+plot_val <- function(...){
+  plot_validation(...)
+}
+
+#' Plot covariate coefficients
+#'
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
+#'
 #' @param inheritParams plot_covars
 #' @return A ggplot2 objects\.
 #'

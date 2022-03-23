@@ -683,7 +683,7 @@ get_scaling_function <- function(object) {
 #' @param effect Specify `time` or `group` to only flip subplot
 #' @return An ALASCA object
 #' @export
-flipIt <- function(object, component = NA, effect = "both") {
+flip <- function(object, component = NA, effect = "both") {
   if (any(is.na(component))) {
     component <- unique(object$ALASCA$score$time$PC)
   }
@@ -713,7 +713,7 @@ flipIt <- function(object, component = NA, effect = "both") {
 
   if (object$validate && !object$save_to_disk) {
     for (i in seq_along(object$validation$temp_objects)) {
-      object$validation$temp_objects[[i]] <- flipIt(object$validation$temp_objects[[i]], component = component, effect = effect)
+      object$validation$temp_objects[[i]] <- flip(object$validation$temp_objects[[i]], component = component, effect = effect)
     }
   }
   return(object)
