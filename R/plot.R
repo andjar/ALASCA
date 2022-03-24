@@ -1008,6 +1008,18 @@ plot_prediction <- function(object,
   
 }
 
+#' Plot marginal means
+#'
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
+#'
+#' @param inheritParams plot_validation
+#' @return A ggplot2 object.
+#'
+#' @export
+plot_mm <- function(...){
+  plot_prediction(...)
+}
+
 #' Plot validations models
 #'
 #' This function returns a plot of the validation models
