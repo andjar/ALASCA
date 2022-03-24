@@ -142,7 +142,6 @@ ALASCA <- function(df,
     object$ALASCA.version <- print_version(get = "version")
     object$ALASCA.version.date <- print_version(get = "date")
     object$log <- data.frame(level = "INFO", time = Sys.time(), message = "Initializing ALASCA", caller = "ALASCA")
-    object$stratification_vector <- object$df[, get(object$stratification_column)]
     class(object) <- "ALASCA"
     print_version()
   }
@@ -263,6 +262,7 @@ sanitize_object <- function(object) {
     object$df[, time := factor(time, levels = object$timelist), ]
     object$df[, group := factor(group, levels = object$grouplist), ]
     object$df[, variable := factor(variable, levels = object$variablelist), ]
+    object$stratification_vector <- object$df[, get(object$stratification_column)]
     
     # List of levels
     object$variablelist <- unique(object$df$variable)
@@ -320,26 +320,34 @@ rename_columns_to_standard <- function(object) {
     object <- get_info_from_formula(object)
   }
   
+  if (object$x_column == "time" && ! "time" %in% object$all_formula_terms) {
+    object$x_column <- object$formula_terms[1]
+    object <- add_to_log(object, message = paste("Will use", object$x_column, "for abscissa"), print= TRUE)
+  }
+  
   if (object$x_column != "time") {
     if ("time" %in% colnames(object$df)) {
-      add_to_log(object, message = "Sorry, the time column is reserved by ALASCA; please give it another name or change `x_column`", level = "STOP")
+      object$time <- NULL
+      object <- add_to_log(object, message = "Overwriting the `time` column", level = "WARNING")
     }
-    object$df[, time := get(object$x_column)]
+    object$df[, time := factor(get(object$x_column))]
+    object$timelist <- levels(object$df$time)
     object <- replace_term_in_formula(object, old_term = object$x_column, new_term = "time")
   }
+  
   
   if (object$method == "LM" && !"group" %in% colnames(object$df)) {
     object$grouplist <- object$timelist
     object$df[, group := time]
   } else if (!"group" %in% colnames(object$df)) {
     object$df[, group := factor("NA")]
-  }
+  } 
   
   object$variablelist <- unique(object$df$variable)
   object$timelist <- levels(object$df$time)
   object$grouplist <- levels(object$df$group)
   
-  object <- add_to_log(object, message = paste0("Using ",object$stratification_column," for stratification"), print = TRUE)
+  object <- add_to_log(object, message = paste0("Using `",object$stratification_column,"` for stratification"), print = TRUE)
   
   return(object)
 }
@@ -468,7 +476,19 @@ get_info_from_formula <- function(object) {
   
   # Get a list of all predictors
   object$all_formula_terms <- unlist(strsplit(object$formula_terms, split = "\\:|\\+|\\||\\*"))
-  object$all_formula_terms <- c(object$all_formula_terms, object$participant_column, object$stratification_column, object$keep_columns, "group")
+  object$all_formula_terms <- gsub(" ", "", object$all_formula_terms)
+  object$all_formula_terms <- unique(object$all_formula_terms[!object$all_formula_terms %in% c("1", "")])
+  if (object$stratification_column == "group" && !"group" %in% colnames(object$df)) {
+    object$stratification_column <- object$all_formula_terms[1]
+    object <- add_to_log(object, message = paste("The `",object$all_formula_terms[1],"` column is used for stratification"), level = "WARNING")
+  }
+  if (!"group" %in% object$all_formula_terms) {
+    object$all_formula_terms <- c(object$all_formula_terms, "group")
+    if (object$stratification_column == "group") {
+      object <- add_to_log(object, message = "The `group` column is used for stratification", level = "WARNING")
+    }
+  }
+  object$all_formula_terms <- c(object$all_formula_terms, object$participant_column, object$stratification_column, object$keep_columns)
   object$all_formula_terms <- gsub(" ", "", object$all_formula_terms)
   object$all_formula_terms <- unique(object$all_formula_terms[!object$all_formula_terms %in% c("1", "")])
   

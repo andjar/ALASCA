@@ -42,10 +42,7 @@ add_to_log <- function(object, message = "", time = Sys.time(), level = "INFO", 
       caller = as.character(as.list(sys.call(-1))[[1]])
     )
     
-    object$log <- rbind(
-      object$log,
-      log_item
-    )
+    object$log <- rbind(object$log, log_item)
 
     if (level == "STOP") {
       stop("[", log_item$level, "] ", format(log_item$time, "%Y-%m-%d %X"), " - ", log_item$message, " (", log_item$caller, ")")
