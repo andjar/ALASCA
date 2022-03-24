@@ -549,12 +549,12 @@ get_regression_predictions <- function(object) {
   regCoeffAll <- dcast(data = object[["regression_coefficients"]], covar ~ variable, value.var = "estimate")
   regModel <- unique(model.matrix(object$formula, data = object$df))
   if (object$equal_baseline) {
-    regModel <- regModel[, !grepl(paste0("time", levels(object$df$time)[1]), colnames(regModel))]
+    regModel <- regModel[, !grepl(paste0("time", levels(object$df$time)[1]), colnames(regModel)), drop = FALSE]
   }
   if (object$keep_terms != "") {
-    regModel <- regModel[, grepl(paste0(c("time", "group", object$keep_terms), collapse = "|"), colnames(regModel))]
+    regModel <- regModel[, grepl(paste0(c("time", "group", object$keep_terms), collapse = "|"), colnames(regModel)), drop = FALSE]
   } else {
-    regModel <- regModel[, grepl(paste0(c("time", "group"), collapse = "|"), colnames(regModel))]
+    regModel <- regModel[, grepl(paste0(c("time", "group"), collapse = "|"), colnames(regModel)), drop = FALSE]
   }
   
   if (object$keep_terms != "") {
