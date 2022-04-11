@@ -2,7 +2,7 @@
 % Please edit documentation in R/validation.R
 \name{get_bootstrap_data}
 \alias{get_bootstrap_data}
-\title{Make bootstrap dataset}
+\title{Make bootstrap data set}
 \usage{
 get_bootstrap_data(df_raw, participants_in_bootstrap)
 }

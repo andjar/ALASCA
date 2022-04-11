@@ -4,7 +4,7 @@
 \alias{get_bootstrap_ids}
 \title{Make bootstrap sample}
 \usage{
-get_bootstrap_ids(object)
+get_bootstrap_ids(object, runN = NA)
 }
 \arguments{
 \item{object}{An ALASCA object}
