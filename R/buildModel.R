@@ -70,6 +70,7 @@ buildModel <- function(object) {
 #' @return An ALASCA object
 run_regression <- function(object) {
 
+  #df_by_variable <- split(object$df, object$df$variable)
   rows_by_variable <- lapply(object[["variablelist"]], function(x) object$df[variable == x, , which = TRUE] )
   names(rows_by_variable) <- object[["variablelist"]]
   
@@ -87,8 +88,8 @@ run_regression <- function(object) {
         data.frame(
           estimate = Rfast::rint.reg(
             y = object$df[ rows_by_variable[[x]], value],
-            x = modmat[, 2:ncol(modmat)],
-            id = object$df[ rows_by_variable[[x]], ID],
+            x = modmat[, -1],
+            id = as.numeric(factor(object$df[ rows_by_variable[[x]], ID])),
             ranef = FALSE
           )$be,
           pvalue = NA,
@@ -128,7 +129,7 @@ run_regression <- function(object) {
         data.frame(
           estimate = Rfast::lmfit(
             y = object$df[ rows_by_variable[[x]], value],
-            x = modmat
+            x = modmat[, -1]
           )$be,
           pvalue = NA,
           covar = as.character(x),
