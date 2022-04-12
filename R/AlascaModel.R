@@ -63,7 +63,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     validation_participants = NA,
     init_time = Sys.time(),
     rawFormula = NULL,
-    keep_validation_selfs = TRUE,
+    keep_validation_objects = TRUE,
     log_file = tempfile(),
     log_level = NULL,
     log = NULL,
@@ -103,10 +103,59 @@ AlascaModel <- R6::R6Class("AlascaModel",
       }
       
       log4r::info(self$log, "Initializing ALASCA.")
+      
+      # Clean input ----
+      log4r::info(self$log, "Has initialized the ALASCA model. Next step is to clean it and check input")
+      self$sanitize_object()
+      
+      # Build the ALASCA model ----
+      self$build_model()
+      
+      # Validate the model ----
+      if (self$validate) {
+        log4r::debug(self$log, "Starting validation")
+        self$do_validate()
+        log4r::debug(self$log, "Completing validation")
+      }
+      
+    },
+    update = function() {
+
+      ## Unscaled values
+      self$df <- self$df_raw
+      if(self$reduce_dimensions){
+        self$Limm$main$pca <- self$Limm$pca
+        self$Limm$pca <- NULL
+      }
+      
+      ## Avoid recursion
+      self$validate <- FALSE
+      
+      ## Save space
+      self$minimize_object <- TRUE
+      
+      self$variablelist <- unique(self$df$variable)
+      self$timelist <- levels(self$df$time)
+      self$grouplist <- levels(self$df$group)
+      
+      # Clean input ----
+      self$sanitize_object()
+      
+      # Build the ALASCA model ----
+      
+      self$build_model()
+      
+      # To save space, we remove unnecessary embedded data ----
+        log4r::debug(self$log, "Starting to remove embedded data")
+        self$remove_embedded_data()
+        log4r::debug(self$log, "Completed remove embedded data")
+      
+      #invisible(self)
     },
     sanitize_object = sanitize_object,
     get_info_from_formula = get_info_from_formula,
     LM_or_LMM = LM_or_LMM,
+    do_validate = do_validate,
     rename_columns_to_standard = rename_columns_to_standard,
     wide_to_long = wide_to_long,
     check_that_columns_are_valid = check_that_columns_are_valid,
@@ -129,7 +178,18 @@ AlascaModel <- R6::R6Class("AlascaModel",
     do_pca = do_pca,
     clean_pca = clean_pca,
     clean_alasca = clean_alasca,
-    get_regression_predictions = get_regression_predictions
+    get_regression_predictions = get_regression_predictions,
+    get_bootstrap_ids = get_bootstrap_ids,
+    get_bootstrap_data = get_bootstrap_data,
+    prepare_validation_run = prepare_validation_run,
+    rotate_matrix_optimize_score = rotate_matrix_optimize_score,
+    rotate_matrix = rotate_matrix,
+    get_validation_percentiles = get_validation_percentiles,
+    get_validation_percentiles_loading = get_validation_percentiles_loading,
+    get_validation_percentiles_score = get_validation_percentiles_score,
+    get_validation_percentiles_regression = get_validation_percentiles_regression,
+    get_validation_percentiles_covars = get_validation_percentiles_covars,
+    get_covars = get_covars
   ),
   private = list()
 )

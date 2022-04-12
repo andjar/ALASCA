@@ -399,25 +399,7 @@ get_scores <- function(object, component = 0) {
   return(object$ALASCA$score)
 }
 
-#' Get covariables
-#'
-#' This function returns the other covariables in an ALASCA model
-#'
-#' @inheritParams get_loadings
-#' @return A list with scores for time (and group), and the exploratory power for each component
-#' @export
-get_covars <- function(object, n_limit = 0) {
-  if (n_limit > 0) {
-    return(
-      rbind(
-        object$covar_coefficients[order(estimate, decreasing = TRUE), head(.SD, n_limit), by = variable],
-        object$covar_coefficients[order(estimate, decreasing = FALSE), head(.SD, n_limit), by = variable]
-      )
-    )
-  } else {
-    return(object$covar_coefficients)
-  }
-}
+
 
 #' Get loading plot
 #'

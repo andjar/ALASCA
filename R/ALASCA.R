@@ -43,69 +43,9 @@
 ALASCA <- function(df,
                    formula,
                    ...) {
-  #if (!is.na(validation_object[1])) {
-  if (FALSE) {
-    # This is a validation run
 
-    object <- validation_object
-    # Overwrite some data
-
-    ## Unscaled values
-    object$df <- validation_object$df_raw
-    if(object$reduce_dimensions){
-      object$Limm$main$pca <- object$Limm$pca
-      object$Limm$pca <- NULL
-    }
-
-    ## Avoid recursion
-    object$validate <- FALSE
-
-    ## Save space
-    object$minimize_object <- TRUE
-
-    ## Selected participants for this run
-    object$validation_participants <- validation_participants
-
-    ## Keep original object?
-    object$validation_object <- NULL # validation_object
-    
-    object$variablelist <- unique(object$df$variable)
-    object$timelist <- levels(object$df$time)
-    object$grouplist <- levels(object$df$group)
-    
-    object$df <- object$df[object$validation_participants]
-    object$modmat <- object$modmat[object$validation_participants,]
-    #object$df[, ID := factor(ID)]
-
-    #object$do_debug <- FALSE
-  } else {
-    object <- AlascaModel$new(df, formula, ...)
-  }
+  object <- AlascaModel$new(df, formula, ...)
   
-  # Clean input ----
-
-  if (!object$minimize_object) {
-    log4r::info(object$log, "Has initialized the ALASCA model. Next step is to clean it and check input")
-  }
-  object$sanitize_object()
-
-  # Build the ALASCA model ----
-  
-  object$build_model()
-
-  # To save space, we remove unnecessary embedded data ----
-  if (object$minimize_object) {
-    log4r::debug(object$log, "Starting to remove embedded data")
-    object$remove_embedded_data()
-    log4r::debug(object$log, "Completed remove embedded data")
-  }
-
-  # Validate the model ----
-  if (object$validate) {
-    log4r::debug(object$log, "Starting validation")
-    object$validate()
-    log4r::debug(object$log, "Completing validation")
-  }
   object$run_time <- Sys.time() - object$init_time
 
   # Save the model
@@ -1593,52 +1533,52 @@ clean_alasca <- function() {
 #' model$n_validation_runs <- 10
 #' model.val <- validate(model, participant_column = "ID")
 #' @export
-validate <- function(object, participant_column = FALSE, validate_regression = FALSE) {
-  if (object$validate) {
+do_validate <- function(participant_column = FALSE, validate_regression = FALSE) {
+  if (self$validate) {
     # stop("The object has already been validated")
   }
-  object$validate <- TRUE
+  self$validate <- TRUE
   if (validate_regression) {
-    object$validate_regression <- TRUE
+    self$validate_regression <- TRUE
   }
   
-  if (object$method == "LMM") {
+  if (self$method == "LMM") {
     if (participant_column == FALSE) {
-      if (object$participant_column == FALSE) {
-        log4r::error(object$log, "You need to specify the column containing participant id in `participant_column`")
+      if (self$participant_column == FALSE) {
+        log4r::error(self$log, "You need to specify the column containing participant id in `participant_column`")
         stop()
       }
     } else {
-      object$participant_column <- participant_column
+      self$participant_column <- participant_column
     }
   }
   
-  log4r::info(object$log, "Starting validation")
+  log4r::info(self$log, "Starting validation")
   
   start.time.all <- Sys.time()
   
-  if (any(is.na(object$validation_ids))) {
+  if (any(is.na(self$validation_ids))) {
     # Generate random samples
-    if (object$save_to_disk) {
-      limPC_time <- get_relevant_pcs(object = object, effect = "time")
+    if (self$save_to_disk) {
+      limPC_time <- self$get_relevant_pcs(effect = "time")
       if (object$separate_time_and_group) {
-        limPC_group <- get_relevant_pcs(object = object, effect = "group")
+        limPC_group <- self$get_relevant_pcs(effect = "group")
       }
-      temp_object <- lapply(seq_len(object$n_validation_runs), FUN = function(ii) {
-        log4r::info(object$log, paste0("- Run ", ii, " of ", object$n_validation_runs))
+      temp_object <- lapply(seq_len(self$n_validation_runs), FUN = function(ii) {
+        log4r::info(self$log, paste0("- Run ", ii, " of ", self$n_validation_runs))
         start.time.this <- Sys.time()
         
         # Make resampled model
-        temp_object <- prepare_validation_run(object)
+        temp_object <- self$prepare_validation_run()
         
         # Rotate new loadings/scores to the original model
-        if (object$optimize_score) {
-          temp_object <- rotate_matrix_optimize_score(object = temp_object, target = object)
+        if (self$optimize_score) {
+          temp_object$rotate_matrix_optimize_score(target = self)
         } else {
-          temp_object <- rotate_matrix(object = temp_object, target = object)
+          temp_object$rotate_matrix(target = self)
         }
         
-        temp_object <- clean_alasca(temp_object)
+        temp_object$clean_alasca()
         
         # Save to disk
         fname <- paste0("val_", ii)
@@ -1672,33 +1612,33 @@ validate <- function(object, participant_column = FALSE, validate_regression = F
         fname
       })
     } else {
-      temp_object <- lapply(seq_len(object$n_validation_runs), FUN = function(ii) {
+      temp_object <- lapply(seq_len(self$n_validation_runs), FUN = function(ii) {
         
-        log4r::info(object$log, paste0("- Run ", ii, " of ", object$n_validation_runs))
+        log4r::info(self$log, paste0("- Run ", ii, " of ", self$n_validation_runs))
         start.time.this <- Sys.time()
         
         # Make resampled model
-        temp_object <- prepare_validation_run(object)
-        if (nrow(object$df) > 100000) gc()
+        temp_object <- self$prepare_validation_run()
+        if (nrow(self$df) > 100000) gc()
         
         # Rotate new loadings/scores to the original model
-        if (object$optimize_score) {
-          temp_object <- rotate_matrix_optimize_score(object = temp_object, target = object)
+        if (self$optimize_score) {
+          temp_object$rotate_matrix_optimize_score(target = self)
         } else {
-          temp_object <- rotate_matrix(object = temp_object, target = object)
+          temp_object$rotate_matrix(target = self)
         }
-        temp_object <- clean_alasca(temp_object)
+        temp_object$clean_alasca()
         
         time_all <- difftime(Sys.time(), start.time.all, units = c("secs")) / ii
-        log4r::info(object$log, paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((object$n_validation_runs - ii) * time_all, 2), " seconds"))
+        log4r::info(self$log, paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((self$n_validation_runs - ii) * time_all, 2), " seconds"))
         temp_object
       })
     }
   } else {
     # Reuse previous samples
-    log4r::info(object$log, "Using predefined samples")
+    log4r::info(self$log, "Using predefined samples")
     
-    if (object$save_to_disk) {
+    if (self$save_to_disk) {
       limPC_time <- get_relevant_pcs(object = object, effect = "time")
       if (object$separate_time_and_group) {
         limPC_group <- get_relevant_pcs(object = object, effect = "group")
@@ -1752,36 +1692,36 @@ validate <- function(object, participant_column = FALSE, validate_regression = F
         fname
       })
     } else {
-      temp_object <- lapply(seq_len(object$n_validation_runs), FUN = function(ii) {
-        log4r::info(object$log, paste0("- Run ", ii, " of ", object$n_validation_runs))
+      temp_object <- lapply(seq_len(self$n_validation_runs), FUN = function(ii) {
+        log4r::info(self$log, paste0("- Run ", ii, " of ", self$n_validation_runs))
         start.time.this <- Sys.time()
         
         # Make resampled model
-        temp_object <- prepare_validation_run(object, runN = ii)
+        temp_object <- self$prepare_validation_run(runN = ii)
         gc()
         
         # Rotate new loadings/scores to the original model
-        if (object$optimize_score) {
-          temp_object <- rotate_matrix_optimize_score(object = temp_object, target = object)
+        if (self$optimize_score) {
+          temp_object$rotate_matrix_optimize_score(target = self)
         } else {
-          temp_object <- rotate_matrix(object = temp_object, target = object)
+          temp_object$rotate_matrix(target = self)
         }
-        temp_object <- clean_alasca(temp_object)
+        temp_object$clean_alasca()
         
         time_all <- difftime(Sys.time(), start.time.all, units = c("secs")) / ii
-        log4r::info(object$log, paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((object$n_validation_runs - ii) * time_all, 2), " seconds"))
+        log4r::info(self$log, paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((self$n_validation_runs - ii) * time_all, 2), " seconds"))
         temp_object
       })
     }
   }
   
-  log4r::info(object$log, "Calculating percentiles for score and loading")
-  object <- get_validation_percentiles(object, objectlist = temp_object)
+  log4r::info(self$log, "Calculating percentiles for score and loading")
+  self$get_validation_percentiles(objectlist = temp_object)
   
-  if (object$keep_validation_objects) {
-    object$validation$temp_objects <- temp_object
+  if (self$keep_validation_objects) {
+    self$validation$temp_objects <- temp_object
   }
-  return(object)
+  #invisible(object)
 }
 
 .procrustes <- function(loadings, target) {
@@ -1810,10 +1750,10 @@ validate <- function(object, participant_column = FALSE, validate_regression = F
 #' @param object ALASCA object to be rotated (and returned)
 #' @param target ALASCA object acting as target
 #' @return An ALASCA object
-rotate_matrix_optimize_score <- function(object, target) {
-  log4r::debug(object$log, "Starting rotation of time components")
+rotate_matrix_optimize_score <- function(target) {
+  log4r::debug(self$log, "Starting rotation of time components")
   # We are only looking at components explaining more than a predefined value
-  PCloading <- get_relevant_pcs(target, effect = "time")
+  PCloading <- target$get_relevant_pcs(effect = "time")
   PCloading_t <- paste0("PC", PCloading)
   
   # PCA can give loadings with either sign, so we have to check whether switching signs improves the rotation
@@ -1827,11 +1767,11 @@ rotate_matrix_optimize_score <- function(object, target) {
   # Test all combinations and calculate residuals
   signVar <- vapply(seq_len(nrow(signMatrix) / 2), function(i) {
     c <- .procrustes(
-      loadings = as.matrix(t(t(object$pca$loading$time[target$pca$loading$time, ..PCloading_t]) * signMatrix[i, ])),
+      loadings = as.matrix(t(t(self$pca$loading$time[target$pca$loading$time, ..PCloading_t]) * signMatrix[i, ])),
       target = as.matrix(target$pca$loading$time[, ..PCloading_t])
     )
     sum((target$pca$score$time[, ..PCloading_t] - 
-           as.matrix(t(t(object$pca$score$time[target$pca$score$time, ..PCloading_t]) * signMatrix[i, ])) %*% solve(c$t1))^2)
+           as.matrix(t(t(self$pca$score$time[target$pca$score$time, ..PCloading_t]) * signMatrix[i, ])) %*% solve(c$t1))^2)
   }, FUN.VALUE = numeric(1))
   
   # Find the combination that minimizes the sum of squares
@@ -1839,24 +1779,24 @@ rotate_matrix_optimize_score <- function(object, target) {
   
   # Switch signs
   for (i in PCloading){
-    set(object$pca$loading$time, j = PCloading_t[i], value = object$pca$loading$time[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
-    set(object$pca$score$time, j = PCloading_t[i], value = object$pca$score$time[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
+    set(self$pca$loading$time, j = PCloading_t[i], value = self$pca$loading$time[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
+    set(self$pca$score$time, j = PCloading_t[i], value = self$pca$score$time[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
   }
   
   # Final rotation
   c <- .procrustes(
-    loadings = as.matrix(object$pca$loading$time[target$pca$loading$time, ..PCloading_t]),
+    loadings = as.matrix(self$pca$loading$time[target$pca$loading$time, ..PCloading_t]),
     target = as.matrix(target$pca$loading$time[, ..PCloading_t])
   )
   
-  object$pca$loading$time[target$pca$loading$time, (PCloading_t) := as.data.table(c$procrust)]
-  object$pca$score$time[target$pca$score$time, (PCloading_t) := as.data.table(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
+  self$pca$loading$time[target$pca$loading$time, (PCloading_t) := as.data.table(c$procrust)]
+  self$pca$score$time[target$pca$score$time, (PCloading_t) := as.data.table(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
   
-  log4r::debug(object$log, "Completed rotation of time components")
-  if (object$separate_time_and_group) {
-    log4r::debug(object$log, "Starting rotation of group components")
+  log4r::debug(self$log, "Completed rotation of time components")
+  if (self$separate_time_and_group) {
+    log4r::debug(self$log, "Starting rotation of group components")
     # We are only looking at components explaining more than a set limit
-    PCloading <- get_relevant_pcs(target, effect = "group")
+    PCloading <- target$get_relevant_pcs(effect = "group")
     PCloading_t <- paste0("PC", PCloading)
     
     # PCA can give loadings with either sign, so we have to check whether swithcing signs improves the rotation
@@ -1866,26 +1806,26 @@ rotate_matrix_optimize_score <- function(object, target) {
     signMatrix <- as.matrix(expand.grid(lst))
     signVar <- vapply(seq_len(nrow(signMatrix) / 2), function(i) {
       c <- .procrustes(
-        loadings = as.matrix(t(t(object$pca$loading$group[target$pca$loading$group, ..PCloading_t]) * signMatrix[i, ])),
+        loadings = as.matrix(t(t(self$pca$loading$group[target$pca$loading$group, ..PCloading_t]) * signMatrix[i, ])),
         target = as.matrix(target$pca$loading$group[, ..PCloading_t])
       )
       sum((target$pca$score$group[, ..PCloading_t] - 
-             as.matrix(t(t(object$pca$score$group[target$pca$score$group, ..PCloading_t]) * signMatrix[i, ])) %*% solve(c$t1))^2)
+             as.matrix(t(t(self$pca$score$group[target$pca$score$group, ..PCloading_t]) * signMatrix[i, ])) %*% solve(c$t1))^2)
     }, FUN.VALUE = numeric(1))
     
     minSignVar <- which(signVar == min(signVar))[1]
     for (i in PCloading){
-      set(object$pca$loading$group, j = PCloading_t[i], value = object$pca$loading$group[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
-      set(object$pca$score$group, j = PCloading_t[i], value = object$pca$score$group[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
+      set(self$pca$loading$group, j = PCloading_t[i], value = self$pca$loading$group[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
+      set(self$pca$score$group, j = PCloading_t[i], value = self$pca$score$group[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
     }
     
     c <- .procrustes(
-      loadings = as.matrix(object$pca$loading$group[target$pca$loading$group, ..PCloading_t]),
+      loadings = as.matrix(self$pca$loading$group[target$pca$loading$group, ..PCloading_t]),
       target = as.matrix(target$pca$loading$group[, ..PCloading_t])
     )
-    object$pca$loading$group[target$pca$loading$group, (PCloading_t) := as.data.table(c$procrust)]
-    object$pca$score$group[target$pca$score$group, (PCloading_t) := as.data.table(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
-    log4r::debug(object$log, "Completed rotation of group components")
+    self$pca$loading$group[target$pca$loading$group, (PCloading_t) := as.data.table(c$procrust)]
+    self$pca$score$group[target$pca$score$group, (PCloading_t) := as.data.table(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
+    log4r::debug(self$log, "Completed rotation of group components")
   }
   
   return(object)
@@ -1898,30 +1838,30 @@ rotate_matrix_optimize_score <- function(object, target) {
 #' @param object ALASCA object to be rotated (and returned)
 #' @param target ALASCA object acting as target
 #' @return An ALASCA object
-rotate_matrix <- function(object, target) {
-  PCloading <- get_relevant_pcs(target, effect = "time")
+rotate_matrix <- function(target) {
+  PCloading <- target$get_relevant_pcs(effect = "time")
   PCloading_t <- paste0("PC", PCloading)
   c <- .procrustes(
-    loadings = as.matrix(object$pca$loading$time[target$pca$loading$time, ..PCloading_t]),
+    loadings = as.matrix(self$pca$loading$time[target$pca$loading$time, ..PCloading_t]),
     target = as.matrix(target$pca$loading$time[, ..PCloading_t])
   )
   
-  object$pca$loading$time[target$pca$loading$time, (PCloading_t) := as.data.frame(c$procrust)]
-  object$pca$score$time[target$pca$score$time, (PCloading_t) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
+  self$pca$loading$time[target$pca$loading$time, (PCloading_t) := as.data.frame(c$procrust)]
+  self$pca$score$time[target$pca$score$time, (PCloading_t) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
   
-  if (object$separate_time_and_group) {
-    PCloading <- get_relevant_pcs(target, effect = "group")
+  if (self$separate_time_and_group) {
+    PCloading <- taret$get_relevant_pcs(effect = "group")
     PCloading_t <- paste0("PC", PCloading)
     c <- .procrustes(
-      loadings = as.matrix(object$pca$loading$group[target$pca$loading$group, ..PCloading_t]),
+      loadings = as.matrix(self$pca$loading$group[target$pca$loading$group, ..PCloading_t]),
       target = as.matrix(target$pca$loading$group[, ..PCloading_t])
     )
     
-    object$pca$loading$group[target$pca$loading$group, (PCloading_t) := as.data.frame(c$procrust)]
-    object$pca$score$group[target$pca$score$group, (PCloading_t) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
+    self$pca$loading$group[target$pca$loading$group, (PCloading_t) := as.data.frame(c$procrust)]
+    self$pca$score$group[target$pca$score$group, (PCloading_t) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
   }
   
-  return(object)
+  #invisible(self)
 }
 
 #' Extract percentiles
@@ -1931,37 +1871,37 @@ rotate_matrix <- function(object, target) {
 #' @param object ALASCA object
 #' @param objectlist List of ALASCA objects
 #' @return An ALASCA object
-get_validation_percentiles <- function(object, objectlist) {
-  if ("low" %in% colnames(object$ALASCA$loading$time)) {
-    object$ALASCA$loading$time$low <- NULL
-    object$ALASCA$loading$time$high <- NULL
-    object$ALASCA$score$time$low <- NULL
-    object$ALASCA$score$time$high <- NULL
-    if (object$separate_time_and_group) {
-      object$ALASCA$loading$group$low <- NULL
-      object$ALASCA$loading$group$high <- NULL
-      object$ALASCA$score$group$low <- NULL
-      object$ALASCA$score$group$high <- NULL
+get_validation_percentiles <- function(objectlist) {
+  if ("low" %in% colnames(self$ALASCA$loading$time)) {
+    self$ALASCA$loading$time$low <- NULL
+    self$ALASCA$loading$time$high <- NULL
+    self$ALASCA$score$time$low <- NULL
+    self$ALASCA$score$time$high <- NULL
+    if (self$separate_time_and_group) {
+      self$ALASCA$loading$group$low <- NULL
+      self$ALASCA$loading$group$high <- NULL
+      self$ALASCA$score$group$low <- NULL
+      self$ALASCA$score$group$high <- NULL
     }
   }
-  log4r::debug(object$log, message = "Starting get_validation_percentiles_loading")
-  object <- get_validation_percentiles_loading(object, objectlist)
-  log4r::debug(object$log, message = "Completed get_validation_percentiles_loading")
-  log4r::debug(object$log, message = "Starting get_validation_percentiles_score")
-  object <- get_validation_percentiles_score(object, objectlist)
-  log4r::debug(object$log, message = "Completed get_validation_percentiles_score")
-  if (object$validate_regression) {
-    log4r::debug(object$log, message = "Starting get_validation_percentiles_regression")
-    object <- get_validation_percentiles_regression(object, objectlist)
-    log4r::debug(object$log, message = "Completed get_validation_percentiles_regression")
+  log4r::debug(self$log, message = "Starting get_validation_percentiles_loading")
+  self$get_validation_percentiles_loading(objectlist)
+  log4r::debug(self$log, message = "Completed get_validation_percentiles_loading")
+  log4r::debug(self$log, message = "Starting get_validation_percentiles_score")
+  self$get_validation_percentiles_score(objectlist)
+  log4r::debug(self$log, message = "Completed get_validation_percentiles_score")
+  if (self$validate_regression) {
+    log4r::debug(self$log, message = "Starting get_validation_percentiles_regression")
+    self$get_validation_percentiles_regression(objectlist)
+    log4r::debug(self$log, message = "Completed get_validation_percentiles_regression")
   }
-  if (nrow(get_covars(object)) > 0) {
-    log4r::debug(object$log, message = "Starting get_validation_percentiles_covars")
-    object <- get_validation_percentiles_covars(object, objectlist)
-    log4r::debug(object$log, message = "Completed get_validation_percentiles_covars")
+  if (nrow(self$get_covars()) > 0) {
+    log4r::debug(self$log, message = "Starting get_validation_percentiles_covars")
+    self$get_validation_percentiles_covars(objectlist)
+    log4r::debug(self$log, message = "Completed get_validation_percentiles_covars")
   }
   
-  return(object)
+  #invisible(self)
 }
 
 #' Extract percentiles for regressions
@@ -1970,19 +1910,19 @@ get_validation_percentiles <- function(object, objectlist) {
 #'
 #' @inheritParams get_validation_percentiles
 #' @return An ALASCA object
-get_validation_percentiles_regression <- function(object, objectlist) {
-  if (object$save_to_disk) {
+get_validation_percentiles_regression <- function(objectlist) {
+  if (self$save_to_disk) {
     res <- DBI::dbSendQuery(object$db.con, "SELECT * FROM 'model_prediction'")
     df <- setDT(DBI::dbFetch(res))
     DBI::dbClearResult(res)
   } else {
     df <- rbindlist(lapply(objectlist, function(x) x$model_prediction))
   }
-  df <- df[, as.list(quantile(pred, probs = object$limitsCI, type = object$validation_quantile_method)), by = .(group, time, variable)]
+  df <- df[, as.list(quantile(pred, probs = self$limitsCI, type = self$validation_quantile_method)), by = .(group, time, variable)]
   colnames(df) <- c("group", "time", "variable", "low", "high")
   
-  object$model_prediction <- merge(object$model_prediction, df)
-  return(object)
+  self$model_prediction <- merge(self$model_prediction, df)
+  #invisible(self)
 }
 
 #' Extract percentiles for covariates
@@ -1991,19 +1931,19 @@ get_validation_percentiles_regression <- function(object, objectlist) {
 #'
 #' @inheritParams get_validation_percentiles
 #' @return An ALASCA object
-get_validation_percentiles_covars <- function(object, objectlist) {
-  if (object$save_to_disk) {
-    res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'covars'"))
+get_validation_percentiles_covars <- function(objectlist) {
+  if (self$save_to_disk) {
+    res <- DBI::dbSendQuery(self$db.con, paste0("SELECT * FROM 'covars'"))
     df <- setDT(DBI::dbFetch(res))
     DBI::dbClearResult(res)
   } else {
     df <- rbindlist(lapply(objectlist, function(x) get_covars(x)))
   }
-  df <- df[, as.list(quantile(estimate, probs = object$limitsCI, type = object$validation_quantile_method)), by = .(covar, variable)]
+  df <- df[, as.list(quantile(estimate, probs = self$limitsCI, type = self$validation_quantile_method)), by = .(covar, variable)]
   colnames(df) <- c("covar", "variable", "low", "high")
   
-  object$covar_coefficients <- merge(object$covar_coefficients, df)
-  return(object)
+  self$covar_coefficients <- merge(self$covar_coefficients, df)
+  #invisible(self)
 }
 
 #' Extract percentiles for loading
@@ -2012,9 +1952,9 @@ get_validation_percentiles_covars <- function(object, objectlist) {
 #'
 #' @inheritParams get_validation_percentiles
 #' @return An ALASCA object
-get_validation_percentiles_loading <- function(object, objectlist) {
-  PC_time <- get_relevant_pcs(object, effect = "time")
-  if (object$save_to_disk) {
+get_validation_percentiles_loading <- function(objectlist) {
+  PC_time <- self$get_relevant_pcs(effect = "time")
+  if (self$save_to_disk) {
     res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.loading' WHERE PC IN(", paste(PC_time, collapse = ", "), ")"))
     df_time <- setDT(DBI::dbFetch(res))
     DBI::dbClearResult(res)
@@ -2022,13 +1962,13 @@ get_validation_percentiles_loading <- function(object, objectlist) {
     df_time <- rbindlist(lapply(objectlist, function(x) x$ALASCA$loading$time[x$ALASCA$loading$time$PC %in% PC_time, ]), fill = TRUE)
   }
   
-  object$validation$time$loading <- df_time[, as.list(quantile(loading, probs = object$limitsCI, type = object$validation_quantile_method)), by = .(PC, covars)]
-  colnames(object$validation$time$loading) <- c("PC", "covars", "low", "high")
-  object$ALASCA$loading$time <- merge(object$ALASCA$loading$time, object$validation$time$loading, all.x = TRUE)
+  self$validation$time$loading <- df_time[, as.list(quantile(loading, probs = self$limitsCI, type = self$validation_quantile_method)), by = .(PC, covars)]
+  colnames(self$validation$time$loading) <- c("PC", "covars", "low", "high")
+  self$ALASCA$loading$time <- merge(self$ALASCA$loading$time, self$validation$time$loading, all.x = TRUE)
   
-  if (object$separate_time_and_group) {
-    PC_group <- get_relevant_pcs(object, effect = "group")
-    if (object$save_to_disk) {
+  if (self$separate_time_and_group) {
+    PC_group <- self$get_relevant_pcs(effect = "group")
+    if (self$save_to_disk) {
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'group.loading' WHERE PC IN(", paste(PC_group, collapse = ", "), ")"))
       df_group <- setDT(DBI::dbFetch(res))
       DBI::dbClearResult(res)
@@ -2036,11 +1976,11 @@ get_validation_percentiles_loading <- function(object, objectlist) {
       df_group <- rbindlist(lapply(objectlist, function(x) x$ALASCA$loading$group[x$ALASCA$loading$group$PC %in% PC_group, ]), fill = TRUE)
     }
     
-    object$validation$group$loading <- df_group[, as.list(quantile(loading, probs = object$limitsCI, type = object$validation_quantile_method)), by = .(PC, covars)]
-    colnames(object$validation$group$loading) <- c("PC", "covars", "low", "high")
-    object$ALASCA$loading$group <- merge(object$ALASCA$loading$group, object$validation$group$loading, all.x = TRUE)
+    self$validation$group$loading <- df_group[, as.list(quantile(loading, probs = self$limitsCI, type = self$validation_quantile_method)), by = .(PC, covars)]
+    colnames(self$validation$group$loading) <- c("PC", "covars", "low", "high")
+    self$ALASCA$loading$group <- merge(self$ALASCA$loading$group, self$validation$group$loading, all.x = TRUE)
   }
-  return(object)
+  #invisible(self)
 }
 
 #' Extract percentiles for score
@@ -2049,12 +1989,12 @@ get_validation_percentiles_loading <- function(object, objectlist) {
 #'
 #' @inheritParams get_validation_percentiles
 #' @return An ALASCA object
-get_validation_percentiles_score <- function(object, objectlist) {
-  if (object$separate_time_and_group) {
+get_validation_percentiles_score <- function(objectlist) {
+  if (self$separate_time_and_group) {
     # Separate time and group effects
     
-    PC_time <- get_relevant_pcs(object, effect = "time")
-    if (object$save_to_disk) {
+    PC_time <- self$get_relevant_pcs(effect = "time")
+    if (self$save_to_disk) {
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.score' WHERE PC IN(", paste(PC_time, collapse = ", "), ")"))
       df_time <- setDT(DBI::dbFetch(res))
       DBI::dbClearResult(res)
@@ -2062,14 +2002,14 @@ get_validation_percentiles_score <- function(object, objectlist) {
       df_time <- rbindlist(lapply(objectlist, function(x) x$ALASCA$score$time[x$ALASCA$score$time$PC %in% PC_time, ]), fill = TRUE)
     }
     
-    object$validation$time$score <- df_time[, as.list(quantile(score, probs = object$limitsCI, type = object$validation_quantile_method)), by = .(PC, time)]
-    colnames(object$validation$time$score) <- c("PC", "time", "low", "high")
-    object$ALASCA$score$time <- merge(object$ALASCA$score$time, object$validation$time$score, all.x = TRUE)
-    object$ALASCA$score$time[, time := factor(time, levels = object$timelist), ]
-    object$ALASCA$score$time[, group := factor(group, levels = object$grouplist), ]
+    self$validation$time$score <- df_time[, as.list(quantile(score, probs = self$limitsCI, type = self$validation_quantile_method)), by = .(PC, time)]
+    colnames(self$validation$time$score) <- c("PC", "time", "low", "high")
+    self$ALASCA$score$time <- merge(self$ALASCA$score$time, self$validation$time$score, all.x = TRUE)
+    self$ALASCA$score$time[, time := factor(time, levels = self$timelist), ]
+    self$ALASCA$score$time[, group := factor(group, levels = self$grouplist), ]
     
-    PC_group <- get_relevant_pcs(object, effect = "group")
-    if (object$save_to_disk) {
+    PC_group <- self$get_relevant_pcs(effect = "group")
+    if (self$save_to_disk) {
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'group.score' WHERE PC IN(", paste(PC_group, collapse = ", "), ")"))
       df_group <- setDT(DBI::dbFetch(res))
       DBI::dbClearResult(res)
@@ -2077,15 +2017,15 @@ get_validation_percentiles_score <- function(object, objectlist) {
       df_group <- rbindlist(lapply(objectlist, function(x) x$ALASCA$score$group[x$ALASCA$score$group$PC %in% PC_group, ]), fill = TRUE)
     }
     
-    object$validation$group$score <- df_group[, as.list(quantile(score, probs = object$limitsCI, type = object$validation_quantile_method)), by = .(PC, time, group)]
-    colnames(object$validation$group$score) <- c("PC", "time", "group", "low", "high")
-    object$ALASCA$score$group <- merge(object$ALASCA$score$group, object$validation$group$score, all.x = TRUE)
-    object$ALASCA$score$group[, time := factor(time, levels = object$timelist), ]
-    object$ALASCA$score$group[, group := factor(group, levels = object$grouplist), ]
+    self$validation$group$score <- df_group[, as.list(quantile(score, probs = self$limitsCI, type = self$validation_quantile_method)), by = .(PC, time, group)]
+    colnames(self$validation$group$score) <- c("PC", "time", "group", "low", "high")
+    self$ALASCA$score$group <- merge(self$ALASCA$score$group, self$validation$group$score, all.x = TRUE)
+    self$ALASCA$score$group[, time := factor(time, levels = self$timelist), ]
+    self$ALASCA$score$group[, group := factor(group, levels = self$grouplist), ]
   } else {
     # Pooled time and groups effects
-    PC_time <- get_relevant_pcs(object, effect = "time")
-    if (object$save_to_disk) {
+    PC_time <- self$get_relevant_pcs(effect = "time")
+    if (self$save_to_disk) {
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.score' WHERE PC IN(", paste(PC_time, collapse = ", "), ")"))
       df_time <- setDT(DBI::dbFetch(res))
       DBI::dbClearResult(res)
@@ -2093,13 +2033,13 @@ get_validation_percentiles_score <- function(object, objectlist) {
       df_time <- rbindlist(lapply(objectlist, function(x) x$ALASCA$score$time[x$ALASCA$score$time$PC %in% PC_time, ]), fill = TRUE)
     }
     
-    object$validation$time$score <- df_time[, as.list(quantile(score, probs = object$limitsCI, type = object$validation_quantile_method)), by = .(PC, time, group)]
-    colnames(object$validation$time$score) <- c("PC", "time", "group", "low", "high")
-    object$ALASCA$score$time <- merge(object$ALASCA$score$time, object$validation$time$score, all.x = TRUE)
-    object$ALASCA$score$time[, time := factor(time, levels = object$timelist), ]
-    object$ALASCA$score$time[, group := factor(group, levels = object$grouplist), ]
+    self$validation$time$score <- df_time[, as.list(quantile(score, probs = self$limitsCI, type = self$validation_quantile_method)), by = .(PC, time, group)]
+    colnames(self$validation$time$score) <- c("PC", "time", "group", "low", "high")
+    self$ALASCA$score$time <- merge(self$ALASCA$score$time, self$validation$time$score, all.x = TRUE)
+    self$ALASCA$score$time[, time := factor(time, levels = self$timelist), ]
+    self$ALASCA$score$time[, group := factor(group, levels = self$grouplist), ]
   }
-  return(object)
+  #invisible(self)
 }
 
 #' Get relevant PCs
@@ -2179,17 +2119,17 @@ get_regression_predictions <- function() {
 #'
 #' @param object An ALASCA object
 #' @return An ALASCA object
-prepare_validation_run <- function(object, runN = NA) {
-  if (object$validation_method %in% c("loo", "jack-knife", "jackknife")) {
+prepare_validation_run <- function(runN = NA) {
+  if (self$validation_method %in% c("loo", "jack-knife", "jackknife")) {
     # Use leave-one-out validation
     selectedParts <- data.frame()
     
-    if (object$method %in% c("LMM")) {
-      if (any(is.na(object$validation_ids))) {
+    if (self$method %in% c("LMM")) {
+      if (any(is.na(self$validation_ids))) {
         # For each group, divide the participants into n_validation_folds groups, and select n_validation_folds-1 of them
-        selectedParts <- lapply(unique(object$stratification_vector), function(gr) {
-          selectedParts_temp_all <- unique(object$df[object$stratification_vector == gr, ID])
-          selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$n_validation_folds
+        selectedParts <- lapply(unique(self$stratification_vector), function(gr) {
+          selectedParts_temp_all <- unique(self$df[self$stratification_vector == gr, ID])
+          selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% self$n_validation_folds
           selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
           selectedParts_temp_all[selectedParts_temp_ticket != 1]
         })
@@ -2203,13 +2143,13 @@ prepare_validation_run <- function(object, runN = NA) {
           validation_participants = object$df_raw[, ID] %in% object$validation_ids[runN, ]
         )
       }
-    } else if (object$method %in% c("LM")) {
-      object$df$ID <- c(seq_len(nrow(object$df)))
-      if (any(is.na(object$validation_ids))) {
+    } else if (self$method %in% c("LM")) {
+      self$df$ID <- c(seq_len(nrow(self$df)))
+      if (any(is.na(self$validation_ids))) {
         # For each group, divide the participants into n_validation_folds groups, and select n_validation_folds-1 of them
-        selectedParts <- lapply(unique(object$stratification_vector), function(gr) {
-          selectedParts_temp_all <- unique(object$df[object$stratification_vector == gr, ID])
-          selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% object$n_validation_folds
+        selectedParts <- lapply(unique(self$stratification_vector), function(gr) {
+          selectedParts_temp_all <- unique(self$df[object$stratification_vector == gr, ID])
+          selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% self$n_validation_folds
           selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
           selectedParts_temp_all[selectedParts_temp_ticket != 1]
         })
@@ -2225,37 +2165,35 @@ prepare_validation_run <- function(object, runN = NA) {
         )
       }
     }
-  } else if (object$validation_method == "bootstrap") {
+  } else if (self$validation_method == "bootstrap") {
     # Use bootstrap validation
     # When using bootstrapping, we resample participants with replacement
     
-    log4r::debug(object$log, message = "Completed preparation of bootstrap sample")
-    participants_in_bootstrap <- get_bootstrap_ids(object, runN = runN)
+    log4r::debug(self$log, message = "Preparing bootstrap sample")
+    participants_in_bootstrap <- self$get_bootstrap_ids(runN = runN)
     
     # Create bootstrap object without data
-    bootobject <- object[!names(object) %in% c("df", "df_raw")]
-    bootobject <- get_bootstrap_data(bootobject, df_raw = object$df_raw, participants_in_bootstrap)
+    bootobject <- self$clone()
+    bootobject[["df"]] <- NULL
+    bootobject[["df_raw"]] <- NULL
+    bootobject$get_bootstrap_data(df_raw = self$df_raw, participants_in_bootstrap)
     
-    if (object$validation_assign_new_ids) {
+    if (self$validation_assign_new_ids) {
       bootobject$df_raw[, ID := uniqueIDforBootstrap] # Replace ID
     }
     
-    if (object$save_validation_ids) {
+    if (self$save_validation_ids) {
       write(paste0(participants_in_bootstrap$old_id, collapse = ";"),
             file = get_filename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
       )
     }
     
-    log4r::debug(object$log, message = "Completed preparation of bootstrap sample")
+    log4r::debug(self$log, message = "Completed preparation of bootstrap sample")
     
-    temp_object <- ALASCA(
-      validation_object = bootobject,
-      validation_participants = rep(TRUE, nrow(bootobject$df_raw))
-    )
-    temp_object$validation$original_ids <- participants_in_bootstrap$old_id
-  } 
-  
-  return(temp_object)
+    bootobject$update()
+    bootobject$validation$original_ids <- participants_in_bootstrap$old_id
+    return(bootobject)
+  }
 }
 
 #' Make bootstrap sample
@@ -2264,15 +2202,15 @@ prepare_validation_run <- function(object, runN = NA) {
 #'
 #' @param object An ALASCA object
 #' @return A data frame
-get_bootstrap_ids <- function(object, runN = NA) {
+get_bootstrap_ids <- function(runN = NA) {
   if (is.na(runN)) {
     participants_in_bootstrap <- data.frame(
-      new_id = seq(object$df[, uniqueN(ID)]),
+      new_id = seq(self$df[, uniqueN(ID)]),
       old_id = rbindlist(
-        lapply(unique(object$stratification_vector), function(stratification_group){
+        lapply(unique(self$stratification_vector), function(stratification_group){
           list(
             old_id = sample(
-              unique(object$df[object$stratification_vector == stratification_group, ID]),
+              unique(self$df[self$stratification_vector == stratification_group, ID]),
               replace = TRUE)
           )
         })
@@ -2280,8 +2218,8 @@ get_bootstrap_ids <- function(object, runN = NA) {
     )
   } else {
     participants_in_bootstrap <- data.frame(
-      new_id = seq(object$validation_ids[runN, ]),
-      old_id = matrix(object$validation_ids[runN, ])
+      new_id = seq(self$validation_ids[runN, ]),
+      old_id = matrix(self$validation_ids[runN, ])
     )
   }
   return(participants_in_bootstrap)
@@ -2293,7 +2231,7 @@ get_bootstrap_ids <- function(object, runN = NA) {
 #'
 #' @param object An ALASCA object
 #' @return A data frame
-get_bootstrap_data <- function(bootobject, df_raw, participants_in_bootstrap) {
+get_bootstrap_data <- function(df_raw, participants_in_bootstrap) {
   selected_rows <- rbindlist(
     lapply(participants_in_bootstrap$new_id, function(participant){
       list(
@@ -2302,9 +2240,29 @@ get_bootstrap_data <- function(bootobject, df_raw, participants_in_bootstrap) {
       )
     })
   )
-  bootobject[["df_raw"]] <- df_raw[selected_rows$row_nr]
-  bootobject[["df_raw"]][, uniqueIDforBootstrap := selected_rows$new_id]
-  bootobject[["df_raw"]][, originalIDbeforeBootstrap := ID]
-  bootobject$modmat <- bootobject$modmat[selected_rows$row_nr,]
-  return(bootobject)
+  self[["df_raw"]] <- df_raw[selected_rows$row_nr]
+  self[["df_raw"]][, uniqueIDforBootstrap := selected_rows$new_id]
+  self[["df_raw"]][, originalIDbeforeBootstrap := ID]
+  self$modmat <- self$modmat[selected_rows$row_nr,]
+  #invisible(self)
+}
+
+#' Get covariables
+#'
+#' This function returns the other covariables in an ALASCA model
+#'
+#' @inheritParams get_loadings
+#' @return A list with scores for time (and group), and the exploratory power for each component
+#' @export
+get_covars <- function(n_limit = 0) {
+  if (n_limit > 0) {
+    return(
+      rbind(
+        self$covar_coefficients[order(estimate, decreasing = TRUE), head(.SD, n_limit), by = variable],
+        self$covar_coefficients[order(estimate, decreasing = FALSE), head(.SD, n_limit), by = variable]
+      )
+    )
+  } else {
+    return(self$covar_coefficients)
+  }
 }

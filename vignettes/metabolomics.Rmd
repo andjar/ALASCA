@@ -106,8 +106,7 @@ form <- value ~ time + time:group + (1|ID)
 
 
 devtools::load_all()
-mod <- ALASCA(df, form, separateTimeAndGroup = FALSE, forceEqualBaseline = TRUE, scaleFun = "sdall", validate = TRUE, nValRuns = 10)
-
+mod <- ALASCA(df, form, separate_time_and_group = FALSE, equal_baseline = TRUE, scale_function = "sdall", validate = TRUE, n_validation_runs = 10)
 ```
 
 Let us check that our model is as expected:
