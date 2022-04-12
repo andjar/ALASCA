@@ -2059,9 +2059,9 @@ get_validation_percentiles_score <- function(objectlist) {
 #' @return A vector with relevant PCs
 get_relevant_pcs <- function(effect = "time") {
   if (effect == "time") {
-    PC <- self$ALASCA$loading$explained$time >= object$explanatorylimit
+    PC <- self$ALASCA$loading$explained$time >= self$explanatorylimit
   } else {
-    PC <- self$ALASCA$loading$explained$group >= object$explanatorylimit
+    PC <- self$ALASCA$loading$explained$group >= self$explanatorylimit
   }
   PC[1:2] <- TRUE
   return(which(PC))
