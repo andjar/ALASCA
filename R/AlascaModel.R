@@ -63,7 +63,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     validation_participants = NA,
     init_time = Sys.time(),
     rawFormula = NULL,
-    keep_validation_objects = TRUE,
+    keep_validation_objects = FALSE,
     log_file = tempfile(),
     log_level = NULL,
     log = NULL,
@@ -77,6 +77,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     timelist = NULL,
     grouplist = NULL,
     new_formula = NULL,
+    my_df_rows = NULL,
     initialize = function(df, formula, ...) {
       
       inputs <- list(...)
@@ -111,18 +112,12 @@ AlascaModel <- R6::R6Class("AlascaModel",
       # Build the ALASCA model ----
       self$build_model()
       
-      # Validate the model ----
-      if (self$validate) {
-        log4r::debug(self$log, "Starting validation")
-        self$do_validate()
-        log4r::debug(self$log, "Completing validation")
-      }
       
     },
     update = function() {
 
       ## Unscaled values
-      self$df <- self$df_raw
+      
       if(self$reduce_dimensions){
         self$Limm$main$pca <- self$Limm$pca
         self$Limm$pca <- NULL
@@ -137,9 +132,6 @@ AlascaModel <- R6::R6Class("AlascaModel",
       self$variablelist <- unique(self$df$variable)
       self$timelist <- levels(self$df$time)
       self$grouplist <- levels(self$df$group)
-      
-      # Clean input ----
-      self$sanitize_object()
       
       # Build the ALASCA model ----
       

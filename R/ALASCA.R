@@ -46,6 +46,13 @@ ALASCA <- function(df,
 
   object <- AlascaModel$new(df, formula, ...)
   
+  # Validate the model ----
+  if (object$validate) {
+    log4r::debug(object$log, "Starting validation")
+    object$do_validate()
+    log4r::debug(object$log, "Completing validation")
+  }
+  
   object$run_time <- Sys.time() - object$init_time
 
   # Save the model
@@ -169,7 +176,8 @@ sanitize_object <- function() {
   }
 
   # Keep a copy of unscaled data
-  self$df_raw <- self$df
+  self$df_raw <- AlascaDataset$new(df = self$df)
+  self$my_df_rows <- self$df_raw$rows_to_serve
   
   # Scale data
   self$df <- self$scale_function(self$df)
@@ -812,7 +820,8 @@ run_regression <- function() {
       }
     }
     
-    self$regression_coefficients <- data.table(
+    # https://stackoverflow.com/questions/61013078/fastest-way-to-convert-a-matrix-to-a-data-table
+    self$regression_coefficients <- setDT(as.data.frame(
       vapply(self[["variablelist"]], function(x) {
         Rfast::rint.reg(
           y = self[["df"]][ rows_by_variable[[x]], value],
@@ -821,7 +830,7 @@ run_regression <- function() {
           ranef = FALSE
         )$be
       }, FUN.VALUE = numeric(ncol(self[["modmat"]])))
-    )
+    ))[]
     colnames(self$regression_coefficients) <- as.character(self[["variablelist"]])
     self$regression_coefficients[, variable := colnames(self[["modmat"]])]
     self$regression_coefficients <- melt(self$regression_coefficients, id.vars = "variable", variable.name = "covar", variable.factor = FALSE, value.name = "estimate")
@@ -1828,7 +1837,7 @@ rotate_matrix_optimize_score <- function(target) {
     log4r::debug(self$log, "Completed rotation of group components")
   }
   
-  return(object)
+  #invisible(self)
 }
 
 #' Rotate PCA
@@ -2175,11 +2184,10 @@ prepare_validation_run <- function(runN = NA) {
     # Create bootstrap object without data
     bootobject <- self$clone()
     bootobject[["df"]] <- NULL
-    bootobject[["df_raw"]] <- NULL
     bootobject$get_bootstrap_data(df_raw = self$df_raw, participants_in_bootstrap)
     
     if (self$validation_assign_new_ids) {
-      bootobject$df_raw[, ID := uniqueIDforBootstrap] # Replace ID
+      bootobject$df[, ID := uniqueIDforBootstrap] # Replace ID
     }
     
     if (self$save_validation_ids) {
@@ -2236,13 +2244,14 @@ get_bootstrap_data <- function(df_raw, participants_in_bootstrap) {
     lapply(participants_in_bootstrap$new_id, function(participant){
       list(
         new_id = participant,
-        row_nr = df_raw[, .I[ID == participants_in_bootstrap$old_id[participant]]]
+        row_nr = df_raw$rows_by_ID[[participants_in_bootstrap$old_id[participant]]]
       )
     })
   )
-  self[["df_raw"]] <- df_raw[selected_rows$row_nr]
-  self[["df_raw"]][, uniqueIDforBootstrap := selected_rows$new_id]
-  self[["df_raw"]][, originalIDbeforeBootstrap := ID]
+  self[["my_df_rows"]] <- selected_rows$row_nr
+  self$df <- self$scale_function(df_raw$df[self$my_df_rows])
+  self$df[, uniqueIDforBootstrap := selected_rows$new_id]
+  self$df[, originalIDbeforeBootstrap := ID]
   self$modmat <- self$modmat[selected_rows$row_nr,]
   #invisible(self)
 }
