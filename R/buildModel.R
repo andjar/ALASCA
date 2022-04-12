@@ -7,18 +7,19 @@
 buildModel <- function(object) {
   if (!object$minimize_object) {
     # This is not a validation run
-    object <- add_to_log(object, message = paste0("Calculating ", object$method, " coefficients"), print = TRUE)
+    log4r::debug(object$log, "Starting to build model")
+    log4r::info(object$log, paste0("Calculating ", object$method, " coefficients"))
   }
   
   if (object$reduce_dimensions) {
-    if (object$do_debug) currentTs <- Sys.time()
+    log4r::debug(object$log, "Starting to reduce dimensions")
     object <- reduce_dimensions(object)
-    if (object$do_debug) cat("* reduce_dimensions:", Sys.time() - currentTs, "s\n")
+    log4r::debug(object$log, "Finished to reduce dimensions")
   }
 
   if (object$do_debug) currentTs <- Sys.time()
   object <- run_regression(object)
-  if (object$do_debug) cat("* runRegression:", Sys.time() - currentTs, "s\n")
+  log4r::debug(object$log, "Starting to calculate regression coefficients")
   if (!object$use_Rfast) {
     # With Rfast, we've already got the coefficients
     object <- get_regression_coefficients(object)
@@ -26,7 +27,7 @@ buildModel <- function(object) {
 
   if (!object$minimize_object) {
     # This is not a validation run
-    object <- add_to_log(object, message = "Finished calculating regression coefficients!", print = TRUE)
+    log4r::info(object$log, "Finished calculating regression coefficients!")
   }
   
   if (object$do_debug) currentTs <- Sys.time()
@@ -71,30 +72,34 @@ buildModel <- function(object) {
 run_regression <- function(object) {
 
   #df_by_variable <- split(object$df, object$df$variable)
-  rows_by_variable <- lapply(object[["variablelist"]], function(x) object$df[variable == x, , which = TRUE] )
+  rows_by_variable <- lapply(object[["variablelist"]], function(x) object[["df"]][, .I[variable == x]] )
   names(rows_by_variable) <- object[["variablelist"]]
   
   if (object$use_Rfast && object$method %in% c("LMM")) {
     # start.time <- Sys.time()
-    if (any(is.na(object$df[, value]))) {
-      add_to_log(object, message = "Rfast does NOT like NA's! Check your scaling function or value column.", level = "STOP")
+    if (any(is.na(object[["df"]][, value]))) {
+      log4r::error("Rfast does NOT like NA's! Check your scaling function or value column.")
+      stop()
+    }
+    if (!object[["minimize_object"]]) {
+      object[["modmat"]] <- model.matrix(object[["new_formula"]], data = object$df)
+      if (object[["equal_baseline"]]) {
+        object[["modmat"]] <- object[["modmat"]][, !grepl(paste0("time", object[["timelist"]][1]), colnames(object[["modmat"]]))]
+      }
+      object[["cnames_modmat"]] <- colnames(object[["modmat"]])
     }
     object$regression_coefficients <- rbindlist(
       lapply(object[["variablelist"]], function(x) {
-        modmat <- model.matrix(object[["new_formula"]], data = object$df[ rows_by_variable[[x]] ])
-        if (object[["equal_baseline"]]) {
-          modmat <- modmat[, !grepl(paste0("time", object[["timelist"]][1]), colnames(modmat))]
-        }
-        data.frame(
+        list(
           estimate = Rfast::rint.reg(
-            y = object$df[ rows_by_variable[[x]], value],
-            x = modmat[, -1],
-            id = as.numeric(factor(object$df[ rows_by_variable[[x]], ID])),
+            y = object[["df"]][ rows_by_variable[[x]], value],
+            x = object[["modmat"]][rows_by_variable[[x]], -1],
+            id = as.numeric(factor(object[["df"]][ rows_by_variable[[x]], ID])),
             ranef = FALSE
           )$be,
           pvalue = NA,
           covar = as.character(x),
-          variable = colnames(modmat)
+          variable = object[["cnames_modmat"]]
         )
       })
     )
@@ -117,23 +122,27 @@ run_regression <- function(object) {
   } else if (object$use_Rfast & object$method %in% c("LM")) {
     # start.time <- Sys.time()
     if (any(is.na(object$df[, value]))) {
-      add_to_log(object, message = "Rfast does NOT like NA's! Check your scaling function or value column.", level = "STOP")
+      log4r::error(object$log, "Rfast does NOT like NA's! Check your scaling function or value column.")
+      stop()
+    }
+    if (!object$minimize_object) {
+      object$modmat <- model.matrix(object[["formula"]], data = object$df[ rows_by_variable[[x]] ])
+      if (object[["equal_baseline"]]) {
+        # Remove interaction between group and first time point
+        object[["modmat"]] <- object[["modmat"]][, !grepl(paste0("time", object[["timelist"]][1]), colnames(object[["modmat"]]))]
+      }
+      object[["cnames_modmat"]] <- colnames(object[["modmat"]])
     }
     object$regression_coefficients <- rbindlist(
       lapply(object[["variablelist"]], function(x) {
-        modmat <- model.matrix(object[["formula"]], data = object$df[ rows_by_variable[[x]] ])
-        if (object[["equal_baseline"]]) {
-          # Remove interaction between group and first time point
-          modmat <- modmat[, !grepl(paste0("time", object[["timelist"]][1]), colnames(modmat))]
-        }
-        data.frame(
+        list(
           estimate = Rfast::lmfit(
-            y = object$df[ rows_by_variable[[x]], value],
-            x = modmat[, -1]
+            y = object[["df"]][ rows_by_variable[[x]], value],
+            x = object[["modmat"]][rows_by_variable[[x]], -1]
           )$be,
           pvalue = NA,
           covar = as.character(x),
-          variable = colnames(modmat)
+          variable = object[["cnames_modmat"]]
         )
       })
     )
@@ -188,7 +197,7 @@ get_regression_coefficients <- function(object) {
   object$regression_coefficients <- fdf
   
   if (!is.na(object$p_adjust_method)) {
-    object <- add_to_log(object, message = "Adjusting p values", print = TRUE)
+    log4r::info(object$log, "Adjusting p values")
     object$regression_coefficients[, pvalue_unadj := pvalue]
     object$regression_coefficients[, pvalue := p.adjust(pvalue, method = object$p_adjust_method), by = variable]
   }
@@ -211,7 +220,7 @@ remove_covars <- function(object) {
   if (object$reduce_dimensions) {
     object$covar_coefficients <- rbindlist(lapply(unique(object$covar_coefficients$variable), function(v){
       ref <- object$covar_coefficients[variable == v]
-      data.frame(
+      list(
         variable = v,
         covar = rownames(object$Limm$loadings),
         pvalue = NA,
@@ -245,7 +254,7 @@ separate_regression_coefficients <- function(object) {
 #' @return An ALASCA object
 get_effect_matrix <- function(object) {
   if (!object$minimize_object) {
-    object <- add_to_log(object, message = "Calculating effect matrix", print = TRUE)
+    log4r::info(object$log, "Calculating effect matrix")
   }
   parts <- object$df[variable == object$variablelist[1]]
   # parts <- object$df[!duplicated(cbind(object$df$ID, object$df$time))]
@@ -262,7 +271,8 @@ get_effect_matrix <- function(object) {
     }
     BmatrixTime <- BmatrixTime[rowOrder, ]
     if (any(colnames(Dmatrix[, selectDColumnsTime]) != BmatrixTime$variable)) {
-      stop("Column mismatch for time in getEffectMatrix")
+      log4r::error(object$log, "Column mismatch for time in getEffectMatrix")
+      stop()
     }
     AmatrixTime <- as.data.frame(as.matrix(Dmatrix[, selectDColumnsTime]) %*% as.matrix(BmatrixTime[, -1]))
     AmatrixTime$comp <- "TIME"
@@ -276,7 +286,8 @@ get_effect_matrix <- function(object) {
     }
     BmatrixGroup <- BmatrixGroup[rowOrder, ]
     if (any(colnames(Dmatrix[, selectDColumnsGroup]) != BmatrixGroup$variable)) {
-      stop("Column mismatch for group in getEffectMatrix")
+      log4r::error(object$log, "Column mismatch for group in getEffectMatrix")
+      stop()
     }
     AmatrixGroup <- as.data.frame(as.matrix(Dmatrix[, selectDColumnsGroup]) %*% as.matrix(BmatrixGroup[, -1]))
     AmatrixGroup$comp <- "GROUP"
@@ -292,7 +303,8 @@ get_effect_matrix <- function(object) {
     }
     BmatrixTime <- BmatrixTime[rowOrder, ]
     if (any(colnames(Dmatrix[, selectDColumnsTime]) != BmatrixTime$variable)) {
-      stop("Column mismatch for time in getEffectMatrix")
+      log4r::error(object$log, "Column mismatch for time in getEffectMatrix")
+      stop()
     }
     AmatrixTime <- as.data.frame(as.matrix(Dmatrix[, selectDColumnsTime]) %*% as.matrix(BmatrixTime[, -1]))
     AmatrixTime$comp <- "TIME"
@@ -307,7 +319,7 @@ get_effect_matrix <- function(object) {
     object$parts$group <- parts$group
   }
   if (!object$minimize_object) {
-    object <- add_to_log(object, message = "Finished calculating effect matrix!", print = TRUE)
+    log4r::info(object$log, "Finished calculating effect matrix!")
   }
   return(object)
 }

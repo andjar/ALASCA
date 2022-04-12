@@ -24,14 +24,15 @@ validate <- function(object, participant_column = FALSE, validate_regression = F
   if (object$method == "LMM") {
     if (participant_column == FALSE) {
       if (object$participant_column == FALSE) {
-        add_to_log(object, message = "You need to specify the column containing participant id in `participant_column`", level = "STOP")
+        log4r::error(object$log, "You need to specify the column containing participant id in `participant_column`")
+        stop()
       }
     } else {
       object$participant_column <- participant_column
     }
   }
 
-  object <- add_to_log(object, message = "Starting validation", print = TRUE)
+  log4r::info(object$log, "Starting validation")
 
   start.time.all <- Sys.time()
 
@@ -43,7 +44,7 @@ validate <- function(object, participant_column = FALSE, validate_regression = F
         limPC_group <- get_relevant_pcs(object = object, effect = "group")
       }
       temp_object <- lapply(seq_len(object$n_validation_runs), FUN = function(ii) {
-        object <- add_to_log(object, message = paste0("- Run ", ii, " of ", object$n_validation_runs), print = TRUE)
+        log4r::info(object$log, paste0("- Run ", ii, " of ", object$n_validation_runs))
         start.time.this <- Sys.time()
 
         # Make resampled model
@@ -86,12 +87,13 @@ validate <- function(object, participant_column = FALSE, validate_regression = F
         }
 
         time_all <- difftime(Sys.time(), start.time.all, units = c("secs")) / ii
-        object <- add_to_log(object, message = paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((object$n_validation_runs - ii) * time_all, 2), " seconds"), print = TRUE)
+        log4r::info(object$log, paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((object$n_validation_runs - ii) * time_all, 2), " seconds"))
         fname
       })
     } else {
       temp_object <- lapply(seq_len(object$n_validation_runs), FUN = function(ii) {
-        object <- add_to_log(object, message = paste0("- Run ", ii, " of ", object$n_validation_runs), print = TRUE)
+        
+        log4r::info(object$log, paste0("- Run ", ii, " of ", object$n_validation_runs))
         start.time.this <- Sys.time()
 
         # Make resampled model
@@ -107,13 +109,13 @@ validate <- function(object, participant_column = FALSE, validate_regression = F
         temp_object <- clean_alasca(temp_object)
 
         time_all <- difftime(Sys.time(), start.time.all, units = c("secs")) / ii
-        object <- add_to_log(object, message = paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((object$n_validation_runs - ii) * time_all, 2), " seconds"), print = TRUE)
+        log4r::info(object$log, paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((object$n_validation_runs - ii) * time_all, 2), " seconds"))
         temp_object
       })
     }
   } else {
     # Reuse previous samples
-    object <- add_to_log(object, message = "Using predefined samples", print = TRUE)
+    log4r::info(object$log, "Using predefined samples")
 
     if (object$save_to_disk) {
       limPC_time <- get_relevant_pcs(object = object, effect = "time")
@@ -121,7 +123,7 @@ validate <- function(object, participant_column = FALSE, validate_regression = F
         limPC_group <- get_relevant_pcs(object = object, effect = "group")
       }
       temp_object <- lapply(seq_len(object$n_validation_runs), FUN = function(ii) {
-        object <- add_to_log(object, message = paste0("- Run ", ii, " of ", object$n_validation_runs), print = TRUE)
+        log4r::info(object$log, paste0("- Run ", ii, " of ", object$n_validation_runs))
         start.time.this <- Sys.time()
 
         # Make resampled model
@@ -165,12 +167,12 @@ validate <- function(object, participant_column = FALSE, validate_regression = F
         }
 
         time_all <- difftime(Sys.time(), start.time.all, units = c("secs")) / ii
-        object <- add_to_log(object, message = paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((object$n_validation_runs - ii) * time_all, 2), " seconds"), print = TRUE)
+        log4r::info(object$log, paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((object$n_validation_runs - ii) * time_all, 2), " seconds"))
         fname
       })
     } else {
       temp_object <- lapply(seq_len(object$n_validation_runs), FUN = function(ii) {
-        object <- add_to_log(object, message = paste0("- Run ", ii, " of ", object$n_validation_runs), print = TRUE)
+        log4r::info(object$log, paste0("- Run ", ii, " of ", object$n_validation_runs))
         start.time.this <- Sys.time()
 
         # Make resampled model
@@ -186,13 +188,13 @@ validate <- function(object, participant_column = FALSE, validate_regression = F
         temp_object <- clean_alasca(temp_object)
 
         time_all <- difftime(Sys.time(), start.time.all, units = c("secs")) / ii
-        object <- add_to_log(object, message = paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((object$n_validation_runs - ii) * time_all, 2), " seconds"), print = TRUE)
+        log4r::info(object$log, paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((object$n_validation_runs - ii) * time_all, 2), " seconds"))
         temp_object
       })
     }
   }
 
-  object <- add_to_log(object, message = "Calculating percentiles for score and loading", print = TRUE)
+  log4r::info(object$log, "Calculating percentiles for score and loading")
   object <- get_validation_percentiles(object, objectlist = temp_object)
 
   if (object$keep_validation_objects) {
@@ -228,7 +230,7 @@ validate <- function(object, participant_column = FALSE, validate_regression = F
 #' @param target ALASCA object acting as target
 #' @return An ALASCA object
 rotate_matrix_optimize_score <- function(object, target) {
-  object <- add_to_log(object, message = "Starting rotation of time components")
+  log4r::debug(object$log, "Starting rotation of time components")
   # We are only looking at components explaining more than a predefined value
   PCloading <- get_relevant_pcs(target, effect = "time")
   PCloading_t <- paste0("PC", PCloading)
@@ -242,14 +244,14 @@ rotate_matrix_optimize_score <- function(object, target) {
   signMatrix <- as.matrix(expand.grid(lst))
   
   # Test all combinations and calculate residuals
-  signVar <- Reduce(cbind, lapply(seq_len(nrow(signMatrix) / 2), function(i) {
+  signVar <- vapply(seq_len(nrow(signMatrix) / 2), function(i) {
     c <- .procrustes(
       loadings = as.matrix(t(t(object$pca$loading$time[target$pca$loading$time, ..PCloading_t]) * signMatrix[i, ])),
       target = as.matrix(target$pca$loading$time[, ..PCloading_t])
     )
     sum((target$pca$score$time[, ..PCloading_t] - 
            as.matrix(t(t(object$pca$score$time[target$pca$score$time, ..PCloading_t]) * signMatrix[i, ])) %*% solve(c$t1))^2)
-  }))
+  }, FUN.VALUE = numeric(1))
   
   # Find the combination that minimizes the sum of squares
   minSignVar <- which(signVar == min(signVar))[1]
@@ -269,9 +271,9 @@ rotate_matrix_optimize_score <- function(object, target) {
   object$pca$loading$time[target$pca$loading$time, (PCloading_t) := as.data.table(c$procrust)]
   object$pca$score$time[target$pca$score$time, (PCloading_t) := as.data.table(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
 
-  object <- add_to_log(object, message = "Completed rotation of time components")
+  log4r::debug(object$log, "Completed rotation of time components")
   if (object$separate_time_and_group) {
-    object <- add_to_log(object, message = "Starting rotation of group components")
+    log4r::debug(object$log, "Starting rotation of group components")
     # We are only looking at components explaining more than a set limit
     PCloading <- get_relevant_pcs(target, effect = "group")
     PCloading_t <- paste0("PC", PCloading)
@@ -281,14 +283,14 @@ rotate_matrix_optimize_score <- function(object, target) {
     vec <- c(-1, 1)
     lst <- lapply(numeric(N), function(x) vec)
     signMatrix <- as.matrix(expand.grid(lst))
-    signVar <- Reduce(cbind, lapply(seq_len(nrow(signMatrix) / 2), function(i) {
+    signVar <- vapply(seq_len(nrow(signMatrix) / 2), function(i) {
       c <- .procrustes(
         loadings = as.matrix(t(t(object$pca$loading$group[target$pca$loading$group, ..PCloading_t]) * signMatrix[i, ])),
         target = as.matrix(target$pca$loading$group[, ..PCloading_t])
       )
       sum((target$pca$score$group[, ..PCloading_t] - 
              as.matrix(t(t(object$pca$score$group[target$pca$score$group, ..PCloading_t]) * signMatrix[i, ])) %*% solve(c$t1))^2)
-    }))
+    }, FUN.VALUE = numeric(1))
     
     minSignVar <- which(signVar == min(signVar))[1]
     for (i in PCloading){
@@ -302,7 +304,7 @@ rotate_matrix_optimize_score <- function(object, target) {
     )
     object$pca$loading$group[target$pca$loading$group, (PCloading_t) := as.data.table(c$procrust)]
     object$pca$score$group[target$pca$score$group, (PCloading_t) := as.data.table(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
-    object <- add_to_log(object, message = "Completed rotation of group components")
+    log4r::debug(object$log, "Completed rotation of group components")
   }
 
   return(object)
@@ -361,21 +363,21 @@ get_validation_percentiles <- function(object, objectlist) {
       object$ALASCA$score$group$high <- NULL
     }
   }
-  object <- add_to_log(object, message = "Starting get_validation_percentiles_loading")
+  log4r::debug(object$log, message = "Starting get_validation_percentiles_loading")
   object <- get_validation_percentiles_loading(object, objectlist)
-  object <- add_to_log(object, message = "Completed get_validation_percentiles_loading")
-  object <- add_to_log(object, message = "Starting get_validation_percentiles_score")
+  log4r::debug(object$log, message = "Completed get_validation_percentiles_loading")
+  log4r::debug(object$log, message = "Starting get_validation_percentiles_score")
   object <- get_validation_percentiles_score(object, objectlist)
-  object <- add_to_log(object, message = "Completed get_validation_percentiles_score")
+  log4r::debug(object$log, message = "Completed get_validation_percentiles_score")
   if (object$validate_regression) {
-    object <- add_to_log(object, message = "Starting get_validation_percentiles_regression")
+    log4r::debug(object$log, message = "Starting get_validation_percentiles_regression")
     object <- get_validation_percentiles_regression(object, objectlist)
-    object <- add_to_log(object, message = "Completed get_validation_percentiles_regression")
+    log4r::debug(object$log, message = "Completed get_validation_percentiles_regression")
   }
   if (nrow(get_covars(object)) > 0) {
-    object <- add_to_log(object, message = "Starting get_validation_percentiles_covars")
+    log4r::debug(object$log, message = "Starting get_validation_percentiles_covars")
     object <- get_validation_percentiles_covars(object, objectlist)
-    object <- add_to_log(object, message = "Completed get_validation_percentiles_covars")
+    log4r::debug(object$log, message = "Completed get_validation_percentiles_covars")
   }
 
   return(object)
@@ -544,43 +546,38 @@ get_relevant_pcs <- function(object, effect = "time") {
 get_regression_predictions <- function(object) {
   if (!object$minimize_object) {
     # This is not a validation run
-    object <- add_to_log(object, message = "Calculating predictions from regression models", print = TRUE)
+    log4r::info(object$log, message = "Calculating predictions from regression models")
   }
-  regCoeffAll <- dcast(data = object[["regression_coefficients"]], covar ~ variable, value.var = "estimate")
+  regCoeffAll <- dcast(data = object[["regression_coefficients"]], variable~covar, value.var = "estimate")
+  rownames(regCoeffAll) <- regCoeffAll$variable
   regModel <- unique(model.matrix(object$formula, data = object$df))
   if (object$equal_baseline) {
-    regModel <- regModel[, !grepl(paste0("time", levels(object$df$time)[1]), colnames(regModel)), drop = FALSE]
+    regModel <- regModel[, !grepl(paste0("time", levels(object$df$time)[1]), colnames(regModel), fixed = TRUE), drop = FALSE]
   }
+  regModel <- regModel[, !grepl("|", colnames(regModel), fixed = TRUE)]
   if (object$keep_terms != "") {
     regModel <- regModel[, grepl(paste0(c("time", "group", object$keep_terms), collapse = "|"), colnames(regModel)), drop = FALSE]
   } else {
     regModel <- regModel[, grepl(paste0(c("time", "group"), collapse = "|"), colnames(regModel)), drop = FALSE]
   }
+  regModel <- unique(regModel)
   
   if (object$keep_terms != "") {
-    object$model_prediction <- data.table::rbindlist(
-      lapply(object$variablelist, function(x) {
-        regCoeff <- as.matrix(regCoeffAll[regCoeffAll$covar == x, -1])
-        unique(
-          data.frame(
-            object$df[as.numeric(rownames(regModel)), .SD, .SDcols = c("time", "group", object$keep_terms)],
-            pred = colSums(regCoeff[, colnames(regModel)] * t(regModel)),
-            variable = x
-          )
-        )
-    }))
+    object$model_prediction <- melt(
+      cbind(
+        as.matrix(regModel) %*% as.matrix(regCoeffAll[colnames(regModel), -1]),
+        object$df[as.numeric(rownames(regModel)), .SD, .SDcols = c("time", "group", object$keep_terms)]
+      ),
+      id.vars = c("time", "group", object$keep_terms), value.name = "pred"
+    )
   } else {
-    object$model_prediction <- data.table::rbindlist(
-      lapply(object$variablelist, function(x) {
-        regCoeff <- as.matrix(regCoeffAll[regCoeffAll$covar == x, -1])
-        unique(
-          data.frame(
-            object$df[as.numeric(rownames(regModel)), .SD, .SDcols = c("time", "group")],
-            pred = colSums(regCoeff[, colnames(regModel)] * t(regModel)),
-            variable = x
-          )
-        )
-    }))
+    object$model_prediction <- melt(
+      cbind(
+        as.matrix(regModel) %*% as.matrix(regCoeffAll[colnames(regModel), -1]),
+        object$df[as.numeric(rownames(regModel)), .SD, .SDcols = c("time", "group")]
+        ),
+      id.vars = c("time", "group"), value.name = "pred"
+      )
   }
   
   if (object$keep_terms != "") {
@@ -590,7 +587,7 @@ get_regression_predictions <- function(object) {
 
   if (!object$minimize_object) {
     # This is not a validation run
-    object <- add_to_log(object, message = "Finished calculating predictions from regression models!", print = TRUE)
+    log4r::info(object$log, message = "Finished calculating predictions from regression models!")
   }
   return(object)
 }
@@ -651,12 +648,12 @@ prepare_validation_run <- function(object, runN = NA) {
     # Use bootstrap validation
     # When using bootstrapping, we resample participants with replacement
     
-    object <- add_to_log(object, message = "Completed preparation of bootstrap sample")
+    log4r::debug(object$log, message = "Completed preparation of bootstrap sample")
     participants_in_bootstrap <- get_bootstrap_ids(object, runN = runN)
     
     # Create bootstrap object without data
     bootobject <- object[!names(object) %in% c("df", "df_raw")]
-    bootobject$df_raw <- get_bootstrap_data(df_raw = object$df_raw, participants_in_bootstrap)
+    bootobject <- get_bootstrap_data(bootobject, df_raw = object$df_raw, participants_in_bootstrap)
     
     if (object$validation_assign_new_ids) {
       bootobject$df_raw[, ID := uniqueIDforBootstrap] # Replace ID
@@ -668,7 +665,7 @@ prepare_validation_run <- function(object, runN = NA) {
       )
     }
     
-    object <- add_to_log(object, message = "Completed preparation of bootstrap sample")
+    log4r::debug(object$log, message = "Completed preparation of bootstrap sample")
     
     temp_object <- ALASCA(
       validation_object = bootobject,
@@ -715,17 +712,18 @@ get_bootstrap_ids <- function(object, runN = NA) {
 #'
 #' @param object An ALASCA object
 #' @return A data frame
-get_bootstrap_data <- function(df_raw, participants_in_bootstrap) {
+get_bootstrap_data <- function(bootobject, df_raw, participants_in_bootstrap) {
   selected_rows <- rbindlist(
     lapply(participants_in_bootstrap$new_id, function(participant){
-      data.frame(
+      list(
         new_id = participant,
         row_nr = df_raw[, .I[ID == participants_in_bootstrap$old_id[participant]]]
       )
     })
   )
-  selected_data <- df_raw[selected_rows$row_nr]
-  selected_data[, uniqueIDforBootstrap := selected_rows$new_id]
-  selected_data[, originalIDbeforeBootstrap := ID]
-  return(selected_data)
+  bootobject[["df_raw"]] <- df_raw[selected_rows$row_nr]
+  bootobject[["df_raw"]][, uniqueIDforBootstrap := selected_rows$new_id]
+  bootobject[["df_raw"]][, originalIDbeforeBootstrap := ID]
+  bootobject$modmat <- bootobject$modmat[selected_rows$row_nr,]
+  return(bootobject)
 }
