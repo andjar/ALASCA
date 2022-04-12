@@ -872,16 +872,17 @@ run_regression <- function() {
       }
     }
     
-    mods <- vapply(self[["variablelist"]], function(x) {
-      Rfast::rint.reg(
-        y = self[["df"]][ rows_by_variable[[x]], value],
-        x = self[["modmat"]][rows_by_variable[[x]], -1],
-        id = as.numeric(factor(self[["df"]][ rows_by_variable[[x]], ID])),
-        ranef = FALSE
-      )$be
-    }, FUN.VALUE = numeric(ncol(self[["modmat"]])))
-    colnames(mods) <- self[["variablelist"]]
-    self$regression_coefficients <- data.table(mods)
+    self$regression_coefficients <- data.table(
+      vapply(self[["variablelist"]], function(x) {
+        Rfast::rint.reg(
+          y = self[["df"]][ rows_by_variable[[x]], value],
+          x = self[["modmat"]][rows_by_variable[[x]], -1],
+          id = as.numeric(factor(self[["df"]][ rows_by_variable[[x]], ID])),
+          ranef = FALSE
+        )$be
+      }, FUN.VALUE = numeric(ncol(self[["modmat"]])))
+    )
+    colnames(self$regression_coefficients) <- as.character(self[["variablelist"]])
     self$regression_coefficients[, variable := colnames(self[["modmat"]])]
     self$regression_coefficients <- melt(self$regression_coefficients, id.vars = "variable", variable.name = "covar", variable.factor = FALSE, value.name = "estimate")
     self$regression_coefficients[, pvalue := NA]
