@@ -870,23 +870,22 @@ run_regression <- function() {
       if (self[["equal_baseline"]]) {
         self[["modmat"]] <- self[["modmat"]][, !grepl(paste0("time", self[["timelist"]][1]), colnames(self[["modmat"]]))]
       }
-      self[["cnames_modmat"]] <- colnames(self[["modmat"]])
     }
-    self$regression_coefficients <- rbindlist(
-      lapply(self[["variablelist"]], function(x) {
-        list(
-          estimate = Rfast::rint.reg(
-            y = self[["df"]][ rows_by_variable[[x]], value],
-            x = self[["modmat"]][rows_by_variable[[x]], -1],
-            id = as.numeric(factor(self[["df"]][ rows_by_variable[[x]], ID])),
-            ranef = FALSE
-          )$be,
-          pvalue = NA,
-          covar = as.character(x),
-          variable = self[["cnames_modmat"]]
-        )
-      })
-    )
+    
+    mods <- vapply(self[["variablelist"]], function(x) {
+      Rfast::rint.reg(
+        y = self[["df"]][ rows_by_variable[[x]], value],
+        x = self[["modmat"]][rows_by_variable[[x]], -1],
+        id = as.numeric(factor(self[["df"]][ rows_by_variable[[x]], ID])),
+        ranef = FALSE
+      )$be
+    }, FUN.VALUE = numeric(ncol(self[["modmat"]])))
+    colnames(mods) <- self[["variablelist"]]
+    self$regression_coefficients <- data.table(mods)
+    self$regression_coefficients[, variable := colnames(self[["modmat"]])]
+    self$regression_coefficients <- melt(self$regression_coefficients, id.vars = "variable", variable.name = "covar", variable.factor = FALSE, value.name = "estimate")
+    self$regression_coefficients[, pvalue := NA]
+    
     # end.time <- Sys.time()
     # cat("\n\n",end.time - start.time,"\n")
     #invisible(self)
