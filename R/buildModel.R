@@ -88,21 +88,20 @@ run_regression <- function(object) {
       }
       object[["cnames_modmat"]] <- colnames(object[["modmat"]])
     }
-    object$regression_coefficients <- rbindlist(
-      lapply(object[["variablelist"]], function(x) {
-        list(
-          estimate = Rfast::rint.reg(
-            y = object[["df"]][ rows_by_variable[[x]], value],
-            x = object[["modmat"]][rows_by_variable[[x]], -1],
-            id = as.numeric(factor(object[["df"]][ rows_by_variable[[x]], ID])),
-            ranef = FALSE
-          )$be,
-          pvalue = NA,
-          covar = as.character(x),
-          variable = object[["cnames_modmat"]]
-        )
-      })
+    object$regression_coefficients <- data.table(
+      vapply(object[["variablelist"]], function(x) {
+        Rfast::rint.reg(
+          y = object[["df"]][ rows_by_variable[[x]], value],
+          x = object[["modmat"]][rows_by_variable[[x]], -1],
+          id = as.numeric(factor(object[["df"]][ rows_by_variable[[x]], ID])),
+          ranef = FALSE
+        )$be
+      }, FUN.VALUE = numeric(ncol(object[["modmat"]])))
     )
+    colnames(object$regression_coefficients) <- as.character(object[["variablelist"]])
+    object$regression_coefficients[, variable := colnames(object[["modmat"]])]
+    object$regression_coefficients <- melt(object$regression_coefficients, id.vars = "variable", variable.name = "covar", variable.factor = FALSE, value.name = "estimate")
+    object$regression_coefficients[, pvalue := NA]
     # end.time <- Sys.time()
     # cat("\n\n",end.time - start.time,"\n")
     return(object)
