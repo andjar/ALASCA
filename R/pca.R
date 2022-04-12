@@ -30,8 +30,7 @@ do_pca <- function(object) {
 #' @return An ALASCA object
 reduce_dimensions <- function(object){
   
-  object <- add_to_log(object,
-                       message = "Starting reduce_dimensions")
+  log4r::debug(object$log, "Starting reduce_dimensions")
 
   wide_data <- dcast(data = object$df, ...~variable
                      )
@@ -46,13 +45,11 @@ reduce_dimensions <- function(object){
   # Remove surplus columns
   if (is.null(object$reduce_dimensions.nComps)) {
     object$reduce_dimensions.nComps <- which(cumsum(object$reduce_dimensions.explanatory_power) >= object$reduce_dimensions.limit)[1]
-    object <- add_to_log(object,
-                         message = paste("Keeping",
-                                         object$reduce_dimensions.nComps,
-                                         "components from initial PCA, explaining",
-                                         100*cumsum(object$reduce_dimensions.explanatory_power)[object$reduce_dimensions.nComps],
-                                         "% of variation"),
-                         print = TRUE)
+    log4r::info(object$log, paste("Keeping",
+                                  object$reduce_dimensions.nComps,
+                                  "components from initial PCA, explaining",
+                                  100*cumsum(object$reduce_dimensions.explanatory_power)[object$reduce_dimensions.nComps],
+                                  "% of variation"))
   }
   if(ncol(temp_pca_values$rotation) > object$reduce_dimensions.nComps){
     temp_pca_values$rotation <- temp_pca_values$rotation[,-c((object$reduce_dimensions.nComps+1):ncol(temp_pca_values$rotation))]
@@ -69,8 +66,7 @@ reduce_dimensions <- function(object){
       temp_pca_values$x[,i] = -temp_pca_values$x[,i]
     }
   }
-  object <- add_to_log(object,
-                       message = "Remove surplus PCs")
+  log4r::info(object$log, "Removing surplus PCs")
   
   object$Limm$loadings <- temp_pca_values$rotation
   object$Limm$pca <- temp_pca_values
@@ -78,8 +74,7 @@ reduce_dimensions <- function(object){
   object$df <- melt(data = cbind(wide_data[, .SD, .SDcols = object$all_formula_terms], temp_pca_values$x), id.vars = object$all_formula_terms, variable.factor = FALSE)
   object$variablelist <- unique(object$df$variable)
   object$stratification_vector <- object$df[, get(object$stratification_column)]
-  object <- add_to_log(object,
-                       message = "Completed reduce_dimensions")
+  log4r::info(object$log, "Completed reduce_dimensions")
   return(object)
 }
 
@@ -90,8 +85,7 @@ reduce_dimensions <- function(object){
 #' @param object An ALASCA object to be sanitized
 #' @return An ALASCA object
 clean_pca <- function(object) {
-  object <- add_to_log(object,
-                       message = "Starting clean_pca")
+  log4r::debug(object$log, "Starting clean_pca")
   
   # Clean scores ----
   PC_time <- as.data.frame(object$pca$time$x)
@@ -176,14 +170,14 @@ clean_pca <- function(object) {
     }
   }
 
-  object <- add_to_log(object,
-                       message = "Completed clean_pca")
+  log4r::debug(object$log, "Completed clean_pca")
+  
   return(object)
 }
 
 clean_alasca <- function(object) {
-  object <- add_to_log(object,
-                       message = "Starting clean_alasca")
+
+  log4r::debug(object$log, "Starting clean_alasca")
   # We need to create new group names for the combined group and keep_terms
   if (object$keep_terms != "") {
     if (object$separate_time_and_group) {
@@ -229,8 +223,7 @@ clean_alasca <- function(object) {
     object$ALASCA$loading$explained$group <- object$pca$loading$explained$group
   }
   
-  object <- add_to_log(object,
-                       message = "Starting clean_alasca")
+  log4r::debug(object$log, "Finished clean_alasca")
 
   return(object)
 }

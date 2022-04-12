@@ -125,6 +125,7 @@ ALASCA <- function(df,
     object$grouplist <- levels(object$df$group)
     
     object$df <- object$df[object$validation_participants]
+    object$modmat <- object$modmat[object$validation_participants,]
     #object$df[, ID := factor(ID)]
 
     #object$do_debug <- FALSE
@@ -141,34 +142,42 @@ ALASCA <- function(df,
     object$keep_validation_objects <- TRUE
     object$ALASCA.version <- print_version(get = "version")
     object$ALASCA.version.date <- print_version(get = "date")
-    object$log <- data.frame(level = "INFO", time = Sys.time(), message = "Initializing ALASCA", caller = "ALASCA")
+    object$log_file <- tempfile()
+    object$log_level <- ifelse(object$do_debug, "DEBUG", "INFO")
+    if (object$silent) {
+      object$log <- log4r::logger(object$log_level, appenders = list(log4r::file_appender(object$log_file)))
+    } else {
+      object$log <- log4r::logger(object$log_level, appenders = list(log4r::console_appender(), log4r::file_appender(object$log_file)))
+    }
+    
+    log4r::info(object$log, "Initializing ALASCA.")
     class(object) <- "ALASCA"
     print_version()
   }
   
   # Clean input ----
 
-  object <- add_to_log(object, message = "Has initialized the ALASCA model. Next step is to clean it and check input")
+  if (!object$minimize_object) {
+    log4r::info(object$log, "Has initialized the ALASCA model. Next step is to clean it and check input")
+  }
   object <- sanitize_object(object)
-  object <- add_to_log(object, message = "Completed sanitation")
 
   # Build the ALASCA model ----
-  object <- add_to_log(object, message = "Starting to build model")
+  
   object <- buildModel(object)
-  object <- add_to_log(object, message = "Completed building model")
 
   # To save space, we remove unnecessary embedded data ----
   if (object$minimize_object) {
-    object <- add_to_log(object, message = "Starting to remove embedded data")
+    log4r::debug(object$log, "Starting to remove embedded data")
     object <- remove_embedded_data(object)
-    object <- add_to_log(object, message = "Completed remove embedded data")
+    log4r::debug(object$log, "Completed remove embedded data")
   }
 
   # Validate the model ----
   if (object$validate) {
-    object <- add_to_log(object, message = "Starting validation")
+    log4r::debug(object$log, "Starting validation")
     object <- validate(object)
-    object <- add_to_log(object, message = "Completing validation")
+    log4r::debug(object$log, "Completing validation")
   }
   object$run_time <- Sys.time() - object$init_time
 
@@ -243,6 +252,7 @@ SMASCA <- function(...) {
 sanitize_object <- function(object) {
   if (!object$minimize_object) {
     
+    log4r::debug(object$log, "Starting sanitation")
     object <- get_info_from_formula(object)
     object <- rename_columns_to_standard(object)
     object <- wide_to_long(object)
@@ -258,7 +268,7 @@ sanitize_object <- function(object) {
     
     check_that_columns_are_valid(object)
     
-    object <- add_to_log(object, message = "Making factors for time, group and variable")
+    log4r::info(object$log, "Making factors for time, group and variable")
     object$df[, time := factor(time, levels = object$timelist), ]
     object$df[, group := factor(group, levels = object$grouplist), ]
     object$df[, variable := factor(variable, levels = object$variablelist), ]
@@ -279,16 +289,16 @@ sanitize_object <- function(object) {
       object$db.filename <- get_filename(object, prefix = "validation/", filetype = "db")
       object$db.con <- DBI::dbConnect(object$db.driver, dbname = object$db.filename)
     }
-  }
-
-  object <- add_to_log(object, message = "Checking for missing information")
-  find_missing_predictor_variables(object)
-  find_missing_response_variables(object)
-
-  # Use sum coding?
-  if (object$sum_coding) {
-    object <- add_to_log(object, message = "Use sum coding")
-    contrasts(object$df$group) <- contr.sum(length(unique(object$df$group)))
+    
+    log4r::info(object$log, "Checking for missing information")
+    find_missing_predictor_variables(object)
+    find_missing_response_variables(object)
+    
+    # Use sum coding?
+    if (object$sum_coding) {
+      log4r::info(object$log, "Use sum coding")
+      contrasts(object$df$group) <- contr.sum(length(unique(object$df$group)))
+    }
   }
 
   # Keep a copy of unscaled data
@@ -296,7 +306,8 @@ sanitize_object <- function(object) {
   
   # Scale data
   object$df <- object$scale_function(object$df)
-
+  
+  log4r::debug(object$log, "Completed sanitation")
   return(object)
 }
 
@@ -309,9 +320,10 @@ rename_columns_to_standard <- function(object) {
   
   if (object$valCol != "value") {
     if ("value" %in% colnames(object$df)) {
-      add_to_log(object, message = "Sorry, the value column is reserved by ALASCA; please give it another name or change `valCol`", level = "STOP")
+      log4r::error(object$log, "Sorry, the value column is reserved by ALASCA; please give it another name or change `valCol`")
+      stop()
     }
-    object <- add_to_log(object, message = paste0("Changing ", object$valCol, " to `value`."), level = "WARNING")
+    log4r::warn(object$log, paste0("Changing ", object$valCol, " to `value`."))
     object$df[, value := get(object$valCol)]
     object$formula <- formula(paste(
       "value ~",
@@ -322,13 +334,13 @@ rename_columns_to_standard <- function(object) {
   
   if (object$x_column == "time" && ! "time" %in% object$all_formula_terms) {
     object$x_column <- object$formula_terms[1]
-    object <- add_to_log(object, message = paste("Will use", object$x_column, "for abscissa"), print= TRUE)
+    log4r::info(object$log, paste("Will use", object$x_column, "for abscissa"))
   }
   
   if (object$x_column != "time") {
     if ("time" %in% colnames(object$df)) {
       object$time <- NULL
-      object <- add_to_log(object, message = "Overwriting the `time` column", level = "WARNING")
+      log4r::warn(object$log, "Overwriting the `time` column")
     }
     object$df[, time := factor(get(object$x_column))]
     object$timelist <- levels(object$df$time)
@@ -347,8 +359,8 @@ rename_columns_to_standard <- function(object) {
   object$timelist <- levels(object$df$time)
   object$grouplist <- levels(object$df$group)
   
-  object <- add_to_log(object, message = paste0("Using `",object$stratification_column,"` for stratification"), print = TRUE)
-  
+  log4r::info(object$log, paste0("Using `",object$stratification_column,"` for stratification"))
+
   return(object)
 }
 
@@ -361,9 +373,10 @@ rename_columns_to_standard <- function(object) {
 find_missing_response_variables <- function(object) {
   if(object$df[, uniqueN(variable), by = .(ID, time)][, uniqueN(V1)] > 1) {
     if (object$ignore_missing) {
-      object <- add_to_log(object, message = "Response variables missing for some samples! Continue with caution!", level = "WARNING")
+      log4r::warn(object$log, "Response variables missing for some samples! Continue with caution!")
     } else {
-      add_to_log(object, message = "Response variables missing for some samples! To ignore this, use `ignore_missing = TRUE`", level = "STOP")
+      log4r::error(object$log, "Response variables missing for some samples! To ignore this, use `ignore_missing = TRUE`")
+      stop()
     }
   }
 }
@@ -377,9 +390,10 @@ find_missing_response_variables <- function(object) {
 find_missing_predictor_variables <- function(object) {
   if (any(is.na(object$df))) {
     if (object$ignore_missing_covars) {
-      object <- add_to_log(object, message = "Predictor variables missing for some samples! Continue with caution!", level = "WARNING")
+      log4r::warn(object$log, "Predictor variables missing for some samples! Continue with caution!")
     } else {
-      add_to_log(object, message = "Predictor variables missing for some samples! To ignore this, use `ignore_missing_covars = TRUE`", level = "STOP")
+      log4r::error(object$log, "Predictor variables missing for some samples! To ignore this, use `ignore_missing_covars = TRUE`")
+      stop()
     }
   }
 }
@@ -393,7 +407,7 @@ find_missing_predictor_variables <- function(object) {
 replace_term_in_formula <- function(object, old_term, new_term) {
   old_formula <- as.character(object$formula)[3]
   new_formula <- gsub(old_term, new_term, old_formula)
-  object <- add_to_log(object, message = paste0("New formula: ", new_formula), print = TRUE)
+  log4r::info(object$log, paste0("New formula: ", new_formula))
   object$formula <- formula(paste(
     "value ~",
     new_formula
@@ -408,7 +422,8 @@ replace_term_in_formula <- function(object, old_term, new_term) {
 #' @param object An ALASCA object
 check_that_columns_are_valid <- function(object) {
   if (any(!object$all_formula_terms %in% colnames(object$df))) {
-    add_to_log(object, message = paste0("Column(s) missing:\n", paste0(object$all_formula_terms[!object$all_formula_terms %in% colnames(object$df)], collapse = "\n* "), "\nYou may want to use `keep_columns`"), level = "STOP")
+    log4r::error(object$log, paste0("Column(s) missing:\n", paste0(object$all_formula_terms[!object$all_formula_terms %in% colnames(object$df)], collapse = "\n* "), "\nYou may want to use `keep_columns`"))
+    stop()
   }
 }
 
@@ -430,7 +445,8 @@ adjust_design_matrix <- function(object) {
       # Use ID for participants!
       
     } else if (sum(grepl("\\|", object$formula_terms)) > 1) {
-      add_to_log(object, message = "Multiple random effects, couldn't determine participant-id. Please specify `participant_column`", level = "STOP")
+      log4r::error(object$log, "Multiple random effects, couldn't determine participant-id. Please specify `participant_column`")
+      stop()
     } else {
         
         # Try to find ID column from formula
@@ -455,7 +471,8 @@ adjust_design_matrix <- function(object) {
   }else if (object$method %in% c("LM")) {
     object$new_formula <- value ~ modmat
   } else {
-    add_to_log(object, message = "Sorry, an error occurred! Please check your model", level = "STOP")
+    log4r::error(object$log, "Sorry, an error occurred! Please check your model")
+    stop()
   }
   return(object)
 }
@@ -480,12 +497,12 @@ get_info_from_formula <- function(object) {
   object$all_formula_terms <- unique(object$all_formula_terms[!object$all_formula_terms %in% c("1", "")])
   if (object$stratification_column == "group" && !"group" %in% colnames(object$df)) {
     object$stratification_column <- object$all_formula_terms[1]
-    object <- add_to_log(object, message = paste("The `",object$all_formula_terms[1],"` column is used for stratification"), level = "WARNING")
+    log4r::warn(object$log, paste("The `",object$all_formula_terms[1],"` column is used for stratification"))
   }
   if (!"group" %in% object$all_formula_terms) {
     object$all_formula_terms <- c(object$all_formula_terms, "group")
     if (object$stratification_column == "group") {
-      object <- add_to_log(object, message = "The `group` column is used for stratification", level = "WARNING")
+      log4r::warn(object$log, "The `group` column is used for stratification")
     }
   }
   object$all_formula_terms <- c(object$all_formula_terms, object$participant_column, object$stratification_column, object$keep_columns)
@@ -526,33 +543,38 @@ LM_or_LMM <- function(object) {
     # Find which default method to use
     if (any(grepl("\\|", object$formula_terms))) {
       object$method <- "LMM"
-      object <- add_to_log(object, message = "Will use linear mixed models!", print = TRUE)
+      log4r::info(object$log, "Will use linear mixed models!")
       if (sum(grepl("\\|", object$formula_terms)) > 1 && object$use_Rfast) {
-        add_to_log(object, message = "Cannot use Rfast with multiple random effects. Use lme4 with `use_Rfast = FALSE` instead!", level = "STOP")
+        log4r::error(object$log, "Cannot use Rfast with multiple random effects. Use lme4 with `use_Rfast = FALSE` instead!")
+        stop()
       }
       if (!any(grepl("1\\|ID", object$formula_terms)) && object$use_Rfast) {
-        add_to_log(object, message = "Rfast only supports a single random intercept. Use lme4 with `use_Rfast = FALSE` instead!", level = "STOP")
+        log4r::error(object$log, "Rfast only supports a single random intercept. Use lme4 with `use_Rfast = FALSE` instead!")
+        stop()
       }
     } else {
       object$method <- "LM"
-      object <- add_to_log(object, message = "Will use linear models!", print = TRUE)
+      log4r::info(object$log, "Will use linear models!")
     }
   } else {
     # The user has specified a method to use
     if (object$method == "LMM") {
       if (!any(grepl("\\|", object$formula_terms))) {
-        add_to_log(object, message = "The model must contain at least one random effect. Are you sure you wanted linear mixed models?", level = "STOP")
+        log4r::error(object$log, "The model must contain at least one random effect. Are you sure you wanted linear mixed models?")
+        stop()
       }
     } else if (object$method == "LM") {
       if (any(grepl("\\|", object$formula_terms))) {
-        add_to_log(object, message = "The model contains at least one random effect. Are you sure you wanted linear models?", level = "STOP")
+        log4r::error(object$log, "The model contains at least one random effect. Are you sure you wanted linear models?")
+        stop()
       }
     } else {
-      add_to_log(object, message = "You entered an undefined method. Use `LMM` or `LM`!", level = "STOP")
+      log4r::error(object$log, "You entered an undefined method. Use `LMM` or `LM`!")
+      stop()
     }
   }
   if (object$use_Rfast) {
-    object <- add_to_log(object, message = "Will use Rfast!", print = TRUE)
+    log4r::info(object$log, "Will use Rfast!")
   }
   return(object)
 }
@@ -565,9 +587,9 @@ LM_or_LMM <- function(object) {
 #' @return An ALASCA object
 wide_to_long <- function(object) {
   if (object$wide) {
-    object <- add_to_log(object, message = "Converting from wide to long!", print = TRUE)
+    log4r::info(object$log, "Converting from wide to long!")
     object$df <- melt(object$df, id.vars = c(object$all_formula_terms[!object$all_formula_terms %in% c("variable", "value")]), value.name = object$valCol)
-    object <- add_to_log(object, message = paste0("Found ",length(unique(object$df$variable))," variables"), print = TRUE)
+    log4r::info(object$log, paste0("Found ",length(unique(object$df$variable))," variables"))
     object$wide <- FALSE
     object$variablelist <- unique(object$df$variable)
     object$stratification_vector = object$df[, get(object$stratification_column)]
@@ -659,7 +681,8 @@ get_default_scaling_function <- function(object) {
       }
     }
   } else {
-    add_to_log(object, message = "Unknown scaling method. Please use of one the following: `none`, `sdall`, `sdref`, `sdreft1`, `sdt1`", level = "STOP")
+    log4r::error(object$log, "Unknown scaling method. Please use of one the following: `none`, `sdall`, `sdref`, `sdreft1`, `sdt1`")
+    stop()
   }
   return(scale_function)
 }
@@ -674,22 +697,23 @@ get_scaling_function <- function(object) {
   if (is.function(object$scale_function)) {
     # The user provided a custom function
     if (!object$minimize_object) {
-      object <- add_to_log(object, message = "Scaling data with custom function...", print = TRUE)
+      log4r::info(object$log, "Scaling data with custom function...")
     }
   } else if (object$scale_function == "none") {
     # The user do not want to scale
     if (!object$minimize_object) {
-      object <- add_to_log(object, message = "Not scaling data...", level = "WARNING")
+      log4r::warn(object$log, "Not scaling data...")
     }
     object$scale_function <- identity()
   } else if (is.character(object$scale_function)) {
     # Use a deafult scaling
     if (!object$minimize_object) {
-      object <- add_to_log(object, message = paste("Scaling data with",object$scale_function,"..."), print = TRUE)
+      log4r::info(object$log, paste("Scaling data with",object$scale_function,"..."))
     }
     object$scale_function <- get_default_scaling_function(object)
   } else {
-    add_to_log(object, message = "Unknown scaling function", level = "STOP")
+    log4r::error(object$log, "Unknown scaling function")
+    stop()
   }
   return(object)
 }
@@ -821,10 +845,12 @@ get_pca_function <- function (object) {
         return(out)
       }
     } else {
-      add_to_log(object, message = "Unknown PCA function", level = "STOP")
+      log4r::error(object$log, "Unknown PCA function")
+      stop()
     }
   } else {
-    add_to_log(object, message = "Unknown PCA function", level = "STOP")
+    log4r::error(object$log, "Unknown PCA function")
+    stop()
   }
   return(object)
 }

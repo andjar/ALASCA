@@ -27,51 +27,6 @@ save_bootstrap_ids <- function(object) {
   }
 }
 
-#' Add item to log
-#'
-#' @param object An ALASCA object
-#' @return An ALASCA object
-add_to_log <- function(object, message = "", time = Sys.time(), level = "INFO", print = FALSE) {
-  if (object$minimize_object){
-    return(object)
-  } else {
-    log_item <- data.frame(
-      level = level,
-      time = time,
-      message = message,
-      caller = as.character(as.list(sys.call(-1))[[1]])
-    )
-    
-    object$log <- rbind(object$log, log_item)
-
-    if (level == "STOP") {
-      stop("[", log_item$level, "] ", format(log_item$time, "%Y-%m-%d %X"), " - ", log_item$message, " (", log_item$caller, ")")
-    } else {
-      if ((print || object$do_debug || level == "WARNING") && !object$silent) {
-        print_log(log_item)
-      }
-      return(object)
-    }
-  }
-}
-
-#' Print log
-#'
-#' @param object An ALASCA object
-print_log <- function(log_item) {
-    cat("[", log_item$level, "] ", format(log_item$time, "%Y-%m-%d %X"), " - ", log_item$message, "\n")
-}
-
-#' Print log
-#'
-#' @param object An ALASCA object
-#' @export
-print.ALASCA <- function(object) {
-  for (i in seq(nrow(object$log))) {
-    print_log(object$log[i,])
-  }
-}
-
 #' Save ALASCA object
 #'
 #' @inheritParams saveALASCAModel

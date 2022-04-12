@@ -22,7 +22,8 @@ plot.ALASCA <- function(object,
   } else if (length(component) == 2) {
     plot_components(object = object, comps = component, ...)
   } else {
-    add_to_log(object, message = "Please provide exactly 1 or 2 components to plot", level = "STOP")
+    log4r::error(object$log, "Please provide exactly 1 or 2 components to plot")
+    stop()
   }
 }
 
@@ -84,7 +85,10 @@ plot_development <- function(object,
                              sort_by_loadinggroup = FALSE,
                              my_theme = object$plot.my_theme) {
   
-  if (!(effect %in% c("both", "time", "group"))) add_to_log(object, message = "`effect` has to be `both`, `time` or `group`", level = "STOP")
+  if (!(effect %in% c("both", "time", "group"))) {
+    log4r::error(object$log, "`effect` has to be `both`, `time` or `group`")
+    stop()
+  }
   if (!object$separate_time_and_group) effect <- "time"
   if (!is.na(x_label)) object$plot.x_label <- x_label
   if (!is.na(filename)) object$filename <- filename
@@ -92,7 +96,7 @@ plot_development <- function(object,
   if (!is.na(filetype)) object$plot.filetype <- filetype
   if (!is.na(figsize)) object$plot.figsize <- figsize
   if (!is.na(figunit)) object$plot.figunit <- figunit
-  if (n_limit > 0 && length(object$variablelist) > 2*n_limit) warning("Will only plot the ",n_limit," upper and lower loadings. Use `n_limit = 0` to show all")
+  if (n_limit > 0 && length(object$variablelist) > 2*n_limit) log4r::warn(object$log, paste0("Will only plot the ",n_limit," upper and lower loadings. Use `n_limit = 0` to show all"))
   
   if (flip_axes) {
     plotwidths <- c(2, 3, 2, 3)
@@ -789,7 +793,8 @@ plot_parts <- function(object,
     if (is.data.frame(object)) {
       df <- object
       if (any(participant_column == FALSE) | any(valueColumn == FALSE)) {
-        add_to_log(object, message = "You need to specify participant and value columns", level = "STOP")
+        log4r::error(object$log, "You need to specify participant and value columns")
+        stop()
       } else {
         participant_column <- participant_column
         valueColumn <- valueColumn
@@ -813,7 +818,8 @@ plot_parts <- function(object,
       valueColumn <- as.character(object$formula)[2]
       if (any(participant_column == FALSE)) {
         if (any(object$participant_column == FALSE)) {
-          add_to_log(object, message = "You need to specify participant column", level = "STOP")
+          log4r::error(object$log, "You need to specify participant column")
+          stop()
         } else {
           participant_column <- object$participant_column
         }
@@ -837,7 +843,8 @@ plot_parts <- function(object,
         return(g)
       }
     } else {
-      add_to_log(object, message = "Wrong input object: must be a ALASCA model or a data frame", level = "STOP")
+      log4r::error(object$log, "Wrong input object: must be a ALASCA model or a data frame")
+      stop()
     }
     
     if (any(is.na(variables))) variables <- unique(df$variable)
@@ -1044,7 +1051,10 @@ plot_validation <- function(object,
                             my_theme = NA,
                             flip_axes = TRUE,
                             plot.alpha = 0.3) {
-  if (!object$validate) add_to_log(object, message = "You must validate the model first!", level = "STOP")
+  if (!object$validate) {
+    log4r::error(object$log, message = "You must validate the model first!")
+    stop()
+  }
   if (any(is.na(my_theme)))  my_theme <- object$plot.my_theme
   if (!is.na(filename)) object$filename <- filename
   
@@ -1268,7 +1278,10 @@ plot_covars <- function(object,
   if (!is.na(filename)) object$filename <- filename
   
   df <- get_covars(object, n_limit = n_limit)
-  if ( nrow(df) == 0 ) add_to_log(object, message = "No covariates to plot", level = "STOP")
+  if ( nrow(df) == 0 ) {
+    log4r::error(object$log, "No covariates to plot")
+    stop()
+  }
   df$covar <- factor(df$covar, levels = unique(df$covar[order(df$estimate)]))
   if (any(is.na(covar))) {
     covar <- unique(df$variable)

@@ -101,7 +101,7 @@ plot_histogram <- function(object,
 #'
 #' @export
 plot_histogram_score <- function(object, component = 1, bins = object$n_validation_runs / 10, effect = "time") {
-  if (!object$validate) stop("Model not validated")
+  if (!object$validate) log4r::error(object$log, "Model not validated")
   if (effect == "time" | effect == "both") {
     dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
       data.frame(

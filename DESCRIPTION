@@ -21,6 +21,7 @@ Depends:
 Imports:
 	ggplot2,
 	DBI,
+	log4r,
 	RSQLite,
 	ggpubr,
 	lme4,
