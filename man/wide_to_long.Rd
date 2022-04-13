@@ -4,7 +4,7 @@
 \alias{wide_to_long}
 \title{Convert wide df to long df}
 \usage{
-wide_to_long(object)
+wide_to_long()
 }
 \arguments{
 \item{object}{An ALASCA object}

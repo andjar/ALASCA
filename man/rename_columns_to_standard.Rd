@@ -4,7 +4,7 @@
 \alias{rename_columns_to_standard}
 \title{Check if columns are missing}
 \usage{
-rename_columns_to_standard(object)
+rename_columns_to_standard()
 }
 \arguments{
 \item{object}{An ALASCA object}

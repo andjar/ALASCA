@@ -4,63 +4,7 @@
 \alias{ALASCA}
 \title{Get an ALASCA object}
 \usage{
-ALASCA(
-  df,
-  formula,
-  wide = FALSE,
-  separate_time_and_group = FALSE,
-  scale_function = "sdall",
-  reduce_dimensions = FALSE,
-  equal_baseline = FALSE,
-  sum_coding = FALSE,
-  method = NA,
-  use_Rfast = TRUE,
-  p_adjust_method = NA,
-  participant_column = "ID",
-  x_column = "time",
-  ignore_missing = FALSE,
-  ignore_missing_covars = FALSE,
-  silent = FALSE,
-  scale_function.center = FALSE,
-  stratification_column = "group",
-  stratification_vector = NA,
-  minimize_object = FALSE,
-  limitsCI = c(0.025, 0.975),
-  pca_function = "prcomp",
-  plot.x_label = "Time",
-  plot.group_label = "Group",
-  plot.figsize = c(180, 120, 300),
-  plot.figunit = "mm",
-  plot.filetype = "png",
-  plot.palette = NA,
-  plot.loadinggroupcolumn = NA,
-  plot.loadinggroup_label = "Variable group",
-  plot.palette.end = 0.8,
-  explanatorylimit = 0.05,
-  do_debug = FALSE,
-  n_validation_folds = 7,
-  n_validation_runs = 1000,
-  validation_quantile_method = 2,
-  plot.my_theme = ggplot2::theme_classic(),
-  keep_columns = c(""),
-  keep_terms = c(""),
-  filename = NA,
-  filepath = NA,
-  reduce_dimensions.nComps = NULL,
-  reduce_dimensions.limit = 0.95,
-  save = FALSE,
-  save_to_disk = FALSE,
-  save_validation_ids = FALSE,
-  optimize_score = TRUE,
-  validate = FALSE,
-  validate_regression = TRUE,
-  validation = FALSE,
-  validation_method = "bootstrap",
-  validation_ids = NA,
-  validation_object = NA,
-  validation_assign_new_ids = FALSE,
-  validation_participants = NA
-)
+ALASCA(df, formula, ...)
 }
 \arguments{
 \item{df}{Data frame to be analyzed}
@@ -69,25 +13,21 @@ ALASCA(
 
 \item{separate_time_and_group}{Logical: should time and group effect be separated?}
 
+\item{p_adjust_method}{Method for correcting p values for multiple testing, see p.adjust.methods}
+
+\item{validate}{Logical. If \code{TRUE}, give estimates for robustness}
+
+\item{participant_column}{String. Name of the column containing participant identification}
+
+\item{minimize_object}{Logical. If \code{TRUE}, remove unnecessary clutter, optimize for validation}
+
 \item{scale_function}{Either a custom function or string to define scaling function: \code{sdall}, \code{sdref}, \code{sdt1}, \code{sdreft1}}
+
+\item{scale_function.center}{Boolean. Mean centering as part of scaling}
 
 \item{equal_baseline}{Set to \code{TRUE} (default) to remove interaction between group and first time point}
 
 \item{sum_coding}{Set to \code{TRUE} to use sum coding instead of contrast coding for group (defaults to \code{FALSE})}
-
-\item{method}{Defaults to \code{NA} where method is either LM or LMM, depending on whether your formula contains a random effect or not}
-
-\item{use_Rfast}{Boolean. Defaults to \code{TRUE}}
-
-\item{p_adjust_method}{Method for correcting p values for multiple testing, see p.adjust.methods}
-
-\item{participant_column}{String. Name of the column containing participant identification}
-
-\item{scale_function.center}{Boolean. Mean centering as part of scaling}
-
-\item{stratification_vector}{Vector of same length as \code{df} that specifies stratification groups during validate_ Defaults to \code{NA}, where the group column is used.}
-
-\item{minimize_object}{Logical. If \code{TRUE}, remove unnecessary clutter, optimize for validation}
 
 \item{plot.x_label}{Defaults to "Time"}
 
@@ -101,21 +41,25 @@ ALASCA(
 
 \item{plot.palette}{List of colors, named by group}
 
+\item{keep_terms}{Additional terms to keep in the model matrix}
+
+\item{stratification_vector}{Vector of same length as \code{df} that specifies stratification groups during validate_ Defaults to \code{NA}, where the group column is used.}
+
+\item{validate_regression}{Whether to validate regression predictions or not (only if \code{validate} is \code{TRUE})}
+
 \item{do_debug}{Print what happens (default: \code{FALSE})}
+
+\item{save}{Save models and plots automatically (default: \code{FALSE})}
+
+\item{filename}{File name to save model and plots (when \code{save = TRUE})}
+
+\item{method}{Defaults to \code{NA} where method is either LM or LMM, depending on whether your formula contains a random effect or not}
+
+\item{use_Rfast}{Boolean. Defaults to \code{TRUE}}
 
 \item{n_validation_folds}{Partitions when validating}
 
 \item{n_validation_runs}{number of validation runs}
-
-\item{keep_terms}{Additional terms to keep in the model matrix}
-
-\item{filename}{File name to save model and plots (when \code{save = TRUE})}
-
-\item{save}{Save models and plots automatically (default: \code{FALSE})}
-
-\item{validate}{Logical. If \code{TRUE}, give estimates for robustness}
-
-\item{validate_regression}{Whether to validate regression predictions or not (only if \code{validate} is \code{TRUE})}
 
 \item{validation_method}{among  \code{loo} (leave-one-out, default)}
 

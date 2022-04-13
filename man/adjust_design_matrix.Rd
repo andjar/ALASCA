@@ -4,7 +4,7 @@
 \alias{adjust_design_matrix}
 \title{Check if columns are missing}
 \usage{
-adjust_design_matrix(object)
+adjust_design_matrix()
 }
 \arguments{
 \item{object}{An ALASCA object}

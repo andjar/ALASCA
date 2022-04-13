@@ -4,7 +4,7 @@
 \alias{check_that_columns_are_valid}
 \title{Check if columns are missing}
 \usage{
-check_that_columns_are_valid(object)
+check_that_columns_are_valid()
 }
 \arguments{
 \item{object}{An ALASCA object}

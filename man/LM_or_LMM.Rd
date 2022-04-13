@@ -4,7 +4,7 @@
 \alias{LM_or_LMM}
 \title{Determine whether to use LM or LMM}
 \usage{
-LM_or_LMM(object)
+LM_or_LMM()
 }
 \arguments{
 \item{object}{An ALASCA object}
