@@ -1,33 +1,3 @@
-#' Get an ALASCA object
-#'
-#' This function plots your ALASCA model
-#'
-#' @inheritParams plot_development
-#' @inheritParams plot_components
-#' @return An ggplot2 object (or a list og ggplot objects)
-#'
-#' @examples
-#' load("PE.Rdata")
-#' plot(model.val)
-#' plot(model, component = "PC2")
-#' plot(model, only = "score", effect = "time")
-#' plot(model, too_dense = 5)
-#' plot(model, highlight = c("PlGF", "IL-1b", "IL-6"))
-#' @export
-plot.ALASCA <- function(object,
-                        component = 1,
-                        ...) {
-  if (length(component) == 1) {
-    plot_development(object = object, component = component, ...)
-  } else if (length(component) == 2) {
-    plot_components(object = object, comps = component, ...)
-  } else {
-    log4r::error(object$log, "Please provide exactly 1 or 2 components to plot")
-    stop()
-  }
-}
-
-
 
 #' Get an ALASCA object
 #'
@@ -280,68 +250,7 @@ plot_development <- function(object,
   return(g)
 }
 
-#' Get screeplot
-#'
-#' This function returns a screeplot for an ALASCA model showing what proportion of the variance each component of the model explains
-#'
-#' @param object An ALASCA object
-#' @param effect String stating which effect to return; `time`, `group`, `both` (default)
-#' @param filetype Which filetype you want to save the figure to
-#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
-#' @param my_theme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
-#' @return An ggplot2 object (or a list og ggplot objects)
-#'
-#' @examples
-#' load("PE.Rdata")
-#' screeplot(model)
-#' @export
-screeplot.ALASCA <- function(object,
-                             effect = "both",
-                             nComps = NA,
-                             filename = "scree_plot",
-                             filetype = object$plot.filetype,
-                             figsize = object$plot.figsize,
-                             figunit = object$plot.figunit,
-                             my_theme = object$plot.my_theme) {
-  explained <- as.data.frame(get_scores(object)$explained)
-  explained$component <- seq_len(nrow(explained))
-  if (!is.na(filename)) object$filename <- filename
-  
-  if (any(!is.na(nComps))) {
-    if (length(nComps) == 1) {
-      explained <- subset(explained, component <= nComps)
-    } else {
-      explained <- subset(explained, component %in% nComps)
-      explained$component <- factor(explained$component)
-    }
-  }
-  g <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = time, group = NA)) +
-    ggplot2::geom_point() +
-    ggplot2::geom_line() +
-    my_theme +
-    ggplot2::labs(x = "Principal Component", y = paste0("Relative Expl. of ", object$plot.x_label, " Var."))
-  if (object$separate_time_and_group) {
-    gg <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = group, group = NA)) +
-      ggplot2::geom_point() +
-      ggplot2::geom_line() +
-      my_theme +
-      ggplot2::labs(x = "Principal Component", y = "Relative Expl. of Group Var.")
-    if (effect == "both") {
-      g <- ggpubr::ggarrange(g, gg)
-    }
-  }
-  if (effect == "group") {
-    if (object$save) {
-      saveALASCAPlot(object = object, g = gg, filetype = filetype, figsize = figsize, figunit = figunit)
-    }
-    return(gg)
-  } else {
-    if (object$save) {
-      saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
-    }
-    return(g)
-  }
-}
+
 
 #' Get loadings
 #'
@@ -1683,38 +1592,6 @@ plot_components_score <- function(object,
   return(g)
 }
 
-#' Get color palette
-#'
-#' This function returns a list with colors for plotting
-#'
-#' @param object An ALASCA object
-#' @return A list with colors
-#'
-#' @export
-get_plot_palette <- function(object) {
-  if (any(is.na(object$plot.palette)) || any(is.null(object$plot.palette))) {
-    plotColors <- scales::viridis_pal(end = object$plot.palette.end)(length(object$grouplist))
-    names(plotColors) <- object$grouplist
-  } else {
-    plotColors <- object$plot.palette
-  }
-  return(plotColors)
-}
-
-#' Get linetypes
-#'
-#' This function returns a list with linetypes for plotting
-#'
-#' @param object An ALASCA object
-#' @return A list with linetypes
-#'
-#' @export
-get_plot_linetypes <- function(object) {
-  plotLinestypes <- scales::linetype_pal()(length(object$grouplist))
-  names(plotLinestypes) <- object$grouplist
-  return(plotLinestypes)
-}
-
 #' Get plotting features
 #'
 #' This function returns a list with colors for plotting
@@ -1736,20 +1613,7 @@ get_plot_linetypes <- function(object) {
   return(g)
 }
 
-#' Get exploratory power for plot label
-#'
-#' This function returns ...
-#'
-#' @param object An ALASCA object
-#' @param comp Which two components to plot (default: `c(1, 2`)
-#' @return A ggplot2 objects.
-.get_explained_label <- function(object, component = 1, effect = "time", type = "Score") {
-  if (effect == "time") {
-    paste0(type, " PC", component, " (", round(100 * object$ALASCA$loading$explained$time[component], 2), "%)")
-  } else {
-    paste0(type, " PC", component, " (", round(100 * object$ALASCA$loading$explained$group[component], 2), "%)")
-  }
-}
+
 
 #' Plot projection of participants
 #'

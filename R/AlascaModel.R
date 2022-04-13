@@ -3,7 +3,6 @@
 # source("R/pca.R")
 # source("R/validation.R")
 AlascaModel <- R6::R6Class("AlascaModel",
-  class = FALSE,
   lock_objects = FALSE,
   public = list(
     df = NULL,
@@ -33,7 +32,8 @@ AlascaModel <- R6::R6Class("AlascaModel",
     plot.figsize = c(180, 120, 300),
     plot.figunit = "mm",
     plot.filetype = "png",
-    plot.palette = NA,
+    plot.palette = NULL,
+    plot.linetypes = NULL,
     plot.loadinggroupcolumn = NA,
     plot.loadinggroup_label = "Variable group",
     plot.palette.end = 0.8,
@@ -78,71 +78,100 @@ AlascaModel <- R6::R6Class("AlascaModel",
     grouplist = NULL,
     new_formula = NULL,
     my_df_rows = NULL,
+    modmat = NULL,
+    cnames_modmat = NULL,
+    effect_list = list(
+      expr = c("time", "time:group"),
+      terms = NULL,
+      model_matrix = NULL,
+      effect_matrix = NULL,
+      pca = NULL
+    ),
     initialize = function(df, formula, ...) {
-      
       inputs <- list(...)
       for (i in seq_along(inputs)) {
         self[[names(inputs)[i]]] <- inputs[[i]]
       }
-      
       self$df <- setDT(df)
       self$formula <- formula
       self$validate <- self$validate || self$validation
       self$validation <- NULL
       self$n_validation_runs <- ifelse(any(is.na(self$validation_ids)), self$n_validation_runs, nrow(self$validation_ids))
-      self$filepath <- ifelse(is.na(self$filepath), NA, ifelse(substr(self$filepath, nchar(self$filepath), nchar(self$filepath)) == "/", self$filepath,  paste0(self$filepath, "/")))
+      self$filepath <- ifelse(is.na(self$filepath), NA, ifelse(substr(self$filepath, nchar(self$filepath), nchar(self$filepath)) == "/", self$filepath, paste0(self$filepath, "/")))
       self$save_to_disk <- self$validate && self$save_to_disk
       self$rawFormula <- self$formula
-      #self$ALASCA.version <- print_version(get = "version")
-      #self$ALASCA.version.date <- print_version(get = "date")
+      # self$ALASCA.version <- print_version(get = "version")
+      # self$ALASCA.version.date <- print_version(get = "date")
       self$log_level <- ifelse(self$do_debug, "DEBUG", "INFO")
-      
+
       if (self$silent) {
         self$log <- log4r::logger(self$log_level, appenders = list(log4r::file_appender(self$log_file)))
       } else {
         self$log <- log4r::logger(self$log_level, appenders = list(log4r::console_appender(), log4r::file_appender(self$log_file)))
       }
-      
+
       log4r::info(self$log, "Initializing ALASCA.")
-      
+
       # Clean input ----
       log4r::info(self$log, "Has initialized the ALASCA model. Next step is to clean it and check input")
       self$sanitize_object()
-      
+
       # Build the ALASCA model ----
       self$build_model()
-      
-      
     },
     update = function() {
 
-      ## Unscaled values
-      
-      if(self$reduce_dimensions){
+      if (self$reduce_dimensions) {
         self$Limm$main$pca <- self$Limm$pca
         self$Limm$pca <- NULL
       }
-      
+
       ## Avoid recursion
       self$validate <- FALSE
-      
+
       ## Save space
       self$minimize_object <- TRUE
-      
+
       self$variablelist <- unique(self$df$variable)
       self$timelist <- levels(self$df$time)
       self$grouplist <- levels(self$df$group)
-      
+
       # Build the ALASCA model ----
-      
+
       self$build_model()
-      
+
       # To save space, we remove unnecessary embedded data ----
-        log4r::debug(self$log, "Starting to remove embedded data")
-        self$remove_embedded_data()
-        log4r::debug(self$log, "Completed remove embedded data")
+      log4r::debug(self$log, "Starting to remove embedded data")
+      self$remove_embedded_data()
+      log4r::debug(self$log, "Completed remove embedded data")
+
+      # invisible(self)
+    },
+    plot = function(component = 1, ...) {
+      if (length(component) == 1) {
+        self$plot_development(component = component, ...)
+      } else if (length(component) == 2) {
+        self$plot_components(comps = component, ...)
+      } else {
+        log4r::error(object$log, "Please provide exactly 1 or 2 components to plot")
+        stop()
+      }
+    },
+    set_design_matrices = function() {
+      if (is.null(self$effect_list$model_matrix)) {
+        self$effect_list$model_matrix <- lapply(self$effect_list$expr, function(x) {
+          mm <- model.matrix(as.formula(paste0("value ~ ", x)), data = self$df)
+          mm <- mm[, colnames(mm) %in% self$cnames_modmat]
+          mm[, -1]
+        })
+        self$effect_list$terms <- lapply(self$effect_list$expr, function(x){
+          x <- gsub(" ", "", x)
+          x <- unlist(strsplit(x, split = "\\:|\\+|\\||\\*"))
+          unique(x)
+        })
+      }
       
-      #invisible(self)
+      return(lapply(self$effect_list$model_matrix, function(mm) mm[self$df[ variable == self$variablelist[[1]], which = TRUE ], ]))
     },
     sanitize_object = sanitize_object,
     get_info_from_formula = get_info_from_formula,
@@ -150,6 +179,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     do_validate = do_validate,
     rename_columns_to_standard = rename_columns_to_standard,
     wide_to_long = wide_to_long,
+    get_scores = get_scores,
     check_that_columns_are_valid = check_that_columns_are_valid,
     adjust_design_matrix = adjust_design_matrix,
     get_scaling_function = get_scaling_function,
@@ -165,7 +195,6 @@ AlascaModel <- R6::R6Class("AlascaModel",
     get_relevant_pcs = get_relevant_pcs,
     get_regression_coefficients = get_regression_coefficients,
     remove_covars = remove_covars,
-    separate_regression_coefficients = separate_regression_coefficients,
     get_effect_matrix = get_effect_matrix,
     do_pca = do_pca,
     clean_pca = clean_pca,
@@ -181,7 +210,12 @@ AlascaModel <- R6::R6Class("AlascaModel",
     get_validation_percentiles_score = get_validation_percentiles_score,
     get_validation_percentiles_regression = get_validation_percentiles_regression,
     get_validation_percentiles_covars = get_validation_percentiles_covars,
-    get_covars = get_covars
+    get_covars = get_covars,
+    get_plot_linetypes = get_plot_linetypes,
+    get_plot_palette = get_plot_palette,
+    .get_explained_label = .get_explained_label,
+    plot_development = plot_development,
+    plot_components = plot_components
   ),
   private = list()
 )

@@ -51,6 +51,10 @@ ALASCA <- function(df,
     log4r::debug(object$log, "Starting validation")
     object$do_validate()
     log4r::debug(object$log, "Completing validation")
+  } else {
+    if (object$do_debug) currentTs <- Sys.time()
+    object$clean_alasca()
+    if (object$do_debug) cat("* clean_alasca:", Sys.time() - currentTs, "s\n")
   }
   
   object$run_time <- Sys.time() - object$init_time
@@ -766,9 +770,6 @@ build_model <- function() {
   self$remove_covars()
   if (self$do_debug) cat("* removeCovars:", Sys.time() - currentTs, "s\n")
   if (self$do_debug) currentTs <- Sys.time()
-  self$separate_regression_coefficients()
-  if (self$do_debug) cat("* separateLMECoefficients:", Sys.time() - currentTs, "s\n")
-  if (self$do_debug) currentTs <- Sys.time()
   self$get_effect_matrix()
   if (self$do_debug) cat("* getEffectMatrix:", Sys.time() - currentTs, "s\n")
   if (self$do_debug) currentTs <- Sys.time()
@@ -777,9 +778,6 @@ build_model <- function() {
   if (self$do_debug) currentTs <- Sys.time()
   self$clean_pca()
   if (self$do_debug) cat("* clean_pca:", Sys.time() - currentTs, "s\n")
-  if (self$do_debug) currentTs <- Sys.time()
-  self$clean_alasca()
-  if (self$do_debug) cat("* clean_alasca:", Sys.time() - currentTs, "s\n")
   if (self$method %in% c("LM", "LMM")) {
     if (self$minimize_object) {
       if (self$validate_regression) {
@@ -804,22 +802,27 @@ build_model <- function() {
 run_regression <- function() {
   
   #df_by_variable <- split(self$df, self$df$variable)
-  rows_by_variable <- lapply(self[["variablelist"]], function(x) self[["df"]][, .I[variable == x]] )
+  log4r::debug(self$log, "Find rows by variable")
+  rows_by_variable <- lapply(self[["variablelist"]], function(x) self[["df"]][variable == x, which = TRUE] )
   names(rows_by_variable) <- self[["variablelist"]]
   
   if (self$use_Rfast && self$method %in% c("LMM")) {
     # start.time <- Sys.time()
     if (any(is.na(self[["df"]][, value]))) {
-      log4r::error("Rfast does NOT like NA's! Check your scaling function or value column.")
+      log4r::error(self$log, "Rfast does NOT like NA's! Check your scaling function or value column.")
       stop()
     }
+    log4r::debug(self$log, "Make model matrix")
     if (!self[["minimize_object"]]) {
       self[["modmat"]] <- model.matrix(self[["new_formula"]], data = self$df)
       if (self[["equal_baseline"]]) {
         self[["modmat"]] <- self[["modmat"]][, !grepl(paste0("time", self[["timelist"]][1]), colnames(self[["modmat"]]))]
       }
+      self[["cnames_modmat"]] <- colnames(self[["modmat"]])
     }
+    log4r::debug(self$log, "Finished model matrix")
     
+    log4r::debug(self$log, "Starting regression")
     # https://stackoverflow.com/questions/61013078/fastest-way-to-convert-a-matrix-to-a-data-table
     self$regression_coefficients <- setDT(as.data.frame(
       vapply(self[["variablelist"]], function(x) {
@@ -831,8 +834,9 @@ run_regression <- function() {
         )$be
       }, FUN.VALUE = numeric(ncol(self[["modmat"]])))
     ))[]
+    log4r::debug(self$log, "Finished regression")
     colnames(self$regression_coefficients) <- as.character(self[["variablelist"]])
-    self$regression_coefficients[, variable := colnames(self[["modmat"]])]
+    self$regression_coefficients[, variable := self[["cnames_modmat"]]]
     self$regression_coefficients <- melt(self$regression_coefficients, id.vars = "variable", variable.name = "covar", variable.factor = FALSE, value.name = "estimate")
     self$regression_coefficients[, pvalue := NA]
     
@@ -991,68 +995,14 @@ get_effect_matrix <- function() {
   if (!self$minimize_object) {
     log4r::info(self$log, "Calculating effect matrix")
   }
-  parts <- self$df[variable == self$variablelist[1]]
-  # parts <- self$df[!duplicated(cbind(self$df$ID, self$df$time))]
-  Dmatrix <- model.matrix(self$formula, data = self$df[variable == self$variablelist[1]])
-  # Dmatrix <- Dmatrix[,ncol(Dmatrix):1]
   
-  if (self$separate_time_and_group) {
-    BmatrixTime <- self$regression_coefficients[self$regression_coefficients$comp == "TIME", c("covar", "estimate", "variable")]
-    BmatrixTime <- dcast(BmatrixTime, formula = variable ~ covar, value.var = "estimate")
-    selectDColumnsTime <- colnames(Dmatrix) %in% BmatrixTime$variable
-    rowOrder <- c()
-    for (i in seq_len(nrow(BmatrixTime))) {
-      rowOrder[i] <- which(BmatrixTime$variable == colnames(Dmatrix[, selectDColumnsTime])[i])
+  reg_coefs <- dcast(self$regression_coefficients, variable~covar, value.var = "estimate")
+  rownames(reg_coefs) <- reg_coefs$variable
+  self$effect_list$effect_matrix <- lapply(self$set_design_matrices(), function(mm) {
+      as.matrix(mm) %*% as.matrix(reg_coefs[colnames(mm), -1])
     }
-    BmatrixTime <- BmatrixTime[rowOrder, ]
-    if (any(colnames(Dmatrix[, selectDColumnsTime]) != BmatrixTime$variable)) {
-      log4r::error(self$log, "Column mismatch for time in getEffectMatrix")
-      stop()
-    }
-    AmatrixTime <- as.data.frame(as.matrix(Dmatrix[, selectDColumnsTime]) %*% as.matrix(BmatrixTime[, -1]))
-    AmatrixTime$comp <- "TIME"
-    
-    BmatrixGroup <- self$regression_coefficients[self$regression_coefficients$comp == "GROUP", c("covar", "estimate", "variable")]
-    BmatrixGroup <- dcast(BmatrixGroup, formula = variable ~ covar, value.var = "estimate")
-    selectDColumnsGroup <- colnames(Dmatrix) %in% BmatrixGroup$variable
-    rowOrder <- c()
-    for (i in seq_len(nrow(BmatrixGroup))) {
-      rowOrder[i] <- which(BmatrixGroup$variable == colnames(Dmatrix[, selectDColumnsGroup])[i])
-    }
-    BmatrixGroup <- BmatrixGroup[rowOrder, ]
-    if (any(colnames(Dmatrix[, selectDColumnsGroup]) != BmatrixGroup$variable)) {
-      log4r::error(self$log, "Column mismatch for group in getEffectMatrix")
-      stop()
-    }
-    AmatrixGroup <- as.data.frame(as.matrix(Dmatrix[, selectDColumnsGroup]) %*% as.matrix(BmatrixGroup[, -1]))
-    AmatrixGroup$comp <- "GROUP"
-    self$effect_matrix <- rbind(AmatrixTime, AmatrixGroup)
-  } else {
-    BmatrixTime <- self$regression_coefficients[self$regression_coefficients$comp == "TIME", c("covar", "estimate", "variable")]
-    BmatrixTime <- dcast(BmatrixTime, formula = variable ~ covar, value.var = "estimate")
-    
-    selectDColumnsTime <- colnames(Dmatrix) %in% BmatrixTime$variable
-    rowOrder <- c()
-    for (i in seq_len(nrow(BmatrixTime))) {
-      rowOrder[i] <- which(BmatrixTime$variable == colnames(Dmatrix[, selectDColumnsTime])[i])
-    }
-    BmatrixTime <- BmatrixTime[rowOrder, ]
-    if (any(colnames(Dmatrix[, selectDColumnsTime]) != BmatrixTime$variable)) {
-      log4r::error(self$log, "Column mismatch for time in getEffectMatrix")
-      stop()
-    }
-    AmatrixTime <- as.data.frame(as.matrix(Dmatrix[, selectDColumnsTime]) %*% as.matrix(BmatrixTime[, -1]))
-    AmatrixTime$comp <- "TIME"
-    self$effect_matrix <- AmatrixTime
-  }
+  )
   
-  self$parts$time <- parts$time
-  if (self$keep_terms != "") {
-    keep_terms <- c("group", self$keep_terms)
-    self$parts$group <- apply(parts[, ..keep_terms], 1, paste, collapse = " - ")
-  } else {
-    self$parts$group <- parts$group
-  }
   if (!self$minimize_object) {
     log4r::info(self$log, "Finished calculating effect matrix!")
   }
@@ -1305,20 +1255,10 @@ get_filename <- function(object, filename = NA, filepath = NA, prefix = "", suff
 #' @param object An ALASCA object to be sanitized
 #' @return An ALASCA object
 do_pca <- function() {
-  self[["pca"]][["time"]] <- prcomp(
-    self$effect_matrix[self$effect_matrix$comp == "TIME",
-                       seq_len(ncol(self$effect_matrix) - 1)],
-    scale = FALSE,
-    center = !self$scale_function.center
+  self$effect_list$pca <- lapply(
+    self$effect_list$effect_matrix,
+    function(x) prcomp(x, scale = FALSE, center = !self$scale_function.center)
   )
-  if (self$separate_time_and_group) {
-    self[["pca"]][["group"]] <- prcomp(
-      self$effect_matrix[self$effect_matrix$comp == "GROUP",
-                         seq_len(ncol(self$effect_matrix) - 1)],
-      scale = FALSE,
-      center = !self$scale_function.center
-    )
-  }
   #invisible(self)
 }
 
@@ -1387,22 +1327,23 @@ do_reduce_dimensions <- function(){
 clean_pca <- function() {
   log4r::debug(self$log, "Starting clean_pca")
   
-  # Clean scores ----
-  PC_time <- as.data.frame(self$pca$time$x)
-  PC_time$time <- self$parts$time
-  if (self$separate_time_and_group) {
-    PC_time$group <- self$grouplist[1]
-  }else{
-    PC_time$group <- self$parts$group
-  }
-  self$pca$score$time <- setDT(PC_time[!duplicated(paste(PC_time$time, PC_time$group)),])
-  setkey(self$pca$score$time, time, group)
-  self$pca$score$explained$time <- self$pca$time$sdev^2 / sum(self$pca$time$sdev^2)
+  self$ALASCA$score <- lapply(seq_along(self$effect_list$pca), function(i){
+    unique(
+      cbind(
+        self$df[variable == self$variablelist[[1]], .SD, .SDcols = self$effect_list$terms[[i]]],
+        self$effect_list$pca[[i]]$x
+      )
+    )
+  })
   
-  # Clean loadings ----
-  self$pca$loading$time <- setDT(as.data.frame(self$pca$time$rotation), keep.rownames="covars")
-  self$pca$loading$explained$time <- self$pca$score$explained$time
+  self$ALASCA$loading <- lapply(seq_along(self$effect_list$pca), function(i){
+    data.table(self$effect_list$pca[[i]]$rotation, keep.rownames = "covars")
+  })
   
+  self$ALASCA$explained <- lapply(self$effect_list$pca, function(x){
+    x$sdev^2 / sum(x$sdev^2)
+  })
+    
   if(self$reduce_dimensions){
     # Loadings must be back-transformed
     self$pca$loading$time <- setDT(
@@ -1424,49 +1365,16 @@ clean_pca <- function() {
     )
   }
   
-  setkey(self$pca$loading$time, covars)
-  
-  PCloading <- paste0("PC", self$get_relevant_pcs( effect = "time"))
-  for (i in PCloading) {
-    # Ensure that the highest loading has positive sign
-    nVar <- self$pca$loading$time[, .I[which.max(abs(get(i)))]]
-    sVar <- self$pca$loading$time[nVar, sign(get(i))]
-    set(self$pca$loading$time, j = (i), value = self$pca$loading$time[, get(i)] * sVar)
-    set(self$pca$score$time, j = (i), value = self$pca$score$time[, get(i)] * sVar)
-  }
-  
-  if (self$separate_time_and_group) {
-    # Clean scores ----
-    PC_group <- as.data.frame(self$pca$group$x)
-    PC_group$time <- rownames(PC_group)
-    PC_group$group <- self$parts$group
-    PC_group$time <- self$parts$time
-    self$pca$score$group <- setDT(PC_group[!duplicated(paste(PC_group$time, PC_group$group)),])
-    setkey(self$pca$score$group, time, group)
-    self$pca$score$explained$group <- self$pca$group$sdev^2 / sum(self$pca$group$sdev^2)
-    
-    # Clean loadings ----
-    self$pca$loading$group <- setDT(as.data.frame(self$pca$group$rotation), keep.rownames="covars")
-    self$pca$loading$explained$group <- self$pca$score$explained$group
-    
-    if(self$reduce_dimensions){
-      # Loadings must be back-transformed
-      self$pca$loading$group <- setDT(
-        as.data.frame(
-          as.matrix(self$Limm$loadings) %*% as.matrix(self$pca$loading$group[order(as.numeric(substr(covars, 3, nchar(covars)))), !"covars"])
-        ),
-        keep.rownames="covars")
-    }
-    
-    setkey(self$pca$loading$group, covars)
-    
-    PCloading <- paste0("PC", self$get_relevant_pcs( effect = "group"))
-    for (i in PCloading) {
-      # Ensure that the highest loading has positive sign
-      nVar <- self$pca$loading$group[, .I[which.max(abs(get(i)))]]
-      sVar <- self$pca$loading$time[nVar, sign(get(i))]
-      set(self$pca$loading$group, j = (i), value = self$pca$loading$group[, get(i)] * sVar)
-      set(self$pca$score$group, j = (i), value = self$pca$score$group[, get(i)] * sVar)
+  # Ensure that the highest loading has positive sign
+  for (i in seq_along(self$ALASCA$loading)) {
+    setkeyv(self$ALASCA$loading[[i]], cols = "covars")
+    setkeyv(self$ALASCA$score[[i]], cols = self$effect_list$terms[[i]])
+    for(k in colnames(self$ALASCA$loading[[i]][, -1])) {
+      nVar <- self$ALASCA$loading[[i]][, .I[which.max(abs(get(k)))]]
+      sVar <- self$ALASCA$loading[[i]][nVar, sign(get(k))]
+      
+      set(self$ALASCA$loading[[i]], j = (k), value = self$ALASCA$loading[[i]][, get(k)] * sVar)
+      set(self$ALASCA$score[[i]], j = (k), value = self$ALASCA$score[[i]][, get(k)] * sVar)
     }
   }
   
@@ -1475,55 +1383,31 @@ clean_pca <- function() {
   #invisible(self)
 }
 
+#' Clean the ALASCA data
+#'
+#' This function makes the pca output more useful
+#'
+#' @param object An ALASCA object to be sanitized
+#' @return An ALASCA object
 clean_alasca <- function() {
   
-  log4r::debug(self$log, "Starting clean_alasca")
-  # We need to create new group names for the combined group and keep_terms
-  if (self$keep_terms != "") {
-    if (self$separate_time_and_group) {
-      self$grouplist <- unique(self$pca$score$group$group)
-    } else {
-      self$grouplist <- unique(self$pca$score$time$group)
-    }
+  for (i in seq_along(self$ALASCA$loading)) {
+    self$ALASCA$score[[i]] <- melt(self$ALASCA$score[[i]],
+                                   id.vars = self$effect_list$terms[[i]],
+                                   variable.name = "PC",
+                                   value.name = "score",
+                                   variable.factor = FALSE)
+    self$ALASCA$score[[i]][, PC := as.integer(substr(PC, 3, nchar(PC))), ]
+    setkeyv(self$ALASCA$score[[i]], cols = self$effect_list$terms[[i]])
+
+    self$ALASCA$loading[[i]] <- melt(self$ALASCA$loading[[i]],
+                                     id.vars = "covars",
+                                     variable.name = "PC",
+                                     value.name = "loading",
+                                     variable.factor = FALSE)
+    self$ALASCA$loading[[i]][,   PC := as.integer(substr(PC, 3, nchar(PC))), ]
+    setkeyv(self$ALASCA$loading[[i]], cols = "covars")
   }
-  
-  # Clean up a copy
-  # Time effect
-  self$ALASCA$loading$time <- melt(self$pca$loading$time, id.vars = "covars", variable.factor = FALSE)
-  colnames(self$ALASCA$loading$time) <- c("covars", "PC", "loading")
-  self$ALASCA$loading$time[, PC := as.integer(substr(PC, 3, nchar(PC))), ]
-  
-  self$ALASCA$score$time <- self$pca$score$time
-  if (self$separate_time_and_group) {
-    self$ALASCA$score$time$group <- self$grouplist[1]
-  }
-  self$ALASCA$score$time <- melt(self$ALASCA$score$time, id.vars = c("time", "group"), variable.factor = FALSE)
-  colnames(self$ALASCA$score$time) <- c("time", "group", "PC", "score")
-  self$ALASCA$score$time[, time := factor(time, levels = self$timelist), ]
-  self$ALASCA$score$time[, group := factor(group, levels = self$grouplist), ]
-  self$ALASCA$score$time[, PC := as.integer(substr(PC, 3, nchar(PC))), ]
-  
-  self$ALASCA$score$explained$time <- self$pca$score$explained$time
-  self$ALASCA$loading$explained$time <- self$pca$loading$explained$time
-  
-  if (self$separate_time_and_group) {
-    # Group effect
-    self$ALASCA$loading$group <- melt(self$pca$loading$group, id.vars = "covars", variable.factor = FALSE)
-    colnames(self$ALASCA$loading$group) <- c("covars", "PC", "loading")
-    self$ALASCA$loading$group[, PC := as.integer(substr(PC, 3, nchar(PC))), ]
-    
-    self$ALASCA$score$group <- self$pca$score$group
-    self$ALASCA$score$group <- melt(self$ALASCA$score$group, id.vars = c("time", "group"), variable.factor = FALSE)
-    colnames(self$ALASCA$score$group) <- c("time", "group", "PC", "score")
-    self$ALASCA$score$group[, time := factor(time, levels = self$timelist), ]
-    self$ALASCA$score$group[, group := factor(group, levels = self$grouplist), ]
-    self$ALASCA$score$group[, PC := as.integer(substr(PC, 3, nchar(PC))), ]
-    
-    self$ALASCA$score$explained$group <- self$pca$score$explained$group
-    self$ALASCA$loading$explained$group <- self$pca$loading$explained$group
-  }
-  
-  log4r::debug(self$log, "Finished clean_alasca")
   
   #invisible(self)
 }
@@ -1586,7 +1470,6 @@ do_validate <- function(participant_column = FALSE, validate_regression = FALSE)
         } else {
           temp_object$rotate_matrix(target = self)
         }
-        
         temp_object$clean_alasca()
         
         # Save to disk
@@ -1667,8 +1550,6 @@ do_validate <- function(participant_column = FALSE, validate_regression = FALSE)
           temp_object <- rotate_matrix(object = temp_object, target = object)
         }
         
-        temp_object <- clean_alasca(temp_object)
-        
         # Save to disk
         fname <- paste0("val_", ii)
         loading <- data.frame(temp_object$ALASCA$loading$time[temp_object$ALASCA$loading$time$PC %in% limPC_time, ], model = ii)
@@ -1715,7 +1596,6 @@ do_validate <- function(participant_column = FALSE, validate_regression = FALSE)
         } else {
           temp_object$rotate_matrix(target = self)
         }
-        temp_object$clean_alasca()
         
         time_all <- difftime(Sys.time(), start.time.all, units = c("secs")) / ii
         log4r::info(self$log, paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((self$n_validation_runs - ii) * time_all, 2), " seconds"))
@@ -1723,6 +1603,8 @@ do_validate <- function(participant_column = FALSE, validate_regression = FALSE)
       })
     }
   }
+  
+  self$clean_alasca()
   
   log4r::info(self$log, "Calculating percentiles for score and loading")
   self$get_validation_percentiles(objectlist = temp_object)
@@ -1760,83 +1642,54 @@ do_validate <- function(participant_column = FALSE, validate_regression = FALSE)
 #' @param target ALASCA object acting as target
 #' @return An ALASCA object
 rotate_matrix_optimize_score <- function(target) {
-  log4r::debug(self$log, "Starting rotation of time components")
-  # We are only looking at components explaining more than a predefined value
-  PCloading <- target$get_relevant_pcs(effect = "time")
-  PCloading_t <- paste0("PC", PCloading)
+  log4r::debug(target$log, "Starting rotation")
   
   # PCA can give loadings with either sign, so we have to check whether switching signs improves the rotation
-  N <- length(PCloading) # Number of components to look at
-  
-  # Create matrix with all possible combinations of signs
-  vec <- c(-1, 1)
-  lst <- lapply(numeric(N), function(x) vec)
-  signMatrix <- as.matrix(expand.grid(lst))
-  
-  # Test all combinations and calculate residuals
-  signVar <- vapply(seq_len(nrow(signMatrix) / 2), function(i) {
-    c <- .procrustes(
-      loadings = as.matrix(t(t(self$pca$loading$time[target$pca$loading$time, ..PCloading_t]) * signMatrix[i, ])),
-      target = as.matrix(target$pca$loading$time[, ..PCloading_t])
-    )
-    sum((target$pca$score$time[, ..PCloading_t] - 
-           as.matrix(t(t(self$pca$score$time[target$pca$score$time, ..PCloading_t]) * signMatrix[i, ])) %*% solve(c$t1))^2)
-  }, FUN.VALUE = numeric(1))
-  
-  # Find the combination that minimizes the sum of squares
-  minSignVar <- which(signVar == min(signVar))[1]
-  
-  # Switch signs
-  for (i in PCloading){
-    set(self$pca$loading$time, j = PCloading_t[i], value = self$pca$loading$time[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
-    set(self$pca$score$time, j = PCloading_t[i], value = self$pca$score$time[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
-  }
-  
-  # Final rotation
-  c <- .procrustes(
-    loadings = as.matrix(self$pca$loading$time[target$pca$loading$time, ..PCloading_t]),
-    target = as.matrix(target$pca$loading$time[, ..PCloading_t])
-  )
-  
-  self$pca$loading$time[target$pca$loading$time, (PCloading_t) := as.data.table(c$procrust)]
-  self$pca$score$time[target$pca$score$time, (PCloading_t) := as.data.table(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
-  
-  log4r::debug(self$log, "Completed rotation of time components")
-  if (self$separate_time_and_group) {
-    log4r::debug(self$log, "Starting rotation of group components")
-    # We are only looking at components explaining more than a set limit
-    PCloading <- target$get_relevant_pcs(effect = "group")
-    PCloading_t <- paste0("PC", PCloading)
+  for (effect_i in seq_along(self$ALASCA$loading)) {
+    # Number of components to look at
+    PCs_to_look_at <- 1:2
+    cols_to_look_at <- paste0("PC", PCs_to_look_at)
+    N <- length(PCs_to_look_at)
     
-    # PCA can give loadings with either sign, so we have to check whether swithcing signs improves the rotation
-    N <- length(PCloading)
+    # Create matrix with all possible combinations of signs
     vec <- c(-1, 1)
     lst <- lapply(numeric(N), function(x) vec)
     signMatrix <- as.matrix(expand.grid(lst))
+    
+    # Test all combinations and calculate residuals
     signVar <- vapply(seq_len(nrow(signMatrix) / 2), function(i) {
       c <- .procrustes(
-        loadings = as.matrix(t(t(self$pca$loading$group[target$pca$loading$group, ..PCloading_t]) * signMatrix[i, ])),
-        target = as.matrix(target$pca$loading$group[, ..PCloading_t])
+        loadings = as.matrix(
+          t(t(self$ALASCA$loading[[effect_i]][target$ALASCA$loading[[effect_i]], ..cols_to_look_at]) * signMatrix[i, ])
+          ),
+        target = as.matrix(target$ALASCA$loading[[effect_i]][, ..cols_to_look_at])
       )
-      sum((target$pca$score$group[, ..PCloading_t] - 
-             as.matrix(t(t(self$pca$score$group[target$pca$score$group, ..PCloading_t]) * signMatrix[i, ])) %*% solve(c$t1))^2)
+      sum((target$ALASCA$score[[effect_i]][, ..cols_to_look_at] - 
+             as.matrix(t(t(self$ALASCA$score[[effect_i]][target$ALASCA$score[[effect_i]], ..cols_to_look_at]) * signMatrix[i, ])) %*% solve(c$t1))^2)
     }, FUN.VALUE = numeric(1))
     
+    # Find the combination that minimizes the sum of squares
     minSignVar <- which(signVar == min(signVar))[1]
-    for (i in PCloading){
-      set(self$pca$loading$group, j = PCloading_t[i], value = self$pca$loading$group[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
-      set(self$pca$score$group, j = PCloading_t[i], value = self$pca$score$group[, get(PCloading_t[i])] * signMatrix[minSignVar, i])
+    
+    # Switch signs
+    for (i in PCs_to_look_at){
+      set(self$ALASCA$loading[[effect_i]], j = cols_to_look_at[i], value = self$ALASCA$loading[[effect_i]][, get(cols_to_look_at[i])] * signMatrix[minSignVar, i])
+      set(self$ALASCA$score[[effect_i]],   j = cols_to_look_at[i], value = self$ALASCA$score[[effect_i]][, get(cols_to_look_at[i])] * signMatrix[minSignVar, i])
     }
     
+    # Final rotation
     c <- .procrustes(
-      loadings = as.matrix(self$pca$loading$group[target$pca$loading$group, ..PCloading_t]),
-      target = as.matrix(target$pca$loading$group[, ..PCloading_t])
+      loadings = as.matrix(self$ALASCA$loading[[effect_i]][target$ALASCA$loading[[effect_i]], ..cols_to_look_at]),
+      target = as.matrix(target$ALASCA$loading[[effect_i]][, ..cols_to_look_at])
     )
-    self$pca$loading$group[target$pca$loading$group, (PCloading_t) := as.data.table(c$procrust)]
-    self$pca$score$group[target$pca$score$group, (PCloading_t) := as.data.table(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
-    log4r::debug(self$log, "Completed rotation of group components")
+    
+    self$ALASCA$loading[[effect_i]][target$ALASCA$loading[[effect_i]], (cols_to_look_at) := as.data.table(c$procrust)]
+    self$ALASCA$score[[effect_i]][target$ALASCA$score[[effect_i]], (cols_to_look_at) := as.data.table(as.matrix(.SD) %*% solve(c$t1)), .SDcols = cols_to_look_at]
+    
   }
   
+  log4r::debug(target$log, "Completed rotation")
+
   #invisible(self)
 }
 
@@ -1881,18 +1734,7 @@ rotate_matrix <- function(target) {
 #' @param objectlist List of ALASCA objects
 #' @return An ALASCA object
 get_validation_percentiles <- function(objectlist) {
-  if ("low" %in% colnames(self$ALASCA$loading$time)) {
-    self$ALASCA$loading$time$low <- NULL
-    self$ALASCA$loading$time$high <- NULL
-    self$ALASCA$score$time$low <- NULL
-    self$ALASCA$score$time$high <- NULL
-    if (self$separate_time_and_group) {
-      self$ALASCA$loading$group$low <- NULL
-      self$ALASCA$loading$group$high <- NULL
-      self$ALASCA$score$group$low <- NULL
-      self$ALASCA$score$group$high <- NULL
-    }
-  }
+  
   log4r::debug(self$log, message = "Starting get_validation_percentiles_loading")
   self$get_validation_percentiles_loading(objectlist)
   log4r::debug(self$log, message = "Completed get_validation_percentiles_loading")
@@ -1962,32 +1804,26 @@ get_validation_percentiles_covars <- function(objectlist) {
 #' @inheritParams get_validation_percentiles
 #' @return An ALASCA object
 get_validation_percentiles_loading <- function(objectlist) {
-  PC_time <- self$get_relevant_pcs(effect = "time")
-  if (self$save_to_disk) {
-    res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.loading' WHERE PC IN(", paste(PC_time, collapse = ", "), ")"))
-    df_time <- setDT(DBI::dbFetch(res))
-    DBI::dbClearResult(res)
-  } else {
-    df_time <- rbindlist(lapply(objectlist, function(x) x$ALASCA$loading$time[x$ALASCA$loading$time$PC %in% PC_time, ]), fill = TRUE)
-  }
   
-  self$validation$time$loading <- df_time[, as.list(quantile(loading, probs = self$limitsCI, type = self$validation_quantile_method)), by = .(PC, covars)]
-  colnames(self$validation$time$loading) <- c("PC", "covars", "low", "high")
-  self$ALASCA$loading$time <- merge(self$ALASCA$loading$time, self$validation$time$loading, all.x = TRUE)
+  PC_time <- 1:2 #self$get_relevant_pcs(effect = "time")
   
-  if (self$separate_time_and_group) {
-    PC_group <- self$get_relevant_pcs(effect = "group")
+  for (effect_i in seq_along(self$ALASCA$loading)){
     if (self$save_to_disk) {
-      res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'group.loading' WHERE PC IN(", paste(PC_group, collapse = ", "), ")"))
-      df_group <- setDT(DBI::dbFetch(res))
+      res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.loading' WHERE PC IN(", paste(PC_time, collapse = ", "), ")"))
+      df_time <- setDT(DBI::dbFetch(res))
       DBI::dbClearResult(res)
     } else {
-      df_group <- rbindlist(lapply(objectlist, function(x) x$ALASCA$loading$group[x$ALASCA$loading$group$PC %in% PC_group, ]), fill = TRUE)
+      df_time <- rbindlist(
+        lapply(objectlist, function(x) x$ALASCA$loading[[effect_i]][x$ALASCA$loading[[effect_i]]$PC %in% PC_time, ]),
+        fill = TRUE
+        )
     }
     
-    self$validation$group$loading <- df_group[, as.list(quantile(loading, probs = self$limitsCI, type = self$validation_quantile_method)), by = .(PC, covars)]
-    colnames(self$validation$group$loading) <- c("PC", "covars", "low", "high")
-    self$ALASCA$loading$group <- merge(self$ALASCA$loading$group, self$validation$group$loading, all.x = TRUE)
+    tmp <- df_time[, as.list(
+      quantile(loading, probs = self$limitsCI, type = self$validation_quantile_method)
+      ), by = .(PC, covars)]
+    colnames(tmp) <- c("PC", "covars", "low", "high")
+    self$ALASCA$loading[[effect_i]] <- merge(tmp, self$ALASCA$loading[[effect_i]], by = c("PC", "covars"))
   }
   #invisible(self)
 }
@@ -1999,55 +1835,26 @@ get_validation_percentiles_loading <- function(objectlist) {
 #' @inheritParams get_validation_percentiles
 #' @return An ALASCA object
 get_validation_percentiles_score <- function(objectlist) {
-  if (self$separate_time_and_group) {
-    # Separate time and group effects
+  
+  PC_time <- 1:2 #self$get_relevant_pcs(effect = "time")
+  
+  for (effect_i in seq_along(self$ALASCA$score)) {
     
-    PC_time <- self$get_relevant_pcs(effect = "time")
     if (self$save_to_disk) {
       res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.score' WHERE PC IN(", paste(PC_time, collapse = ", "), ")"))
       df_time <- setDT(DBI::dbFetch(res))
       DBI::dbClearResult(res)
     } else {
-      df_time <- rbindlist(lapply(objectlist, function(x) x$ALASCA$score$time[x$ALASCA$score$time$PC %in% PC_time, ]), fill = TRUE)
+      df_time <- rbindlist(lapply(objectlist, function(x) x$ALASCA$score[[effect_i]][x$ALASCA$score[[effect_i]]$PC %in% PC_time, ]), fill = TRUE)
     }
     
-    self$validation$time$score <- df_time[, as.list(quantile(score, probs = self$limitsCI, type = self$validation_quantile_method)), by = .(PC, time)]
-    colnames(self$validation$time$score) <- c("PC", "time", "low", "high")
-    self$ALASCA$score$time <- merge(self$ALASCA$score$time, self$validation$time$score, all.x = TRUE)
-    self$ALASCA$score$time[, time := factor(time, levels = self$timelist), ]
-    self$ALASCA$score$time[, group := factor(group, levels = self$grouplist), ]
-    
-    PC_group <- self$get_relevant_pcs(effect = "group")
-    if (self$save_to_disk) {
-      res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'group.score' WHERE PC IN(", paste(PC_group, collapse = ", "), ")"))
-      df_group <- setDT(DBI::dbFetch(res))
-      DBI::dbClearResult(res)
-    } else {
-      df_group <- rbindlist(lapply(objectlist, function(x) x$ALASCA$score$group[x$ALASCA$score$group$PC %in% PC_group, ]), fill = TRUE)
-    }
-    
-    self$validation$group$score <- df_group[, as.list(quantile(score, probs = self$limitsCI, type = self$validation_quantile_method)), by = .(PC, time, group)]
-    colnames(self$validation$group$score) <- c("PC", "time", "group", "low", "high")
-    self$ALASCA$score$group <- merge(self$ALASCA$score$group, self$validation$group$score, all.x = TRUE)
-    self$ALASCA$score$group[, time := factor(time, levels = self$timelist), ]
-    self$ALASCA$score$group[, group := factor(group, levels = self$grouplist), ]
-  } else {
-    # Pooled time and groups effects
-    PC_time <- self$get_relevant_pcs(effect = "time")
-    if (self$save_to_disk) {
-      res <- DBI::dbSendQuery(object$db.con, paste0("SELECT * FROM 'time.score' WHERE PC IN(", paste(PC_time, collapse = ", "), ")"))
-      df_time <- setDT(DBI::dbFetch(res))
-      DBI::dbClearResult(res)
-    } else {
-      df_time <- rbindlist(lapply(objectlist, function(x) x$ALASCA$score$time[x$ALASCA$score$time$PC %in% PC_time, ]), fill = TRUE)
-    }
-    
-    self$validation$time$score <- df_time[, as.list(quantile(score, probs = self$limitsCI, type = self$validation_quantile_method)), by = .(PC, time, group)]
-    colnames(self$validation$time$score) <- c("PC", "time", "group", "low", "high")
-    self$ALASCA$score$time <- merge(self$ALASCA$score$time, self$validation$time$score, all.x = TRUE)
-    self$ALASCA$score$time[, time := factor(time, levels = self$timelist), ]
-    self$ALASCA$score$time[, group := factor(group, levels = self$grouplist), ]
+    tmp <- df_time[, as.list(
+      quantile(score, probs = self$limitsCI, type = self$validation_quantile_method)
+      ), by = c("PC", self$effect_list$terms[[effect_i]])]
+    colnames(tmp) <- c("PC", self$effect_list$terms[[effect_i]], "low", "high")
+    self$ALASCA$score[[effect_i]] <- merge(tmp, self$ALASCA$score[[effect_i]], by = c("PC",  self$effect_list$terms[[effect_i]]))
   }
+
   #invisible(self)
 }
 
@@ -2139,18 +1946,24 @@ prepare_validation_run <- function(runN = NA) {
         selectedParts <- lapply(unique(self$stratification_vector), function(gr) {
           selectedParts_temp_all <- unique(self$df[self$stratification_vector == gr, ID])
           selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% self$n_validation_folds
-          selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
+          selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket))]
           selectedParts_temp_all[selectedParts_temp_ticket != 1]
         })
-        temp_object <- ALASCA(
-          validation_object = object,
-          validation_participants = object$df_raw[, ID] %in% unlist(selectedParts)
-        )
+        bootobject <- self$clone()
+        bootobject$my_df_rows <- unlist(lapply(unlist(selectedParts), function(x) self$df_raw$rows_by_ID[[as.character(x)]]))
+        bootobject[["df"]] <- NULL
+        bootobject[["df"]] <- self$scale_function(self$df_raw$df[bootobject$my_df_rows])
+        bootobject[["modmat"]] <- self$modmat[bootobject$my_df_rows,]
+        bootobject$update()
+        return(bootobject)
       } else {
-        temp_object <- ALASCA(
-          validation_object = object,
-          validation_participants = object$df_raw[, ID] %in% object$validation_ids[runN, ]
-        )
+        bootobject <- self$clone()
+        bootobject$my_df_rows <- unlist(lapply(object$validation_ids[runN, ], function(x) self$df_raw$rows_by_ID[[as.character(x)]]))
+        bootobject[["df"]] <- NULL
+        bootobject[["df"]] <- self$scale_function(self$df_raw$df[bootobject$my_df_rows])
+        bootobject[["modmat"]] <- self$modmat[bootobject$my_df_rows,]
+        bootobject$update()
+        return(bootobject)
       }
     } else if (self$method %in% c("LM")) {
       self$df$ID <- c(seq_len(nrow(self$df)))
@@ -2159,19 +1972,25 @@ prepare_validation_run <- function(runN = NA) {
         selectedParts <- lapply(unique(self$stratification_vector), function(gr) {
           selectedParts_temp_all <- unique(self$df[object$stratification_vector == gr, ID])
           selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% self$n_validation_folds
-          selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket), length(selectedParts_temp_ticket))]
+          selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket))]
           selectedParts_temp_all[selectedParts_temp_ticket != 1]
         })
         
-        temp_object <- ALASCA(
-          validation_object = object,
-          validation_participants = object$df_raw[, ID] %in% unlist(selectedParts)
-        )
+        bootobject <- self$clone()
+        bootobject$my_df_rows <- unlist(lapply(unlist(selectedParts), function(x) self$df_raw$rows_by_ID[[as.character(x)]]))
+        bootobject[["df"]] <- NULL
+        bootobject[["df"]] <- self$scale_function(self$df_raw$df[bootobject$my_df_rows])
+        bootobject[["modmat"]] <- self$modmat[bootobject$my_df_rows,]
+        bootobject$update()
+        return(bootobject)
       } else {
-        temp_object <- ALASCA(
-          validation_object = object,
-          validation_participants = object$df_raw[, ID] %in% object$validation_ids[runN, ]
-        )
+        bootobject <- self$clone()
+        bootobject$my_df_rows <- unlist(lapply(object$validation_ids[runN, ], function(x) self$df_raw$rows_by_ID[[as.character(x)]]))
+        bootobject[["df"]] <- NULL
+        bootobject[["df"]] <- self$scale_function(self$df_raw$df[bootobject$my_df_rows])
+        bootobject[["modmat"]] <- self$modmat[bootobject$my_df_rows,]
+        bootobject$update()
+        return(bootobject)
       }
     }
   } else if (self$validation_method == "bootstrap") {
@@ -2244,7 +2063,7 @@ get_bootstrap_data <- function(df_raw, participants_in_bootstrap) {
     lapply(participants_in_bootstrap$new_id, function(participant){
       list(
         new_id = participant,
-        row_nr = df_raw$rows_by_ID[[participants_in_bootstrap$old_id[participant]]]
+        row_nr = df_raw$rows_by_ID[[participant]]
       )
     })
   )
@@ -2273,5 +2092,1836 @@ get_covars <- function(n_limit = 0) {
     )
   } else {
     return(self$covar_coefficients)
+  }
+}
+
+#' Get linetypes
+#'
+#' This function returns a list with linetypes for plotting
+#'
+#' @param object An ALASCA object
+#' @return A list with linetypes
+#'
+#' @export
+get_plot_linetypes <- function() {
+  if (is.null(self$plot.linetypes)) {
+    self$plot.linetypes <- scales::linetype_pal()(length(self$grouplist))
+    names(self$plot.linetypes) <- self$grouplist
+  }
+  return(self$plot.linetypes)
+}
+
+#' Get color palette
+#'
+#' This function returns a list with colors for plotting
+#'
+#' @param object An ALASCA object
+#' @return A list with colors
+#'
+#' @export
+get_plot_palette <- function() {
+  if (is.null(self$plot.palette)) {
+    self$plot.palette <- scales::viridis_pal(end = self$plot.palette.end)(length(self$grouplist))
+    names(self$plot.palette) <- self$grouplist
+  } 
+  return(self$plot.palette)
+}
+
+#' Get exploratory power for plot label
+#'
+#' This function returns ...
+#'
+#' @param object An ALASCA object
+#' @param comp Which two components to plot (default: `c(1, 2`)
+#' @return A ggplot2 objects.
+.get_explained_label <- function(component = 1, effect = "time", type = "Score") {
+  if (effect == "time") {
+    paste0(type, " PC", component, " (", round(100 * self$ALASCA$loading$explained$time[component], 2), "%)")
+  } else {
+    paste0(type, " PC", component, " (", round(100 * self$ALASCA$loading$explained$group[component], 2), "%)")
+  }
+}
+
+
+
+#' Get screeplot
+#'
+#' This function returns a screeplot for an ALASCA model showing what proportion of the variance each component of the model explains
+#'
+#' @param object An ALASCA object
+#' @param effect String stating which effect to return; `time`, `group`, `both` (default)
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
+#' @param my_theme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
+#' @return An ggplot2 object (or a list og ggplot objects)
+#'
+#' @examples
+#' load("PE.Rdata")
+#' screeplot(model)
+#' @export
+screeplot.AlascaModel <- function(object,
+                             effect = "both",
+                             nComps = NA,
+                             filename = "scree_plot",
+                             filetype = object$plot.filetype,
+                             figsize = object$plot.figsize,
+                             figunit = object$plot.figunit,
+                             my_theme = object$plot.my_theme) {
+  explained <- as.data.frame(object$get_scores()$explained)
+  explained$component <- seq_len(nrow(explained))
+  if (!is.na(filename)) object$filename <- filename
+  
+  if (any(!is.na(nComps))) {
+    if (length(nComps) == 1) {
+      explained <- subset(explained, component <= nComps)
+    } else {
+      explained <- subset(explained, component %in% nComps)
+      explained$component <- factor(explained$component)
+    }
+  }
+  g <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = time, group = NA)) +
+    ggplot2::geom_point() +
+    ggplot2::geom_line() +
+    my_theme +
+    ggplot2::labs(x = "Principal Component", y = paste0("Relative Expl. of ", object$plot.x_label, " Var."))
+  if (object$separate_time_and_group) {
+    gg <- ggplot2::ggplot(explained, ggplot2::aes(x = component, y = group, group = NA)) +
+      ggplot2::geom_point() +
+      ggplot2::geom_line() +
+      my_theme +
+      ggplot2::labs(x = "Principal Component", y = "Relative Expl. of Group Var.")
+    if (effect == "both") {
+      g <- ggpubr::ggarrange(g, gg)
+    }
+  }
+  if (effect == "group") {
+    if (object$save) {
+      object$saveALASCAPlot(g = gg, filetype = filetype, figsize = figsize, figunit = figunit)
+    }
+    return(gg)
+  } else {
+    if (object$save) {
+      object$saveALASCAPlot(g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+    }
+    return(g)
+  }
+}
+
+
+#' Get an ALASCA object
+#'
+#' This function plots your ALASCA model
+#'
+#' @param object An [ALASCA()] object
+#' @param component Integer stating which component to return (1 is default)
+#' @param effect String stating which effect to return; `time`, `group`, `both` (default)
+#' @param decreasing_loadings Sort the loadings in decreasing (`TRUE`, default) or increasing order (`FALSE`)
+#' @param only String stating which plot to return; `both` (default), `score` or `loading`
+#' @param enlist Logical. If `TRUE`, the plots are returned as a list and not as a composed figure (default)
+#' @param too_dense Integer, If > 0, only name this number of covariables
+#' @param x_label Defaults to "Time" if not specified here or during model setup
+#' @param group_label Defaults to "Group" if not specified here or  during model setup
+#' @param flip_axes When `TRUE` (default), list the variable loadings vertical instead of horizontal
+#' @param plot_zeroline When `TRUE` (default), plot a zero line in the loading plot
+#' @param limit_loading Only list robust loadings
+#' @param filetype Which file type you want to save the figure to (default: `png`)
+#' @param figsize A vector containing `c(width,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param figunit Unit for figure size (default: `mm`)
+#' @param highlight Vector of strings with variables to highlight in the loadings plot
+#' @param my_theme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
+#' @return An ggplot2 object (or a list og ggplot objects)
+#'
+#' @examples
+#' load("PE.Rdata")
+#' plot(model.val)
+#' plot(model, component = "PC2")
+#' plot(model, only = "score", effect = "time")
+#' plot(model, too_dense = 5)
+#' plot(model, highlight = c("PlGF", "IL-1b", "IL-6"))
+#' @export
+plot_development <- function(object,
+                             component = 1,
+                             effect = "both",
+                             decreasing_loadings = TRUE,
+                             only = "both",
+                             enlist = FALSE,
+                             too_dense = NA,
+                             n_limit = ifelse(length(object$variablelist) < 40, 0, 20),
+                             highlight = NA,
+                             x_label = NA,
+                             group_label = NA,
+                             flip_axes = TRUE,
+                             plot_zeroline = TRUE,
+                             filename = NA,
+                             filetype = NA,
+                             figsize = NA,
+                             variables = NA,
+                             dodgewidth = 0.35,
+                             figunit = NA,
+                             plot_ribbon = TRUE,
+                             loadinggroup = NA,
+                             limit_loading = FALSE,
+                             sort_by_loadinggroup = FALSE,
+                             my_theme = object$plot.my_theme) {
+  
+  if (!(effect %in% c("both", "time", "group"))) {
+    log4r::error(object$log, "`effect` has to be `both`, `time` or `group`")
+    stop()
+  }
+  if (!object$separate_time_and_group) effect <- "time"
+  if (!is.na(x_label)) object$plot.x_label <- x_label
+  if (!is.na(filename)) object$filename <- filename
+  if (!is.na(group_label)) object$plot.group_label <- group_label
+  if (!is.na(filetype)) object$plot.filetype <- filetype
+  if (!is.na(figsize)) object$plot.figsize <- figsize
+  if (!is.na(figunit)) object$plot.figunit <- figunit
+  if (n_limit > 0 && length(object$variablelist) > 2*n_limit) log4r::warn(object$log, paste0("Will only plot the ",n_limit," upper and lower loadings. Use `n_limit = 0` to show all"))
+  
+  if (flip_axes) {
+    plotwidths <- c(2, 3, 2, 3)
+    plotalign <- "h"
+    decreasing_loadings <- !decreasing_loadings
+  } else {
+    plotwidths <- c(1, 2, 1, 2)
+    plotalign <- "hv"
+  }
+  if (only == "score") {
+    if (effect == "both") {
+      g_score_time <- get_score_plot(object, component = component, effect = "time", plot_ribbon = plot_ribbon, dodgewidth = dodgewidth, my_theme = my_theme)
+      g_score_group <- get_score_plot(object, component = component, effect = "group", plot_ribbon = plot_ribbon, dodgewidth = dodgewidth, my_theme = my_theme)
+      g <- list(g_score_time, g_score_group)
+    } else {
+      g <- get_score_plot(object, component = component, effect = effect, plot_ribbon = plot_ribbon, dodgewidth = dodgewidth, my_theme = my_theme)
+    }
+  } else if (only == "loading") {
+    if (effect == "both") {
+      g_loading_time <- get_loading_plot(object,
+                                         component = component,
+                                         effect = "time",
+                                         decreasing_loadings = decreasing_loadings,
+                                         flip_axes = flip_axes,
+                                         plot_zeroline = plot_zeroline,
+                                         too_dense = too_dense,
+                                         n_limit = n_limit,
+                                         highlight = highlight,
+                                         variables = variables,
+                                         loadinggroup = loadinggroup,
+                                         limit_loading = limit_loading,
+                                         sort_by_loadinggroup = sort_by_loadinggroup,
+                                         my_theme = my_theme
+      )
+      g_loading_group <- get_loading_plot(object,
+                                          component = component,
+                                          effect = "group",
+                                          decreasing_loadings = decreasing_loadings,
+                                          flip_axes = flip_axes,
+                                          plot_zeroline = plot_zeroline,
+                                          too_dense = too_dense,
+                                          n_limit = n_limit,
+                                          variables = variables,
+                                          highlight = highlight,
+                                          limit_loading = limit_loading,
+                                          loadinggroup = loadinggroup,
+                                          sort_by_loadinggroup = sort_by_loadinggroup,
+                                          my_theme = my_theme
+      )
+      g <- list(g_loading_time, g_loading_group)
+    } else {
+      g <- get_loading_plot(object,
+                            component = component,
+                            effect = effect,
+                            decreasing_loadings = decreasing_loadings,
+                            flip_axes = flip_axes,
+                            plot_zeroline = plot_zeroline,
+                            too_dense = too_dense,
+                            n_limit = n_limit,
+                            variables = variables,
+                            limit_loading = limit_loading,
+                            loadinggroup = loadinggroup,
+                            sort_by_loadinggroup = sort_by_loadinggroup,
+                            my_theme = my_theme
+      )
+    }
+  } else {
+    if (effect == "both") {
+      g_loading_time <- get_loading_plot(object,
+                                         component = component,
+                                         effect = "time",
+                                         decreasing_loadings = decreasing_loadings,
+                                         flip_axes = flip_axes,
+                                         plot_zeroline = plot_zeroline,
+                                         too_dense = too_dense,
+                                         n_limit = n_limit,
+                                         limit_loading = limit_loading,
+                                         highlight = highlight,
+                                         loadinggroup = loadinggroup,
+                                         sort_by_loadinggroup = sort_by_loadinggroup,
+                                         my_theme = my_theme
+      )
+      g_loading_group <- get_loading_plot(object,
+                                          component = component,
+                                          effect = "group",
+                                          decreasing_loadings = decreasing_loadings,
+                                          flip_axes = flip_axes,
+                                          plot_zeroline = plot_zeroline,
+                                          too_dense = too_dense,
+                                          n_limit = n_limit,
+                                          variables = variables,
+                                          highlight = highlight,
+                                          limit_loading = limit_loading,
+                                          loadinggroup = loadinggroup,
+                                          sort_by_loadinggroup = sort_by_loadinggroup,
+                                          my_theme = my_theme
+      )
+      g_score_time <- get_score_plot(object, component = component, effect = "time", plot_ribbon = plot_ribbon, dodgewidth = dodgewidth, my_theme = my_theme)
+      g_score_group <- get_score_plot(object, component = component, effect = "group", plot_ribbon = plot_ribbon, dodgewidth = dodgewidth, my_theme = my_theme)
+      if (enlist) {
+        g <- list(g_score_time, g_loading_time, g_score_group, g_loading_group)
+      } else {
+        if (is.na(loadinggroup) & is.na(object$plot.loadinggroupcolumn)) {
+          g <- ggpubr::ggarrange(
+            g_score_time,
+            g_loading_time,
+            g_score_group,
+            g_loading_group,
+            nrow = 2, ncol = 2,
+            widths = plotwidths,
+            align = plotalign,
+            common.legend = TRUE,
+            legend.grob = ggpubr::get_legend(g_score_group),
+            legend = "bottom"
+          )
+        } else {
+          g <- ggpubr::ggarrange(
+            ggpubr::ggarrange(
+              g_score_time + ggplot2::theme(legend.position = "none"),
+              g_loading_time + ggplot2::theme(legend.position = "none"),
+              align = plotalign,
+              widths = plotwidths[1:2]
+            ),
+            ggpubr::ggarrange(
+              g_score_group,
+              g_loading_group,
+              align = plotalign,
+              widths = plotwidths[1:2]
+            ),
+            nrow = 2, ncol = 1,
+            align = plotalign
+          )
+        }
+      }
+    } else {
+      g_loading <- get_loading_plot(object,
+                                    component = component,
+                                    effect = effect,
+                                    decreasing_loadings = decreasing_loadings,
+                                    flip_axes = flip_axes,
+                                    plot_zeroline = plot_zeroline,
+                                    too_dense = too_dense,
+                                    n_limit = n_limit,
+                                    variables = variables,
+                                    limit_loading = limit_loading,
+                                    highlight = highlight,
+                                    loadinggroup = loadinggroup,
+                                    sort_by_loadinggroup = sort_by_loadinggroup,
+                                    my_theme = my_theme
+      )
+      g_score <- get_score_plot(object, component = component, effect = effect, plot_ribbon = plot_ribbon, dodgewidth = dodgewidth, my_theme = my_theme)
+      if (enlist) {
+        g <- list(g_score, g_loading)
+      } else {
+        if (is.na(loadinggroup) & is.na(object$plot.loadinggroupcolumn)) {
+          g <- ggpubr::ggarrange(
+            g_score,
+            g_loading,
+            nrow = 1,
+            ncol = 2,
+            widths = plotwidths,
+            align = plotalign,
+            common.legend = TRUE,
+            legend = "bottom"
+          )
+        } else {
+          g <- ggpubr::ggarrange(g_score,
+                                 g_loading,
+                                 nrow = 1,
+                                 ncol = 2,
+                                 widths = plotwidths,
+                                 align = plotalign
+          )
+        }
+      }
+    }
+  }
+  if (object$save) {
+    saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+  }
+  return(g)
+}
+
+
+
+#' Get loadings
+#'
+#' This function  returns the loadings for an ALASCA model
+#'
+#' @param object An ALASCA object
+#' @param n_limit Returns the n highest and lowest loadings by PC (i.e., 2*n_limit loadings per PC)
+#' @return A list with loadings for time (and group), and the exploratory power for each component
+#' @export
+get_loadings <- function(object, limit_loading = FALSE, n_limit = 0L, component = c(0)) {
+  dfl <- list()
+  if (component[[1]] > 0 || length(component) > 1) {
+    dfl$time <- object$ALASCA$loading$time[PC %in% component]
+    if (object$separate_time_and_group) {
+      dfl$group <- object$ALASCA$loading$group[PC %in% component]
+    }
+  } else {
+    dfl$time <- object$ALASCA$loading$time
+    if (object$separate_time_and_group) {
+      dfl$group <- object$ALASCA$loading$group
+    }
+  }
+  if (limit_loading && object$validate) {
+    dfl$time <- dfl$time[!is.na(low) & sign(low) == sign(high)]
+    if (object$separate_time_and_group) {
+      dfl$group <- dfl$group[!is.na(low) & sign(low) == sign(high)]
+    }
+  } else {
+    if (n_limit > 0L) {
+      index_head_and_tail <- c(seq(n_limit), length(object$variablelist)+1-seq(n_limit))
+      dfl$time <- dfl$time[dfl$time[order(loading, decreasing = TRUE), .I[index_head_and_tail], by = PC]$V1]
+      if (object$separate_time_and_group) {
+        dfl$group <- dfl$group[dfl$group[order(loading, decreasing = TRUE), .I[index_head_and_tail], by = PC]$V1]
+      }
+    }
+  }
+  
+  return(dfl)
+}
+
+#' Get scores
+#'
+#' This function returns the scores for an ALASCA model
+#'
+#' @inheritParams get_loadings
+#' @return A list with scores for time (and group), and the exploratory power for each component
+#' @export
+get_scores <- function(component = 0) {
+  if(any(component > 0)){
+    self$ALASCA$score$time <- self$ALASCA$score$time[ PC %in% component]
+    if (self$separate_time_and_group) {
+      self$ALASCA$score$group <- self$ALASCA$score$group[ PC %in% component]
+    }
+  }
+  return(self$ALASCA$score)
+}
+
+
+
+#' Get loading plot
+#'
+#' This function loads a file as a matrix. It assumes that the first column
+#' contains the rownames and the subsequent columns are the sample identifiers.
+#' Any rows with duplicated row names will be dropped with the first one being
+#' kepted.
+#'
+#' @param object An ALASCA object
+#' @param component Which component to plot?
+#' @param effect Plot time or group
+#' @param decreasing_loadings Logical. Should loadings be sorted in decreasing order?
+#' @param flip_axes When `TRUE` (default), list the variable loadings vertical instead of horizontal
+#' @param plot_zeroline When `TRUE` (default), plot a zero line in the loading plot
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(12, 8, 300)`)
+#' @param my_theme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
+#' @return A ggplot object
+get_loading_plot <- function(object,
+                             component = 1,
+                             effect = "time",
+                             decreasing_loadings = TRUE,
+                             too_dense = NA,
+                             n_limit = 0,
+                             highlight = NA,
+                             filetype = NA,
+                             flip_axes = TRUE,
+                             plot_zeroline = TRUE,
+                             figsize = NA,
+                             figunit = NA,
+                             variables = NA,
+                             loadinggroup = NA,
+                             limit_loading = FALSE,
+                             sort_by_loadinggroup = TRUE,
+                             point_size = 0.4,
+                             my_theme = NA) {
+  
+  if (any(is.na(my_theme))) my_theme <- object$plot.my_theme
+  if (!is.na(filetype)) object$plot.filetype <- filetype
+  if (any(is.na(variables))) variables <- object$variablelist
+  if (!is.na(figsize)) object$plot.figsize <- figsize
+  if (!is.na(figunit)) object$plot.figunit <- figunit
+  
+  if (effect == "time") {
+    loadings <- subset(get_loadings(object, limit_loading = limit_loading, n_limit = n_limit, component = component)$time, covars %in% variables)
+  } else {
+    loadings <- subset(get_loadings(object, limit_loading = limit_loading, n_limit = n_limit, component = component)$group, covars %in% variables)
+  }
+  if (!is.na(object$plot.loadinggroupcolumn)) {
+    loadings <- merge(loadings, object$variable_labels, by = "covars")
+  } else {
+    loadings$covargroup <- NA
+  }
+  if (sort_by_loadinggroup & !is.na(object$plot.loadinggroupcolumn)) {
+    loadings$covars <- factor(loadings$covars, levels = unique(loadings$covars[order(loadings$covargroup, loadings$loading, decreasing = decreasing_loadings)]))
+  } else {
+    loadings$covars <- factor(loadings$covars, levels = unique(loadings$covars[order(loadings$loading, decreasing = decreasing_loadings)]))
+  }
+  if (object$validate) {
+    if (any(colnames(loadings) == "model")) {
+      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high, shape = model)) +
+        ggplot2::geom_pointrange(size = point_size)
+    } else {
+      if (is.na(object$plot.loadinggroupcolumn)) {
+        g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high)) +
+          ggplot2::geom_pointrange(size = point_size)
+      } else {
+        g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, ymin = low, ymax = high, color = covargroup, shape = covargroup)) +
+          ggplot2::geom_pointrange(size = point_size)
+      }
+    }
+  } else {
+    if (any(colnames(loadings) == "model")) {
+      g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, shape = model)) +
+        ggplot2::geom_point()
+    } else {
+      if (is.na(object$plot.loadinggroupcolumn)) {
+        g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading)) +
+          ggplot2::geom_point()
+      } else {
+        g <- ggplot2::ggplot(loadings, ggplot2::aes(x = covars, y = loading, color = covargroup, shape = covargroup)) +
+          ggplot2::geom_point()
+      }
+    }
+  }
+  g <- g + my_theme +
+    ggplot2::labs(
+      x = "Variable",
+      y = .get_explained_label(object, component = component, effect = effect, type = "Loading")
+    )
+  if (plot_zeroline) {
+    g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
+  }
+  if (n_limit > 0 & !sort_by_loadinggroup) {
+    g <- g + ggplot2::geom_vline(xintercept = n_limit + 0.5, linetype = "dotted")
+  }
+  if (flip_axes) {
+    g <- g + ggplot2::coord_flip()
+  } else {
+    g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1), legend.position = c(0.8, 0.8))
+  }
+  if (!is.na(object$plot.loadinggroupcolumn)) {
+    g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
+      ggplot2::labs(color = object$plot.loadinggroup_label, shape = object$plot.loadinggroup_label) +
+      ggplot2::theme(legend.position = "bottom") # ggplot2::scale_color_brewer(palette = "Dark2")
+  }
+  if (!any(is.na(highlight))) {
+    g <- g + ggplot2::geom_point(color = ifelse(loadings$covars %in% highlight, "red", "grey")) +
+      ggrepel::geom_text_repel(data = subset(loadings, covars %in% highlight), ggplot2::aes(label = covars), max.iter = 5000) +
+      my_theme +
+      ggplot2::theme(
+        axis.title.x = ggplot2::element_blank(),
+        axis.text.x = ggplot2::element_blank(),
+        axis.ticks.x = ggplot2::element_blank(),
+        legend.position = "none"
+      )
+  } else if (!is.na(too_dense) & too_dense > 0) {
+    limUpper <- unique(loadings$loading[order(loadings$loading, decreasing = TRUE)[too_dense]])
+    limLower <- unique(loadings$loading[order(loadings$loading, decreasing = FALSE)[too_dense]])
+    g <- g + ggplot2::geom_point(color = ifelse(loadings$loading <= limLower | loadings$loading >= limUpper, "red", "grey")) +
+      ggrepel::geom_text_repel(
+        data = subset(loadings, loading <= limLower | loading >= limUpper),
+        ggplot2::aes(label = covars),
+        max.iter = 5000
+      ) +
+      my_theme
+    if (flip_axes) {
+      g <- g + ggplot2::theme(
+        axis.title.y = ggplot2::element_blank(),
+        axis.text.y = ggplot2::element_blank(),
+        axis.ticks.y = ggplot2::element_blank(),
+        legend.position = "none"
+      )
+    } else {
+      g <- g + ggplot2::theme(
+        axis.title.x = ggplot2::element_blank(),
+        axis.text.x = ggplot2::element_blank(),
+        axis.ticks.x = ggplot2::element_blank(),
+        legend.position = "none"
+      )
+    }
+  }
+  
+  if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit, suffix = "_loading")
+  
+  return(g)
+}
+
+#' Get score plot
+#'
+#' This function loads a file as a matrix. It assumes that the first column
+#' contains the rownames and the subsequent columns are the sample identifiers.
+#' Any rows with duplicated row names will be dropped with the first one being
+#' kepted.
+#'
+#' @param object An ALASCA object
+#' @param component Which component to plot?
+#' @param effect Plot time or group
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(width,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param my_theme A ggplot2 theme to use, defaults to `ggplot2::scale_color_viridis_d(end = 0.9) + ggplot2::theme_bw()`
+#' @return A ggplot object
+get_score_plot <- function(object,
+                           component = 1,
+                           effect = "time",
+                           filetype = NA,
+                           figsize = NA,
+                           figunit = NA,
+                           plot_ribbon = TRUE,
+                           dodgewidth = 0.35,
+                           point_size = 2,
+                           my_theme = NA) {
+  if (any(is.na(my_theme))) my_theme <- object$plot.my_theme
+  if (!is.na(filetype)) object$plot.filetype <- filetype
+  if (any(!is.na(figsize))) object$plot.figsize <- figsize
+  if (!is.na(figunit)) object$plot.figunit <- figunit
+  
+  if (effect == "time") {
+    if (object$separate_time_and_group) {
+      score <- get_scores(object, component = component)$time
+      if (object$validate) {
+        # Show error bars
+        if (grepl("permutation", object$validation_method)) {
+          pvals <- object$pvals
+          score <- merge(score, pvals, by.x = "time", by.y = "effect", all.x = TRUE, all.y = FALSE)
+          score$p.value.str <- ifelse(score$p.value > .05, "", ifelse(score$p.value < .001, "***", ifelse(score$p.value < .01, "**", "*")))
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, label = p.value.str)) +
+            ggplot2::geom_point(position = ggplot2::position_dodge(width = dodgewidth)) +
+            ggplot2::geom_text(vjust = 0, hjust = 0.5, position = ggplot2::position_dodge(width = dodgewidth), show.legend = FALSE) +
+            ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
+        } else {
+          if (any(colnames(score) == "model")) {
+            g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = model, linetype = model, shape = model, ymin = low, ymax = high)) +
+              ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
+              ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
+          } else {
+            g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, ymin = low, ymax = high)) +
+              ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth))
+            if (object$method %in% c("LMM")) g <- g + ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
+            if (plot_ribbon && object$method %in% c("LMM")) {
+              g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = group),
+                                            alpha = .1,
+                                            position = ggplot2::position_dodge(width = dodgewidth), color = NA
+              ) +
+                ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
+                ggplot2::labs(fill = object$plot.group_label)
+            }
+          }
+        }
+      } else {
+        # No validation - no error bars
+        if (any(colnames(score) == "model")) {
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = model, linetype = model)) +
+            ggplot2::geom_point() +
+            ggplot2::geom_line()
+        } else {
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group)) +
+            ggplot2::geom_point()
+          if (object$method %in% c("LMM")) g <- g + ggplot2::geom_line()
+        }
+      }
+    } else {
+      score <- get_scores(object, component = component)$time
+      if (object$validate) {
+        if (grepl("permutation", object$validation_method)) {
+          pvals <- object$pvals
+          score$effect <- paste(score$time, score$group)
+          score <- merge(score, pvals, by.x = "effect", by.y = "effect", all.x = TRUE, all.y = FALSE)
+          score$p.value.str <- ifelse(score$p.value > .05, "", ifelse(score$p.value < .001, "***", ifelse(score$p.value < .01, "**", "*")))
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group, label = p.value.str)) +
+            ggplot2::geom_point(position = ggplot2::position_dodge(width = 0.5)) +
+            geom_text(vjust = 0, hjust = 0.5, position = ggplot2::position_dodge(width = 0.5), show.legend = FALSE) +
+            ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.5))
+        } else {
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group, ymin = low, ymax = high)) +
+            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth))
+          if (object$method %in% c("LMM")) g <- g + ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
+          if (plot_ribbon && object$method %in% c("LMM")) {
+            g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = group),
+                                          alpha = .1,
+                                          position = ggplot2::position_dodge(width = dodgewidth), color = NA
+            ) +
+              ggplot2::scale_fill_manual(values = get_plot_palette(object)) + ggplot2::labs(fill = object$plot.group_label)
+          }
+        }
+      } else {
+        if (any(colnames(score) == "model")) {
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = model)) +
+            ggplot2::geom_point() +
+            ggplot2::geom_line()
+        } else {
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group)) +
+            ggplot2::geom_point()
+          if (object$method %in% c("LMM")) g <- g + ggplot2::geom_line()
+        }
+      }
+    }
+    g <- g + my_theme +
+      ggplot2::scale_color_manual(values = get_plot_palette(object))
+    if (object$method %in% c("LMM")) g <- g + ggplot2::scale_linetype_manual(values = get_plot_linetypes(object))
+    g <- g + ggplot2::theme(legend.position = "bottom") +
+      ggplot2::labs(
+        x = object$plot.x_label,
+        group = object$plot.group_label, color = object$plot.group_label, linetype = object$plot.group_label,
+        y = .get_explained_label(object, component = component, effect = "time")
+      )
+  } else {
+    # Group effect
+    score <- get_scores(object, component = component)$group
+    if (object$validate) {
+      if (grepl("permutation", object$validation_method)) {
+        pvals <- object$pvals
+        score$effect <- paste(score$time, score$group)
+        score <- merge(score, pvals, by.x = "effect", by.y = "effect", all.x = TRUE, all.y = FALSE)
+        score$p.value.str <- ifelse(score$p.value > .05, "", ifelse(score$p.value < .001, "***", ifelse(score$p.value < .01, "**", "*")))
+        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group, label = p.value.str)) +
+          ggplot2::geom_point(position = ggplot2::position_dodge(width = 0.5)) +
+          geom_text(vjust = 0, hjust = 0.5, position = ggplot2::position_dodge(width = 0.5), show.legend = FALSE) +
+          ggplot2::geom_line(position = ggplot2::position_dodge(width = 0.5))
+      } else {
+        if (any(colnames(score) == "model")) {
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, linetype = model, shape = model, color = group, ymin = low, ymax = high)) +
+            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
+            ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
+        } else {
+          g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group, ymin = low, ymax = high)) +
+            ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
+            ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth))
+          if (plot_ribbon) {
+            g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = group),
+                                          alpha = .1,
+                                          position = ggplot2::position_dodge(width = dodgewidth), color = NA
+            ) +
+              ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
+              ggplot2::labs(fill = object$plot.group_label)
+          }
+        }
+      }
+    } else {
+      if (any(colnames(score) == "model")) {
+        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = model)) +
+          ggplot2::geom_point() +
+          ggplot2::geom_line()
+      } else {
+        g <- ggplot2::ggplot(score, ggplot2::aes(x = time, y = score, group = group, color = group, linetype = group)) +
+          ggplot2::geom_point() +
+          ggplot2::geom_line()
+      }
+    }
+    g <- g + my_theme +
+      ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+      ggplot2::scale_linetype_manual(values = get_plot_linetypes(object)) +
+      ggplot2::theme(legend.position = "bottom") +
+      ggplot2::labs(
+        x = object$plot.x_label,
+        group = object$plot.group_label, color = object$plot.group_label, linetype = object$plot.group_label,
+        y = .get_explained_label(object, component = component, effect = "group")
+      )
+  }
+  
+  if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit, suffix = "_score")
+  
+  return(g)
+}
+
+#' Plot covariate coefficients
+#'
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
+#'
+#' @param inheritParams plot_parts
+#' @return A ggplot2 object
+#'
+#' @export
+plot_participants <- function(...){
+  plot_parts(...)
+}
+
+#' Plot participants
+#'
+#' This function returns the scores for an ALASCA model
+#'
+#' @param object An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.
+#' @param variable List of variable names to print. If `NA`, return all (default).
+#' @param participant_column Specify the column with participant identifier. Not necessary if you have already provided it to the ALASCA object
+#' @param valueColumn Specify column with values (y axis). Not necessary to provide if you are plotting an ALASCA object.
+#' @param timeColumn Specify column with times (x axis). Defaults to `time`.
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(width,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param addSmooth. Specify which geom_smooth model you want to apply, eg. `lm`, `glm`, `gam`, `loess` (default). Set to `NA` to remove.
+#' @param my_theme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
+#' @return A list with ggplot2 objects.
+#' 
+#' @export
+plot_parts <- function(object,
+                       variables = NA,
+                       participant_column = FALSE,
+                       x_label = NA,
+                       group_label = NA,
+                       valueColumn = FALSE,
+                       timeColumn = "time",
+                       addSmooth = "loess",
+                       filename = NA,
+                       filetype = object$plot.filetype,
+                       figunit = object$plot.figunit,
+                       plot.ylabel = "value",
+                       as.list = FALSE,
+                       figsize = object$plot.figsize,
+                       my_theme = object$plot.my_theme) {
+  
+  if (!is.na(filename)) object$filename <- filename
+  
+  if(as.list){
+    if (is.data.frame(object)) {
+      df <- object
+      if (any(participant_column == FALSE) | any(valueColumn == FALSE)) {
+        log4r::error(object$log, "You need to specify participant and value columns")
+        stop()
+      } else {
+        participant_column <- participant_column
+        valueColumn <- valueColumn
+      }
+      plotFunction <- function(df, timeColumn, valueColumn, participant_column, xi, addSmooth, x_label, group_label, my_theme) {
+        g <- ggplot2::ggplot(subset(df, variable == xi), ggplot2::aes_string(x = timeColumn, y = valueColumn, color = "group", group = participant_column)) +
+          ggplot2::geom_point(alpha = 0.7) +
+          ggplot2::geom_line(alpha = 0.3) +
+          ggplot2::scale_color_manual(values = get_plot_palette(list(df = df))) +
+          ggplot2::scale_fill_manual(values = get_plot_palette(list(df = df))) +
+          my_theme +
+          ggplot2::theme(legend.position = "bottom") +
+          ggplot2::labs(x = x_label, y = xi, color = group_label, fill = group_label)
+        if (!any(is.na(addSmooth))) {
+          g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group, fill = group), se = TRUE)
+        }
+        return(g)
+      }
+    } else if (is(object, "ALASCA")) {
+      df <- object$df_raw
+      valueColumn <- as.character(object$formula)[2]
+      if (any(participant_column == FALSE)) {
+        if (any(object$participant_column == FALSE)) {
+          log4r::error(object$log, "You need to specify participant column")
+          stop()
+        } else {
+          participant_column <- object$participant_column
+        }
+      }
+      
+      if (is.na(x_label)) x_label <- object$plot.x_label
+      if (is.na(group_label)) group_label <- object$plot.group_label
+      
+      plotFunction <- function(df, timeColumn, valueColumn, participant_column, xi, addSmooth, x_label, group_label, my_theme) {
+        g <- ggplot2::ggplot(subset(df, variable == xi), ggplot2::aes_string(x = timeColumn, y = valueColumn, color = "group", group = participant_column)) +
+          ggplot2::geom_point(alpha = 0.7) +
+          ggplot2::geom_line(alpha = 0.3) +
+          ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+          ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
+          my_theme +
+          ggplot2::theme(legend.position = "bottom") +
+          ggplot2::labs(x = x_label, y = xi, color = group_label, fill = group_label)
+        if (!any(is.na(addSmooth))) {
+          g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group, fill = group), se = TRUE)
+        }
+        return(g)
+      }
+    } else {
+      log4r::error(object$log, "Wrong input object: must be a ALASCA model or a data frame")
+      stop()
+    }
+    
+    if (any(is.na(variables))) variables <- unique(df$variable)
+    
+    g <- lapply(variables, function(xi) {
+      plotFunction(df, timeColumn, valueColumn, participant_column, xi, addSmooth, x_label = x_label, group_label = group_label, my_theme = my_theme)
+    })
+    names(g) <- variables
+    if (is(object, "ALASCA")) {
+      if (object$save) {
+        for (i in seq_along(g)) {
+          saveALASCAPlot(object = object, g = g[[i]], filetype = filetype, figsize = figsize, figunit = figunit, suffix = names(g)[i])
+        }
+      }
+    }
+    return(g)
+  } else {
+    if (any(is.na(variables))) {
+      variables <- object$variablelist
+    }
+    df <- object$df_raw
+    if (is.na(x_label)) {
+      x_label <- object$plot.x_label
+    }
+    if (is.na(group_label)) {
+      group_label <- object$plot.group_label
+    }
+    g <- ggplot2::ggplot(subset(df, variable %in% variables), ggplot2::aes(x = time, y = value, color = group, group = ID)) +
+      ggplot2::geom_point(alpha = 0.7) +
+      ggplot2::geom_line(alpha = 0.3) +
+      ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+      ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
+      my_theme +
+      ggplot2::facet_wrap(~variable, scales = "free_y") +
+      ggplot2::theme(legend.position = "bottom") +
+      ggplot2::labs(x = x_label, y = plot.ylabel, color = group_label, fill = group_label)
+    if (!any(is.na(addSmooth))) {
+      g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group, fill = group), se = TRUE)
+    }
+    
+    if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+    
+    return(g)
+  }
+}
+
+#' Plot model predictions
+#'
+#' This function returns the scores for an ALASCA model
+#'
+#' @param object An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.
+#' @param variable List of variable names to print. If `NA`, return all (default).
+#' @param my_theme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param figunit = "mm",
+#' @return A list with ggplot2 objects.
+#'
+#' @examples
+#' load("PE.Rdata")
+#' plotPred(model, variable = "IL-6")[[1]] + ggplot2::theme_bw()
+#' do.call(
+#'   ggpubr::ggarrange,
+#'   c(plotPred(model, variable = c("PlGF", "IL-6", "IL-1b", "IFN-g", "Eotaxin-2", "Eotaxin")),
+#'     common.legend = TRUE, legend = "bottom"
+#'   )
+#' )
+#' @export
+plot_prediction <- function(object,
+                            variables = object$variablelist,
+                            filetype = NA,
+                            figsize = NA,
+                            figunit = NA,
+                            filename = NA,
+                            dodgewidth = 0.35,
+                            plot_ribbon = TRUE,
+                            as.list = FALSE,
+                            plot.ylabel = "value",
+                            my_theme = object$plot.my_theme) {
+  
+  if (!is.na(filename)) object$filename <- filename
+  
+  if ( as.list ){
+    if (object$validate) {
+      gg <- lapply(variables, function(x) {
+        g <- ggplot2::ggplot(subset(object$model_prediction, variable == x), ggplot2::aes(
+          x = time,
+          y = pred,
+          color = group,
+          group = group,
+          linetype = group,
+          ymin = low,
+          ymax = high
+        )) +
+          ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
+          ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth)) +
+          ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+          my_theme +
+          ggplot2::theme(legend.position = "bottom") +
+          ggplot2::labs(x = object$plot.x_label, y = plot.ylabel, color = object$plot.group_label, linetype = object$plot.group_label)
+        if (plot_ribbon) {
+          g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = group),
+                                        alpha = .1,
+                                        position = ggplot2::position_dodge(width = dodgewidth), color = NA
+          ) +
+            ggplot2::scale_fill_manual(values = get_plot_palette(object)) + ggplot2::labs(fill = object$plot.group_label)
+        }
+        g
+      })
+    } else {
+      gg <- lapply(variables, function(x) {
+        g <- ggplot2::ggplot(subset(object$model_prediction, variable == x), ggplot2::aes(x = time, y = pred, color = group, linetype = group, group = group)) +
+          ggplot2::geom_point() +
+          ggplot2::geom_line() +
+          ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+          my_theme +
+          ggplot2::theme(legend.position = "bottom") +
+          ggplot2::labs(x = object$plot.x_label, y = plot.ylabel, color = object$plot.group_label, linetype = object$plot.group_label)
+        g
+      })
+    }
+    names(gg) <- variable
+    if (object$save) {
+      for (i in seq_along(gg)) {
+        saveALASCAPlot(object = object, g = gg[[i]], filetype = filetype, figsize = figsize, figunit = figunit, suffix = names(gg)[i])
+      }
+    }
+  } else {
+    if (object$validate) {
+      g <- ggplot2::ggplot(object$model_prediction[object$model_prediction$variable %in% variables,], ggplot2::aes(
+        x = time,
+        y = pred,
+        color = group,
+        group = group,
+        linetype = group,
+        ymin = low,
+        ymax = high
+      )) +
+        ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = dodgewidth)) +
+        ggplot2::geom_line(position = ggplot2::position_dodge(width = dodgewidth)) +
+        ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+        my_theme +
+        ggplot2::facet_wrap(~variable, scales = "free_y") +
+        ggplot2::theme(legend.position = "bottom") +
+        ggplot2::labs(x = object$plot.x_label, y = plot.ylabel, color = object$plot.group_label, linetype = object$plot.group_label)
+      if (plot_ribbon) {
+        g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = group),
+                                      alpha = .1,
+                                      position = ggplot2::position_dodge(width = dodgewidth), color = NA
+        ) +
+          ggplot2::scale_fill_manual(values = get_plot_palette(object)) + ggplot2::labs(fill = object$plot.group_label)
+      }
+    } else {
+      g <- ggplot2::ggplot(object$model_prediction[object$model_prediction$variable %in% variables,], ggplot2::aes(x = time, y = pred, color = group, linetype = group, group = group)) +
+        ggplot2::geom_point() +
+        ggplot2::geom_line() +
+        ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+        my_theme +
+        ggplot2::facet_wrap(~variable, scales = "free_y") +
+        ggplot2::theme(legend.position = "bottom") +
+        ggplot2::labs(x = object$plot.x_label, y = plot.ylabel, color = object$plot.group_label, linetype = object$plot.group_label)
+    }
+    if (object$save) {
+      saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+    }
+    return(g)
+  }
+  
+}
+
+#' Plot marginal means
+#'
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
+#'
+#' @param inheritParams plot_validation
+#' @return A ggplot2 object.
+#'
+#' @export
+plot_mm <- function(...){
+  plot_prediction(...)
+}
+
+#' Plot validations models
+#'
+#' This function returns a plot of the validation models
+#'
+#' @param object A validated ALASCA object
+#' @param component Which component to plot (default: 1)
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(width,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param my_theme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
+#' @return A list with ggplot2 objects.
+#'
+#' @export
+plot_validation <- function(object,
+                            component = 1,
+                            filetype = NA,
+                            filename = NA,
+                            figsize = NA,
+                            figunit = NA,
+                            n_limit = 0,
+                            decreasing_loadings = FALSE,
+                            plot_zeroline = TRUE,
+                            my_theme = NA,
+                            flip_axes = TRUE,
+                            plot.alpha = 0.3) {
+  if (!object$validate) {
+    log4r::error(object$log, message = "You must validate the model first!")
+    stop()
+  }
+  if (any(is.na(my_theme)))  my_theme <- object$plot.my_theme
+  if (!is.na(filename)) object$filename <- filename
+  
+  if (object$separate_time_and_group) {
+    # Score plots
+    ## Time
+    dff <- rbindlist(lapply(seq_along(object$validation$temp_objects), function(x) {
+      data.frame(
+        subset(get_scores(object$validation$temp_objects[[x]])$time, PC == component),
+        model = x
+      )
+    }))
+    dfm <- get_scores(object, component = component)$time
+    gst <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = model, color = group, linetype = group)) +
+      ggplot2::geom_point(alpha = plot.alpha)
+    if (object$method %in% c("LMM")) gst <- gst + ggplot2::geom_line(alpha = plot.alpha)
+    gst <- gst + ggplot2::geom_point(data = dfm, group = NA, alpha = 1, color = "black")
+    if (object$method %in% c("LMM")) gst <- gst + ggplot2::geom_line(data = dfm, group = dfm$group, alpha = 1, color = "black")
+    gst <- gst + ggplot2::labs(x = object$plot.x_label,
+                               color = object$plot.group_label, linetype = object$plot.group_label,
+                               y = .get_explained_label(object, component = component, effect = "time", type = "Score")) +
+      ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+      ggplot2::scale_linetype_manual(values = get_plot_linetypes(object)) +
+      my_theme + ggplot2::theme(legend.position = "none")
+    
+    ## Group
+    dff <- rbindlist(lapply(seq_along(object$validation$temp_objects), function(x) {
+      data.frame(
+        subset(get_scores(object$validation$temp_objects[[x]])$group, PC == component),
+        model = x
+      )
+    }))
+    dfm <- get_scores(object, component = component)$group
+    dff$plotGroup <- paste0(dff$model, "-", dff$group)
+    gsg <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group, linetype = group)) +
+      ggplot2::geom_point(alpha = plot.alpha)
+    if (object$method %in% c("LMM")) gsg <- gsg + ggplot2::geom_line(alpha = plot.alpha)
+    gsg <- gsg + ggplot2::geom_point(data = dfm, group = NA, alpha = 1, color = "black")
+    if (object$method %in% c("LMM")) gsg <- gsg + ggplot2::geom_line(data = dfm, group = dfm$group, alpha = 1, color = "black")
+    gsg <- gsg +   ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+      ggplot2::scale_linetype_manual(values = get_plot_linetypes(object)) +
+      ggplot2::labs(x = object$plot.x_label,
+                    y = .get_explained_label(object, component = component, effect = "group", type = "Score")) +
+      my_theme + ggplot2::theme(legend.position = "bottom")
+    
+    # Loading plot
+    ## Time
+    dfm <- get_loadings(object, component = component, n_limit = n_limit)$time
+    dfm$covars <- factor(dfm$covars, levels = unique(dfm$covars[order(dfm$loading, decreasing = decreasing_loadings)]))
+    dff <- rbindlist(lapply(seq_along(object$validation$temp_objects), function(x) {
+      data.frame(
+        subset(get_loadings(object$validation$temp_objects[[x]], component = component)$time, covars %in% dfm$covars)
+      )
+    }))
+    dff$covars <- factor(dff$covars, levels = unique(dff$covars[order(dff$loading, decreasing = decreasing_loadings)]))
+    
+    glt <- ggplot2::ggplot(dff, ggplot2::aes(x = covars, y = loading)) +
+      ggplot2::geom_point(data = dfm, alpha = 1, color = "black") +
+      ggplot2::geom_linerange(data = dfm, ggplot2::aes(ymax = high, ymin = low), alpha = 0.3, color = "black") +
+      ggplot2::geom_linerange(data = dfm, ggplot2::aes(xmax = as.numeric(covars) + 0.5, xmin = as.numeric(covars) - 0.5), alpha = 1, color = "black") +
+      ggplot2::geom_point(alpha = 0.2, color = "black")
+    if (plot_zeroline) glt <- glt + ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
+    if (flip_axes) glt <- glt + ggplot2::coord_flip()
+    glt <- glt + ggplot2::labs(x = "Variable",
+                               y = .get_explained_label(object, component = component, effect = "time", type = "Loading")) +
+      ggplot2::theme(legend.position = "none") +
+      my_theme
+    
+    ## Group
+    dfm <- get_loadings(object, component = component, n_limit = n_limit)$group
+    dfm$covars <- factor(dfm$covars, levels = unique(dfm$covars[order(dfm$loading, decreasing = decreasing_loadings)]))
+    dff <- rbindlist(lapply(seq_along(object$validation$temp_objects), function(x) {
+      data.frame(
+        subset(get_loadings(object$validation$temp_objects[[x]], component = component)$group, covars %in% dfm$covars)
+      )
+    }))
+    dff$covars <- factor(dff$covars, levels = unique(dff$covars[order(dff$loading, decreasing = decreasing_loadings)]))
+    glg <- ggplot2::ggplot(dff, ggplot2::aes(x = covars, y = loading)) +
+      ggplot2::geom_point(data = dfm, alpha = 1, color = "black") +
+      ggplot2::geom_linerange(data = dfm, ggplot2::aes(ymax = high, ymin = low), alpha = 0.3, color = "black") +
+      ggplot2::geom_linerange(data = dfm, ggplot2::aes(xmax = as.numeric(covars) + 0.5, xmin = as.numeric(covars) - 0.5), alpha = 1, color = "black") +
+      ggplot2::geom_point(alpha = 0.2, color = "black")
+    if (plot_zeroline) glg <- glg + ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
+    if (flip_axes) glg <- glg + ggplot2::coord_flip()
+    glg <- glg + ggplot2::labs(x = "Variable",
+                               y = .get_explained_label(object, component = component, effect = "group", type = "Loading")) +
+      ggplot2::theme(legend.position = "bottom") +
+      my_theme
+    
+    g <- ggpubr::ggarrange(gst, glt, gsg, glg, nrow = 2, ncol = 2, widths = c(2, 3, 2, 3), common.legend = TRUE, legend = "bottom")
+  } else {
+    # Score plot
+    dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
+      data.frame(
+        subset(get_scores(object$validation$temp_objects[[x]])$time, PC == component),
+        model = x
+      )
+    }))
+    dff$plotGroup <- paste0(dff$model, "-", dff$group)
+    dfm <- get_scores(object, component = component)$time
+    gs <- ggplot2::ggplot(dff, ggplot2::aes(x = time, y = score, group = plotGroup, color = group, linetype = group)) +
+      ggplot2::geom_point(alpha = plot.alpha)
+    if (object$method %in% c("LMM")) gs <- gs + ggplot2::geom_line(alpha = plot.alpha)
+    gs <- gs + ggplot2::geom_point(data = dfm, group = NA, alpha = 1, color = "black")
+    if (object$method %in% c("LMM")) gs <- gs + ggplot2::geom_line(data = dfm, group = dfm$group, alpha = 1, color = "black")
+    gs <- gs + ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+      ggplot2::scale_linetype_manual(values = get_plot_linetypes(object)) +
+      ggplot2::labs(x = object$plot.x_label,
+                    color = object$plot.group_label, linetype = object$plot.group_label,
+                    y = .get_explained_label(object, component = component, effect = "time", type = "Score")) +
+      my_theme +
+      ggplot2::theme(legend.position = "bottom")
+    
+    # Loading plot
+    dfm <- get_loadings(object, component = component, n_limit = n_limit)$time
+    dfm$covars <- factor(dfm$covars, levels = unique(dfm$covars[order(dfm$loading, decreasing = decreasing_loadings)]))
+    dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
+      data.frame(
+        subset(get_loadings(object$validation$temp_objects[[x]], component = component)$time, covars %in% dfm$covars)
+      )
+    }))
+    dff$covars <- factor(dff$covars, levels = unique(dff$covars[order(dff$loading, decreasing = decreasing_loadings)]))
+    
+    gl <- ggplot2::ggplot(dff, ggplot2::aes(x = covars, y = loading)) +
+      ggplot2::geom_point(data = dfm, alpha = 1, color = "black") +
+      ggplot2::geom_linerange(data = dfm, ggplot2::aes(ymax = high, ymin = low), alpha = 0.3, color = "black") +
+      ggplot2::geom_linerange(data = dfm, ggplot2::aes(xmax = as.numeric(covars) + 0.5, xmin = as.numeric(covars) - 0.5), alpha = 1, color = "black") +
+      ggplot2::geom_point(alpha = 0.2, color = "black")
+    if (plot_zeroline) gl <- gl + ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
+    if (flip_axes) gl <- gl + ggplot2::coord_flip()
+    gl <- gl + ggplot2::labs(x = "Variable",
+                             color = object$plot.group_label,
+                             y = .get_explained_label(object, component = component, effect = "time", type = "Loading")) +
+      my_theme
+    
+    g <- ggpubr::ggarrange(gs, gl, nrow = 1, ncol = 2, widths = c(2, 3), common.legend = TRUE, legend = "bottom")
+  }
+  
+  if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+  
+  return(g)
+}
+
+#' Plot covariate coefficients
+#'
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
+#'
+#' @param inheritParams plot_validation
+#' @return A ggplot2 object.
+#'
+#' @export
+plot_val <- function(...){
+  plot_validation(...)
+}
+
+#' Plot covariate coefficients
+#'
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
+#'
+#' @param inheritParams plot_covars
+#' @return A ggplot2 objects\.
+#'
+#' @export
+plot_covar <- function(...){
+  plot_covars(...)
+}
+
+#' Plot covariate coefficients
+#'
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
+#'
+#' @param inheritParams plot_covars
+#' @return A ggplot2 objects\.
+#'
+#' @export
+plot_covariates <- function(...){
+  plot_covars(...)
+}
+
+#' Plot covariate coefficients
+#'
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
+#'
+#' @param inheritParams plot_covars
+#' @return A ggplot2 objects\.
+#'
+#' @export
+plot_covariate <- function(...){
+  plot_covars(...)
+}
+
+#' Plot covariate coefficients
+#'
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
+#'
+#' @param object An ALASCA object
+#' @param covar Which covariable(s) to plot (default: `NA` which prints all)
+#' @param x_label Alternative names for the covariables
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param figunit = "mm",
+#' @param return_data Set to `TRUE` to return data instead of plot
+#'
+#' @param my_theme A ggplot2 theme
+#' @return A ggplot2 objects\.
+#'
+#' @export
+plot_covars <- function(object,
+                        covar = NA,
+                        x_label = NA,
+                        variables = NA,
+                        n_limit = 0,
+                        filename = "covars",
+                        return_data = FALSE,
+                        filetype = NA,
+                        figsize = NA,
+                        figunit = NA,
+                        my_theme = NA,
+                        pvalue = "star") {
+  if (any(is.na(my_theme))) my_theme <- object$plot.my_theme
+  if (!is.na(filename)) object$filename <- filename
+  
+  df <- get_covars(object, n_limit = n_limit)
+  if ( nrow(df) == 0 ) {
+    log4r::error(object$log, "No covariates to plot")
+    stop()
+  }
+  df$covar <- factor(df$covar, levels = unique(df$covar[order(df$estimate)]))
+  if (any(is.na(covar))) {
+    covar <- unique(df$variable)
+  }
+  if (any(is.na(variables))) {
+    variables <- object$variablelist
+  }
+  df <- subset(df, covar %in% variables)
+  if (any(is.na(x_label))) {
+    x_label <- covar
+  }
+  for (i in seq_len(length(covar))) {
+    df$x_label[df$variable == covar[i]] <- x_label[i]
+  }
+  if (!is.na(object$plot.loadinggroupcolumn)) {
+    df <- merge(df, object$variable_labels, by.x = "covar", by.y = "covars")
+  } else {
+    df$covargroup <- NA
+  }
+  if (!object$use_Rfast) {
+    # lmer and lm provide p values
+    df$pvalue_label <- ifelse(df$pvalue >= 0.05, "Not significant", ifelse(df$pvalue < 0.001, "< 0.001", ifelse(df$pvalue < 0.01, "< 0.01", "< 0.05")))
+    df$pvalue_sign <- ifelse(df$pvalue >= 0.05, "", ifelse(df$pvalue < 0.001, "***", ifelse(df$pvalue < 0.01, "**", "*")))
+    if (return_data) {
+      return(df)
+    } else {
+      if (pvalue == "shape") {
+        object$plot.loadinggroupcolumn <- NA # Cannot use shape for both loadinggroup and significance
+        g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, shape = pvalue_label)) +
+          ggplot2::scale_shape_manual(values = c("Not significant" = 3, "< 0.05" = 15, "< 0.01" = 16, "< 0.001" = 17, "Baseline" = 5))
+      } else if (pvalue == "star" | pvalue == "asterisk" | pvalue == "stars") {
+        if (is.na(object$plot.loadinggroupcolumn)) {
+          g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, label = pvalue_sign)) +
+            ggplot2::geom_text(hjust = 0.5, vjust = 0, show.legend = FALSE)
+        } else {
+          g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, label = pvalue_sign, color = covargroup, shape = covargroup)) +
+            ggplot2::geom_text(hjust = 0.5, vjust = 0, show.legend = FALSE)
+        }
+      } else {
+        g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar))
+      }
+      g <- g +
+        ggplot2::geom_point() +
+        ggplot2::geom_vline(xintercept = 0) +
+        ggplot2::facet_wrap(~x_label, scales = "free_y") + ggplot2::labs(x = "Coefficient", y = "", shape = "P value") +
+        my_theme + ggplot2::theme(legend.position = "bottom", legend.box = "vertical", legend.margin = ggplot2::margin())
+      
+      if (!is.na(object$plot.loadinggroupcolumn)) {
+        g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
+          ggplot2::labs(color = object$plot.loadinggroup_label, shape = object$plot.loadinggroup_label) +
+          ggplot2::theme(legend.position = "bottom") # ggplot2::scale_color_brewer(palette = "Dark2")
+      }
+      
+      if (object$save) {
+        saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+      }
+      return(g)
+    }
+  } else {
+    # Rfast does not provide p values, use bootstrap intervals
+    df$covar <- factor(df$covar, levels = unique(df$covar[order(df$estimate)]))
+    if (return_data) {
+      return(df)
+    } else {
+      if (object$validate) {
+        if (is.na(object$plot.loadinggroupcolumn)) {
+          g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, xmin = low, xmax = high)) +
+            ggplot2::geom_pointrange()
+        } else {
+          g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, xmin = low, xmax = high, color = covargroup, shape = covargroup)) +
+            ggplot2::geom_pointrange()
+        }
+      } else {
+        if (is.na(object$plot.loadinggroupcolumn)) {
+          g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar)) +
+            ggplot2::geom_point()
+        } else {
+          g <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = covar, color = covargroup, shape = covargroup)) +
+            ggplot2::geom_point()
+        }
+      }
+      
+      g <- g + 
+        ggplot2::geom_vline(xintercept = 0) +
+        ggplot2::facet_wrap(~x_label, scales = "free_y") +
+        ggplot2::labs(x = "Coefficient", y = "") +
+        my_theme
+      
+      if (!is.na(object$plot.loadinggroupcolumn)) {
+        g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
+          ggplot2::labs(color = object$plot.loadinggroup_label, shape = object$plot.loadinggroup_label) +
+          ggplot2::theme(legend.position = "bottom") # ggplot2::scale_color_brewer(palette = "Dark2")
+      }
+      
+      if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+      
+      return(g)
+    }
+  }
+}
+
+#' Plot PCs
+#'
+#' This function returns a plot of ...
+#'
+#' @param object An ALASCA object
+#' @param covar Which covariable(s) to plot (default: `NA` which prints all)
+#' @param xlab Alternative names for the covariables
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param figunit = "mm"
+#' @param plottext If `TRUE`, plot time point as text
+#' @param validationshape Either `NA`, "ellipse", or "cross"
+#' @param validationlevel Defaults to 0.95
+#' @param return_data Set to `TRUE` to return data instead of plot
+#'
+#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
+#' @return A ggplot2 object.
+#'
+#' @export
+plot_components <- function(object,
+                            comps = c(1, 2),
+                            filename = NA,
+                            filetype = NA,
+                            figsize = NA,
+                            figunit = NA,
+                            ...) {
+  g_score <- plot_components_score(object = object, comps = comps, ...)
+  g_loading <- plot_components_loadings(object = object, comps = comps, ...)
+  g <- ggpubr::ggarrange(
+    g_score, g_loading,
+    ncol = 1, nrow = 2
+  )
+  if (!is.na(filename)) object$filename <- filename
+  if (object$save) {
+    saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+  }
+  return(g)
+}
+
+plot_components_loadings <- function(object,
+                                     comps = c(1, 2),
+                                     filetype = NA,
+                                     figsize = NA,
+                                     figunit = NA,
+                                     validationshape = NA,
+                                     myTheme = ggplot2::theme_classic(),
+                                     ...) {
+  if (any(!comps %in% get_relevant_pcs(object = object, effect = "time"))) {
+    warning("Please note: Some components have low explanatory power and HAVE NOT BEEN rotated during rotation. Proceed with care.")
+  }
+  
+  dff <- subset(get_loadings(object)$time, PC %in% comps)
+  dff$PC <- paste0("PC", dff$PC)
+  dff <- reshape2::melt(data = dff, id.vars = c("PC", "covars"))
+  dff <- reshape2::dcast(data = dff, covars ~ PC + variable, value.var = "value")
+  dff$color <- "black"
+  dff$lab <- dff$covars
+  if (object$validate == TRUE) {
+    dff$color <- ifelse(sign(dff[paste0("PC", comps[1], "_low")]) == sign(dff[paste0("PC", comps[1], "_high")]) & sign(dff[paste0("PC", comps[2], "_low")]) == sign(dff[paste0("PC", comps[2], "_high")]), "black", "gray")
+    dff$lab <- ifelse(dff$color == "black", dff$covars, NA)
+  }
+  
+  
+  g <- ggplot2::ggplot(dff, ggplot2::aes_string(
+    x = paste0("PC", comps[1], "_loading"),
+    y = paste0("PC", comps[2], "_loading"),
+    label = "lab"
+  ))
+  if (object$validate == TRUE) {
+    g <- g +
+      ggplot2::geom_pointrange(ggplot2::aes_string(xmin = paste0("PC", comps[1], "_low"), xmax = paste0("PC", comps[1], "_high")), color = dff$color) +
+      ggplot2::geom_pointrange(ggplot2::aes_string(ymin = paste0("PC", comps[2], "_low"), ymax = paste0("PC", comps[2], "_high")), color = dff$color)
+  } else {
+    g <- g + ggplot2::geom_point()
+  }
+  g <- g +
+    ggrepel::geom_text_repel() +
+    ggplot2::labs(
+      x = .get_explained_label(object, component = comps[1], effect = "time", type = "Loading"),
+      y = .get_explained_label(object, component = comps[2], effect = "time", type = "Loading")
+    ) +
+    myTheme
+  
+  if (object$separate_time_and_group) {
+    dff <- subset(get_loadings(object)$group, PC %in% comps)
+    dff$PC <- paste0("PC", dff$PC)
+    dff <- reshape2::melt(data = dff, id.vars = c("PC", "covars"))
+    dff <- reshape2::dcast(data = dff, covars ~ PC + variable, value.var = "value")
+    dff$color <- "black"
+    dff$lab <- dff$covars
+    if (object$validate == TRUE) {
+      dff$color <- ifelse(sign(dff[paste0("PC", comps[1], "_low")]) == sign(dff[paste0("PC", comps[1], "_high")]) & sign(dff[paste0("PC", comps[2], "_low")]) == sign(dff[paste0("PC", comps[2], "_high")]), "black", "gray")
+      dff$lab <- ifelse(dff$color == "black", dff$covars, NA)
+    }
+    
+    glg <- ggplot2::ggplot(dff, ggplot2::aes_string(
+      x = paste0("PC", comps[1], "_loading"),
+      y = paste0("PC", comps[2], "_loading"),
+      label = "lab"
+    ))
+    if (object$validate == TRUE) {
+      glg <- glg +
+        ggplot2::geom_pointrange(ggplot2::aes_string(xmin = paste0("PC", comps[1], "_low"), xmax = paste0("PC", comps[1], "_high")), color = dff$color) +
+        ggplot2::geom_pointrange(ggplot2::aes_string(ymin = paste0("PC", comps[2], "_low"), ymax = paste0("PC", comps[2], "_high")), color = dff$color)
+    } else {
+      glg <- glg + ggplot2::geom_point()
+    }
+    glg <- glg +
+      ggrepel::geom_text_repel() +
+      ggplot2::labs(
+        x = .get_explained_label(object, component = comps[1], effect = "group", type = "Loading"),
+        y = .get_explained_label(object, component = comps[2], effect = "group", type = "Loading")
+      ) +
+      myTheme
+    
+    g <- ggpubr::ggarrange(g, glg)
+  }
+  
+  if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+  
+  return(g)
+}
+
+#' Plot scores along PCs
+#'
+#' This function returns a plot of ...
+#'
+#' @param object An ALASCA object
+#' @param covar Which covariable(s) to plot (default: `NA` which prints all)
+#' @param xlab Alternative names for the covariables
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param figunit = "mm"
+#' @param plottext If `TRUE`, plot time point as text
+#' @param validationshape Either `NA`, "ellipse", or "cross"
+#' @param validationlevel Defaults to 0.95
+#' @param return_data Set to `TRUE` to return data instead of plot
+#'
+#' @param myTheme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
+#' @return A ggplot2 object.
+#'
+#' @export
+plot_components_score <- function(object,
+                                  comps = c(1, 2),
+                                  xlabel = NA,
+                                  return_data = FALSE,
+                                  filename = NA,
+                                  filetype = NA,
+                                  figsize = NA,
+                                  figunit = NA,
+                                  validationshape = "ellipse",
+                                  validationlevel = 0.95,
+                                  plottext = TRUE,
+                                  texthjust = -0.2,
+                                  alphavalidate = 0.4,
+                                  myTheme = ggplot2::theme_classic(),
+                                  ...) {
+  
+  if (!is.na(filename)) object$filename <- filename
+  if (!object$validate) validationshape <- NA
+  if (any(!comps %in% get_relevant_pcs(object = object, effect = "time"))) warning("Please note: Some components have low explanatory power and HAVE NOT BEEN rotated during rotation. Proceed with care.")
+  
+  if (validationshape == "cross" & !is.na(validationshape)) {
+    dff <- subset(get_scores(object)$time, PC %in% comps)
+    dff$PC <- paste0("PC", dff$PC)
+    dff <- reshape2::melt(data = dff, id.vars = c("PC", "time", "group"))
+    dff <- reshape2::dcast(data = dff, time + group ~ PC + variable, value.var = "value")
+    dff$time <- factor(dff$time, levels = object$timelist)
+    dff$group <- factor(dff$group, levels = object$grouplist)
+    g <- ggplot2::ggplot(dff, ggplot2::aes_string(
+      x = paste0("PC", comps[1], "_score"),
+      y = paste0("PC", comps[2], "_score"),
+      shape = "time",
+      color = "group",
+      group = "group",
+      linetype = "group"
+    )) +
+      ggplot2::geom_line() +
+      ggplot2::geom_pointrange(ggplot2::aes_string(xmin = paste0("PC", comps[1], "_low"), xmax = paste0("PC", comps[1], "_high"))) +
+      ggplot2::geom_pointrange(ggplot2::aes_string(ymin = paste0("PC", comps[2], "_low"), ymax = paste0("PC", comps[2], "_high")))
+    g <- .get_plot_handle(
+      g = g,
+      object = object,
+      myTheme = myTheme,
+      comp = comps,
+      effect = "time"
+    )
+    
+    if (object$separate_time_and_group) {
+      dff <- subset(get_scores(object)$group, PC %in% comps)
+      dff$PC <- paste0("PC", dff$PC)
+      dff <- reshape2::melt(data = dff, id.vars = c("PC", "time", "group"))
+      dff <- reshape2::dcast(data = dff, time + group ~ PC + variable, value.var = "value")
+      dff$time <- factor(dff$time, levels = object$timelist)
+      dff$group <- factor(dff$group, levels = object$grouplist)
+      gsg <- ggplot2::ggplot(dff, ggplot2::aes_string(
+        x = paste0("PC", comps[1], "_score"),
+        y = paste0("PC", comps[2], "_score"),
+        shape = "time",
+        color = "group",
+        group = "group",
+        linetype = "group"
+      )) +
+        ggplot2::geom_line() +
+        ggplot2::geom_pointrange(ggplot2::aes_string(xmin = paste0("PC", comps[1], "_low"), xmax = paste0("PC", comps[1], "_high"))) +
+        ggplot2::geom_pointrange(ggplot2::aes_string(ymin = paste0("PC", comps[2], "_low"), ymax = paste0("PC", comps[2], "_high")))
+      gsg <- .get_plot_handle(
+        g = gsg,
+        object = object,
+        myTheme = myTheme,
+        comp = comps,
+        effect = "group",
+        legend = "bottom"
+      )
+      
+      g <- ggpubr::ggarrange(g, gsg, common.legend = TRUE, legend = "bottom", legend.grob = ggpubr::get_legend(gsg), align = "hv")
+    }
+  } else if (validationshape == "ellipse" & !is.na(validationshape)) {
+    # Score plots
+    ## Time
+    dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
+      data.frame(
+        subset(get_scores(object$validation$temp_objects[[x]])$time, PC %in% comps),
+        model = x
+      )
+    }))
+    df_temp <- subset(get_scores(object)$time, PC %in% comps)
+    df_temp$model <- 0
+    df_temp$low <- NULL
+    df_temp$high <- NULL
+    dff <- rbind(dff, df_temp)
+    
+    dff$PC <- paste0("PC", dff$PC)
+    dfff <- reshape2::dcast(data = dff, time + group + model ~ PC, value.var = "score")
+    dfff$time <- factor(dfff$time, levels = object$timelist)
+    dfff$group <- factor(dfff$group, levels = object$grouplist)
+    dfff$alpha <- ifelse(dfff$model == 0, 1, alphavalidate)
+    dfff <- dfff[order(dff$time), ]
+    g <- ggplot2::ggplot(dfff, ggplot2::aes_string(paste0("PC", comps[1]), paste0("PC", comps[2]), shape = "time", color = "group")) +
+      ggplot2::geom_line(data = subset(dfff, model == 0), ggplot2::aes(group = paste(model, group), linetype = group)) +
+      ggplot2::geom_point(alpha = dfff$alpha) +
+      ggplot2::stat_ellipse(level = validationlevel)
+    if (plottext) {
+      g <- g + ggplot2::geom_text(
+        data = subset(dfff, model == 0),
+        color = "black",
+        ggplot2::aes(label = time), hjust = texthjust
+      )
+    }
+    g <- .get_plot_handle(g = g, object = object, myTheme = myTheme, comp = comps, effect = "time")
+    if (object$separate_time_and_group) {
+      ## Group
+      dff <- Reduce(rbind, lapply(seq_along(object$validation$temp_objects), function(x) {
+        data.frame(
+          subset(get_scores(object$validation$temp_objects[[x]])$group, PC %in% comps),
+          model = x
+        )
+      }))
+      df_temp <- subset(get_scores(object)$group, PC %in% comps)
+      df_temp$model <- 0
+      df_temp$low <- NULL
+      df_temp$high <- NULL
+      dff <- rbind(dff, df_temp)
+      
+      dff$PC <- paste0("PC", dff$PC)
+      dfff <- reshape2::dcast(data = dff, time + group + model ~ PC, value.var = "score")
+      dfff$time <- factor(dfff$time, levels = object$timelist)
+      dfff$group <- factor(dfff$group, levels = object$grouplist)
+      dfff$alpha <- ifelse(dfff$model == 0, 1, alphavalidate)
+      dfff <- dfff[order(dff$time), ]
+      gsg <- ggplot2::ggplot(dfff, ggplot2::aes_string(paste0("PC", comps[1]), paste0("PC", comps[2]), shape = "time", color = "group")) +
+        ggplot2::geom_line(data = subset(dfff, model == 0), ggplot2::aes(group = paste(model, group), linetype = group)) +
+        ggplot2::geom_point(alpha = dfff$alpha) +
+        ggplot2::stat_ellipse(level = validationlevel)
+      if (plottext) {
+        gsg <- gsg + ggplot2::geom_text(data = subset(dfff, model == 0), color = "black", ggplot2::aes(label = time), hjust = texthjust)
+      }
+      
+      gsg <- .get_plot_handle(g = gsg, object = object, myTheme = myTheme, comp = comps, effect = "group", legend = "bottom")
+      
+      g <- ggpubr::ggarrange(g, gsg, common.legend = TRUE, legend = "bottom", legend.grob = ggpubr::get_legend(gsg), align = "hv")
+    }
+  } else {
+    dff <- subset(get_scores(object)$time, PC %in% comps)
+    dff$PC <- paste0("PC", dff$PC)
+    dff <- reshape2::dcast(data = dff, time + group ~ PC, value.var = "score")
+    dff$time <- factor(dff$time, levels = object$timelist)
+    dff$group <- factor(dff$group, levels = object$grouplist)
+    g <- ggplot2::ggplot(dff, ggplot2::aes_string(x = paste0("PC", comps[1]), y = paste0("PC", comps[2]), shape = "time", color = "group", group = "group", linetype = "group")) +
+      ggplot2::geom_line() +
+      ggplot2::geom_point()
+    g <- .get_plot_handle(g = g, object = object, myTheme = myTheme, comp = comps, effect = "time")
+    if (object$separate_time_and_group) {
+      dff <- subset(get_scores(object)$group, PC %in% comps)
+      dff$PC <- paste0("PC", dff$PC)
+      dff <- reshape2::dcast(data = dff, time + group ~ PC, value.var = "score")
+      dff$time <- factor(dff$time, levels = object$timelist)
+      dff$group <- factor(dff$group, levels = object$grouplist)
+      gsg <- ggplot2::ggplot(dff, ggplot2::aes_string(x = paste0("PC", comps[1]), y = paste0("PC", comps[2]), shape = "time", color = "group", "group" = "group", linetype = "group")) +
+        ggplot2::geom_line() +
+        ggplot2::geom_point()
+      gsg <- .get_plot_handle(
+        g = gsg,
+        object = object,
+        myTheme = myTheme,
+        comp = comps,
+        effect = "group",
+        legend = "bottom"
+      )
+      
+      g <- ggpubr::ggarrange(g, gsg, common.legend = TRUE, legend = "bottom", legend.grob = ggpubr::get_legend(gsg))
+    }
+  }
+  if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+  
+  return(g)
+}
+
+#' Get plotting features
+#'
+#' This function returns a list with colors for plotting
+#'
+#' @param object An ALASCA object
+#' @return A list with colors
+#'
+#' @export
+.get_plot_handle <- function(g, object, myTheme, effect = "time", comps = c(1, 2), legend = NA) {
+  g <- g + ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+    ggplot2::labs(
+      x = .get_explained_label(object, component = comps[1], effect = effect),
+      y = .get_explained_label(object, component = comps[2], effect = effect)
+    ) +
+    myTheme
+  
+  if (!is.na(legend)) g <- g + ggplot2::theme(legend.position = legend)
+  
+  return(g)
+}
+
+
+
+#' Plot projection of participants
+#'
+#' This function returns a plot of...
+#'
+#' @param object An ALASCA object
+#' @param comp Which two components to plot (default: `c(1, 2`)
+#' @param return_data Set to `TRUE` to return data instead of plot
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param myTheme A ggplot2 theme to use
+#' @return A ggplot2 objects.
+#'
+#' @export
+plot_projection <- function(object,
+                            comp = c(1, 2),
+                            return_data = FALSE,
+                            filename = NA,
+                            filetype = NA,
+                            figsize = NA,
+                            figunit = NA,
+                            myTheme = NA) {
+  if (any(is.na(myTheme))) myTheme <- object$plot.myTheme
+  if (!is.na(filename)) object$filename <- filename
+  
+  df <- object$df
+  df$ID <- df[, ID]
+  loadings_Time <- subset(get_loadings(object)$time, PC %in% comp)
+  loadings_Time <- reshape2::dcast(data = loadings_Time, covars ~ paste0("PC", PC), value.var = "loading")
+  df_time <- merge(df, loadings_Time, by.x = "variable", by.y = "covars")
+  if (object$separate_time_and_group) {
+    df_time <- Reduce(rbind, lapply(unique(paste0(df_time$ID, df_time$time)), function(x) {
+      data.frame(
+        part = subset(df_time, paste0(ID, time) == x)$ID,
+        pc1 = sum(subset(df_time, paste0(ID, time) == x)$PC1 * subset(df_time, paste0(ID, time) == x)$value),
+        pc2 = sum(subset(df_time, paste0(ID, time) == x)$PC2 * subset(df_time, paste0(ID, time) == x)$value),
+        time = subset(df_time, paste0(ID, time) == x)$time
+      )
+    }))
+    df_time <- df_time[!duplicated(df_time), ]
+    colnames(df_time) <- c("part", paste0("PC", comp[1]), paste0("PC", comp[2]), "time")
+    if (!return_data) {
+      g_t <- ggplot2::ggplot(df_time, ggplot2::aes_string(x = paste0("PC", comp[1]), y = paste0("PC", comp[2]), group = "part")) +
+        ggplot2::geom_point() +
+        ggplot2::geom_line(alpha = 0.7, arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(0.20, "cm"))) +
+        myTheme
+    }
+    loadings_group <- subset(get_loadings(object)$group, PC %in% comp)
+    loadings_group <- reshape2::dcast(data = loadings_group, covars ~ paste0("PC", PC), value.var = "loading")
+    df_group <- merge(df, loadings_group, by.x = "variable", by.y = "covars")
+    df_group <- Reduce(rbind, lapply(unique(paste0(df_time$ID, df_time$time)), function(x) {
+      data.frame(
+        part = subset(df_group, paste0(ID, time) == x)$ID,
+        pc1 = sum(subset(df_group, paste0(ID, time) == x)$PC1 * subset(df_group, paste0(ID, time) == x)$value),
+        pc2 = sum(subset(df_group, paste0(ID, time) == x)$PC2 * subset(df_group, paste0(ID, time) == x)$value),
+        time = subset(df_group, paste0(ID, time) == x)$time,
+        group = subset(df_group, paste0(ID, time) == x)$group
+      )
+    }))
+    df_group <- df_group[!duplicated(df_group), ]
+    colnames(df_group) <- c("part", paste0("PC", comp[1]), paste0("PC", comp[2]), "time", "group")
+    if (!return_data) {
+      g_g <- ggplot2::ggplot(df_group, ggplot2::aes_string(x = paste0("PC", comp[1]), y = paste0("PC", comp[2]), group = "part", color = "group")) +
+        ggplot2::geom_point() +
+        ggplot2::geom_line(alpha = 0.7, arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(0.20, "cm"))) +
+        myTheme
+      g <- ggpubr::ggarrange(g_t, g_g, common.legend = TRUE, legend = "bottom")
+    }
+    g <- list(df_time, df_group)
+    names(g) <- c("time", "group")
+    if (object$save) {
+      for (i in seq_along(g)) {
+        saveALASCAPlot(object = object, g = g[[i]], filetype = filetype, figsize = figsize, figunit = figunit, suffix = names(g)[i])
+      }
+    }
+    return(g)
+  } else {
+    df_time <- Reduce(rbind, lapply(unique(paste0(df_time$ID, df_time$time)), function(x) {
+      data.frame(
+        part = subset(df_time, paste0(ID, time) == x)$ID,
+        pc1 = sum(subset(df_time, paste0(ID, time) == x)$PC1 * subset(df_time, paste0(ID, time) == x)$value),
+        pc2 = sum(subset(df_time, paste0(ID, time) == x)$PC2 * subset(df_time, paste0(ID, time) == x)$value),
+        time = subset(df_time, paste0(ID, time) == x)$time,
+        group = subset(df_time, paste0(ID, time) == x)$group
+      )
+    }))
+    df_time <- df_time[!duplicated(df_time), ]
+    colnames(df_time) <- c("part", paste0("PC", comp[1]), paste0("PC", comp[2]), "time", "group")
+    g <- ggplot2::ggplot(df_time, ggplot2::aes_string(x = paste0("PC", comp[1]), y = paste0("PC", comp[2]), group = "part", color = "group")) +
+      ggplot2::geom_point() +
+      ggplot2::geom_line(alpha = 0.7, arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(0.20, "cm"))) +
+      myTheme
+    if (return_data) {
+      return(df_time)
+    } else {
+      
+      if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+      
+      return(g)
+    }
   }
 }
