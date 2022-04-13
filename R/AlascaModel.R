@@ -171,7 +171,13 @@ AlascaModel <- R6::R6Class("AlascaModel",
         })
       }
       
-      return(lapply(self$effect_list$model_matrix, function(mm) mm[self$df[ variable == self$variablelist[[1]], which = TRUE ], ]))
+      return(
+        lapply(self$effect_list$model_matrix, function(mm) {
+          #log4r::debug(self$log, paste("mm_dim: ", dim(mm)))
+          #log4r::debug(self$log, paste("mm_dim: ", dim(self$df)))
+          mm
+          })
+        )
     },
     sanitize_object = sanitize_object,
     get_info_from_formula = get_info_from_formula,

@@ -999,7 +999,7 @@ get_effect_matrix <- function() {
   reg_coefs <- dcast(self$regression_coefficients, variable~covar, value.var = "estimate")
   rownames(reg_coefs) <- reg_coefs$variable
   self$effect_list$effect_matrix <- lapply(self$set_design_matrices(), function(mm) {
-      as.matrix(mm) %*% as.matrix(reg_coefs[colnames(mm), -1])
+      mm[self$df[variable == self$variablelist[[1]], which = TRUE ], ] %*% as.matrix(reg_coefs[colnames(mm), -1])
     }
   )
   
@@ -1327,6 +1327,8 @@ do_reduce_dimensions <- function(){
 clean_pca <- function() {
   log4r::debug(self$log, "Starting clean_pca")
   
+  PCs_to_look_at = 1:2
+  
   self$ALASCA$score <- lapply(seq_along(self$effect_list$pca), function(i){
     unique(
       cbind(
@@ -1369,7 +1371,7 @@ clean_pca <- function() {
   for (i in seq_along(self$ALASCA$loading)) {
     setkeyv(self$ALASCA$loading[[i]], cols = "covars")
     setkeyv(self$ALASCA$score[[i]], cols = self$effect_list$terms[[i]])
-    for(k in colnames(self$ALASCA$loading[[i]][, -1])) {
+    for(k in colnames(self$ALASCA$loading[[i]][, (PCs_to_look_at + 1)])) {
       nVar <- self$ALASCA$loading[[i]][, .I[which.max(abs(get(k)))]]
       sVar <- self$ALASCA$loading[[i]][nVar, sign(get(k))]
       
@@ -1540,7 +1542,7 @@ do_validate <- function(participant_column = FALSE, validate_regression = FALSE)
         start.time.this <- Sys.time()
         
         # Make resampled model
-        temp_object <- prepare_validation_run(object, runN = ii)
+        temp_object <- self$prepare_validation_run(runN = ii)
         gc()
         
         # Rotate new loadings/scores to the original model
@@ -1549,6 +1551,7 @@ do_validate <- function(participant_column = FALSE, validate_regression = FALSE)
         } else {
           temp_object <- rotate_matrix(object = temp_object, target = object)
         }
+        temp_object$clean_alasca()
         
         # Save to disk
         fname <- paste0("val_", ii)
@@ -1596,6 +1599,7 @@ do_validate <- function(participant_column = FALSE, validate_regression = FALSE)
         } else {
           temp_object$rotate_matrix(target = self)
         }
+        temp_object$clean_alasca()
         
         time_all <- difftime(Sys.time(), start.time.all, units = c("secs")) / ii
         log4r::info(self$log, paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((self$n_validation_runs - ii) * time_all, 2), " seconds"))
@@ -1769,6 +1773,7 @@ get_validation_percentiles_regression <- function(objectlist) {
   } else {
     df <- rbindlist(lapply(objectlist, function(x) x$model_prediction))
   }
+  
   df <- df[, as.list(quantile(pred, probs = self$limitsCI, type = self$validation_quantile_method)), by = .(group, time, variable)]
   colnames(df) <- c("group", "time", "variable", "low", "high")
   
@@ -2003,7 +2008,9 @@ prepare_validation_run <- function(runN = NA) {
     # Create bootstrap object without data
     bootobject <- self$clone()
     bootobject[["df"]] <- NULL
-    bootobject$get_bootstrap_data(df_raw = self$df_raw, participants_in_bootstrap)
+    bootobject[["modmat"]] <- NULL
+    bootobject[["effect_list"]][["model_matrix"]] <- NULL
+    bootobject$get_bootstrap_data(df_raw = self$df_raw, participants_in_bootstrap, modmat = self$modmat)
     
     if (self$validation_assign_new_ids) {
       bootobject$df[, ID := uniqueIDforBootstrap] # Replace ID
@@ -2031,6 +2038,8 @@ prepare_validation_run <- function(runN = NA) {
 #' @return A data frame
 get_bootstrap_ids <- function(runN = NA) {
   if (is.na(runN)) {
+    log4r::debug(self$log, "Generating random bootstrap")
+    
     participants_in_bootstrap <- data.frame(
       new_id = seq(self$df[, uniqueN(ID)]),
       old_id = rbindlist(
@@ -2058,20 +2067,24 @@ get_bootstrap_ids <- function(runN = NA) {
 #'
 #' @param object An ALASCA object
 #' @return A data frame
-get_bootstrap_data <- function(df_raw, participants_in_bootstrap) {
+get_bootstrap_data <- function(df_raw, participants_in_bootstrap, modmat) {
   selected_rows <- rbindlist(
     lapply(participants_in_bootstrap$new_id, function(participant){
       list(
         new_id = participant,
-        row_nr = df_raw$rows_by_ID[[participant]]
+        row_nr = df_raw$rows_by_ID[[as.character(participants_in_bootstrap$old_id[participant])]]
       )
     })
   )
+  
   self[["my_df_rows"]] <- selected_rows$row_nr
-  self$df <- self$scale_function(df_raw$df[self$my_df_rows])
+  self$df <- copy(self$scale_function(df_raw$df[self$my_df_rows,]))
+  log4r::debug(self$log, paste("Length df:", nrow(self[["df"]])))
+  log4r::debug(self$log, paste("First 10 rows:", paste0(selected_rows$row_nr[1:10], collapse = " - ")))
   self$df[, uniqueIDforBootstrap := selected_rows$new_id]
   self$df[, originalIDbeforeBootstrap := ID]
-  self$modmat <- self$modmat[selected_rows$row_nr,]
+  self$modmat <- modmat[selected_rows$row_nr,]
+  log4r::debug(self$log, paste("Length mm:", nrow(self[["modmat"]])))
   #invisible(self)
 }
 
