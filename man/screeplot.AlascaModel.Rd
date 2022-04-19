@@ -4,35 +4,14 @@
 \alias{screeplot.AlascaModel}
 \title{Get screeplot}
 \usage{
-\method{screeplot}{AlascaModel}(
-  object,
-  effect = "both",
-  nComps = NA,
-  filename = "scree_plot",
-  filetype = object$plot.filetype,
-  figsize = object$plot.figsize,
-  figunit = object$plot.figunit,
-  my_theme = object$plot.my_theme
-)
+\method{screeplot}{AlascaModel}(model, ...)
 }
 \arguments{
-\item{object}{An ALASCA object}
-
-\item{effect}{String stating which effect to return; \code{time}, \code{group}, \code{both} (default)}
-
-\item{filetype}{Which filetype you want to save the figure to}
-
-\item{figsize}{A vector containing \code{c(widht,height,dpi)} (default: \code{c(12, 8, 300)})}
-
-\item{my_theme}{A ggplot2 theme to use, defaults to \code{ggplot2::theme_bw()}}
+\item{model}{An ALASCA object}
 }
 \value{
 An ggplot2 object (or a list og ggplot objects)
 }
 \description{
 This function returns a screeplot for an ALASCA model showing what proportion of the variance each component of the model explains
-}
-\examples{
-load("PE.Rdata")
-screeplot(model)
 }

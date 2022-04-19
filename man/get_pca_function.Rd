@@ -4,7 +4,7 @@
 \alias{get_pca_function}
 \title{Summary}
 \usage{
-get_pca_function(object)
+get_pca_function()
 }
 \value{
 An ALASCA object

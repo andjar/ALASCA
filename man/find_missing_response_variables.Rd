@@ -4,14 +4,11 @@
 \alias{find_missing_response_variables}
 \title{Check if response variables are missing}
 \usage{
-find_missing_response_variables(object)
-}
-\arguments{
-\item{object}{An ALASCA object}
+find_missing_response_variables()
 }
 \value{
 An ALASCA object
 }
 \description{
-...
+Called from AlascaDataset
 }

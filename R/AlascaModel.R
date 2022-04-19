@@ -1,58 +1,44 @@
-# source("R/buildModel.R")
-# source("R/export.R")
-# source("R/pca.R")
-# source("R/validation.R")
+#' R6 Class Representing an ALASCA model
+#'
+#' @description
+#' The object builds the ALASCA model and contains the data
 AlascaModel <- R6::R6Class("AlascaModel",
   lock_objects = FALSE,
   public = list(
+    #' @field df The data to analyze
     df = NULL,
+    #' @field formula An AlascaForula object
     formula = NULL,
+    #' @field wide Whether the provided data is in wide format
     wide = FALSE,
-    separate_time_and_group = FALSE,
+    #' @field scale_function How to scale the data
     scale_function = "sdall",
-    reduce_dimensions = FALSE,
-    equal_baseline = FALSE,
-    sum_coding = FALSE,
-    method = NA,
-    use_Rfast = TRUE,
-    p_adjust_method = NA,
-    participant_column = "ID",
-    x_column = "time",
     ignore_missing = FALSE,
     ignore_missing_covars = FALSE,
-    silent = FALSE,
-    scale_function.center = FALSE,
-    stratification_column = "group",
-    stratification_vector = NA,
-    minimize_object = FALSE,
-    limitsCI = c(0.025, 0.975),
-    pca_function = "prcomp",
-    plot.x_label = "Time",
-    plot.group_label = "Group",
-    plot.figsize = c(180, 120, 300),
-    plot.figunit = "mm",
-    plot.filetype = "png",
-    plot.palette = NULL,
-    plot.linetypes = NULL,
-    plot.loadinggroupcolumn = NA,
-    plot.loadinggroup_label = "Variable group",
-    plot.palette.end = 0.8,
-    explanatorylimit = 0.05,
-    do_debug = FALSE,
+    version = "0.0.0.95",
+    update_date = "2022-04-19",
+    
+    # Effect matrices
+    #' @field scale_function If TRUE, try to separate the effects
+    separate_effects = FALSE,
+    equal_baseline = FALSE,
+    effect_list = list(
+      expr = NULL,
+      terms = NULL,
+      model_matrix = NULL,
+      effect_matrix = NULL,
+      pca = NULL,
+      saved_scores = list(),
+      saved_loadings = list()
+    ),
+    
+    # Validation
     n_validation_folds = 7,
     n_validation_runs = 1000,
     validation_quantile_method = 2,
-    plot.my_theme = ggplot2::theme_classic(),
-    keep_columns = c(""),
-    keep_terms = c(""),
-    filename = NA,
-    filepath = NA,
-    reduce_dimensions.nComps = NULL,
-    reduce_dimensions.limit = 0.95,
-    save = FALSE,
-    save_to_disk = FALSE,
     save_validation_ids = FALSE,
     optimize_score = TRUE,
+    #' @field validate Validate the model
     validate = FALSE,
     validate_regression = TRUE,
     validation = FALSE,
@@ -61,70 +47,171 @@ AlascaModel <- R6::R6Class("AlascaModel",
     validation_object = NA,
     validation_assign_new_ids = FALSE,
     validation_participants = NA,
-    init_time = Sys.time(),
-    rawFormula = NULL,
-    keep_validation_objects = FALSE,
-    log_file = tempfile(),
+    limitsCI = c(0.025, 0.975),
+    compress_validation = 80,
+    
+    # Reduce dimensions
+    #' @field reduce_dimensions Use PCA to reduce data dimensions prior to analysis
+    reduce_dimensions = FALSE,
+    pca_function = "prcomp",
+    reduced_df = list(
+      explanatory_power = NULL,
+      nComps = NULL,
+      limit = 0.95,
+      loading = NULL,
+      score = NULL,
+      df = NULL,
+      variables = NULL
+    ),
+    
+    # Save to disk
+    #' @field save_to_disk Write model data to disk to reduce memory usage
+    save_to_disk = FALSE,
+    #' @field db_method Use a `duckdb` or a `SQLite` database for validation data
+    db_method = "duckdb", # SQLite
+    
+    # Save
+    #' @field filename Filename for the saved model
+    filename = "ALASCA",
+    #' @field filepath Where to save the model. Defaults to ALASCA/<timestamp>
+    filepath = NULL,
+    #' @field save Save model data and plots
+    save = FALSE,
+    
+    
+    sum_coding = FALSE,
+    #' @field method Can be `LM` or `LMM`
+    method = NULL,
+    #' @field max_PC The maximal number of principal components to keep for further analysis
+    max_PC = 20,
+    use_Rfast = TRUE,
+    p_adjust_method = NULL,
+    participant_column = NULL,
+    
+    scale_function.center = FALSE,
+    stratification_column = NULL,
+    stratification_vector = NA,
+    minimize_object = FALSE,
+    #' @field explanatory_limit Only validate components explaining more than `explanatory_limit` of the variance
+    explanatory_limit = 0.05,
+    init_time = NULL,
+
+    # Logging
+    log_to = "all",
+    log_file = NULL,
+    logger = NULL,
     log_level = NULL,
-    log = NULL,
-    valCol = NULL,
-    formula_terms = NULL,
-    all_formula_terms = NULL,
-    hasGroupTerm = NULL,
-    hasInteractionTerm = NULL,
+    uselog = TRUE,
+    do_debug = FALSE,
+    
+    
     covars = NULL,
-    variablelist = NULL,
-    timelist = NULL,
-    grouplist = NULL,
     new_formula = NULL,
     my_df_rows = NULL,
     modmat = NULL,
     cnames_modmat = NULL,
-    effect_list = list(
-      expr = c("time", "time:group"),
-      terms = NULL,
-      model_matrix = NULL,
-      effect_matrix = NULL,
-      pca = NULL
+    covar_coefficients = NULL,
+    
+    
+    ALASCA = list(
+      score = NULL,
+      loading = NULL,
+      explained = NULL,
+      significant_PCs = NULL
     ),
-    initialize = function(df, formula, ...) {
+    initialize = function(df, formula, effects, ...) {
+      
+      # Fetch user inputs
       inputs <- list(...)
+      self$effect_list$expr <- effects
+      self$splot <- AlascaPlot$new(model = self)
+      
       for (i in seq_along(inputs)) {
-        self[[names(inputs)[i]]] <- inputs[[i]]
+        if (substr(names(inputs)[i], 1, 5) == "plot.") {
+          self$splot[[gsub("plot.", "", names(inputs)[i], fixed = TRUE)]] <- inputs[[i]]
+        } else if (substr(names(inputs)[i], 1, 18) == "reduce_dimensions.") {
+          self$reduced_df[[gsub("reduce_dimensions.", "", names(inputs)[i], fixed = TRUE)]] <- inputs[[i]]
+        } else {
+          self[[names(inputs)[i]]] <- inputs[[i]]
+        }
       }
-      self$df <- setDT(df)
-      self$formula <- formula
+      
+      self$init_time <- Sys.time()
+      self$filepath <- paste0("ALASCA/", strftime(self$init_time, format = "%Y-%m-%dT%H%M%S"), "/")
+      dir.create(self$filepath, recursive = TRUE)
+      self$log_file <- paste0(self$filepath, "ALASCA.log")
+      
+      # Start logging
+      self$log_level <- ifelse(self$do_debug, "DEBUG", "INFO")
+      if (self$log_to == "file") {
+        self$logger <- log4r::logger(self$log_level, appenders = list(log4r::file_appender(self$log_file)))
+      } else if (self$log_to == "console") {
+        self$logger <- log4r::logger(self$log_level, appenders = list(log4r::console_appender()))
+      } else if (self$log_to == "none") {
+        self$uselog <- FALSE
+      }
+      else {
+        self$logger <- log4r::logger(self$log_level, appenders = list(log4r::console_appender(), log4r::file_appender(self$log_file)))
+      }
+      self$log(paste0("Initializing ALASCA (v", self$version, ", ", self$update_date, ")"))
+      
+      # Process the formula
+      self$formula <- AlascaFormula$new(formula, model = self)
+      
+      # Keep a copy of unscaled data
+      self$df_raw <- AlascaDataset$new(df = setDT(df), model = self)
+      self$formula$get_regression_formula()
+      self$my_df_rows <- self$df_raw$rows_to_serve
+
+      self$stratification_vector <- self$df_raw$data_df[, get(self$stratification_column)]
+      
+      # Scale data
+      self$get_scaling_function()
+      self$df <- self$scale_function(self$df_raw$data_df)
+      
+      self$get_pca_function()
+      self$set_effect_terms()
+      self$splot$group <- self$get_plot_group
+      
       self$validate <- self$validate || self$validation
       self$validation <- NULL
       self$n_validation_runs <- ifelse(any(is.na(self$validation_ids)), self$n_validation_runs, nrow(self$validation_ids))
       self$filepath <- ifelse(is.na(self$filepath), NA, ifelse(substr(self$filepath, nchar(self$filepath), nchar(self$filepath)) == "/", self$filepath, paste0(self$filepath, "/")))
       self$save_to_disk <- self$validate && self$save_to_disk
-      self$rawFormula <- self$formula
+      if (self$save_to_disk) {
+        if (self$db_method == "SQLite") {
+          self$db_driver <- RSQLite::dbDriver("SQLite")
+          self$db_filename <- paste0(self$filepath, "ALASCA.db")
+          self$db_con <- DBI::dbConnect(self$db_driver, dbname = self$db_filename)
+        } else {
+          self$db_con <- DBI::dbConnect(duckdb::duckdb(), dbdir= paste0(self$filepath, "ALASCA.duckdb"), read_only=FALSE)
+        }
+        DBI::dbWriteTable(self$db_con, "variables", 
+            data.table(
+              id = seq_along(self$get_levels("variable")),
+              variable = self$get_levels("variable")
+            ))
+      }
+      
       # self$ALASCA.version <- print_version(get = "version")
       # self$ALASCA.version.date <- print_version(get = "date")
-      self$log_level <- ifelse(self$do_debug, "DEBUG", "INFO")
-
-      if (self$silent) {
-        self$log <- log4r::logger(self$log_level, appenders = list(log4r::file_appender(self$log_file)))
-      } else {
-        self$log <- log4r::logger(self$log_level, appenders = list(log4r::console_appender(), log4r::file_appender(self$log_file)))
-      }
-
-      log4r::info(self$log, "Initializing ALASCA.")
 
       # Clean input ----
-      log4r::info(self$log, "Has initialized the ALASCA model. Next step is to clean it and check input")
-      self$sanitize_object()
-
+      self$log("Has initialized the ALASCA model. Next step is to clean it and check input", level = "DEBUG")
+      
       # Build the ALASCA model ----
       self$build_model()
     },
-    update = function() {
-
-      if (self$reduce_dimensions) {
-        self$Limm$main$pca <- self$Limm$pca
-        self$Limm$pca <- NULL
+    finalize = function() {
+      if (self$save_to_disk && !self$minimize_object) {
+        if (self$db_method == "SQLite") {
+          DBI::dbDisconnect(self$db_con)
+        } else {
+          DBI::dbDisconnect(self$db_con, shutdown = TRUE)
+        }
       }
+    },
+    update = function() {
 
       ## Avoid recursion
       self$validate <- FALSE
@@ -132,29 +219,55 @@ AlascaModel <- R6::R6Class("AlascaModel",
       ## Save space
       self$minimize_object <- TRUE
 
-      self$variablelist <- unique(self$df$variable)
-      self$timelist <- levels(self$df$time)
-      self$grouplist <- levels(self$df$group)
-
       # Build the ALASCA model ----
 
       self$build_model()
 
       # To save space, we remove unnecessary embedded data ----
-      log4r::debug(self$log, "Starting to remove embedded data")
+      self$log("Starting to remove embedded data", level = "DEBUG")
       self$remove_embedded_data()
-      log4r::debug(self$log, "Completed remove embedded data")
+      self$log("Completed remove embedded data", level = "DEBUG")
 
       # invisible(self)
     },
-    plot = function(component = 1, ...) {
-      if (length(component) == 1) {
-        self$plot_development(component = component, ...)
-      } else if (length(component) == 2) {
-        self$plot_components(comps = component, ...)
-      } else {
-        log4r::error(object$log, "Please provide exactly 1 or 2 components to plot")
+    #' @description
+    #' Function for logging messages using the log4r package
+    #' @param message The message to log
+    #' @param level Level of the message; DEBUG, INFO, WARN, ERROR, FATAL
+    log = function(message, level = "INFO") {
+      if (self$uselog) {
+        log4r::levellog(self$logger, level = level, message)
+      }
+    },
+    plot = function(effect = 1, component = 1, ...) {
+      self$splot$effect_i <- effect
+      self$splot$component <- component
+      self$splot$call_plot(...)
+    },
+    get_residuals = function(variable = NULL) {
+      if (self$use_Rfast) {
+        self$log("Residuals are not calculated when using Rfast. Re-build the model with `use_Rfast = TRUE`", level = "ERROR")
         stop()
+      }
+      if (is.null(variable)) {
+        variable <- self$get_levels("variable")
+      }
+      rbindlist(lapply(variable, function(x){
+        list(
+          variable = x,
+          residuals = residuals(self$regression_model[[x]])
+        )
+      }))
+    },
+    set_effect_terms = function() {
+      self$effect_list$terms <- lapply(self$effect_list$expr, function(x){
+        x <- gsub(" ", "", x)
+        x <- unlist(strsplit(x, split = "\\:|\\+|\\||\\*"))
+        unique(x)
+      })
+      if (is.null(self$splot$x_label)) {
+        # If the x_label has not been provided, use the first regression term
+        self$splot$x_label <- self$splot$capitalize(self$effect_list$terms[[1]][[1]])
       }
     },
     set_design_matrices = function() {
@@ -162,12 +275,11 @@ AlascaModel <- R6::R6Class("AlascaModel",
         self$effect_list$model_matrix <- lapply(self$effect_list$expr, function(x) {
           mm <- model.matrix(as.formula(paste0("value ~ ", x)), data = self$df)
           mm <- mm[, colnames(mm) %in% self$cnames_modmat]
-          mm[, -1]
-        })
-        self$effect_list$terms <- lapply(self$effect_list$expr, function(x){
-          x <- gsub(" ", "", x)
-          x <- unlist(strsplit(x, split = "\\:|\\+|\\||\\*"))
-          unique(x)
+          if (ncol(mm) > 2) {
+            mm[, -1]
+          } else {
+            mm
+          }
         })
       }
       
@@ -179,26 +291,160 @@ AlascaModel <- R6::R6Class("AlascaModel",
           })
         )
     },
-    sanitize_object = sanitize_object,
-    get_info_from_formula = get_info_from_formula,
-    LM_or_LMM = LM_or_LMM,
+    #' @description
+    #' Switch the sign of scores and loadings
+    #' @param effect_i The effect to reflect, `0` or `NULL` reflects the entire model
+    #' @param component The component to reflect, `0` or `NULL` reflects the entire model
+    flip_it = function(effect_i = 0, component = 0) {
+      if (effect_i[[1]] == 0 || is.null(effect_i)) {
+        effect_i <- seq_along(self$effect_list$expr)
+      }
+      if (component[[1]] == 0 || is.null(component)) {
+        component <- unique(self$ALASCA$loading[[1]]$PC)
+      }
+      for (effect_k in effect_i) {
+        self$ALASCA$loading[[effect_k]][PC %in% component, loading := -loading]
+        self$ALASCA$loading[[effect_k]][PC %in% component, high := -high]
+        self$ALASCA$loading[[effect_k]][PC %in% component, low := -low]
+        
+        self$ALASCA$score[[effect_k]][PC %in% component, score := -score]
+        self$ALASCA$score[[effect_k]][PC %in% component, high := -high]
+        self$ALASCA$score[[effect_k]][PC %in% component, low := -low]
+        
+        if (self$validate) {
+          if (self$save_to_disk) {
+            DBI::dbSendQuery(self$db_con,
+                             paste0("UPDATE loading
+                          SET loading = -loading,
+                          high = -high,
+                          low = -low
+                          WHERE effect = ", effect_k, " AND PC IN(", paste(component, collapse = ", "), ")"))
+            DBI::dbSendQuery(self$db_con,
+                             paste0("UPDATE score
+                                SET score = -score,
+                                high = -high,
+                                low = -low
+                                WHERE effect = ", effect_k, " AND PC IN(", paste(component, collapse = ", "), ")"))
+          } else {
+            tmp <- fst::read_fst(self$effect_list$saved_scores[[effect_k]], as.data.table = TRUE)
+            tmp[PC %in% component, score := -score]
+            tmp[PC %in% component, high := -high]
+            tmp[PC %in% component, low := -low]
+            fst::write_fst(tmp, path = self$effect_list$saved_scores[[effect_k]])
+            
+            tmp <- fst::read_fst(self$effect_list$saved_loadings[[effect_k]], as.data.table = TRUE)
+            tmp[PC %in% component, score := -score]
+            tmp[PC %in% component, high := -high]
+            tmp[PC %in% component, low := -low]
+            fst::write_fst(tmp, path = self$effect_list$saved_loadings[[effect_k]])
+          }
+        }
+      }
+    },
+    #' @description
+    #' Returns the reference level of a given column
+    #' @param column A column containing factors
+    #' @return The reference level
+    get_ref = function(column) {
+      if (self$reduce_dimensions && column == "variable") {
+        self$reduced_df[["variables"]][[1]]
+      } else {
+        self$df_raw$level_list[[column]][[1]]
+      }
+      },
+    #' @description
+    #' Returns all the levels of a given column
+    #' @param column A column containing factors
+    #' @return A vector with factor levels
+    get_levels = function(column) {
+      if (self$reduce_dimensions && column == "variable") {
+        self$reduced_df[["variables"]]
+      } else {
+        self$df_raw$level_list[[column]]
+      }
+    },
+    #' @description
+    #' Returns the most interesting principal components (i.e., components explaining more than a given limit of variance: `explanatory_limit`)
+    #' @param x Index corresponding to the effect of interest
+    #' @return A vector with principal components
+    get_PCs = function(x) self$ALASCA$significant_PCs[[x]],
+    get_scores = function(effect_i = 1, component = 1) {
+      if (length(effect_i) == 1) {
+        if (effect_i < 1) {
+          effect_i <- length(self$ALASCA$score)
+          lapply(effect_i, function(i) self$ALASCA$score[[i]][PC %in% component])
+        } else {
+          self$ALASCA$score[[effect_i]][PC %in% component]
+        }
+      } else {
+        lapply(effect_i, function(i) self$ALASCA$score[[i]][PC %in% component])
+      }
+    },
+    get_loadings = function(effect_i = 1, component = 1, n_limit = 0) {
+      if (n_limit > 0) {
+        # Fetch top and bottom for each requested effect and component
+        if (length(effect_i) == 1) {
+          if (effect_i < 1) {
+            effect_i <- length(self$ALASCA$loading)
+            lapply(effect_i, function(i) {
+              lapply(component, function(j) {
+                self$ALASCA$loading[[i]][PC == j][c(
+                  Rfast::nth(loading, k = n_limit, num.of.nths = n_limit, descending = FALSE, index.return = TRUE),
+                  Rfast::nth(loading, k = n_limit, num.of.nths = n_limit, descending = TRUE, index.return = TRUE)
+                )]
+              })
+            })
+          } else {
+            lapply(component, function(j) {
+              self$ALASCA$loading[[effect_i]][PC == j][c(
+                Rfast::nth(loading, k = n_limit, num.of.nths = n_limit, descending = FALSE, index.return = TRUE),
+                Rfast::nth(loading, k = n_limit, num.of.nths = n_limit, descending = TRUE, index.return = TRUE)
+              )]
+            })
+          }
+        } else {
+          lapply(effect_i, function(i) {
+            lapply(component, function(j) {
+              self$ALASCA$loading[[i]][PC == j][c(
+                  Rfast::nth(loading, k = n_limit, num.of.nths = n_limit, descending = FALSE, index.return = TRUE),
+                  Rfast::nth(loading, k = n_limit, num.of.nths = n_limit, descending = TRUE, index.return = TRUE)
+                )]
+            })
+          })
+        }
+      } else {
+        if (length(effect_i) == 1) {
+          if (effect_i < 1) {
+            effect_i <- length(self$ALASCA$loading)
+            lapply(effect_i, function(i) self$ALASCA$loading[[i]][PC %in% component])
+          } else {
+            self$ALASCA$loading[[effect_i]][PC %in% component]
+          }
+        } else {
+          lapply(effect_i, function(i) self$ALASCA$loading[[i]][PC %in% component])
+        }
+      }
+    },
+    get_covars = function(n_limit = 0) {
+      if (n_limit > 0) {
+        rbindlist(lapply(unique(self$covar_coefficients$variable), function(x){
+          self$covar_coefficients[variable == x][c(
+            Rfast::nth(estimate, k = n_limit, num.of.nths = n_limit, descending = FALSE, index.return = TRUE),
+            Rfast::nth(estimate, k = n_limit, num.of.nths = n_limit, descending = TRUE, index.return = TRUE)
+          )]
+        }))
+      } else {
+        return(self$covar_coefficients)
+      }
+    },
     do_validate = do_validate,
-    rename_columns_to_standard = rename_columns_to_standard,
-    wide_to_long = wide_to_long,
-    get_scores = get_scores,
-    check_that_columns_are_valid = check_that_columns_are_valid,
-    adjust_design_matrix = adjust_design_matrix,
     get_scaling_function = get_scaling_function,
     get_default_scaling_function = get_default_scaling_function,
     get_pca_function = get_pca_function,
-    find_missing_predictor_variables = find_missing_predictor_variables,
-    find_missing_response_variables = find_missing_response_variables,
     build_model = build_model,
     remove_embedded_data = remove_embedded_data,
-    saveALASCA = saveALASCA,
     do_reduce_dimensions = do_reduce_dimensions,
     run_regression = run_regression,
-    get_relevant_pcs = get_relevant_pcs,
     get_regression_coefficients = get_regression_coefficients,
     remove_covars = remove_covars,
     get_effect_matrix = get_effect_matrix,
@@ -209,19 +455,168 @@ AlascaModel <- R6::R6Class("AlascaModel",
     get_bootstrap_ids = get_bootstrap_ids,
     get_bootstrap_data = get_bootstrap_data,
     prepare_validation_run = prepare_validation_run,
-    rotate_matrix_optimize_score = rotate_matrix_optimize_score,
-    rotate_matrix = rotate_matrix,
     get_validation_percentiles = get_validation_percentiles,
     get_validation_percentiles_loading = get_validation_percentiles_loading,
     get_validation_percentiles_score = get_validation_percentiles_score,
     get_validation_percentiles_regression = get_validation_percentiles_regression,
     get_validation_percentiles_covars = get_validation_percentiles_covars,
-    get_covars = get_covars,
-    get_plot_linetypes = get_plot_linetypes,
-    get_plot_palette = get_plot_palette,
-    .get_explained_label = .get_explained_label,
-    plot_development = plot_development,
-    plot_components = plot_components
+    #' @description
+    #' Write scores, loadings, covars and predictions from validation run to database and remove data from memory
+    #' @param ii Number of the validation run
+    save_validation = function(ii) {
+      for (i in seq_along(self$ALASCA$score)) {
+        
+        DBI::dbWriteTable(self$db_con, "loading",
+        data.table(
+            self$ALASCA$loading[[i]],
+            model = ii,
+            effect = i
+          )[, covars := factor(covars, levels = self$get_levels("variable"))][, covars := as.integer(covars)],
+        append = TRUE)
+        
+        DBI::dbWriteTable(self$db_con, "score",
+          data.table(
+            self$ALASCA$score[[i]],
+            model = ii,
+            effect = i
+          ), append = TRUE)
+        
+        DBI::dbWriteTable(self$db_con, "explained",
+                          data.table(
+                            self$ALASCA$explained[[i]],
+                            model = ii,
+                            effect = i
+                          ),
+                          append = TRUE)
+      }
+      self$ALASCA <- NULL
+      
+      DBI::dbWriteTable(self$db_con, "prediction",
+        data.table(
+          self$model_prediction,
+          model = ii
+        )[, variable := factor(variable, levels = self$get_levels("variable"))][, variable := as.integer(variable)], append = TRUE)
+      self$model_prediction <- NULL
+      
+      if(length(self$covar_coefficients) > 0) {
+        DBI::dbWriteTable(self$db_con, "covars",
+                          data.table(
+                            self$covar_coefficients,
+                            model = ii
+                          )[, variable := factor(variable, levels = self$get_levels("variable"))][, variable := as.integer(variable)], append = TRUE)
+        self$covar_coefficients <- NULL
+      }
+      
+    #   for (i in seq_along(self$ALASCA$score)) {
+    #     fst::write_fst(self$ALASCA$score[[i]], paste0("val/iteration_", ii, "_effect_", i, "_score.fst"))
+    #     fst::write_fst(self$ALASCA$loading[[i]], paste0("val/iteration_", ii, "_effect_", i, "_loading.fst"))
+    #   }
+    #   fst::write_fst(self$model_prediction, paste0("val/iteration_", ii, "_effect_", i, "_model_prediction.fst"))
+    },
+    get_validation_scores = get_validation_scores,
+    get_validation_loadings = get_validation_loadings,
+    #' @description
+    #' Save scores, loading, covars and predictions to csv files
+    save_to_csv = function() {
+      for(i in seq_along(self$ALASCA$loading)) {
+        fwrite(self$ALASCA$loading[[i]],
+               paste0(self$filepath, "loadings_effect_", i, ".csv"))
+        fwrite(self$ALASCA$score[[i]],
+               paste0(self$filepath, "scores_effect_", i, ".csv"))
+        expl <- data.table(explained = self$ALASCA$explained[[i]])
+        expl$PC <- seq_len(nrow(expl))
+        fwrite(expl,
+               paste0(self$filepath, "explained_effect_", i, ".csv"))
+      }
+      fwrite(self$model_prediction,
+             paste0(self$filepath, "model_prediction.csv"))
+      if(length(self$covar_coefficients) > 0) {
+        fwrite(self$covar_coefficients,
+               paste0(self$filepath, "covars.csv"))
+      }
+    },
+    save_model = function() {
+      self$log("Exporting data")
+      self$save_to_csv()
+      saveRDS(self, paste0(self$filepath, self$filename, ".RDS"))
+    },
+    rotate_matrix_optimize_score = function(target) {
+      target$log("Starting rotation", level = "DEBUG")
+      
+      # PCA can give loadings with either sign, so we have to check whether switching signs improves the rotation
+      for (effect_i in seq_along(self$ALASCA$loading)) {
+        # Number of components to look at
+        cols_to_look_at <- paste0("PC", self$get_PCs(effect_i))
+        N <- length(cols_to_look_at)
+        
+        # Create matrix with all possible combinations of signs
+        vec <- c(-1, 1)
+        lst <- lapply(numeric(N), function(x) vec)
+        signMatrix <- as.matrix(expand.grid(lst))
+        
+        # Test all combinations and calculate residuals
+        signVar <- vapply(seq_len(nrow(signMatrix) / 2), function(i) {
+          c <- .procrustes(
+            loadings = as.matrix(
+              t(t(self$ALASCA$loading[[effect_i]][target$ALASCA$loading[[effect_i]], ..cols_to_look_at]) * signMatrix[i, ])
+            ),
+            target = as.matrix(target$ALASCA$loading[[effect_i]][, ..cols_to_look_at])
+          )
+          sum((target$ALASCA$score[[effect_i]][, ..cols_to_look_at] - 
+                 as.matrix(t(t(self$ALASCA$score[[effect_i]][target$ALASCA$score[[effect_i]], ..cols_to_look_at]) * signMatrix[i, ])) %*% solve(c$t1))^2)
+        }, FUN.VALUE = numeric(1))
+        
+        # Find the combination that minimizes the sum of squares
+        minSignVar <- which(signVar == min(signVar))[1]
+        
+        # Switch signs
+        for (i in seq_along(cols_to_look_at)){
+          set(self$ALASCA$loading[[effect_i]], j = cols_to_look_at[i], value = self$ALASCA$loading[[effect_i]][, get(cols_to_look_at[i])] * signMatrix[minSignVar, i])
+          set(self$ALASCA$score[[effect_i]],   j = cols_to_look_at[i], value = self$ALASCA$score[[effect_i]][, get(cols_to_look_at[i])] * signMatrix[minSignVar, i])
+        }
+        
+        # Final rotation
+        c <- .procrustes(
+          loadings = as.matrix(self$ALASCA$loading[[effect_i]][target$ALASCA$loading[[effect_i]], ..cols_to_look_at]),
+          target = as.matrix(target$ALASCA$loading[[effect_i]][, ..cols_to_look_at])
+        )
+        
+        self$ALASCA$loading[[effect_i]][target$ALASCA$loading[[effect_i]], (cols_to_look_at) := as.data.table(c$procrust)]
+        self$ALASCA$score[[effect_i]][target$ALASCA$score[[effect_i]], (cols_to_look_at) := as.data.table(as.matrix(.SD) %*% solve(c$t1)), .SDcols = cols_to_look_at]
+        
+      }
+      
+      target$log("Completed rotation", level = "DEBUG")
+      
+      #invisible(self)
+    },
+    rotate_matrix = rotate_matrix
+  ),
+  active = list(
+    get_plot_group = function() {
+      if (is.null(self$splot$group)) {
+        if (length(self$effect_terms) == 1) {
+          # The first term is used for time
+          self$splot$group <- self$stratification_column
+        } else if (length(self$effect_terms) == 2) {
+          self$splot$group <- self$effect_terms[2]
+        } else {
+          self$splot$make_group_column <- TRUE
+          self$splot$palette <- NULL
+          self$splot$linetypes <- NULL
+          self$splot$group <- paste(self$effect_terms[-1], collapse = "-")
+          self$df_raw$level_list[[self$splot$group]] <- self$df[, unique(do.call(paste, c(.SD, sep = "-"))), .SDcols = self$effect_terms[-1]]
+        }
+        self$splot$group_label <- self$splot$capitalize(self$splot$group)
+      } 
+      self$splot$group
+    },
+    #' @description
+    #' List of the terms in the effect matrices
+    #' @return A vector with the terms in the effect matrices
+    effect_terms = function() {
+      unique(unlist(self$effect_list$terms))
+    }
   ),
   private = list()
 )

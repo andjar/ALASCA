@@ -4,14 +4,14 @@
 \alias{do_validate}
 \title{Validate the ALASCA model LMM}
 \usage{
-do_validate(participant_column = FALSE, validate_regression = FALSE)
+do_validate()
 }
 \arguments{
+\item{object}{An ALASCA object}
+
 \item{participant_column}{The name of the column containing participant identifier. Needed if not set during initialization of the model.}
 
 \item{validate_regression}{Whether to validate regression models}
-
-\item{object}{An ALASCA object}
 }
 \value{
 An ALASCA object

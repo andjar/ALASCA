@@ -4,14 +4,14 @@
 \alias{ALASCA}
 \title{Get an ALASCA object}
 \usage{
-ALASCA(df, formula, ...)
+ALASCA(df, formula, effects = NULL, ...)
 }
 \arguments{
 \item{df}{Data frame to be analyzed}
 
 \item{formula}{Regression model}
 
-\item{separate_time_and_group}{Logical: should time and group effect be separated?}
+\item{separate_effects}{Logical: should time and group effect be separated?}
 
 \item{p_adjust_method}{Method for correcting p values for multiple testing, see p.adjust.methods}
 
