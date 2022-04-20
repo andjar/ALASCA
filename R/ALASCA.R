@@ -1,44 +1,28 @@
-#' Get an ALASCA object
+#' Create an ALASCA model
 #'
-#' `ALASCA` initializes an ALASCA model and returns an ALASCA object
+#' `ALASCA` initializes an ALASCA model and returns an ALASCA object.
 #'
-#' This function builds your ALASCA model. It needs a data frame containing at least a column identifying participants, a column called `time` contining time information, a column `group` containing group information, a column `variable` containing variable names, and a value column. In addition you need to specify the model you want, and whether you want to separate group and time effects (defaults to `TRUE`).
+#' This function builds your ALASCA model. It needs, at least, a data frame and a formula. The effect matrices can be specified with `effects`, e.g., `c("time", "time+group+time:group", "group+time:group")`.
 #'
 #' @param df Data frame to be analyzed
-#' @param formula Regression model
-#' @param separate_effects Logical: should time and group effect be separated?
-#' @param p_adjust_method Method for correcting p values for multiple testing, see p.adjust.methods
-#' @param validate Logical. If `TRUE`, give estimates for robustness
-#' @param participant_column String. Name of the column containing participant identification
-#' @param minimize_object Logical. If `TRUE`, remove unnecessary clutter, optimize for validation
+#' @param formula Regression formula
+#' @param effects Vector with effect terms. If `NULL`, ALASCA will guess (default)
 #' @param scale_function Either a custom function or string to define scaling function: `sdall`, `sdref`, `sdt1`, `sdreft1`
-#' @param scale_function.center Boolean. Mean centering as part of scaling
-#' @param equal_baseline Set to `TRUE` (default) to remove interaction between group and first time point
-#' @param sum_coding Set to `TRUE` to use sum coding instead of contrast coding for group (defaults to `FALSE`)
-#' @param plot.x_label Defaults to "Time"
-#' @param plot.group_label Defaults to "Group"
-#' @param plot.figsize A vector containing `c(width,height,dpi)` (default: `c(180, 120, 300)`)
-#' @param plot.figunit Defaults to "mm"
-#' @param plot.filetype Which filetype you want to save the figure to (default: `png`)
-#' @param plot.palette List of colors, named by group
-#' @param keep_terms Additional terms to keep in the model matrix
-#' @param stratification_vector Vector of same length as `df` that specifies stratification groups during validate_ Defaults to `NA`, where the group column is used.
-#' @param validate_regression Whether to validate regression predictions or not (only if `validate` is `TRUE`)
-#' @param do_debug Print what happens (default: `FALSE`)
+#' @param separate_effects Boolean. Separate effects?
+#' @param equal_baseline Set to `TRUE` to remove interaction between effects
+#' @param validate Boolean. If `TRUE`, give estimates for robustness
+#' @param n_validation_runs number of validation runs
+#' @param validation_method Choose between `bootstrap` (default) and "jack-knife"
+#' @param stratification_column The column to stratify participants by
 #' @param save Save models and plots automatically (default: `FALSE`)
 #' @param filename File name to save model and plots (when `save = TRUE`)
-#' @param method Defaults to `NA` where method is either LM or LMM, depending on whether your formula contains a random effect or not
 #' @param use_Rfast Boolean. Defaults to `TRUE`
+#' @param p_adjust_method Method for correcting p values for multiple testing, see p.adjust.methods
+#' @param participant_column String. Name of the column containing participant identification
 #' @param n_validation_folds Partitions when validating
-#' @param n_validation_runs number of validation runs
-#' @param validation_method among  `loo` (leave-one-out, default)
-#' @param validation_object Don't worry about me:)
-#' @param validation_participants Don't worry about me:)
+#' 
 #' @return An ALASCA object
 #'
-#' @examples
-#' load("PE.Rdata")
-#' model <- ALASCA(df = df, formula = value ~ time * group + (1 | ID))
 #' @export
 ALASCA <- function(df,
                    formula,
@@ -74,54 +58,7 @@ ALASCA <- function(df,
   return(object)
 }
 
-#' Run RMASCA
-#'
-#' Same as calling ALASCA with `method = "LMM"`
-#'
-#' @inheritParams ALASCA
-#' @return An ALASCA object
-#' @export
-RMASCA <- function(...) {
-  object <- ALASCA(..., method = "LMM")
-  return(object)
-}
 
-#' Print ALASCA version
-#'
-#' @return String
-#' @export
-print_version <- function(object = FALSE, get = NA, print = TRUE) {
-  ALASCA.version <- "0.0.0.92"
-  ALASCA.version.date <- "2022-03-06"
-  if (is.list(object)) {
-    ALASCA.version <- object$ALASCA.version
-    ALASCA.version.date <- object$ALASCA.version.date
-  }
-  if (is.na(get)) {
-    if (print) {
-      cat("\n\n====== ALASCA ======\n\n")
-      cat(paste0(ALASCA.version, " (", ALASCA.version.date, ")\n\n"))
-    }
-  } else {
-    if (get == "date") {
-      return(ALASCA.version.date)
-    } else {
-      return(ALASCA.version)
-    }
-  }
-}
-
-#' Run SMASCA
-#'
-#' Same as calling ALASCA with `method = "LM"`
-#'
-#' @inheritParams ALASCA
-#' @return An ALASCA object
-#' @export
-SMASCA <- function(...) {
-  object <- ALASCA(..., method = "LM")
-  return(object)
-}
 
 #' Check if response variables are missing
 #' 
@@ -369,59 +306,39 @@ get_scaling_function <- function() {
 #'
 #' Changes the sign of loadings and scores
 #'
+#' @param x An ALASCA object
+#' @return The rotated object
+#' 
+#' @export
+flip <- function(x, ...) {
+  UseMethod("flip")
+}
+
+#' Flip an ALASCA object
+#'
+#' Changes the sign of loadings and scores
+#'
 #' @param object An ALASCA object
 #' @param component Component(s) to be flipped, use `0` or `NULL` to flip all (default)
 #' @param effect Specify effect(s) to be flipped, use `0` or `NULL` to flip all (default)
+#' @return The rotated object
+#' 
 #' @export
 flip.AlascaModel <- function(object, effect = 0, component = 0) {
-  object$flip_it(effect_i = effect, component = component)
+  object$flip(effect_i = effect, component = component)
+  invisible(object)
 }
 
 #' Summary
 #'
-#' Gives some general information
+#' Print info about the ALASCA object
 #'
-#' @param object
-#' @param file
-#' @param sessioninfo
+#' @param object An ALASCA object
+#' 
 #' @export
-summary.ALASCA <- function(object, file = "", sessioninfo = FALSE) {
-  cat("================ ALASCA ================\n", file = file, append = TRUE)
-  cat("Model initialized ", as.character(object$init_time), " using ", object$method, " on ", length(unique(object$regression_coefficients$covar)), " variables. ", sep = "", file = file, append = TRUE)
-  if (object$validate) {
-    cat("The model been validated with ", object$validation_method, ".\n", file = file, append = TRUE)
-  } else {
-    cat("The model has *not* been validated yet.\n", file = file, append = TRUE)
-  }
-  cat("\nRegression model: ", as.character(object$rawFormula)[2], as.character(object$rawFormula)[1], as.character(object$rawFormula)[3], "\n", file = file, append = TRUE)
-  cat("Separating time and group effects: ", object$separate_effects, "\n", file = file, append = TRUE)
-  cat("Force equal baseline: ", object$equal_baseline, "\n", file = file, append = TRUE)
-  cat("Using Rfast: ", object$use_Rfast, "\n", file = file, append = TRUE)
-  if (!object$use_Rfast) {
-    cat("Adjustment of p-values: ", object$p_adjust_method, "\n", file = file, append = TRUE)
-  }
-  if (!is.null(object$reduce_dimensions.nComps)) {
-    cat("Kept",object$reduce_dimensions.nComps,"components from initial PCA, explaining",100*cumsum(object$limm.explanatory_power)[object$reduce_dimensions.nComps],"% of variation\n", file = file, append = TRUE)
-  }
-  cat("\n\nPCs explaining at least 5% of variation:\n   Time: ",
-      paste(get_PCs(object = object, effect = "time"), collapse = ", "), " (",
-      paste(round(100 * object$pca$score$explained$time[get_PCs(object = object, effect = "time")], 2), collapse = "%, "), "%)",
-      ifelse(object$separate_effects, paste0(
-        "\n   Group: ",
-        paste(get_PCs(object = object, effect = "group"), collapse = ", "), " (",
-        paste(round(100 * object$pca$score$explained$group[get_PCs(object = object, effect = "group")], 2), collapse = "%, "), "%)"
-      ), "\n"),
-      sep = "", file = file, append = TRUE
-  )
-  if (is.function(object$scale_function)) {
-    cat("\nScaling function:\n", file = file, append = TRUE)
-    cat(deparse(object$scale_function), file = file, append = TRUE)
-  } else {
-    cat("\nNo scaling performed.\n", file = file, append = TRUE)
-  }
-  if (sessioninfo & file != "") {
-    write(capture.output(devtools::session_info()), file = file, append = TRUE)
-  }
+summary.AlascaModel <- function(object) {
+  cat("---- The log file:\n")
+  cat(paste0(readLines(object$log_file), collapse="\n"))
 }
 
 #' Summary
@@ -501,18 +418,11 @@ build_model <- function() {
     self$log("-> Finished calculating regression coefficients!", level = "DEBUG")
   }
   
-  if (self$do_debug) currentTs <- Sys.time()
   self$remove_covars()
-  if (self$do_debug) cat("* removeCovars:", Sys.time() - currentTs, "s\n")
-  if (self$do_debug) currentTs <- Sys.time()
   self$get_effect_matrix()
-  if (self$do_debug) cat("* getEffectMatrix:", Sys.time() - currentTs, "s\n")
-  if (self$do_debug) currentTs <- Sys.time()
   self$do_pca()
-  if (self$do_debug) cat("* doPCA:", Sys.time() - currentTs, "s\n")
-  if (self$do_debug) currentTs <- Sys.time()
   self$clean_pca()
-  if (self$do_debug) cat("* clean_pca:", Sys.time() - currentTs, "s\n")
+  
   if (self$method %in% c("LM", "LMM")) {
     if (self$minimize_object) {
       if (self$validate_regression) {
@@ -756,38 +666,6 @@ save.AlascaModel <- function(object) {
   object$save_model()
 }
 
-#' Save ALASCA object
-#'
-#' @inheritParams saveALASCAModel
-#' @inheritParams save_to_csv
-#' @return An ALASCA object
-#' @export
-save_bootstrap_ids <- function(object) {
-  if (!(object$validate && object$validation_method == "bootstrap")) {
-    stop("Please validate with bootstrapping")
-  }
-  for (i in seq_along(object$validation$temp_object)) {
-    write(paste0(object$validation$temp_object[[i]]$validation$original_ids, collapse = ";"),
-          file = get_filename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
-    )
-  }
-}
-
-#' Save ALASCA object
-#'
-#' @inheritParams saveALASCAModel
-#' @inheritParams save_to_csv
-#' @return An ALASCA object
-#' @export
-save_jackknife_ids <- function(object) {
-  if (!(object$validate && object$validation_method %in% c("loo", "jack-knife", "jackknife"))) stop("Please validate with jack-knife")
-  for (i in seq_along(object$validation$temp_object)) {
-    write(paste0(unique(object$validation$temp_object[[i]]$partID), collapse = ";"),
-          file = get_filename(object = object, prefix = "jackknifeID_", filetype = ".csv", overwrite = TRUE), append = TRUE
-    )
-  }
-}
-
 #' Perform PCA
 #'
 #' This function performs PCA
@@ -1023,12 +901,14 @@ do_validate <- function() {
   
   start_time_all <- Sys.time()
   
+  self$get_validation_ids()
+  
   temp_object <- lapply(seq_len(self$n_validation_runs), FUN = function(ii) {
     self$log(paste0("- Run ", ii, " of ", self$n_validation_runs))
     start.time.this <- Sys.time()
     
     # Make resampled model
-    temp_object <- self$prepare_validation_run()
+    temp_object <- self$prepare_validation_run(runN = ii)
     if (nrow(self$df) > 100000) gc()
     
     # Rotate new loadings/scores to the original model
@@ -1157,6 +1037,7 @@ get_validation_percentiles_regression <- function(objectlist) {
 #'
 #' @inheritParams get_validation_percentiles
 get_validation_percentiles_covars <- function(objectlist) {
+  
   if (self$save_to_disk) {
     res <- DBI::dbSendQuery(self$db_con, paste0("SELECT covars.variable, covars.estimate, covars.low, covars.high, variables.variable AS covar FROM covars
                                                 LEFT JOIN variables
@@ -1200,22 +1081,22 @@ get_validation_scores <- function(objectlist = NULL, effect_i = 1) {
     df <- setDT(DBI::dbFetch(res))
     DBI::dbClearResult(res)
   } else {
-    if (length(self$effect_list$saved_scores) > 0) {
-      df <- fst::read_fst(self$effect_list$saved_scores[[effect_i]], as.data.table = TRUE)
-    } else {
+    if (is.null(self$effect_list$saved_scores)) {
       self$log("Saving validation scores", level = "DEBUG")
-      for (effect_k in seq_along(self$effect_list$expr))
+      for (effect_k in seq_along(self$effect_list$expr)) {
         df <- rbindlist(
           lapply(seq_along(objectlist), function(x) {
             data.table(
               model = x,
-              objectlist[[x]]$ALASCA$score[[effect_k]][objectlist[[x]]$ALASCA$score[[effect_k]]$PC %in% self$get_PCs(effect_k), ]
+              objectlist[[x]]$ALASCA$score[[effect_k]][PC %in% self$get_PCs(effect_k), ]
             )
           }), fill = TRUE)
-      fname <- paste0(self$filepath, self$filename, "_validation_scores_effect_", effect_k, ".fst")
-      fst::write_fst(df, fname, compress = self$compress_validation)
-      self$effect_list$saved_scores[[effect_k]] <- fname
-    }
+        fname <- paste0(self$filepath, self$filename, "_validation_scores_effect_", effect_k, ".fst")
+        fst::write_fst(df, fname, compress = self$compress_validation)
+        self$effect_list$saved_scores[[effect_k]] <- fname
+      }
+    } 
+    df <- fst::read_fst(self$effect_list$saved_scores[[effect_i]], as.data.table = TRUE)
   }
   return(df)
 }
@@ -1230,24 +1111,25 @@ get_validation_loadings <- function(objectlist = NULL, effect_i = 1) {
     df <- setDT(DBI::dbFetch(res))
     DBI::dbClearResult(res)
   } else {
-    if (length(self$effect_list$saved_scores) > 0) {
-      df <- fst::read_fst(self$effect_list$saved_loadings[[effect_i]], as.data.table = TRUE)
-    } else {
+    
+    if (is.null(self$effect_list$saved_scores)) {
       self$log("Saving validation loadings", level = "DEBUG")
-      for (effect_k in seq_along(self$effect_list$expr))
+      for (effect_k in seq_along(self$effect_list$expr)) {
         df <- rbindlist(
           lapply(seq_along(objectlist), function(x) {
             data.table(
               model = x,
               objectlist[[x]]$ALASCA$loading[[effect_i]][objectlist[[x]]$ALASCA$loading[[effect_i]]$PC %in% self$get_PCs(effect_i), ]
             )
-            }),
+          }),
           fill = TRUE
         )
-      fname <- paste0(self$filepath, self$filename, "_validation_loadings_effect_", effect_k, ".fst")
-      fst::write_fst(df, fname, compress = self$compress_validation)
-      self$effect_list$saved_loadings[[effect_k]] <- fname
-    }
+        fname <- paste0(self$filepath, self$filename, "_validation_loadings_effect_", effect_k, ".fst")
+        fst::write_fst(df, fname, compress = self$compress_validation)
+        self$effect_list$saved_loadings[[effect_k]] <- fname
+      }
+    } 
+    df <- fst::read_fst(self$effect_list$saved_loadings[[effect_i]], as.data.table = TRUE)
   }
   return(df)
 }
@@ -1261,12 +1143,13 @@ get_validation_percentiles_score <- function(objectlist) {
   
   for (effect_i in seq_along(self$ALASCA$score)) {
     
-    df <- self$get_validation_scores(objectlist = objectlist, effect_i = effect_i)
+    all_scores <- self$get_validation_scores(objectlist = objectlist, effect_i = effect_i)
     
-    tmp <- df[, as.list(
+    tmp <- all_scores[, as.list(
       quantile(score, probs = self$limitsCI, type = self$validation_quantile_method)
     ), by = c("PC", self$effect_list$terms[[effect_i]])]
     colnames(tmp) <- c("PC", self$effect_list$terms[[effect_i]], "low", "high")
+    
     self$ALASCA$score[[effect_i]] <- merge(self$ALASCA$score[[effect_i]], tmp, all.x = TRUE, by = c("PC",  self$effect_list$terms[[effect_i]]))
   }
   
@@ -1309,140 +1192,102 @@ get_regression_predictions <- function() {
   #invisible(self)
 }
 
+get_validation_ids <- function() {
+  
+  if (is.null(self$validation_ids)) {
+    self$log("Generating random validation sample", level = "DEBUG")
+    original_IDs <- unique(self$df_raw$data_df[, .SD, .SDcols = c(self$formula$ID, self$stratification_column)])
+    colnames(original_IDs) <- c("ID", "group")
+    
+    if (self$validation_method == "bootstrap") {
+      
+      tmp <- lapply(unique(self$stratification_vector), function(strat_group) {
+        IDs_to_choose_from <- original_IDs[group == strat_group, ID]
+        t(
+          vapply(
+            seq_len(self$n_validation_runs),
+            function(x) sample(IDs_to_choose_from, replace = TRUE),
+            FUN.VALUE = integer(length(sample(IDs_to_choose_from, replace = TRUE)))
+            )
+          )
+      })
+      
+      self$validation_ids <- do.call(cbind, tmp)
+      
+    } else {
+      
+      tmp <- lapply(unique(self$stratification_vector), function(strat_group) {
+        IDs_to_choose_from <- original_IDs[group == strat_group, ID]
+        n_to_choose <- floor(length(IDs_to_choose_from) - length(IDs_to_choose_from)/self$n_validation_folds)
+        if (n_to_choose <= self$n_validation_folds) {
+          self$log(
+              paste0("The stratification group ", strat_group, " has only ", length(IDs_to_choose_from), " members. Choosing ", n_to_choose, " of them. Consider adjusting `n_validation_folds`"),
+              level = "WARN"
+            )
+        }
+        t(
+          vapply(
+            seq_len(self$n_validation_runs),
+            function(x) sample(IDs_to_choose_from, size = n_to_choose),
+            FUN.VALUE = integer(n_to_choose)
+          )
+        )
+      })
+      
+      self$validation_ids <- do.call(cbind, tmp)
+      
+    }
+    if (self$save_validation_ids) {
+      self$log("Saving validation IDs", level = "DEBUG")
+      fwrite(as.data.table(self$validation_ids), file = paste0(self$filepath, "validation_IDs.csv"), col.names = FALSE)
+    }
+  }
+}
+
 #' Make a single validation run
 #'
 #' This function ...
 #'
 #' @param object An ALASCA object
 #' @return An ALASCA object
-prepare_validation_run <- function(runN = NA) {
+prepare_validation_run <- function(runN) {
   if (self$validation_method %in% c("loo", "jack-knife", "jackknife")) {
     # Use leave-one-out validation
-    selectedParts <- data.frame()
     
-    if (self$method %in% c("LMM")) {
-      if (any(is.na(self$validation_ids))) {
-        # For each group, divide the participants into n_validation_folds groups, and select n_validation_folds-1 of them
-        selectedParts <- lapply(unique(self$stratification_vector), function(gr) {
-          selectedParts_temp_all <- unique(self$df[self$stratification_vector == gr, ID])
-          selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% self$n_validation_folds
-          selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket))]
-          selectedParts_temp_all[selectedParts_temp_ticket != 1]
-        })
-        bootobject <- self$clone()
-        bootobject$my_df_rows <- unlist(lapply(unlist(selectedParts), function(x) self$df_raw$rows_by_ID[[as.character(x)]]))
-        bootobject[["df"]] <- NULL
-        bootobject[["effect_list"]][["model_matrix"]] <- NULL
-        bootobject[["df"]] <- self$scale_function(self$df_raw$df[bootobject$my_df_rows])
-        bootobject[["modmat"]] <- self$modmat[bootobject$my_df_rows,]
-        #for (effect_i in seq_along(bootobject[["effect_list"]])) {
-        #  bootobject[["effect_list"]][["model_matrix"]][[i]] <- bootobject[["effect_list"]][["model_matrix"]][[i]][bootobject$my_df_rows,]
-        #}
-        bootobject$update()
-        return(bootobject)
-      } else {
-        bootobject <- self$clone()
-        bootobject$my_df_rows <- unlist(lapply(object$validation_ids[runN, ], function(x) self$df_raw$rows_by_ID[[as.character(x)]]))
-        bootobject[["df"]] <- NULL
-        bootobject[["df"]] <- self$scale_function(self$df_raw$df[bootobject$my_df_rows])
-        bootobject[["modmat"]] <- self$modmat[bootobject$my_df_rows,]
-        bootobject$update()
-        return(bootobject)
-      }
-    } else if (self$method %in% c("LM")) {
-      self$df$ID <- c(seq_len(nrow(self$df)))
-      if (any(is.na(self$validation_ids))) {
-        self$log("Generate jack-knife sample", level = "DEBUG")
-        # For each group, divide the participants into n_validation_folds groups, and select n_validation_folds-1 of them
-        selectedParts <- lapply(unique(self$stratification_vector), function(gr) {
-          selectedParts_temp_all <- unique(self$df[object$stratification_vector == gr, ID])
-          selectedParts_temp_ticket <- seq_along(selectedParts_temp_all) %% self$n_validation_folds
-          selectedParts_temp_ticket <- selectedParts_temp_ticket[sample(seq_along(selectedParts_temp_ticket))]
-          selectedParts_temp_all[selectedParts_temp_ticket != 1]
-        })
-        
-        bootobject <- self$clone()
-        bootobject$my_df_rows <- unlist(lapply(unlist(selectedParts), function(x) self$df_raw$rows_by_ID[[as.character(x)]]))
-        bootobject[["df"]] <- NULL
-        bootobject[["effect_list"]][["model_matrix"]] <- NULL
-        bootobject[["df"]] <- self$scale_function(self$df_raw$df[bootobject$my_df_rows])
-        bootobject[["modmat"]] <- self$modmat[bootobject$my_df_rows,]
-        bootobject$update()
-        return(bootobject)
-      } else {
-        self$log("Reuse jack-knife sample", level = "DEBUG")
-        bootobject <- self$clone()
-        bootobject$my_df_rows <- unlist(lapply(self$validation_ids[runN, ], function(x) self$df_raw$rows_by_ID[[as.character(x)]]))
-        bootobject[["df"]] <- NULL
-        bootobject[["effect_list"]][["model_matrix"]] <- NULL
-        bootobject[["df"]] <- self$scale_function(self$df_raw$df[bootobject$my_df_rows])
-        bootobject[["modmat"]] <- self$modmat[bootobject$my_df_rows,]
-        bootobject$update()
-        return(bootobject)
-      }
-    }
+    bootobject <- self$clone()
+    bootobject$my_df_rows <- unlist(lapply(self$validation_ids[runN, ], function(x) self$df_raw$rows_by_ID[[as.character(x)]]))
+    bootobject[["df"]] <- NULL
+    bootobject[["effect_list"]][["model_matrix"]] <- NULL
+    bootobject[["df"]] <- self$scale_function(self$df_raw$df[bootobject$my_df_rows])
+    bootobject[["modmat"]] <- self$modmat[bootobject$my_df_rows,]
+    bootobject$update()
+    return(bootobject)
+
   } else if (self$validation_method == "bootstrap") {
     # Use bootstrap validation
     # When using bootstrapping, we resample participants with replacement
     
-    self$log(message = "Preparing bootstrap sample", level = "DEBUG")
-    participants_in_bootstrap <- self$get_bootstrap_ids(runN = runN)
+    self$log("Starting preparation of bootstrap sample", level = "DEBUG")
     
     # Create bootstrap object without data
     bootobject <- self$clone()
     bootobject[["df"]] <- NULL
     bootobject[["modmat"]] <- NULL
     bootobject[["effect_list"]][["model_matrix"]] <- NULL
-    bootobject$get_bootstrap_data(df_raw = self$df_raw, participants_in_bootstrap, modmat = self$modmat)
+    bootobject$get_bootstrap_data(df_raw = self$df_raw,
+                                  participants_in_bootstrap = self$validation_ids[runN, ],
+                                  modmat = self$modmat)
     
     if (self$validation_assign_new_ids) {
       bootobject$df[, ID := uniqueIDforBootstrap] # Replace ID
     }
     
-    if (self$save_validation_ids) {
-      write(paste0(participants_in_bootstrap$old_id, collapse = ";"),
-            file = get_filename(object = object, prefix = "bootstrapID_", filetype = ".csv", overwrite = TRUE), append = TRUE
-      )
-    }
-    
-    self$log("Completed preparation of bootstrap sample", level = "DEBUG")
+    self$log("-> Completed preparation of bootstrap sample", level = "DEBUG")
     
     bootobject$update()
-    bootobject$validation$original_ids <- participants_in_bootstrap$old_id
+    bootobject$validation$original_ids <- self$validation_ids[runN, ]
     return(bootobject)
   }
-}
-
-#' Make bootstrap sample
-#'
-#' Get data frame with new and old IDs
-#'
-#' @param object An ALASCA object
-#' @return A data frame
-get_bootstrap_ids <- function(runN = NA) {
-  if (is.na(runN)) {
-    self$log("Generating random bootstrap sample", level = "DEBUG")
-    
-    participants_in_bootstrap <- data.frame(
-      new_id = seq(self$df[, uniqueN(ID)]),
-      old_id = rbindlist(
-        lapply(unique(self$stratification_vector), function(stratification_group){
-          list(
-            old_id = sample(
-              unique(self$df[self$stratification_vector == stratification_group, ID]),
-              replace = TRUE)
-          )
-        })
-      )
-    )
-  } else {
-    self$log("Reuse bootstrap sample", level = "DEBUG")
-    participants_in_bootstrap <- data.frame(
-      new_id = seq(self$validation_ids[runN, ]),
-      old_id = matrix(self$validation_ids[runN, ])
-    )
-  }
-  return(participants_in_bootstrap)
 }
 
 #' Make bootstrap data set
@@ -1452,11 +1297,12 @@ get_bootstrap_ids <- function(runN = NA) {
 #' @param object An ALASCA object
 #' @return A data frame
 get_bootstrap_data <- function(df_raw, participants_in_bootstrap, modmat) {
+  
   selected_rows <- rbindlist(
-    lapply(participants_in_bootstrap$new_id, function(participant){
+    lapply(seq_along(participants_in_bootstrap), function(participant){
       list(
         new_id = participant,
-        row_nr = df_raw$rows_by_ID[[as.character(participants_in_bootstrap$old_id[participant])]]
+        row_nr = df_raw$rows_by_ID[[as.character(participants_in_bootstrap[participant])]]
       )
     })
   )
@@ -1483,13 +1329,25 @@ get_bootstrap_data <- function(df_raw, participants_in_bootstrap, modmat) {
 #'
 #' This function returns a screeplot for an ALASCA model showing what proportion of the variance each component of the model explains
 #'
-#' @param model An ALASCA object
+#' @param object An ALASCA object
+#' @param component The highest principal component to plot
 #'
-#' @return An ggplot2 object (or a list og ggplot objects)
+#' @return An ggplot2 object
 #'
 #' @export
-screeplot.AlascaModel <- function(model, ...) {
-  model$splot$call_plot(type = "scree", ...)
+screeplot.AlascaModel <- function(object, component = 10, ...) {
+  object$splot$call_plot(type = "scree", ...)
+}
+
+#' Get screeplot
+#' 
+#' @inheritParams screeplot.AlascaModel
+#' 
+#' @return An ggplot2 object
+#' 
+#' @export
+screeplot <- function(object, component = 10, ...) {
+  UseMethod("screeplot")
 }
 
 #' Plot covariate coefficients
@@ -2242,6 +2100,8 @@ plot_effect_validation_loading <- function(effect_i = 1, component = 1) {
 #' @param object A marco object.
 #' @param variable A marco object.
 #' 
+#' @return A data table with residuals
+#' 
 #' @export
 residuals.AlascaModel <- function(object, variable = NULL) {
   object$get_residuals(variable = variable)
@@ -2249,25 +2109,53 @@ residuals.AlascaModel <- function(object, variable = NULL) {
 
 #' Returns model loadings
 #' 
-#' @param object An AALSCA object.
+#' @param object An ALASCA object.
 #' @param effect The number of the effect(s) of interest
 #' @param component The principal component(s) of interest
 #' @param n_limit Limit the number of variables returned
 #' 
+#' @return A data table with loadings
+#' 
 #' @export
 get_loadings.AlascaModel <- function(object, effect = 1, component = 1, n_limit = 0) {
+  object$log(paste("Loadings for effect number", effect, "and principal component(s)", component))
   object$get_loadings(effect_i = effect, component = component, n_limit = n_limit)
 }
 
 #' Returns model scores
 #' 
-#' @param object An AALSCA object.
+#' @inheritParams get_loadings.AlascaModel
+#' 
+#' @return A data table with loadings
+#' 
+#' @export
+get_loadings <- function(object, ...) {
+  UseMethod("get_loadings")
+}
+
+#' Returns model scores
+#' 
+#' @param object An ALASCA object.
 #' @param effect The number of the effect of interest
 #' @param component The principal component(s) of interest
 #' 
+#' @return A data table with scores
+#' 
 #' @export
 get_scores.AlascaModel <- function(object, effect = 1, component = 1) {
+  object$log(paste("Scores for effect number", effect, "and principal component(s)", component))
   object$get_scores(effect_i = effect, component = component)
+}
+
+#' Returns model scores
+#' 
+#' @inheritParams get_scores.AlascaModel
+#' 
+#' @return A data table with scores
+#' 
+#' @export
+get_scores <- function(object, ...) {
+  UseMethod("get_scores")
 }
 
 #' Get coefficients for covariates
@@ -2275,11 +2163,22 @@ get_scores.AlascaModel <- function(object, effect = 1, component = 1) {
 #'
 #' @param object An ALASCA object
 #' @param n_limit Return only the `n_limit` largest and smallest coefficients
-#' @return A data table
+#' @return A data table with regression coefficients
 #'
 #' @export
 get_covars.AlascaModel <- function(object, n_limit = 0) {
   object$get_covars(n_limit = n_limit)
+}
+
+#' Get coefficients for covariates
+#' 
+#' @inheritParams get_covars.AlascaModel
+#' 
+#' @return A data table with regression coefficients
+#' 
+#' @export
+get_covars <- function(object, ...) {
+  UseMethod("get_covars")
 }
 
 plot_2D <- function() {

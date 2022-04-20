@@ -2,81 +2,49 @@
 % Please edit documentation in R/ALASCA.R
 \name{ALASCA}
 \alias{ALASCA}
-\title{Get an ALASCA object}
+\title{Create an ALASCA model}
 \usage{
 ALASCA(df, formula, effects = NULL, ...)
 }
 \arguments{
 \item{df}{Data frame to be analyzed}
 
-\item{formula}{Regression model}
+\item{formula}{Regression formula}
 
-\item{separate_effects}{Logical: should time and group effect be separated?}
-
-\item{p_adjust_method}{Method for correcting p values for multiple testing, see p.adjust.methods}
-
-\item{validate}{Logical. If \code{TRUE}, give estimates for robustness}
-
-\item{participant_column}{String. Name of the column containing participant identification}
-
-\item{minimize_object}{Logical. If \code{TRUE}, remove unnecessary clutter, optimize for validation}
+\item{effects}{Vector with effect terms. If \code{NULL}, ALASCA will guess (default)}
 
 \item{scale_function}{Either a custom function or string to define scaling function: \code{sdall}, \code{sdref}, \code{sdt1}, \code{sdreft1}}
 
-\item{scale_function.center}{Boolean. Mean centering as part of scaling}
+\item{separate_effects}{Boolean. Separate effects?}
 
-\item{equal_baseline}{Set to \code{TRUE} (default) to remove interaction between group and first time point}
+\item{equal_baseline}{Set to \code{TRUE} to remove interaction between effects}
 
-\item{sum_coding}{Set to \code{TRUE} to use sum coding instead of contrast coding for group (defaults to \code{FALSE})}
+\item{validate}{Boolean. If \code{TRUE}, give estimates for robustness}
 
-\item{plot.x_label}{Defaults to "Time"}
+\item{n_validation_runs}{number of validation runs}
 
-\item{plot.group_label}{Defaults to "Group"}
+\item{validation_method}{Choose between \code{bootstrap} (default) and "jack-knife"}
 
-\item{plot.figsize}{A vector containing \code{c(width,height,dpi)} (default: \code{c(180, 120, 300)})}
-
-\item{plot.figunit}{Defaults to "mm"}
-
-\item{plot.filetype}{Which filetype you want to save the figure to (default: \code{png})}
-
-\item{plot.palette}{List of colors, named by group}
-
-\item{keep_terms}{Additional terms to keep in the model matrix}
-
-\item{stratification_vector}{Vector of same length as \code{df} that specifies stratification groups during validate_ Defaults to \code{NA}, where the group column is used.}
-
-\item{validate_regression}{Whether to validate regression predictions or not (only if \code{validate} is \code{TRUE})}
-
-\item{do_debug}{Print what happens (default: \code{FALSE})}
+\item{stratification_column}{The column to stratify participants by}
 
 \item{save}{Save models and plots automatically (default: \code{FALSE})}
 
 \item{filename}{File name to save model and plots (when \code{save = TRUE})}
 
-\item{method}{Defaults to \code{NA} where method is either LM or LMM, depending on whether your formula contains a random effect or not}
-
 \item{use_Rfast}{Boolean. Defaults to \code{TRUE}}
 
+\item{p_adjust_method}{Method for correcting p values for multiple testing, see p.adjust.methods}
+
+\item{participant_column}{String. Name of the column containing participant identification}
+
 \item{n_validation_folds}{Partitions when validating}
-
-\item{n_validation_runs}{number of validation runs}
-
-\item{validation_method}{among  \code{loo} (leave-one-out, default)}
-
-\item{validation_object}{Don't worry about me:)}
-
-\item{validation_participants}{Don't worry about me:)}
 }
 \value{
 An ALASCA object
 }
 \description{
-\code{ALASCA} initializes an ALASCA model and returns an ALASCA object
+\code{ALASCA} initializes an ALASCA model and returns an ALASCA object.
 }
 \details{
-This function builds your ALASCA model. It needs a data frame containing at least a column identifying participants, a column called \code{time} contining time information, a column \code{group} containing group information, a column \code{variable} containing variable names, and a value column. In addition you need to specify the model you want, and whether you want to separate group and time effects (defaults to \code{TRUE}).
-}
-\examples{
-load("PE.Rdata")
-model <- ALASCA(df = df, formula = value ~ time * group + (1 | ID))
+This function builds your ALASCA model. It needs, at least, a data frame and a formula. The effect matrices can be specified with \code{effects}, e.g., \code{c("time", "time+group+time:group", "group+time:group")}.
 }

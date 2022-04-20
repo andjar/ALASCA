@@ -11,7 +11,9 @@ AlascaFormula <- R6::R6Class("AlascaFormula",
     random_terms = NULL,
     additional_terms = NULL,
     compatible_with_Rfast = NULL,
+    #' @field lhs String. Left hand side of regression formula
     lhs = NULL,
+    #' @field rhs String. Right hand side of regression formula
     rhs = NULL,
     covars = NULL,
     initialize = function(formula, model) {

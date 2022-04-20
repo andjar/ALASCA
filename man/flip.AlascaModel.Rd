@@ -4,7 +4,7 @@
 \alias{flip.AlascaModel}
 \title{Flip an ALASCA object}
 \usage{
-flip.AlascaModel(object, effect = 0, component = 0)
+\method{flip}{AlascaModel}(object, effect = 0, component = 0)
 }
 \arguments{
 \item{object}{An ALASCA object}
@@ -12,6 +12,9 @@ flip.AlascaModel(object, effect = 0, component = 0)
 \item{effect}{Specify effect(s) to be flipped, use \code{0} or \code{NULL} to flip all (default)}
 
 \item{component}{Component(s) to be flipped, use \code{0} or \code{NULL} to flip all (default)}
+}
+\value{
+The rotated object
 }
 \description{
 Changes the sign of loadings and scores

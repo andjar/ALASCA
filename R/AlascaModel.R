@@ -5,21 +5,24 @@
 AlascaModel <- R6::R6Class("AlascaModel",
   lock_objects = FALSE,
   public = list(
-    #' @field df The data to analyze
+    #' @field df Data table/frame. The data to analyze
     df = NULL,
     #' @field formula An AlascaForula object
     formula = NULL,
-    #' @field wide Whether the provided data is in wide format
+    #' @field wide Boolean. Whether the provided data is in wide format
     wide = FALSE,
-    #' @field scale_function How to scale the data
+    #' @field scale_function How to scale the data. Options are `NULL`, custom function, or `"sdall"`, `"sdref"`, `"sdt1"`, `"sdreft1"`
     scale_function = "sdall",
+    
     ignore_missing = FALSE,
     ignore_missing_covars = FALSE,
+    #' @field version Version number
     version = "0.0.0.95",
+    #' @field update_date Date of latest update
     update_date = "2022-04-19",
     
     # Effect matrices
-    #' @field scale_function If TRUE, try to separate the effects
+    #' @field separate_effects If TRUE, try to separate the effects
     separate_effects = FALSE,
     equal_baseline = FALSE,
     effect_list = list(
@@ -32,26 +35,33 @@ AlascaModel <- R6::R6Class("AlascaModel",
       saved_loadings = list()
     ),
     
-    # Validation
-    n_validation_folds = 7,
-    n_validation_runs = 1000,
-    validation_quantile_method = 2,
+    # Validation settings
+    #' @field n_validation_folds Integer. If using jack-knife validation, exclude 1/n_validation_folds of the participants at each iteration
+    n_validation_folds = 7L,
+    #' @field n_validation_runs Integer. Number of iterations to use for validation
+    n_validation_runs = 1000L,
+    #' @field validation_quantile_method Integer between 1 and 9. See [stats::quantile()] for details
+    validation_quantile_method = 2L,
     save_validation_ids = FALSE,
     optimize_score = TRUE,
-    #' @field validate Validate the model
+    #' @field validate Boolean. Validate the model
     validate = FALSE,
     validate_regression = TRUE,
+    #' @field validation Boolean. Synonym to `validate`
     validation = FALSE,
+    #' @field validation_method String. Defines the validation method; `"bootstrap"` (default) or `"jack-knife"`
     validation_method = "bootstrap",
-    validation_ids = NA,
+    validation_ids = NULL,
     validation_object = NA,
     validation_assign_new_ids = FALSE,
     validation_participants = NA,
+    #' @field limitsCI Lower and upper quantile to use for validation
     limitsCI = c(0.025, 0.975),
+    #' @field compress_validation Integer between 0 and 100. See [fst::write_fst()] for details
     compress_validation = 80,
     
     # Reduce dimensions
-    #' @field reduce_dimensions Use PCA to reduce data dimensions prior to analysis
+    #' @field reduce_dimensions Boolean. Use PCA to reduce data dimensions prior to analysis
     reduce_dimensions = FALSE,
     pca_function = "prcomp",
     reduced_df = list(
@@ -67,24 +77,26 @@ AlascaModel <- R6::R6Class("AlascaModel",
     # Save to disk
     #' @field save_to_disk Write model data to disk to reduce memory usage
     save_to_disk = FALSE,
-    #' @field db_method Use a `duckdb` or a `SQLite` database for validation data
+    #' @field db_method String. Use a `"duckdb"` or a `"SQLite"` database for validation data
     db_method = "duckdb", # SQLite
     
     # Save
     #' @field filename Filename for the saved model
     filename = "ALASCA",
-    #' @field filepath Where to save the model. Defaults to ALASCA/<timestamp>
+    #' @field filepath Where to save the model. Defaults to `ALASCA/<timestamp>`
     filepath = NULL,
     #' @field save Save model data and plots
     save = FALSE,
     
     
     sum_coding = FALSE,
-    #' @field method Can be `LM` or `LMM`
+    #' @field method String. Can be `"LM"` or `"LMM"`
     method = NULL,
-    #' @field max_PC The maximal number of principal components to keep for further analysis
-    max_PC = 20,
+    #' @field max_PC Integer. The maximal number of principal components to keep for further analysis
+    max_PC = 20L,
+    #' @field use_Rfast Boolean. If `TRUE` (default), use Rfast, else use lm or lme4
     use_Rfast = TRUE,
+    #' @field p_adjust_method String. See [stats::p.adjust()]
     p_adjust_method = NULL,
     participant_column = NULL,
     
@@ -94,14 +106,17 @@ AlascaModel <- R6::R6Class("AlascaModel",
     minimize_object = FALSE,
     #' @field explanatory_limit Only validate components explaining more than `explanatory_limit` of the variance
     explanatory_limit = 0.05,
+    #' @field init_time The time when the object is initialized
     init_time = NULL,
 
-    # Logging
+    # Log settings
+    #' @field log_to String deciding logging target: `all` (default), `file`, `console`, `none`
     log_to = "all",
     log_file = NULL,
     logger = NULL,
     log_level = NULL,
     uselog = TRUE,
+    #' @field do_debug Boolean. Log more details
     do_debug = FALSE,
     
     
@@ -153,8 +168,8 @@ AlascaModel <- R6::R6Class("AlascaModel",
       else {
         self$logger <- log4r::logger(self$log_level, appenders = list(log4r::console_appender(), log4r::file_appender(self$log_file)))
       }
-      self$log(paste0("Initializing ALASCA (v", self$version, ", ", self$update_date, ")"))
-      
+      self$log(paste("Initializing", self$print_version()))
+
       # Process the formula
       self$formula <- AlascaFormula$new(formula, model = self)
       
@@ -175,7 +190,9 @@ AlascaModel <- R6::R6Class("AlascaModel",
       
       self$validate <- self$validate || self$validation
       self$validation <- NULL
-      self$n_validation_runs <- ifelse(any(is.na(self$validation_ids)), self$n_validation_runs, nrow(self$validation_ids))
+      self$n_validation_runs <- ifelse(is.null(self$validation_ids),
+                                       self$n_validation_runs,
+                                       nrow(self$validation_ids))
       self$filepath <- ifelse(is.na(self$filepath), NA, ifelse(substr(self$filepath, nchar(self$filepath), nchar(self$filepath)) == "/", self$filepath, paste0(self$filepath, "/")))
       self$save_to_disk <- self$validate && self$save_to_disk
       if (self$save_to_disk) {
@@ -244,6 +261,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
       self$splot$component <- component
       self$splot$call_plot(...)
     },
+    get_validation_ids = get_validation_ids,
     get_residuals = function(variable = NULL) {
       if (self$use_Rfast) {
         self$log("Residuals are not calculated when using Rfast. Re-build the model with `use_Rfast = TRUE`", level = "ERROR")
@@ -295,23 +313,26 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' Switch the sign of scores and loadings
     #' @param effect_i The effect to reflect, `0` or `NULL` reflects the entire model
     #' @param component The component to reflect, `0` or `NULL` reflects the entire model
-    flip_it = function(effect_i = 0, component = 0) {
+    flip = function(effect_i = 0, component = 0) {
       if (effect_i[[1]] == 0 || is.null(effect_i)) {
         effect_i <- seq_along(self$effect_list$expr)
       }
       if (component[[1]] == 0 || is.null(component)) {
         component <- unique(self$ALASCA$loading[[1]]$PC)
       }
+      
       for (effect_k in effect_i) {
         self$ALASCA$loading[[effect_k]][PC %in% component, loading := -loading]
-        self$ALASCA$loading[[effect_k]][PC %in% component, high := -high]
-        self$ALASCA$loading[[effect_k]][PC %in% component, low := -low]
-        
         self$ALASCA$score[[effect_k]][PC %in% component, score := -score]
-        self$ALASCA$score[[effect_k]][PC %in% component, high := -high]
-        self$ALASCA$score[[effect_k]][PC %in% component, low := -low]
         
         if (self$validate) {
+          
+          self$ALASCA$loading[[effect_k]][PC %in% component, high := -high]
+          self$ALASCA$loading[[effect_k]][PC %in% component, low := -low]
+          
+          self$ALASCA$score[[effect_k]][PC %in% component, high := -high]
+          self$ALASCA$score[[effect_k]][PC %in% component, low := -low]
+          
           if (self$save_to_disk) {
             DBI::dbSendQuery(self$db_con,
                              paste0("UPDATE loading
@@ -328,14 +349,10 @@ AlascaModel <- R6::R6Class("AlascaModel",
           } else {
             tmp <- fst::read_fst(self$effect_list$saved_scores[[effect_k]], as.data.table = TRUE)
             tmp[PC %in% component, score := -score]
-            tmp[PC %in% component, high := -high]
-            tmp[PC %in% component, low := -low]
             fst::write_fst(tmp, path = self$effect_list$saved_scores[[effect_k]])
             
             tmp <- fst::read_fst(self$effect_list$saved_loadings[[effect_k]], as.data.table = TRUE)
-            tmp[PC %in% component, score := -score]
-            tmp[PC %in% component, high := -high]
-            tmp[PC %in% component, low := -low]
+            tmp[PC %in% component, loading := -loading]
             fst::write_fst(tmp, path = self$effect_list$saved_loadings[[effect_k]])
           }
         }
@@ -437,6 +454,14 @@ AlascaModel <- R6::R6Class("AlascaModel",
         return(self$covar_coefficients)
       }
     },
+    #' @description
+    #' Print ALASCA version
+    #' @return String with version number and date of latest update
+    print_version = function() {
+      return(
+        paste0("ALASCA (v", self$version, ", ", self$update_date, ")")
+      )
+    },
     do_validate = do_validate,
     get_scaling_function = get_scaling_function,
     get_default_scaling_function = get_default_scaling_function,
@@ -452,7 +477,6 @@ AlascaModel <- R6::R6Class("AlascaModel",
     clean_pca = clean_pca,
     clean_alasca = clean_alasca,
     get_regression_predictions = get_regression_predictions,
-    get_bootstrap_ids = get_bootstrap_ids,
     get_bootstrap_data = get_bootstrap_data,
     prepare_validation_run = prepare_validation_run,
     get_validation_percentiles = get_validation_percentiles,

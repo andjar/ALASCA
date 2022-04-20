@@ -1,12 +1,15 @@
 AlascaDataset <- R6::R6Class("AlascaDataset",
   class = FALSE,
   public = list(
+    #' @field data_df The original dataset
     data_df = NULL,
     model = NULL,
     rows_to_serve = NULL,
     IDs = NULL,
     rows_by_ID = NULL,
+    #' @field level_list List of factor levels by column
     level_list = NULL,
+    #' @field column_types Type of columns in `data_df`
     column_types = NULL,
     reduced_df = list(
        loading = NULL

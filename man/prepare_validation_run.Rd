@@ -4,7 +4,7 @@
 \alias{prepare_validation_run}
 \title{Make a single validation run}
 \usage{
-prepare_validation_run(runN = NA)
+prepare_validation_run(runN)
 }
 \arguments{
 \item{object}{An ALASCA object}

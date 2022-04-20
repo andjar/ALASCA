@@ -9,35 +9,63 @@ The object builds the ALASCA model and contains the data
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{df}}{The data to analyze}
+\item{\code{df}}{Data table/frame. The data to analyze}
 
 \item{\code{formula}}{An AlascaForula object}
 
-\item{\code{wide}}{Whether the provided data is in wide format}
+\item{\code{wide}}{Boolean. Whether the provided data is in wide format}
 
-\item{\code{scale_function}}{How to scale the data}
+\item{\code{scale_function}}{How to scale the data. Options are \code{NULL}, custom function, or \code{"sdall"}, \code{"sdref"}, \code{"sdt1"}, \code{"sdreft1"}}
 
-\item{\code{scale_function}}{If TRUE, try to separate the effects}
+\item{\code{version}}{Version number}
 
-\item{\code{validate}}{Validate the model}
+\item{\code{update_date}}{Date of latest update}
 
-\item{\code{reduce_dimensions}}{Use PCA to reduce data dimensions prior to analysis}
+\item{\code{separate_effects}}{If TRUE, try to separate the effects}
+
+\item{\code{n_validation_folds}}{Integer. If using jack-knife validation, exclude 1/n_validation_folds of the participants at each iteration}
+
+\item{\code{n_validation_runs}}{Integer. Number of iterations to use for validation}
+
+\item{\code{validation_quantile_method}}{Integer between 1 and 9. See \code{\link[stats:quantile]{stats::quantile()}} for details}
+
+\item{\code{validate}}{Boolean. Validate the model}
+
+\item{\code{validation}}{Boolean. Synonym to \code{validate}}
+
+\item{\code{validation_method}}{String. Defines the validation method; \code{"bootstrap"} (default) or \code{"jack-knife"}}
+
+\item{\code{limitsCI}}{Lower and upper quantile to use for validation}
+
+\item{\code{compress_validation}}{Integer between 0 and 100. See \code{\link[fst:write_fst]{fst::write_fst()}} for details}
+
+\item{\code{reduce_dimensions}}{Boolean. Use PCA to reduce data dimensions prior to analysis}
 
 \item{\code{save_to_disk}}{Write model data to disk to reduce memory usage}
 
-\item{\code{db_method}}{Use a \code{duckdb} or a \code{SQLite} database for validation data}
+\item{\code{db_method}}{String. Use a \code{"duckdb"} or a \code{"SQLite"} database for validation data}
 
 \item{\code{filename}}{Filename for the saved model}
 
-\item{\code{filepath}}{Where to save the model. Defaults to ALASCA/<timestamp>}
+\item{\code{filepath}}{Where to save the model. Defaults to \verb{ALASCA/<timestamp>}}
 
 \item{\code{save}}{Save model data and plots}
 
-\item{\code{method}}{Can be \code{LM} or \code{LMM}}
+\item{\code{method}}{String. Can be \code{"LM"} or \code{"LMM"}}
 
-\item{\code{max_PC}}{The maximal number of principal components to keep for further analysis}
+\item{\code{max_PC}}{Integer. The maximal number of principal components to keep for further analysis}
+
+\item{\code{use_Rfast}}{Boolean. If \code{TRUE} (default), use Rfast, else use lm or lme4}
+
+\item{\code{p_adjust_method}}{String. See \code{\link[stats:p.adjust]{stats::p.adjust()}}}
 
 \item{\code{explanatory_limit}}{Only validate components explaining more than \code{explanatory_limit} of the variance}
+
+\item{\code{init_time}}{The time when the object is initialized}
+
+\item{\code{log_to}}{String deciding logging target: \code{all} (default), \code{file}, \code{console}, \code{none}}
+
+\item{\code{do_debug}}{Boolean. Log more details}
 }
 \if{html}{\out{</div>}}
 }
@@ -67,8 +95,8 @@ The object builds the ALASCA model and contains the data
 \item \href{#method-get_validation_loadings}{\code{AlascaModel$get_validation_loadings()}}
 \item \href{#method-get_validation_percentiles_score}{\code{AlascaModel$get_validation_percentiles_score()}}
 \item \href{#method-get_regression_predictions}{\code{AlascaModel$get_regression_predictions()}}
+\item \href{#method-get_validation_ids}{\code{AlascaModel$get_validation_ids()}}
 \item \href{#method-prepare_validation_run}{\code{AlascaModel$prepare_validation_run()}}
-\item \href{#method-get_bootstrap_ids}{\code{AlascaModel$get_bootstrap_ids()}}
 \item \href{#method-get_bootstrap_data}{\code{AlascaModel$get_bootstrap_data()}}
 \item \href{#method-new}{\code{AlascaModel$new()}}
 \item \href{#method-finalize}{\code{AlascaModel$finalize()}}
@@ -78,13 +106,14 @@ The object builds the ALASCA model and contains the data
 \item \href{#method-get_residuals}{\code{AlascaModel$get_residuals()}}
 \item \href{#method-set_effect_terms}{\code{AlascaModel$set_effect_terms()}}
 \item \href{#method-set_design_matrices}{\code{AlascaModel$set_design_matrices()}}
-\item \href{#method-flip_it}{\code{AlascaModel$flip_it()}}
+\item \href{#method-flip}{\code{AlascaModel$flip()}}
 \item \href{#method-get_ref}{\code{AlascaModel$get_ref()}}
 \item \href{#method-get_levels}{\code{AlascaModel$get_levels()}}
 \item \href{#method-get_PCs}{\code{AlascaModel$get_PCs()}}
 \item \href{#method-get_scores}{\code{AlascaModel$get_scores()}}
 \item \href{#method-get_loadings}{\code{AlascaModel$get_loadings()}}
 \item \href{#method-get_covars}{\code{AlascaModel$get_covars()}}
+\item \href{#method-print_version}{\code{AlascaModel$print_version()}}
 \item \href{#method-save_validation}{\code{AlascaModel$save_validation()}}
 \item \href{#method-save_to_csv}{\code{AlascaModel$save_to_csv()}}
 \item \href{#method-save_model}{\code{AlascaModel$save_model()}}
@@ -300,20 +329,20 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-prepare_validation_run"></a>}}
-\if{latex}{\out{\hypertarget{method-prepare_validation_run}{}}}
-\subsection{Method \code{prepare_validation_run()}}{
+\if{html}{\out{<a id="method-get_validation_ids"></a>}}
+\if{latex}{\out{\hypertarget{method-get_validation_ids}{}}}
+\subsection{Method \code{get_validation_ids()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$prepare_validation_run(runN = NA)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_validation_ids()}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_bootstrap_ids"></a>}}
-\if{latex}{\out{\hypertarget{method-get_bootstrap_ids}{}}}
-\subsection{Method \code{get_bootstrap_ids()}}{
+\if{html}{\out{<a id="method-prepare_validation_run"></a>}}
+\if{latex}{\out{\hypertarget{method-prepare_validation_run}{}}}
+\subsection{Method \code{prepare_validation_run()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_bootstrap_ids(runN = NA)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$prepare_validation_run(runN)}\if{html}{\out{</div>}}
 }
 
 }
@@ -409,12 +438,12 @@ Function for logging messages using the log4r package
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-flip_it"></a>}}
-\if{latex}{\out{\hypertarget{method-flip_it}{}}}
-\subsection{Method \code{flip_it()}}{
+\if{html}{\out{<a id="method-flip"></a>}}
+\if{latex}{\out{\hypertarget{method-flip}{}}}
+\subsection{Method \code{flip()}}{
 Switch the sign of scores and loadings
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$flip_it(effect_i = 0, component = 0)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$flip(effect_i = 0, component = 0)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -513,6 +542,19 @@ A vector with principal components
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_covars(n_limit = 0)}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-print_version"></a>}}
+\if{latex}{\out{\hypertarget{method-print_version}{}}}
+\subsection{Method \code{print_version()}}{
+Print ALASCA version
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$print_version()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+String with version number and date of latest update
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-save_validation"></a>}}

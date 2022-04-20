@@ -11,6 +11,9 @@
 
 \item{variable}{A marco object.}
 }
+\value{
+A data table with residuals
+}
 \description{
 Prints a marco object
 }
