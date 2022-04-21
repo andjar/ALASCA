@@ -448,8 +448,18 @@ run_regression <- function() {
   
   #df_by_variable <- split(self$df, self$df$variable)
   self$log("Find rows by variable", level = "DEBUG")
-  rows_by_variable <- lapply(self$get_levels("variable"), function(x) self[["df"]][variable == x, which = TRUE] )
-  names(rows_by_variable) <- self$get_levels("variable")
+  #setkey(self[["df"]], variable)
+  #rows_by_variable <- lapply(self$get_levels("variable"), function(x) self[["df"]][x, which = TRUE] )
+  #rows_by_variable <- lapply(self$get_levels("variable"), function(x) self[["df"]][variable == x, which = TRUE] )
+  if (nrow(self[["df"]]) > 1000) {
+    rows_by_variable <- split(self[["df"]][, .I, by = variable], by = "variable")
+  } else {
+    rows_by_variable <- lapply(self$get_levels("variable"), function(x) data.table(I = which(self[["df"]][["variable"]] == x)) )
+    names(rows_by_variable) <- self$get_levels("variable")
+  }
+  
+  
+  #names(rows_by_variable) <- self$get_levels("variable")
   
   if (self$use_Rfast && self$method %in% c("LMM")) {
     # start.time <- Sys.time()
@@ -472,9 +482,9 @@ run_regression <- function() {
     self$regression_coefficients <- setDT(as.data.frame(
       vapply(self$get_levels("variable"), function(x) {
         Rfast::rint.reg(
-          y = self[["df"]][ rows_by_variable[[x]], value],
-          x = self[["modmat"]][rows_by_variable[[x]], -1],
-          id = as.numeric(factor(self[["df"]][ rows_by_variable[[x]], ID])),
+          y = self[["df"]][ rows_by_variable[[x]]$I, value],
+          x = self[["modmat"]][rows_by_variable[[x]]$I, -1],
+          id = as.numeric(factor(self[["df"]][ rows_by_variable[[x]]$I, ID])),
           ranef = FALSE
         )$be
       }, FUN.VALUE = numeric(ncol(self[["modmat"]])))
@@ -494,7 +504,7 @@ run_regression <- function() {
     #' self[["formula"]][["regression_formula"]] has replaced the terms with the modified model matrix
     
     self$regression_model <- lapply(self$get_levels("variable"), function(x) {
-      modmat <- model.matrix(self[["formula"]][["formula"]], data = self$df[ rows_by_variable[[x]] ])
+      modmat <- model.matrix(self[["formula"]][["formula"]], data = self$df[ rows_by_variable[[x]]$I ])
       #self[["modmat"]] <- self[["modmat"]][, -1] # Remove intercept
       if (self[["equal_baseline"]]) {
         # Remove interaction between group and first time point
@@ -502,7 +512,7 @@ run_regression <- function() {
       }
       self[["cnames_modmat"]] <- colnames(modmat)
       environment(self[["formula"]][["regression_formula"]]) <- environment()
-      regression_model <- lm(self[["formula"]][["regression_formula"]], data = self$df[ rows_by_variable[[x]] ])
+      regression_model <- lm(self[["formula"]][["regression_formula"]], data = self$df[ rows_by_variable[[x]]$I ])
       attr(regression_model, "name") <- x
       regression_model
     })
@@ -513,27 +523,30 @@ run_regression <- function() {
       self$log("Rfast does NOT like NA's! Check your scaling function or value column.", level = "ERROR")
       stop()
     }
+    
     if (!self$minimize_object || self$reduce_dimensions) {
-      self[["modmat"]] <- model.matrix(self[["formula"]][["regression_formula"]], data = self$df[ rows_by_variable[[x]] ])
+      self[["modmat"]] <- model.matrix(self[["formula"]][["formula"]], data = self$df)
       if (self[["equal_baseline"]]) {
         # Remove interaction between group and first time point
         self[["modmat"]] <- self[["modmat"]][, !grepl(paste0(self$effect_terms[[1]], self$get_ref(self$effect_terms[[1]])), colnames(self[["modmat"]]))]
       }
       self[["cnames_modmat"]] <- colnames(self[["modmat"]])
     }
-    self$regression_coefficients <- rbindlist(
-      lapply(self$get_levels("variable"), function(x) {
-        list(
-          estimate = Rfast::lmfit(
-            y = self[["df"]][ rows_by_variable[[x]], value],
-            x = self[["modmat"]][rows_by_variable[[x]], -1]
-          )$be,
-          pvalue = NA,
-          covar = as.character(x),
-          variable = self[["cnames_modmat"]]
-        )
-      })
-    )
+    
+    self$regression_coefficients <- setDT(as.data.frame(
+      vapply(self$get_levels("variable"), function(x) {
+        Rfast::lmfit(
+          y = self[["df"]][ rows_by_variable[[x]]$I, value],
+          x = self[["modmat"]][rows_by_variable[[x]]$I, ]
+        )$be
+      }, FUN.VALUE = numeric(ncol(self[["modmat"]])))
+    ))[]
+    self$log("-> Finished regression", level = "DEBUG")
+    colnames(self$regression_coefficients) <- self$get_levels("variable")
+    self$regression_coefficients[, variable := self[["cnames_modmat"]]]
+    self$regression_coefficients <- melt(self$regression_coefficients, id.vars = "variable", variable.name = "covar", variable.factor = FALSE, value.name = "estimate")
+    self$regression_coefficients[, pvalue := NA]
+
     # end.time <- Sys.time()
     # cat("\n\n",end.time - start.time,"\n")
     #invisible(self)
@@ -543,7 +556,7 @@ run_regression <- function() {
     #' self[["formula"]][["regression_formula"]] has replaced the terms with the modified model matrix
     
     self$regression_model <- lapply(self$get_levels("variable"), function(x) {
-      modmat <- model.matrix(self[["formula"]][["formula"]], data = self$df[ rows_by_variable[[x]] ])
+      modmat <- model.matrix(self[["formula"]][["formula"]], data = self$df[ rows_by_variable[[x]]$I ])
       #odmat <- modmat[, -1] # Remove intercept
       if (self[["equal_baseline"]]) {
         # Remove interaction between group and first time point
@@ -552,7 +565,7 @@ run_regression <- function() {
       self[["cnames_modmat"]] <- colnames(modmat)
       # modmat <- modmat[,ncol(modmat):1]
       environment(self[["formula"]][["regression_formula"]]) <- environment()
-      regression_model <- lmerTest::lmer(self[["formula"]][["regression_formula"]], data = self$df[ rows_by_variable[[x]] ])
+      regression_model <- lmerTest::lmer(self[["formula"]][["regression_formula"]], data = self$df[ rows_by_variable[[x]]$I ])
       attr(regression_model, "name") <- x
       regression_model
     })
@@ -1112,14 +1125,14 @@ get_validation_loadings <- function(objectlist = NULL, effect_i = 1) {
     DBI::dbClearResult(res)
   } else {
     
-    if (is.null(self$effect_list$saved_scores)) {
+    if (is.null(self$effect_list$saved_loadings)) {
       self$log("Saving validation loadings", level = "DEBUG")
       for (effect_k in seq_along(self$effect_list$expr)) {
         df <- rbindlist(
           lapply(seq_along(objectlist), function(x) {
             data.table(
               model = x,
-              objectlist[[x]]$ALASCA$loading[[effect_i]][objectlist[[x]]$ALASCA$loading[[effect_i]]$PC %in% self$get_PCs(effect_i), ]
+              objectlist[[x]]$ALASCA$loading[[effect_k]][PC %in% self$get_PCs(effect_k), ]
             )
           }),
           fill = TRUE
@@ -1128,7 +1141,8 @@ get_validation_loadings <- function(objectlist = NULL, effect_i = 1) {
         fst::write_fst(df, fname, compress = self$compress_validation)
         self$effect_list$saved_loadings[[effect_k]] <- fname
       }
-    } 
+    }
+    
     df <- fst::read_fst(self$effect_list$saved_loadings[[effect_i]], as.data.table = TRUE)
   }
   return(df)
@@ -2314,7 +2328,7 @@ plot_histogram_score <- function() {
   effect_terms <- self$model$effect_list$terms[[self$effect_i]]
   data_to_plot <- self$model$get_scores(effect_i = self$effect_i, component = self$component)
   data_to_plot$model <- 0
-  data_to_add <- self$model$get_validation_scores(effect_i = effect_i)[PC == component]
+  data_to_add <- self$model$get_validation_scores(effect_i = self$effect_i)[PC == self$component]
   data_to_plot <- rbind(data_to_plot, data_to_add, fill = TRUE)
   colnames(data_to_plot)[colnames(data_to_plot) == effect_terms[[1]]] <- "x_data"
   data_to_plot[, x_data := paste0(self$x_label, ": ", x_data)]
@@ -2363,7 +2377,7 @@ plot_histogram_loading <- function() {
   }
   data_to_plot <- self$model$get_loadings(effect_i = self$effect_i, component = self$component, n_limit = self$n_limit)[[1]]
   data_to_plot$model <- 0
-  data_to_add <- self$model$get_validation_loadings(effect_i = effect_i)[PC == self$component]
+  data_to_add <- self$model$get_validation_loadings(effect_i = self$effect_i)[PC == self$component]
   data_to_add <- data_to_add[covars %in% unique(data_to_plot$covars)]
   data_to_plot <- rbind(data_to_plot, data_to_add, fill = TRUE)
   data_to_plot[, covars := factor(covars, levels = data_to_plot[model == 0][order(loading, decreasing = TRUE), covars])]

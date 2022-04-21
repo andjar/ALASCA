@@ -47,7 +47,7 @@ AlascaDataset <- R6::R6Class("AlascaDataset",
       self$data_df <- self$data_df[, .SD, .SDcols = c(self$model$formula$all_terms, "variable", self$model$formula$lhs)]
       
       self$rows_to_serve <- seq_len(nrow(self$data_df))
-      self$IDs <- self$df$ID
+      self$IDs <- self$data_df$ID
       self$rows_by_ID <- lapply(unique(self$IDs), function(x) which(x == self$IDs))
       names(self$rows_by_ID) <- unique(self$IDs)
       

@@ -19,7 +19,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field version Version number
     version = "0.0.0.95",
     #' @field update_date Date of latest update
-    update_date = "2022-04-19",
+    update_date = "2022-04-21",
     
     # Effect matrices
     #' @field separate_effects If TRUE, try to separate the effects
@@ -31,8 +31,8 @@ AlascaModel <- R6::R6Class("AlascaModel",
       model_matrix = NULL,
       effect_matrix = NULL,
       pca = NULL,
-      saved_scores = list(),
-      saved_loadings = list()
+      saved_scores = NULL,
+      saved_loadings = NULL
     ),
     
     # Validation settings
