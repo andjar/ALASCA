@@ -1,535 +1,145 @@
-#' Get an ALASCA object
+#' Create an ALASCA model
 #'
-#' `ALASCA` initializes an ALASCA model and returns an ALASCA object
+#' `ALASCA` initializes an ALASCA model and returns an ALASCA object.
 #'
-#' This function builds your ALASCA model. It needs a data frame containing at least a column identifying participants, a column called `time` contining time information, a column `group` containing group information, a column `variable` containing variable names, and a value column. In addition you need to specify the model you want, and whether you want to separate group and time effects (defaults to `TRUE`).
+#' This function builds your ALASCA model. It needs, at least, a data frame and a formula. The effect matrices can be specified with `effects`, e.g., `c("time", "time+group+time:group", "group+time:group")`.
 #'
 #' @param df Data frame to be analyzed
-#' @param formula Regression model
-#' @param separate_time_and_group Logical: should time and group effect be separated?
-#' @param p_adjust_method Method for correcting p values for multiple testing, see p.adjust.methods
-#' @param validate Logical. If `TRUE`, give estimates for robustness
-#' @param participant_column String. Name of the column containing participant identification
-#' @param minimize_object Logical. If `TRUE`, remove unnecessary clutter, optimize for validation
+#' @param formula Regression formula
+#' @param effects Vector with effect terms. If `NULL`, ALASCA will guess (default)
 #' @param scale_function Either a custom function or string to define scaling function: `sdall`, `sdref`, `sdt1`, `sdreft1`
-#' @param scale_function.center Boolean. Mean centering as part of scaling
-#' @param equal_baseline Set to `TRUE` (default) to remove interaction between group and first time point
-#' @param sum_coding Set to `TRUE` to use sum coding instead of contrast coding for group (defaults to `FALSE`)
-#' @param plot.x_label Defaults to "Time"
-#' @param plot.group_label Defaults to "Group"
-#' @param plot.figsize A vector containing `c(width,height,dpi)` (default: `c(180, 120, 300)`)
-#' @param plot.figunit Defaults to "mm"
-#' @param plot.filetype Which filetype you want to save the figure to (default: `png`)
-#' @param plot.palette List of colors, named by group
-#' @param keep_terms Additional terms to keep in the model matrix
-#' @param stratification_vector Vector of same length as `df` that specifies stratification groups during validate_ Defaults to `NA`, where the group column is used.
-#' @param validate_regression Whether to validate regression predictions or not (only if `validate` is `TRUE`)
-#' @param do_debug Print what happens (default: `FALSE`)
+#' @param separate_effects Boolean. Separate effects?
+#' @param equal_baseline Set to `TRUE` to remove interaction between effects
+#' @param validate Boolean. If `TRUE`, give estimates for robustness
+#' @param n_validation_runs number of validation runs
+#' @param validation_method Choose between `bootstrap` (default) and "jack-knife"
+#' @param stratification_column The column to stratify participants by
 #' @param save Save models and plots automatically (default: `FALSE`)
 #' @param filename File name to save model and plots (when `save = TRUE`)
-#' @param method Defaults to `NA` where method is either LM or LMM, depending on whether your formula contains a random effect or not
 #' @param use_Rfast Boolean. Defaults to `TRUE`
+#' @param p_adjust_method Method for correcting p values for multiple testing, see p.adjust.methods
+#' @param participant_column String. Name of the column containing participant identification
 #' @param n_validation_folds Partitions when validating
-#' @param n_validation_runs number of validation runs
-#' @param validation_method among  `loo` (leave-one-out, default)
-#' @param validation_object Don't worry about me:)
-#' @param validation_participants Don't worry about me:)
+#' 
 #' @return An ALASCA object
 #'
-#' @examples
-#' load("PE.Rdata")
-#' model <- ALASCA(df = df, formula = value ~ time * group + (1 | ID))
 #' @export
 ALASCA <- function(df,
                    formula,
-                   wide = FALSE,
-                   separate_time_and_group = FALSE,
-                   scale_function = "sdall",
-                   reduce_dimensions = FALSE,
-                   equal_baseline = FALSE,
-                   sum_coding = FALSE,
-                   method = NA,
-                   use_Rfast = TRUE,
-                   p_adjust_method = NA,
-                   participant_column = "ID",
-                   x_column = "time",
-                   ignore_missing = FALSE,
-                   ignore_missing_covars = FALSE,
-                   silent = FALSE,
-                   scale_function.center = FALSE,
-                   stratification_column = "group",
-                   stratification_vector = NA,
-                   minimize_object = FALSE,
-                   limitsCI = c(0.025, 0.975),
-                   pca_function = "prcomp",
-                   plot.x_label = "Time",
-                   plot.group_label = "Group",
-                   plot.figsize = c(180, 120, 300),
-                   plot.figunit = "mm",
-                   plot.filetype = "png",
-                   plot.palette = NA,
-                   plot.loadinggroupcolumn = NA,
-                   plot.loadinggroup_label = "Variable group",
-                   plot.palette.end = 0.8,
-                   explanatorylimit = 0.05,
-                   do_debug = FALSE,
-                   n_validation_folds = 7,
-                   n_validation_runs = 1000,
-                   validation_quantile_method = 2,
-                   plot.my_theme = ggplot2::theme_classic(),
-                   keep_columns = c(""),
-                   keep_terms = c(""),
-                   filename = NA,
-                   filepath = NA,
-                   reduce_dimensions.nComps= NULL,
-                   reduce_dimensions.limit = 0.95,
-                   save = FALSE,
-                   save_to_disk = FALSE,
-                   save_validation_ids = FALSE,
-                   optimize_score = TRUE,
-                   validate = FALSE,
-                   validate_regression = TRUE,
-                   validation = FALSE,
-                   validation_method = "bootstrap",
-                   validation_ids = NA,
-                   validation_object = NA,
-                   validation_assign_new_ids = FALSE,
-                   validation_participants = NA) {
-  if (!is.na(validation_object[1])) {
-    # This is a validation run
-
-    object <- validation_object
-    # Overwrite some data
-
-    ## Unscaled values
-    object$df <- validation_object$df_raw
-    if(object$reduce_dimensions){
-      object$Limm$main$pca <- object$Limm$pca
-      object$Limm$pca <- NULL
-    }
-
-    ## Avoid recursion
-    object$validate <- FALSE
-
-    ## Save space
-    object$minimize_object <- TRUE
-
-    ## Selected participants for this run
-    object$validation_participants <- validation_participants
-
-    ## Keep original object?
-    object$validation_object <- NULL # validation_object
-    
-    object$variablelist <- unique(object$df$variable)
-    object$timelist <- levels(object$df$time)
-    object$grouplist <- levels(object$df$group)
-    
-    object$df <- object$df[object$validation_participants]
-    object$modmat <- object$modmat[object$validation_participants,]
-    #object$df[, ID := factor(ID)]
-
-    #object$do_debug <- FALSE
-  } else {
-    object <- as.list(environment())
-    object$df <- setDT(object$df)
-    object$validate <- object$validate || object$validation
-    object$validation <- NULL
-    object$n_validation_runs <- ifelse(any(is.na(object$validation_ids)), object$n_validation_runs, nrow(object$validation_ids))
-    object$init_time <- Sys.time()
-    object$filepath <- ifelse(is.na(object$filepath), NA, ifelse(substr(object$filepath, nchar(object$filepath), nchar(object$filepath)) == "/", object$filepath,  paste0(object$filepath, "/")))
-    object$save_to_disk <- object$validate && object$save_to_disk
-    object$rawFormula <- object$formula
-    object$keep_validation_objects <- TRUE
-    object$ALASCA.version <- print_version(get = "version")
-    object$ALASCA.version.date <- print_version(get = "date")
-    object$log_file <- tempfile()
-    object$log_level <- ifelse(object$do_debug, "DEBUG", "INFO")
-    if (object$silent) {
-      object$log <- log4r::logger(object$log_level, appenders = list(log4r::file_appender(object$log_file)))
-    } else {
-      object$log <- log4r::logger(object$log_level, appenders = list(log4r::console_appender(), log4r::file_appender(object$log_file)))
-    }
-    
-    log4r::info(object$log, "Initializing ALASCA.")
-    class(object) <- "ALASCA"
-    print_version()
-  }
+                   effects = NULL,
+                   ...) {
   
-  # Clean input ----
-
-  if (!object$minimize_object) {
-    log4r::info(object$log, "Has initialized the ALASCA model. Next step is to clean it and check input")
-  }
-  object <- sanitize_object(object)
-
-  # Build the ALASCA model ----
+  object <- AlascaModel$new(df, formula, effects, ...)
   
-  object <- buildModel(object)
-
-  # To save space, we remove unnecessary embedded data ----
-  if (object$minimize_object) {
-    log4r::debug(object$log, "Starting to remove embedded data")
-    object <- remove_embedded_data(object)
-    log4r::debug(object$log, "Completed remove embedded data")
-  }
-
   # Validate the model ----
   if (object$validate) {
-    log4r::debug(object$log, "Starting validation")
-    object <- validate(object)
-    log4r::debug(object$log, "Completing validation")
-  }
-  object$run_time <- Sys.time() - object$init_time
-
-  # Save the model
-  if (object$save & !object$minimize_object) {
-    saveALASCA(object)
-  }
-
-  if (object$save_to_disk & !object$minimize_object) {
-    DBI::dbDisconnect(object$db.con)
-    DBI::dbUnloadDriver(object$db.driver)
-  }
-
-  return(object)
-}
-
-#' Run RMASCA
-#'
-#' Same as calling ALASCA with `method = "LMM"`
-#'
-#' @inheritParams ALASCA
-#' @return An ALASCA object
-#' @export
-RMASCA <- function(...) {
-  object <- ALASCA(..., method = "LMM")
-  return(object)
-}
-
-#' Print ALASCA version
-#'
-#' @return String
-#' @export
-print_version <- function(object = FALSE, get = NA, print = TRUE) {
-  ALASCA.version <- "0.0.0.92"
-  ALASCA.version.date <- "2022-03-06"
-  if (is.list(object)) {
-    ALASCA.version <- object$ALASCA.version
-    ALASCA.version.date <- object$ALASCA.version.date
-  }
-  if (is.na(get)) {
-    if (print) {
-      cat("\n\n====== ALASCA ======\n\n")
-      cat(paste0(ALASCA.version, " (", ALASCA.version.date, ")\n\n"))
-    }
+    object$log("Starting validation", level = "DEBUG")
+    object$do_validate()
+    object$log("Completing validation", level = "DEBUG")
   } else {
-    if (get == "date") {
-      return(ALASCA.version.date)
-    } else {
-      return(ALASCA.version)
-    }
+    if (object$do_debug) currentTs <- Sys.time()
+    object$clean_alasca()
+    if (object$do_debug) cat("* clean_alasca:", Sys.time() - currentTs, "s\n")
   }
-}
-
-#' Run SMASCA
-#'
-#' Same as calling ALASCA with `method = "LM"`
-#'
-#' @inheritParams ALASCA
-#' @return An ALASCA object
-#' @export
-SMASCA <- function(...) {
-  object <- ALASCA(..., method = "LM")
+  
+  object$run_time <- Sys.time() - object$init_time
+  
+  # Save the model
+  if (object$save) {
+    object$save_model()
+  }
+  
+  if (object$save_to_disk) {
+    DBI::dbDisconnect(object$db_con)
+  }
+  
+  object$log("==== ALASCA has finished ====")
+  object$log("To visualize the model, try `plot(<object>, effect = 1, component = 1, type = 'effect')`")
   return(object)
 }
 
-#' Sanitize an ALASCA object
-#'
-#' This function checks that the input to an ALASCA object is as expected
-#'
-#' @param object An ALASCA object to be sanitized
-#' @return An ALASCA object
-sanitize_object <- function(object) {
-  if (!object$minimize_object) {
-    
-    log4r::debug(object$log, "Starting sanitation")
-    object <- get_info_from_formula(object)
-    object <- rename_columns_to_standard(object)
-    object <- wide_to_long(object)
-    
-    # Keep variable labels
-    if (!is.na(object$plot.loadinggroupcolumn)) {
-      object$variable_labels <- unique(object$df[, .SD, .SDcols = c("variable", object$plot.loadinggroupcolumn)])
-      colnames(object$variable_labels) <- c("covars", "covargroup")
-    }
-    
-    # Remove surplus data for efficiency
-    object$df <- object$df[, .SD, .SDcols = c(object$all_formula_terms, "variable", "value")]
-    
-    check_that_columns_are_valid(object)
-    
-    log4r::info(object$log, "Making factors for time, group and variable")
-    object$df[, time := factor(time, levels = object$timelist), ]
-    object$df[, group := factor(group, levels = object$grouplist), ]
-    object$df[, variable := factor(variable, levels = object$variablelist), ]
-    object$stratification_vector <- object$df[, get(object$stratification_column)]
-    
-    # List of levels
-    object$variablelist <- unique(object$df$variable)
-    object$timelist <- levels(object$df$time)
-    object$grouplist <- levels(object$df$group)
-    
-    object <- adjust_design_matrix(object)
-    
-    object <- get_scaling_function(object)
-    object <- get_pca_function(object)
 
-    if (object$save_to_disk) {
-      object$db.driver <- RSQLite::dbDriver("SQLite")
-      object$db.filename <- get_filename(object, prefix = "validation/", filetype = "db")
-      object$db.con <- DBI::dbConnect(object$db.driver, dbname = object$db.filename)
-    }
-    
-    log4r::info(object$log, "Checking for missing information")
-    find_missing_predictor_variables(object)
-    find_missing_response_variables(object)
-    
-    # Use sum coding?
-    if (object$sum_coding) {
-      log4r::info(object$log, "Use sum coding")
-      contrasts(object$df$group) <- contr.sum(length(unique(object$df$group)))
-    }
-  }
-
-  # Keep a copy of unscaled data
-  object$df_raw <- object$df
-  
-  # Scale data
-  object$df <- object$scale_function(object$df)
-  
-  log4r::debug(object$log, "Completed sanitation")
-  return(object)
-}
-
-#' Check if columns are missing
-#'
-#' ...
-#'
-#' @param object An ALASCA object
-rename_columns_to_standard <- function(object) {
-  
-  if (object$valCol != "value") {
-    if ("value" %in% colnames(object$df)) {
-      log4r::error(object$log, "Sorry, the value column is reserved by ALASCA; please give it another name or change `valCol`")
-      stop()
-    }
-    log4r::warn(object$log, paste0("Changing ", object$valCol, " to `value`."))
-    object$df[, value := get(object$valCol)]
-    object$formula <- formula(paste(
-      "value ~",
-      as.character(object$formula)[3]
-    ))
-    object <- get_info_from_formula(object)
-  }
-  
-  if (object$x_column == "time" && ! "time" %in% object$all_formula_terms) {
-    object$x_column <- object$formula_terms[1]
-    log4r::info(object$log, paste("Will use", object$x_column, "for abscissa"))
-  }
-  
-  if (object$x_column != "time") {
-    if ("time" %in% colnames(object$df)) {
-      object$time <- NULL
-      log4r::warn(object$log, "Overwriting the `time` column")
-    }
-    object$df[, time := factor(get(object$x_column))]
-    object$timelist <- levels(object$df$time)
-    object <- replace_term_in_formula(object, old_term = object$x_column, new_term = "time")
-  }
-  
-  
-  if (object$method == "LM" && !"group" %in% colnames(object$df)) {
-    object$grouplist <- object$timelist
-    object$df[, group := time]
-  } else if (!"group" %in% colnames(object$df)) {
-    object$df[, group := factor("NA")]
-  } 
-  
-  object$variablelist <- unique(object$df$variable)
-  object$timelist <- levels(object$df$time)
-  object$grouplist <- levels(object$df$group)
-  
-  log4r::info(object$log, paste0("Using `",object$stratification_column,"` for stratification"))
-
-  return(object)
-}
 
 #' Check if response variables are missing
-#'
-#' ...
-#'
-#' @param object An ALASCA object
+#' 
+#' Called from AlascaDataset
+#' 
 #' @return An ALASCA object
-find_missing_response_variables <- function(object) {
-  if(object$df[, uniqueN(variable), by = .(ID, time)][, uniqueN(V1)] > 1) {
-    if (object$ignore_missing) {
-      log4r::warn(object$log, "Response variables missing for some samples! Continue with caution!")
+find_missing_response_variables <- function() {
+  if(self$df[, uniqueN(variable), by = .(ID, time)][, uniqueN(V1)] > 1) {
+    if (self$model$ignore_missing) {
+      self$model$log("Response variables missing for some samples! Continue with caution!", level = "WARN")
     } else {
-      log4r::error(object$log, "Response variables missing for some samples! To ignore this, use `ignore_missing = TRUE`")
+      self$model$log("Response variables missing for some samples! To ignore this, use `ignore_missing = TRUE`", level = "ERROR")
       stop()
     }
   }
 }
 
 #' Check if predictor variables are missing
+#' 
+#' Called from AlascaDataset
 #'
-#' ...
-#'
-#' @param object An ALASCA object
-#' @return An ALASCA object
-find_missing_predictor_variables <- function(object) {
-  if (any(is.na(object$df))) {
-    if (object$ignore_missing_covars) {
-      log4r::warn(object$log, "Predictor variables missing for some samples! Continue with caution!")
+#' @return void
+find_missing_predictor_variables <- function() {
+  if (any(is.na(self$df))) {
+    if (self$model$ignore_missing_covars) {
+      self$model$log("Predictor variables missing for some samples! Continue with caution!", level = "WARN")
     } else {
-      log4r::error(object$log, "Predictor variables missing for some samples! To ignore this, use `ignore_missing_covars = TRUE`")
+      self$model$log("Predictor variables missing for some samples! To ignore this, use `ignore_missing_covars = TRUE`", level = "ERROR")
       stop()
     }
   }
 }
 
-#' Check if response variables are missing
+#' Modify formula
 #'
-#' ...
+#' The regression formula must be adapted to the regression method
 #'
-#' @param object An ALASCA object
-#' @return An ALASCA object
-replace_term_in_formula <- function(object, old_term, new_term) {
-  old_formula <- as.character(object$formula)[3]
-  new_formula <- gsub(old_term, new_term, old_formula)
-  log4r::info(object$log, paste0("New formula: ", new_formula))
-  object$formula <- formula(paste(
-    "value ~",
-    new_formula
-  ))
-  object <- get_info_from_formula(object)
-}
-
-#' Check if columns are missing
-#'
-#' ...
-#'
-#' @param object An ALASCA object
-check_that_columns_are_valid <- function(object) {
-  if (any(!object$all_formula_terms %in% colnames(object$df))) {
-    log4r::error(object$log, paste0("Column(s) missing:\n", paste0(object$all_formula_terms[!object$all_formula_terms %in% colnames(object$df)], collapse = "\n* "), "\nYou may want to use `keep_columns`"))
-    stop()
-  }
-}
-
-#' Check if columns are missing
-#'
-#' ...
-#'
-#' @param object An ALASCA object
-adjust_design_matrix <- function(object) {
-  if (object$method %in% c("LMM")) {
-    if (object$participant_column != "ID") {
+#' @return void
+get_regression_formula <- function() {
+  if (self$model$method %in% c("LMM")) {
+    if (self$ID != "ID") {
       
       # The user has specified a column
-      object$df[, ID := get(object$participant_column)]
-      object <- replace_term_in_formula(object, old_term = object$participant_column, new_term = "ID")
+      self$model$df[, ID := get(self$ID)]
+      self$model$participant_column <- "ID"
+      self$replace(old_term = self$ID, new_term = "ID")
       
-    } else if (any(grepl("\\|ID", object$formula_terms))) {
+    } else if (self$ID == "ID") {
       
-      # Use ID for participants!
+      self$model$log("Using ID for participants!", level = "DEBUG")
       
-    } else if (sum(grepl("\\|", object$formula_terms)) > 1) {
-      log4r::error(object$log, "Multiple random effects, couldn't determine participant-id. Please specify `participant_column`")
+    } else if (length(self$random_terms) > 1) {
+      
+      self$model$log("Multiple random effects, couldn't determine participant-id. Please specify `participant_column`", level = "ERROR")
       stop()
+      
     } else {
-        
-        # Try to find ID column from formula
-        tmp <- object$formula_terms[grepl("\\|", object$formula_terms)]
-        tmp <- gsub(" ", "", tmp)
-        tmp <- strsplit(tmp, "\\|")
-        object$participant_column <- tmp[[1]][2]
-        object$df[, ID := get(object$participant_column)]
-        object <- replace_term_in_formula(object, old_term = object$participant_column, new_term = "ID")
+      
+      self$model$log("Failed to find ID column", level = "ERROR")
+      stop()
+      
     }
     
-    if (object$use_Rfast) {
+    if (self$model$use_Rfast) {
       # Using Rfast
-      fixed_terms <- object$formula_terms[!grepl("\\|", object$formula_terms)]
-      object$new_formula <- formula(paste("value ~ ", paste(fixed_terms, collapse = "+")))
+      self$regression_formula <- self$formula_wo_random
     } else {
       # Using lme4
-      rterms <- object$formula_terms[grepl("\\|", object$formula_terms)]
-      rterms <- paste0("(", rterms, ")")
-      object$new_formula <- formula(paste("value ~ modmat+", paste(rterms, collapse = "+")))
+      self$regression_formula <- formula(paste("value ~ modmat+", paste(self$random_terms, collapse = "+")))
     }
-  }else if (object$method %in% c("LM")) {
-    object$new_formula <- value ~ modmat
+  }else if (self$model$method %in% c("LM")) {
+    
+    self$regression_formula <- as.formula("value ~ modmat")
+    
   } else {
-    log4r::error(object$log, "Sorry, an error occurred! Please check your model")
+    
+    self$model$log("Sorry, an error occurred! Please check your model", level = "ERROR")
     stop()
+    
   }
-  return(object)
-}
-
-#' Get information from formula
-#'
-#' ...
-#'
-#' @param object An ALASCA object
-#' @return An ALASCA object
-get_info_from_formula <- function(object) {
-  
-  # Response variable
-  object$valCol <- as.character(object$formula)[2]
-  
-  # Terms in the regression model
-  object$formula_terms <- gsub(" ", "", colnames(attr(terms.formula(object$formula), "factors")))
-  
-  # Get a list of all predictors
-  object$all_formula_terms <- unlist(strsplit(object$formula_terms, split = "\\:|\\+|\\||\\*"))
-  object$all_formula_terms <- gsub(" ", "", object$all_formula_terms)
-  object$all_formula_terms <- unique(object$all_formula_terms[!object$all_formula_terms %in% c("1", "")])
-  if (object$stratification_column == "group" && !"group" %in% colnames(object$df)) {
-    object$stratification_column <- object$all_formula_terms[1]
-    log4r::warn(object$log, paste("The `",object$all_formula_terms[1],"` column is used for stratification"))
-  }
-  if (!"group" %in% object$all_formula_terms) {
-    object$all_formula_terms <- c(object$all_formula_terms, "group")
-    if (object$stratification_column == "group") {
-      log4r::warn(object$log, "The `group` column is used for stratification")
-    }
-  }
-  object$all_formula_terms <- c(object$all_formula_terms, object$participant_column, object$stratification_column, object$keep_columns)
-  object$all_formula_terms <- gsub(" ", "", object$all_formula_terms)
-  object$all_formula_terms <- unique(object$all_formula_terms[!object$all_formula_terms %in% c("1", "")])
-  
-  ## We need to keep original IDs to have a unique identifier later on
-  if (object$validation_method == "bootstrap") {
-    object$all_formula_terms <- unique(c(object$all_formula_terms, "originalIDbeforeBootstrap"))
-    object$df[, originalIDbeforeBootstrap := -1]
-    object$all_formula_terms <- unique(c(object$all_formula_terms, "uniqueIDforBootstrap"))
-    object$df[, uniqueIDforBootstrap := -1]
-  }
-  
-  # Check what terms that is present in formula
-  object$hasGroupTerm <- ifelse(any(object$formula_terms == "group"), TRUE, FALSE)
-  object$hasInteractionTerm <- ifelse(any(object$formula_terms == "group:time" | object$formula_terms == "time:group"), TRUE, FALSE)
-  object$covars <- object$formula_terms[!(object$formula_terms %in% c("time", "group", "group:time", "time:group", object$keep_terms))]
-  if (object$do_debug) {
-    cat(".... Group term in formula? ", object$hasGroupTerm, "\n")
-    cat(".... Interaction term in formula? ", object$hasInteractionTerm, "\n")
-    cat(".... Identified the following covariates in addition to time and group: ", object$covars, "\n")
-  }
-  
-  object <- LM_or_LMM(object)
-  
-  return(object)
+  #invisible(self)
 }
 
 #' Determine whether to use LM or LMM
@@ -538,63 +148,40 @@ get_info_from_formula <- function(object) {
 #'
 #' @param object An ALASCA object
 #' @return An ALASCA object
-LM_or_LMM <- function(object) {
-  if (is.na(object$method)) {
+set_method <- function() {
+  if (is.null(self$model$method)) {
     # Find which default method to use
-    if (any(grepl("\\|", object$formula_terms))) {
-      object$method <- "LMM"
-      log4r::info(object$log, "Will use linear mixed models!")
-      if (sum(grepl("\\|", object$formula_terms)) > 1 && object$use_Rfast) {
-        log4r::error(object$log, "Cannot use Rfast with multiple random effects. Use lme4 with `use_Rfast = FALSE` instead!")
-        stop()
-      }
-      if (!any(grepl("1\\|ID", object$formula_terms)) && object$use_Rfast) {
-        log4r::error(object$log, "Rfast only supports a single random intercept. Use lme4 with `use_Rfast = FALSE` instead!")
+    
+    if (self$has_random()) {
+      self$model$method <- "LMM"
+      self$model$log("Will use linear mixed models!")
+      if (!self$compatible_with_Rfast) {
+        self$model$log("Cannot use Rfast in this case. Use lme4 with `use_Rfast = FALSE` instead!", level = "ERROR")
         stop()
       }
     } else {
-      object$method <- "LM"
-      log4r::info(object$log, "Will use linear models!")
+      self$model$method <- "LM"
+      self$model$log("Will use linear models!")
     }
   } else {
     # The user has specified a method to use
-    if (object$method == "LMM") {
-      if (!any(grepl("\\|", object$formula_terms))) {
-        log4r::error(object$log, "The model must contain at least one random effect. Are you sure you wanted linear mixed models?")
+    if (self$model$method == "LMM") {
+      if (!self$has_random()) {
+        self$model$log("The model must contain at least one random effect. Are you sure you wanted linear mixed models?", level = "ERROR")
         stop()
       }
-    } else if (object$method == "LM") {
-      if (any(grepl("\\|", object$formula_terms))) {
-        log4r::error(object$log, "The model contains at least one random effect. Are you sure you wanted linear models?")
+    } else if (self$model$method == "LM") {
+      if (self$has_random()) {
+        self$model$log("The model contains at least one random effect. Are you sure you wanted linear models?", level = "ERROR")
         stop()
       }
     } else {
-      log4r::error(object$log, "You entered an undefined method. Use `LMM` or `LM`!")
+      self$model$log("You entered an undefined method. Use `LMM` or `LM`!", level = "ERROR")
       stop()
     }
   }
-  if (object$use_Rfast) {
-    log4r::info(object$log, "Will use Rfast!")
-  }
-  return(object)
-}
-
-#' Convert wide df to long df
-#'
-#' ...
-#'
-#' @param object An ALASCA object
-#' @return An ALASCA object
-wide_to_long <- function(object) {
-  if (object$wide) {
-    log4r::info(object$log, "Converting from wide to long!")
-    object$df <- melt(object$df, id.vars = c(object$all_formula_terms[!object$all_formula_terms %in% c("variable", "value")]), value.name = object$valCol)
-    log4r::info(object$log, paste0("Found ",length(unique(object$df$variable))," variables"))
-    object$wide <- FALSE
-    object$variablelist <- unique(object$df$variable)
-    object$stratification_vector = object$df[, get(object$stratification_column)]
-  }
-  return(object)
+  
+  #invisible(self)
 }
 
 #' Remove df from object
@@ -603,23 +190,20 @@ wide_to_long <- function(object) {
 #'
 #' @param object An ALASCA object
 #' @return An ALASCA object
-remove_embedded_data <- function(object) {
-  object$partID <- object$df$ID
-  object$bootPartID <- object$df$originalIDbeforeBootstrap
-  object$df <- NULL
-  object$df_raw <- NULL
-  object$parts <- NULL
-  object$validation_participants <- NULL
-  object$stratification_vector <- NULL
-  object$parts_with_variable <- NULL
-  object$validation_object <- NULL
-  object$regression_model <- NULL
-  # object$regression_coefficients <- NULL
-  object$effect_matrix <- NULL
-
-  attr(object$new_formula, ".Environment") <- NULL
-  attr(object$formula, ".Environment") <- NULL
-  return(object)
+remove_embedded_data <- function() {
+  self$partID <- self$df$ID
+  self$bootPartID <- self$df$originalIDbeforeBootstrap
+  self$df <- NULL
+  self$parts <- NULL
+  self$validation_participants <- NULL
+  self$stratification_vector <- NULL
+  self$parts_with_variable <- NULL
+  self$validation_self <- NULL
+  self$effect_list$pca <- NULL
+  
+  attr(self$new_formula, ".Environment") <- NULL
+  attr(self$formula, ".Environment") <- NULL
+  #invisible(self)
 }
 
 #' Get a scaling function
@@ -629,62 +213,62 @@ remove_embedded_data <- function(object) {
 #' @param scale_function_string String to define scaing function: `sdall`, `sdref`, `sdt1`, `sdreft1`
 #' @param scale_function.center Boolean. Mean centering
 #' @return A scaling function
-get_default_scaling_function <- function(object) {
-  scale_function_string <- object$scale_function
-  scale_function.center <- object$scale_function.center
+get_default_scaling_function <- function() {
+  scale_function_string <- self$scale_function
+  scale_function.center <- self$scale_function.center
   if (scale_function_string == "sdall") {
     if (scale_function.center) {
-      scale_function <- function(df) {
+      self$scale_function <- function(df) {
         # Scale by the SD of all rows
         df[, value := as.double(value)][, value := (value-mean(value)) / sd(value), by = variable]
       }
     } else {
-      scale_function <- function(df) {
+      self$scale_function <- function(df) {
         # Scale by the SD of all rows
         df[, value := as.double(value)][, value := value / sd(value), by = variable]
       }
     }
   } else if (scale_function_string == "sdref") {
     if (scale_function.center) {
-      scale_function <- function(df) {
+      self$scale_function <- function(df) {
         # Scale by the SD of all rows in the refence group
         df[, value := as.double(value)][, value := (value-mean(value)) / sd(value[group == levels(group)[1]]), by = variable]
       }
     } else {
-      scale_function <- function(df) {
+      self$scale_function <- function(df) {
         # Scale by the SD of all rows in the refence group
         df[, value := as.double(value)][, value := value / sd(value[group == levels(group)[1]]), by = variable]
       }
     }
   } else if (scale_function_string == "sdt1") {
     if (scale_function.center) {
-      scale_function <- function(df) {
+      self$scale_function <- function(df) {
         # Scale by the SD of all baseline rows
         df[, value := as.double(value)][, value := (value - mean(value)) / sd(value[time == levels(time)[1]]), by = variable]
       }
     } else {
-      scale_function <- function(df) {
+      self$scale_function <- function(df) {
         # Scale by the SD of all baseline rows
         df[, value := as.double(value)][, value := value / sd(value[time == levels(time)[1]]), by = variable]
       }
     }
   } else if (scale_function_string == "sdreft1") {
     if (scale_function.center) {
-      scale_function <- function(df) {
+      self$scale_function <- function(df) {
         # Scale by the SD of all baseline rows in the reference group
         df[, value := as.double(value)][, value := (value - mean(value)) / sd(value[group == levels(group)[1] & time == levels(time)[1]]), by = variable]
       }
     } else {
-      scale_function <- function(df) {
+      self$scale_function <- function(df) {
         # Scale by the SD of all baseline rows in the reference group
         df[, value := as.double(value)][, value := value / sd(value[group == levels(group)[1] & time == levels(time)[1]]), by = variable]
       }
     }
   } else {
-    log4r::error(object$log, "Unknown scaling method. Please use of one the following: `none`, `sdall`, `sdref`, `sdreft1`, `sdt1`")
+    self$log("Unknown scaling method. Please use of one the following: `none`, `sdall`, `sdref`, `sdreft1`, `sdt1`", level = "ERROR")
     stop()
   }
-  return(scale_function)
+  #invisible(scale_function)
 }
 
 #' Get a scaling function
@@ -693,29 +277,41 @@ get_default_scaling_function <- function(object) {
 #'
 #' @param object An ALASCA object
 #' @return An ALASCA object
-get_scaling_function <- function(object) {
-  if (is.function(object$scale_function)) {
+get_scaling_function <- function() {
+  if (is.function(self$scale_function)) {
     # The user provided a custom function
-    if (!object$minimize_object) {
-      log4r::info(object$log, "Scaling data with custom function...")
+    if (!self$minimize_object) {
+      self$log("Scaling data with custom function...")
     }
-  } else if (object$scale_function == "none") {
+  } else if (self$scale_function == "none") {
     # The user do not want to scale
-    if (!object$minimize_object) {
-      log4r::warn(object$log, "Not scaling data...")
+    if (!self$minimize_object) {
+      self$log("Not scaling data...", level = "WARN")
     }
-    object$scale_function <- identity()
-  } else if (is.character(object$scale_function)) {
+    self$scale_function <- identity()
+  } else if (is.character(self$scale_function)) {
     # Use a deafult scaling
-    if (!object$minimize_object) {
-      log4r::info(object$log, paste("Scaling data with",object$scale_function,"..."))
+    if (!self$minimize_object) {
+      self$log(paste("Scaling data with",self$scale_function,"..."))
     }
-    object$scale_function <- get_default_scaling_function(object)
+    self$get_default_scaling_function()
   } else {
-    log4r::error(object$log, "Unknown scaling function")
+    self$log("Unknown scaling function", level = "ERROR")
     stop()
   }
-  return(object)
+  #invisible(self)
+}
+
+#' Flip an ALASCA object
+#'
+#' Changes the sign of loadings and scores
+#'
+#' @param x An ALASCA object
+#' @return The rotated object
+#' 
+#' @export
+flip <- function(x, ...) {
+  UseMethod("flip")
 }
 
 #' Flip an ALASCA object
@@ -723,91 +319,26 @@ get_scaling_function <- function(object) {
 #' Changes the sign of loadings and scores
 #'
 #' @param object An ALASCA object
-#' @param component Components to be flipped, `NA` flips all (default)
-#' @param effect Specify `time` or `group` to only flip subplot
-#' @return An ALASCA object
+#' @param component Component(s) to be flipped, use `0` or `NULL` to flip all (default)
+#' @param effect Specify effect(s) to be flipped, use `0` or `NULL` to flip all (default)
+#' @return The rotated object
+#' 
 #' @export
-flip <- function(object, component = NA, effect = "both") {
-  if (any(is.na(component))) {
-    component <- unique(object$ALASCA$score$time$PC)
-  }
-
-  if (effect %in% c("both", "time")) {
-    object$ALASCA$score$time[PC %in% component, score := -score]
-    object$ALASCA$loading$time[PC %in% component, loading := -loading]
-  }
-  if (object$separate_time_and_group & effect %in% c("both", "group")) {
-    object$ALASCA$score$group[PC %in% component, score := -score]
-    object$ALASCA$loading$group[PC %in% component, loading := -loading]
-  }
-  if (object$validate) {
-    if (effect %in% c("both", "time")) {
-      object$ALASCA$score$time[PC %in% component, low := -low]
-      object$ALASCA$score$time[PC %in% component, high := -high]
-      object$ALASCA$loading$time[PC %in% component, low := -low]
-      object$ALASCA$loading$time[PC %in% component, high := -high]
-    }
-    if (object$separate_time_and_group & effect %in% c("both", "group")) {
-      object$ALASCA$score$group[PC %in% component, low := -low]
-      object$ALASCA$score$group[PC %in% component, high := -high]
-      object$ALASCA$loading$group[PC %in% component, low := -low]
-      object$ALASCA$loading$group[PC %in% component, high := -high]
-    }
-  }
-
-  if (object$validate && !object$save_to_disk) {
-    for (i in seq_along(object$validation$temp_objects)) {
-      object$validation$temp_objects[[i]] <- flip(object$validation$temp_objects[[i]], component = component, effect = effect)
-    }
-  }
-  return(object)
+flip.AlascaModel <- function(object, effect = 0, component = 0) {
+  object$flip(effect_i = effect, component = component)
+  invisible(object)
 }
 
 #' Summary
 #'
-#' Gives some general information
+#' Print info about the ALASCA object
 #'
-#' @param object
-#' @param file
-#' @param sessioninfo
+#' @param object An ALASCA object
+#' 
 #' @export
-summary.ALASCA <- function(object, file = "", sessioninfo = FALSE) {
-  cat("================ ALASCA ================\n", file = file, append = TRUE)
-  cat("Model initialized ", as.character(object$init_time), " using ", object$method, " on ", length(unique(object$regression_coefficients$covar)), " variables. ", sep = "", file = file, append = TRUE)
-  if (object$validate) {
-    cat("The model been validated with ", object$validation_method, ".\n", file = file, append = TRUE)
-  } else {
-    cat("The model has *not* been validated yet.\n", file = file, append = TRUE)
-  }
-  cat("\nRegression model: ", as.character(object$rawFormula)[2], as.character(object$rawFormula)[1], as.character(object$rawFormula)[3], "\n", file = file, append = TRUE)
-  cat("Separating time and group effects: ", object$separate_time_and_group, "\n", file = file, append = TRUE)
-  cat("Force equal baseline: ", object$equal_baseline, "\n", file = file, append = TRUE)
-  cat("Using Rfast: ", object$use_Rfast, "\n", file = file, append = TRUE)
-  if (!object$use_Rfast) {
-    cat("Adjustment of p-values: ", object$p_adjust_method, "\n", file = file, append = TRUE)
-  }
-  if (!is.null(object$reduce_dimensions.nComps)) {
-    cat("Kept",object$reduce_dimensions.nComps,"components from initial PCA, explaining",100*cumsum(object$limm.explanatory_power)[object$reduce_dimensions.nComps],"% of variation\n", file = file, append = TRUE)
-  }
-  cat("\n\nPCs explaining at least 5% of variation:\n   Time: ",
-    paste(get_relevant_pcs(object = object, effect = "time"), collapse = ", "), " (",
-    paste(round(100 * object$pca$score$explained$time[get_relevant_pcs(object = object, effect = "time")], 2), collapse = "%, "), "%)",
-    ifelse(object$separate_time_and_group, paste0(
-      "\n   Group: ",
-      paste(get_relevant_pcs(object = object, effect = "group"), collapse = ", "), " (",
-      paste(round(100 * object$pca$score$explained$group[get_relevant_pcs(object = object, effect = "group")], 2), collapse = "%, "), "%)"
-    ), "\n"),
-    sep = "", file = file, append = TRUE
-  )
-  if (is.function(object$scale_function)) {
-    cat("\nScaling function:\n", file = file, append = TRUE)
-    cat(deparse(object$scale_function), file = file, append = TRUE)
-  } else {
-    cat("\nNo scaling performed.\n", file = file, append = TRUE)
-  }
-  if (sessioninfo & file != "") {
-    write(capture.output(devtools::session_info()), file = file, append = TRUE)
-  }
+summary.AlascaModel <- function(object) {
+  cat("---- The log file:\n")
+  cat(paste0(readLines(object$log_file), collapse="\n"))
 }
 
 #' Summary
@@ -816,22 +347,22 @@ summary.ALASCA <- function(object, file = "", sessioninfo = FALSE) {
 #'
 #' @param object
 #' @return An ALASCA object
-get_pca_function <- function (object) {
-  if (is.function(object$pca_function)) {
-    object$function.pca <- object$pca_function
-  } else if (is.character(object$pca_function)) {
-    if (object$pca_function == "prcomp") {
-      object$function.pca <- function(df, center = TRUE) {
+get_pca_function <- function () {
+  if (is.function(self$pca_function)) {
+    self$function.pca <- self$pca_function
+  } else if (is.character(self$pca_function)) {
+    if (self$pca_function == "prcomp") {
+      self$function.pca <- function(df, center = TRUE) {
         prcomp(df, scale = FALSE, center = center)
       }
-    } else if (object$pca_function == "irlba") {
-      object$function.pca <- function(df, center = TRUE) {
+    } else if (self$pca_function == "irlba") {
+      self$function.pca <- function(df, center = TRUE) {
         k <- irlba::prcomp_irlba(df, scale = FALSE, center = center, n = floor(0.9*min(dim(df))))
         rownames(k$rotation) <- colnames(df)
         k
       }
-    } else if (object$pca_function == "princomp") {
-      object$function.pca <- function(df, center = TRUE) {
+    } else if (self$pca_function == "princomp") {
+      self$function.pca <- function(df, center = TRUE) {
         k <- princomp(df)
         l <- k$loadings
         s <- k$scores
@@ -845,12 +376,2033 @@ get_pca_function <- function (object) {
         return(out)
       }
     } else {
-      log4r::error(object$log, "Unknown PCA function")
+      self$log("Unknown PCA function", level = "ERROR")
       stop()
     }
   } else {
-    log4r::error(object$log, "Unknown PCA function")
+    self$log("Unknown PCA function", level = "ERROR")
     stop()
   }
-  return(object)
+  #invisible(self)
 }
+
+#' Organize the ALASCA model construction
+#'
+#' This function builds the ALASCA model
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+build_model <- function() {
+  if (!self$minimize_object) {
+    # This is not a validation run
+    self$log("Starting to build model", level = "DEBUG")
+    self$log(paste0("Calculating ", self$method, " coefficients"))
+  }
+  
+  if (self$reduce_dimensions) {
+    self$log("Starting to reduce dimensions", level = "DEBUG")
+    self$do_reduce_dimensions()
+    self$log("-> Finished to reduce dimensions", level = "DEBUG")
+  }
+  
+  if (self$do_debug) currentTs <- Sys.time()
+  self$run_regression()
+  self$log("Starting to calculate regression coefficients", level = "DEBUG")
+  if (!self$use_Rfast) {
+    # With Rfast, we've already got the coefficients
+    self$get_regression_coefficients()
+  }
+  
+  if (!self$minimize_object) {
+    # This is not a validation run
+    self$log("-> Finished calculating regression coefficients!", level = "DEBUG")
+  }
+  
+  self$remove_covars()
+  self$get_effect_matrix()
+  self$do_pca()
+  self$clean_pca()
+  
+  if (self$method %in% c("LM", "LMM")) {
+    if (self$minimize_object) {
+      if (self$validate_regression) {
+        self$get_regression_predictions()
+      }
+    } else {
+      if (self$validate_regression) {
+        self$get_regression_predictions()
+      }
+    }
+  }
+  
+  #invivisble(self)
+}
+
+#' Run regressions
+#'
+#' This function runs the underlying regression models
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+run_regression <- function() {
+  
+  #df_by_variable <- split(self$df, self$df$variable)
+  self$log("Find rows by variable", level = "DEBUG")
+  #setkey(self[["df"]], variable)
+  #rows_by_variable <- lapply(self$get_levels("variable"), function(x) self[["df"]][x, which = TRUE] )
+  #rows_by_variable <- lapply(self$get_levels("variable"), function(x) self[["df"]][variable == x, which = TRUE] )
+  if (nrow(self[["df"]]) > 1000) {
+    rows_by_variable <- split(self[["df"]][, .I, by = variable], by = "variable")
+  } else {
+    rows_by_variable <- lapply(self$get_levels("variable"), function(x) data.table(I = which(self[["df"]][["variable"]] == x)) )
+    names(rows_by_variable) <- self$get_levels("variable")
+  }
+  
+  
+  #names(rows_by_variable) <- self$get_levels("variable")
+  
+  if (self$use_Rfast && self$method %in% c("LMM")) {
+    # start.time <- Sys.time()
+    if (any(is.na(self[["df"]][, value]))) {
+      self$log("Rfast does NOT like NA's! Check your scaling function or value column.", level = "ERROR")
+      stop()
+    }
+    self$log("Make model matrix", level = "DEBUG")
+    if (!self[["minimize_object"]] || self$reduce_dimensions) {
+      self[["modmat"]] <- model.matrix(self[["formula"]][["regression_formula"]], data = self[["df"]])
+      if (self[["equal_baseline"]]) {
+        self[["modmat"]] <- self[["modmat"]][, !grepl(paste0(self$effect_terms[[1]], self$get_ref(self$effect_terms[[1]])), colnames(self[["modmat"]]))]
+      }
+      self[["cnames_modmat"]] <- colnames(self[["modmat"]])
+    }
+    self$log("-> Finished model matrix", level = "DEBUG")
+    
+    self$log("Starting regression", level = "DEBUG")
+    # https://stackoverflow.com/questions/61013078/fastest-way-to-convert-a-matrix-to-a-data-table
+    self$regression_coefficients <- setDT(as.data.frame(
+      vapply(self$get_levels("variable"), function(x) {
+        Rfast::rint.reg(
+          y = self[["df"]][ rows_by_variable[[x]]$I, value],
+          x = self[["modmat"]][rows_by_variable[[x]]$I, -1],
+          id = as.numeric(factor(self[["df"]][ rows_by_variable[[x]]$I, ID])),
+          ranef = FALSE
+        )$be
+      }, FUN.VALUE = numeric(ncol(self[["modmat"]])))
+    ))[]
+    self$log("-> Finished regression", level = "DEBUG")
+    colnames(self$regression_coefficients) <- self$get_levels("variable")
+    self$regression_coefficients[, variable := self[["cnames_modmat"]]]
+    self$regression_coefficients <- melt(self$regression_coefficients, id.vars = "variable", variable.name = "covar", variable.factor = FALSE, value.name = "estimate")
+    self$regression_coefficients[, pvalue := NA]
+    
+    # end.time <- Sys.time()
+    # cat("\n\n",end.time - start.time,"\n")
+    #invisible(self)
+  } else if (!self$use_Rfast && self$method %in% c("LM")) {
+    
+    #' We need to modify the model matrix. Therefore, self[["formula"]][["formula"]] contains the original terms, whereas
+    #' self[["formula"]][["regression_formula"]] has replaced the terms with the modified model matrix
+    
+    self$regression_model <- lapply(self$get_levels("variable"), function(x) {
+      modmat <- model.matrix(self[["formula"]][["formula"]], data = self$df[ rows_by_variable[[x]]$I ])
+      #self[["modmat"]] <- self[["modmat"]][, -1] # Remove intercept
+      if (self[["equal_baseline"]]) {
+        # Remove interaction between group and first time point
+        modmat <- modmat[, !grepl(paste0(self$effect_terms[[1]], self$get_ref(self$effect_terms[[1]])), colnames(modmat))]
+      }
+      self[["cnames_modmat"]] <- colnames(modmat)
+      environment(self[["formula"]][["regression_formula"]]) <- environment()
+      regression_model <- lm(self[["formula"]][["regression_formula"]], data = self$df[ rows_by_variable[[x]]$I ])
+      attr(regression_model, "name") <- x
+      regression_model
+    })
+    names(self$regression_model) <- self$get_levels("variable")
+  } else if (self$use_Rfast && self$method %in% c("LM")) {
+    # start.time <- Sys.time()
+    if (any(is.na(self$df[, value]))) {
+      self$log("Rfast does NOT like NA's! Check your scaling function or value column.", level = "ERROR")
+      stop()
+    }
+    
+    if (!self$minimize_object || self$reduce_dimensions) {
+      self[["modmat"]] <- model.matrix(self[["formula"]][["formula"]], data = self$df)
+      if (self[["equal_baseline"]]) {
+        # Remove interaction between group and first time point
+        self[["modmat"]] <- self[["modmat"]][, !grepl(paste0(self$effect_terms[[1]], self$get_ref(self$effect_terms[[1]])), colnames(self[["modmat"]]))]
+      }
+      self[["cnames_modmat"]] <- colnames(self[["modmat"]])
+    }
+    
+    self$regression_coefficients <- setDT(as.data.frame(
+      vapply(self$get_levels("variable"), function(x) {
+        Rfast::lmfit(
+          y = self[["df"]][ rows_by_variable[[x]]$I, value],
+          x = self[["modmat"]][rows_by_variable[[x]]$I, ]
+        )$be
+      }, FUN.VALUE = numeric(ncol(self[["modmat"]])))
+    ))[]
+    self$log("-> Finished regression", level = "DEBUG")
+    colnames(self$regression_coefficients) <- self$get_levels("variable")
+    self$regression_coefficients[, variable := self[["cnames_modmat"]]]
+    self$regression_coefficients <- melt(self$regression_coefficients, id.vars = "variable", variable.name = "covar", variable.factor = FALSE, value.name = "estimate")
+    self$regression_coefficients[, pvalue := NA]
+
+    # end.time <- Sys.time()
+    # cat("\n\n",end.time - start.time,"\n")
+    #invisible(self)
+  } else if (!self$use_Rfast && self$method %in% c("LMM")) {
+    
+    #' We need to modify the model matrix. Therefore, self[["formula"]][["formula"]] contains the original terms, whereas
+    #' self[["formula"]][["regression_formula"]] has replaced the terms with the modified model matrix
+    
+    self$regression_model <- lapply(self$get_levels("variable"), function(x) {
+      modmat <- model.matrix(self[["formula"]][["formula"]], data = self$df[ rows_by_variable[[x]]$I ])
+      #odmat <- modmat[, -1] # Remove intercept
+      if (self[["equal_baseline"]]) {
+        # Remove interaction between group and first time point
+        modmat <- modmat[, !grepl(paste0(self$effect_terms[[1]], self$get_ref(self$effect_terms[[1]])), colnames(modmat), fixed = TRUE)]
+      }
+      self[["cnames_modmat"]] <- colnames(modmat)
+      # modmat <- modmat[,ncol(modmat):1]
+      environment(self[["formula"]][["regression_formula"]]) <- environment()
+      regression_model <- lmerTest::lmer(self[["formula"]][["regression_formula"]], data = self$df[ rows_by_variable[[x]]$I ])
+      attr(regression_model, "name") <- x
+      regression_model
+    })
+    names(self$regression_model) <- self$get_levels("variable")
+  }
+  
+  #invisible(self)
+}
+
+#' Get regression coefficients
+#'
+#' This function extract the regression coefficients for the ALASCA model
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+get_regression_coefficients <- function() {
+  
+  fdf <- data.table::rbindlist(
+    lapply(self$regression_model, function(y) {
+      if (self$method %in% c("LM")) {
+        tmp_ef <- coef(y)
+        a <- as.data.frame(summary(y)[["coefficients"]][, c(1, 4)])
+      } else {
+        tmp_ef <- lme4::fixef(y)
+        a <- as.data.frame(summary(y)[["coefficients"]][, c(1, 5)])
+      }
+      a$covar <- as.character(attr(y, "name"))
+      a$variable <- rownames(a)
+      rownames(a) <- NULL
+      a
+    })
+  )
+  
+  fdf$variable <- gsub("modmat", "", fdf$variable, fixed = TRUE)
+  colnames(fdf) <- c("estimate", "pvalue", "covar", "variable")
+  self$regression_coefficients <- fdf
+  
+  if (!is.null(self$p_adjust_method)) {
+    self$log("Adjusting p values")
+    self$regression_coefficients[, pvalue_unadj := pvalue]
+    self$regression_coefficients[, pvalue := p.adjust(pvalue, method = self$p_adjust_method), by = variable]
+  }
+  
+  #invisible(self)
+}
+
+#' Remove unwanted covariables
+#'
+#' This function removes coefficients that we do not want in our PCA
+#'
+#' @param object An ALASCA object to be sanitized
+#' @return An ALASCA object
+remove_covars <- function() {
+  
+  self$covar_coefficients <- data.frame()
+  if (self$formula$has_covars()) {
+    
+    self$covar_coefficients <- rbindlist(lapply(unique(self$formula$covars), function(x) {
+      to_list <- self$regression_coefficients[substr(variable, 1, nchar(x)) == x]
+      self$regression_coefficients <- self$regression_coefficients[substr(variable, 1, nchar(x)) != x]
+      to_list
+    }))
+    
+    if (self$reduce_dimensions) {
+      self$covar_coefficients <- rbindlist(lapply(unique(self$covar_coefficients$variable), function(v){
+        ref <- self$covar_coefficients[variable == v]
+        list(
+          variable = v,
+          covar = rownames(self$Limm$loadings),
+          pvalue = NA,
+          estimate = rowSums(self$Limm$loadings*ref$estimate[match(colnames(self$Limm$loadings), ref$covar)][col(self$Limm$loadings)])
+        )
+      }))
+    }
+    
+  }
+  #invisible(self)
+}
+
+
+#' Get effect matrix
+#'
+#' This function calculates the effect matrix
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+get_effect_matrix <- function() {
+  if (!self$minimize_object) {
+    self$log("Calculating effect matrix")
+  }
+  #stop()
+  reg_coefs <- dcast(self$regression_coefficients, variable~covar, value.var = "estimate")
+  rownames(reg_coefs) <- reg_coefs$variable
+  self$effect_list$effect_matrix <- lapply(self$set_design_matrices(), function(mm) {
+    mm[self$df[variable == self$get_ref("variable"), which = TRUE ], ] %*% as.matrix(reg_coefs[colnames(mm), -1])
+  }
+  )
+  
+  if (!self$minimize_object) {
+    self$log("-> Finished calculating effect matrix!")
+  }
+  #invisible(self)
+}
+
+#' Save ALASCA model
+#'
+#' @param object An ALASCA model
+#' @return void
+#' @export
+save.AlascaModel <- function(object) {
+  object$save_model()
+}
+
+#' Perform PCA
+#'
+#' This function performs PCA
+#'
+#' @param object An ALASCA object to be sanitized
+#' @return An ALASCA object
+do_pca <- function() {
+  
+  self$effect_list$pca <- lapply(
+    self$effect_list$effect_matrix,
+    function(x) {
+      k <- prcomp(x, scale = FALSE, center = !self$scale_function.center)
+      if (ncol(k$x) > self$max_PC) {
+        if(!self$minimize_object) self$log(paste("Keeping", self$max_PC, "of", ncol(k$x), "components. Change `max_PC` if necessary."), level = "WARN")
+        k$x <- k$x[, seq_len(self$max_PC)]
+        k$rotation <- k$rotation[, seq_len(self$max_PC)]
+      }
+      k
+    }
+  )
+  #invisible(self)
+}
+
+#' Perform PCA for Limm-PCA
+#'
+#' This function performs PCA before "the real PCA"
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+do_reduce_dimensions <- function(){
+  
+  if (!self$minimize_object) {
+    self$log("Reducing the number of dimensions with PCA")
+  }
+  
+  wide_data <- dcast(data = self$df, ... ~ variable)
+  
+  temp_pca_values <- self$function.pca(
+    wide_data[, .SD, .SDcols = -self$formula$all_terms],
+    center = !self$scale_function.center
+  )
+  
+  self$reduced_df[["explanatory_power"]] <- temp_pca_values$sdev^2 / sum(temp_pca_values$sdev^2)
+  
+  # Remove surplus columns
+  if (is.null(self$reduced_df[["nComps"]])) {
+    self$reduced_df[["nComps"]] <- which(cumsum(self$reduced_df[["explanatory_power"]]) >= self$reduced_df[["limit"]])[1]
+    if (!self$minimize_object) {
+      self$log(paste("Keeping",
+                     self$reduced_df[["nComps"]],
+                     "components from initial PCA, explaining",
+                     round(100*cumsum(self$reduced_df[["explanatory_power"]])[self$reduced_df[["nComps"]]], 2),
+                     "% of variation. The limit can be changed with `reduce_dimensions.limit`"))
+    }
+  }
+  
+  if(ncol(temp_pca_values$rotation) > self$reduced_df[["nComps"]]){
+    temp_pca_values$rotation <- temp_pca_values$rotation[, seq_len(self$reduced_df[["nComps"]])]
+    temp_pca_values$x <- temp_pca_values$x[, seq_len(self$reduced_df[["nComps"]])]
+  }
+  
+  temp_pca_values$rotation <- data.table(temp_pca_values$rotation, keep.rownames = "covars")
+  setkey(temp_pca_values$rotation, covars)
+  
+  if (is.null(self$df_raw$reduced_df$loading)) {
+    
+    # Make a copy of the main model loadings to use as reference
+    self$df_raw$reduced_df$loading <- temp_pca_values$rotation
+    
+    
+  } else {
+    
+    # Check if the pca model needs reflection to better fit the main model
+    
+    for (i in seq(2, ncol(temp_pca_values$rotation))) {
+      V1 <- sum((temp_pca_values$rotation[self$df_raw$reduced_df$loading$covars, ..i] - self$df_raw$reduced_df$loading[, ..i])^2)
+      V2 <- sum((-temp_pca_values$rotation[self$df_raw$reduced_df$loading$covars, ..i] - self$df_raw$reduced_df$loading[, ..i])^2)
+      if(V2 < V1){
+        temp_pca_values$rotation[, i] <- -temp_pca_values$rotation[, ..i]
+        temp_pca_values$x[, i-1] <- -temp_pca_values$x[, i-1]
+      }
+    }
+    
+  }
+  
+  self$reduced_df$loading <- temp_pca_values$rotation
+  self$reduced_df$score <- temp_pca_values$x
+  self$reduced_df$df <- self$df
+  self$df <- melt(data = cbind(wide_data[, .SD, .SDcols = self$formula$all_terms], self$reduced_df$score),
+                  id.vars = self$formula$all_terms, variable.factor = FALSE)
+  #if (!self$minimize_object) {
+  #  self$raw_data$modmat
+  #}
+  self$reduced_df[["variables"]] <- unique(self$df$variable)
+  self$stratification_vector <- self$df[, get(self$stratification_column)]
+  if (!self$minimize_object) {
+    self$log("-> Finished the reduction of dimensions!")
+  }
+  
+  #invisible(self)
+}
+
+#' Clean the PCA data
+#'
+#' This function makes the pca output more useful
+#'
+clean_pca <- function() {
+  self$log("Starting clean_pca", level = "DEBUG")
+  
+  self$ALASCA$score <- lapply(seq_along(self$effect_list$pca), function(i){
+    unique(
+      cbind(
+        self$df[variable == self$get_ref("variable"), .SD, .SDcols = self$effect_list$terms[[i]]],
+        self$effect_list$pca[[i]]$x
+      )
+    )
+  })
+  
+  self$ALASCA$loading <- lapply(seq_along(self$effect_list$pca), function(i){
+    data.table(self$effect_list$pca[[i]]$rotation, keep.rownames = "covars")
+  })
+  
+  self$ALASCA$explained <- lapply(self$effect_list$pca, function(x){
+    x$sdev^2 / sum(x$sdev^2)
+  })
+  
+  self$ALASCA$significant_PCs <- lapply(self$ALASCA$explained, function(x){
+    which(x >= self$explanatory_limit)
+  })
+  
+  if(self$reduce_dimensions){
+    # Loadings must be back-transformed
+    
+    for (i in seq_along(self$effect_list$pca)) {
+      setkey(self$ALASCA$loading[[i]], covars)
+      self$ALASCA$loading[[i]] <- data.table(
+        covars = self$reduced_df$loading[, covars],
+        as.matrix(self$reduced_df$loading[, -1]) %*% as.matrix(self$ALASCA$loading[[i]][colnames(self$reduced_df$loading[, -1]), -1])
+      )
+    }
+    
+    setkey(self$regression_coefficients, covar)
+    
+    self$regression_coefficients <- rbindlist(
+      lapply(unique(self$regression_coefficients$variable), function(x){
+        list(
+        variable = x,
+        pvalue = NA,
+        covar = self$reduced_df$loading[, covars],
+        estimate = as.matrix(self$reduced_df$loading[, -1]) %*% as.matrix(
+          self$regression_coefficients[variable == x][colnames(self$reduced_df$loading[, -1])][, estimate]
+          )
+          )
+      })
+    )
+    
+    self$reduced_df$df <- NULL
+    self$reduced_df$loading <- NULL
+    self$reduced_df$score <- NULL
+    self$reduced_df$nComps <- NULL
+    
+  }
+  
+  # Ensure that the highest loading has positive sign
+  for (i in seq_along(self$ALASCA$loading)) {
+    setkeyv(self$ALASCA$loading[[i]], cols = "covars")
+    setkeyv(self$ALASCA$score[[i]], cols = self$effect_list$terms[[i]])
+    
+    # Get columns where the sign needs to be changed
+    nVar <- max.col(abs(t(self$ALASCA$loading[[i]][, -1])))
+    sVar <- sign(diag(as.matrix(self$ALASCA$loading[[i]][nVar, -1])))
+    cols_to_change <- colnames(self$ALASCA$loading[[i]])[1+which(sVar < 0)]
+    
+    # Change column signs
+    self$ALASCA$loading[[i]][, (cols_to_change) := -.SD, .SDcols = cols_to_change]
+    self$ALASCA$score[[i]][, (cols_to_change) := -.SD, .SDcols = cols_to_change]
+  }
+  
+  self$log("Completed clean_pca", level = "DEBUG")
+  
+  #invisible(self)
+}
+
+#' Clean the ALASCA data
+#'
+#' This function makes the pca output more useful
+#'
+#' @param object An ALASCA object to be sanitized
+#' @return An ALASCA object
+clean_alasca <- function() {
+  
+  for (i in seq_along(self$ALASCA$loading)) {
+    self$ALASCA$score[[i]] <- melt(self$ALASCA$score[[i]],
+                                   id.vars = self$effect_list$terms[[i]],
+                                   variable.name = "PC",
+                                   value.name = "score",
+                                   variable.factor = FALSE)
+    self$ALASCA$score[[i]][, PC := as.integer(substr(PC, 3, nchar(PC))), ]
+    setkeyv(self$ALASCA$score[[i]], cols = self$effect_list$terms[[i]])
+    
+    self$ALASCA$loading[[i]] <- melt(self$ALASCA$loading[[i]],
+                                     id.vars = "covars",
+                                     variable.name = "PC",
+                                     value.name = "loading",
+                                     variable.factor = FALSE)
+    self$ALASCA$loading[[i]][,   PC := as.integer(substr(PC, 3, nchar(PC))), ]
+    setkeyv(self$ALASCA$loading[[i]], cols = "covars")
+  }
+  
+  #invisible(self)
+}
+
+#' Validate the ALASCA model LMM
+#'
+#' This function performs leave-one-out robustness testing of your ALASCA model. If you didn't specify the number of runs `n_validation_runs` when initializing the model (see \code{\link{ALASCA}}), you can do it by running for example `model$n_validation_runs <- 100` prior to calling `validate`. Your dataset is divided into `n_validation_folds` partitions, keeping group proportions, and one of these are left out. `n_validation_folds` is set the same way as  `n_validation_runs`.
+#'
+#' @param object An ALASCA object
+#' @param participant_column The name of the column containing participant identifier. Needed if not set during initialization of the model.
+#' @param validate_regression Whether to validate regression models
+#' @return An ALASCA object
+#'
+#' @examples
+#' load("PE.Rdata")
+#' model$n_validation_runs <- 10
+#' model.val <- validate(model, participant_column = "ID")
+#' @export
+do_validate <- function() {
+  if (self$validate) {
+    # stop("The object has already been validated")
+  }
+  
+  self$log("Starting validation")
+  
+  start_time_all <- Sys.time()
+  
+  self$get_validation_ids()
+  
+  temp_object <- lapply(seq_len(self$n_validation_runs), FUN = function(ii) {
+    self$log(paste0("- Run ", ii, " of ", self$n_validation_runs))
+    start.time.this <- Sys.time()
+    
+    # Make resampled model
+    temp_object <- self$prepare_validation_run(runN = ii)
+    if (nrow(self$df) > 100000) gc()
+    
+    # Rotate new loadings/scores to the original model
+    if (self$optimize_score) {
+      temp_object$rotate_matrix_optimize_score(target = self)
+    } else {
+      temp_object$rotate_matrix(target = self)
+    }
+    
+    temp_object$clean_alasca()
+    
+    if (self$save_to_disk) {
+      temp_object$save_validation(ii)
+    }
+    temp_object$effect_list <- NULL
+    
+    time_all <- difftime(Sys.time(), start_time_all, units = c("secs")) / ii
+    self$log(paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((self$n_validation_runs - ii) * time_all, 2), " seconds"))
+    temp_object
+  })
+  
+  self$clean_alasca()
+  
+  self$log("Calculating percentiles for score and loading")
+  self$get_validation_percentiles(objectlist = temp_object)
+  
+  #invisible(object)
+}
+
+.procrustes <- function(loadings, target) {
+  s <- t(loadings) %*% target
+  w1 <- s %*% t(s)
+  v1 <- t(s) %*% s
+  w <- eigen(w1)$vectors
+  ew <- diag(eigen(w1)$values)
+  v <- eigen(v1)$vectors
+  ev <- diag(eigen(v1)$values)
+  o <- t(w) %*% s %*% v
+  k <- diag(((diag(o)) / abs(diag(o))), nrow = nrow(o), ncol = nrow(o))
+  ww <- w %*% k
+  out <- list()
+  out$t1 <- ww %*% t(v) # Rotation matrix
+  out$procrust <- loadings %*% out$t1 # Rotated loadings
+  return(out)
+}
+
+#' Rotate PCA
+#'
+#' This function rotates loadings and scores during validation
+#'
+#' @param target ALASCA object acting as target
+rotate_matrix <- function(target) {
+  PCloading <- target$get_PCs(effect = "time")
+  PCloading_t <- paste0("PC", PCloading)
+  c <- .procrustes(
+    loadings = as.matrix(self$pca$loading$time[target$pca$loading$time, ..PCloading_t]),
+    target = as.matrix(target$pca$loading$time[, ..PCloading_t])
+  )
+  
+  self$pca$loading$time[target$pca$loading$time, (PCloading_t) := as.data.frame(c$procrust)]
+  self$pca$score$time[target$pca$score$time, (PCloading_t) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
+  
+  if (self$separate_effects) {
+    PCloading <- taret$get_PCs(effect = "group")
+    PCloading_t <- paste0("PC", PCloading)
+    c <- .procrustes(
+      loadings = as.matrix(self$pca$loading$group[target$pca$loading$group, ..PCloading_t]),
+      target = as.matrix(target$pca$loading$group[, ..PCloading_t])
+    )
+    
+    self$pca$loading$group[target$pca$loading$group, (PCloading_t) := as.data.frame(c$procrust)]
+    self$pca$score$group[target$pca$score$group, (PCloading_t) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
+  }
+  
+  #invisible(self)
+}
+
+#' Extract percentiles
+#'
+#' This function extract percentiles during validation
+#'
+#' @param objectlist List of ALASCA objects
+get_validation_percentiles <- function(objectlist) {
+  
+  self$get_validation_percentiles_loading(objectlist)
+  self$get_validation_percentiles_score(objectlist)
+  if (self$validate_regression) {
+    self$get_validation_percentiles_regression(objectlist)
+  }
+  if (self$formula$has_covars()) {
+    self$get_validation_percentiles_covars(objectlist)
+  }
+  
+  #invisible(self)
+}
+
+#' Extract percentiles for regressions
+#'
+#' This function extract percentiles for validation of regression
+#'
+#' @inheritParams get_validation_percentiles
+#' @return An ALASCA object
+get_validation_percentiles_regression <- function(objectlist) {
+  
+  if (self$save_to_disk) {
+    res <- DBI::dbSendQuery(self$db_con, paste0("SELECT prediction.", paste0(self$effect_terms, collapse = ", prediction."), ", prediction.pred, variables.variable AS variable FROM prediction
+                            LEFT JOIN variables
+                            ON variables.id = prediction.variable"))
+    df <- setDT(DBI::dbFetch(res))
+    DBI::dbClearResult(res)
+  } else {
+    df <- rbindlist(lapply(objectlist, function(x) x$model_prediction))
+  }
+  
+  df <- df[, as.list(quantile(pred, probs = self$limitsCI, type = self$validation_quantile_method)),
+           by = c(self$effect_terms, "variable")]
+  colnames(df) <- c(self$effect_terms, "variable", "low", "high")
+  
+  self$model_prediction <- merge(self$model_prediction, df)
+  #invisible(self)
+}
+
+#' Extract percentiles for covariates
+#'
+#' This function extract percentiles for validation of covariates
+#'
+#' @inheritParams get_validation_percentiles
+get_validation_percentiles_covars <- function(objectlist) {
+  
+  if (self$save_to_disk) {
+    res <- DBI::dbSendQuery(self$db_con, paste0("SELECT covars.variable, covars.estimate, covars.low, covars.high, variables.variable AS covar FROM covars
+                                                LEFT JOIN variables
+                                                ON variables.id = covars.variable"))
+    df <- setDT(DBI::dbFetch(res))
+    DBI::dbClearResult(res)
+  } else {
+    df <- rbindlist(lapply(objectlist, function(x) x$get_covars()))
+  }
+  df <- df[, as.list(quantile(estimate, probs = self$limitsCI, type = self$validation_quantile_method)),
+           by = .(covar, variable)]
+  colnames(df) <- c("covar", "variable", "low", "high")
+  
+  self$covar_coefficients <- merge(self$covar_coefficients, df)
+  #invisible(self)
+}
+
+#' Extract percentiles for loading
+#'
+#' This function extract percentiles during validation of loadings
+#'
+#' @inheritParams get_validation_percentiles
+get_validation_percentiles_loading <- function(objectlist) {
+  
+  for (effect_i in seq_along(self$ALASCA$loading)){
+    df <- self$get_validation_loadings(objectlist, effect_i = effect_i)
+    tmp <- df[, as.list(
+      quantile(loading, probs = self$limitsCI, type = self$validation_quantile_method)
+    ), by = .(PC, covars)]
+    colnames(tmp) <- c("PC", "covars", "low", "high")
+    self$ALASCA$loading[[effect_i]] <- merge(self$ALASCA$loading[[effect_i]], tmp,  all.x = TRUE, by = c("PC", "covars"))
+  }
+  #invisible(self)
+}
+
+
+get_validation_scores <- function(objectlist = NULL, effect_i = 1) {
+  if (self$save_to_disk) {
+    res <- DBI::dbSendQuery(self$db_con,
+                            paste0("SELECT * FROM score WHERE effect = ", effect_i, " AND PC IN(", paste(self$get_PCs(effect_i), collapse = ", "), ")"))
+    df <- setDT(DBI::dbFetch(res))
+    DBI::dbClearResult(res)
+  } else {
+    if (is.null(self$effect_list$saved_scores)) {
+      self$log("Saving validation scores", level = "DEBUG")
+      for (effect_k in seq_along(self$effect_list$expr)) {
+        df <- rbindlist(
+          lapply(seq_along(objectlist), function(x) {
+            data.table(
+              model = x,
+              objectlist[[x]]$ALASCA$score[[effect_k]][PC %in% self$get_PCs(effect_k), ]
+            )
+          }), fill = TRUE)
+        fname <- paste0(self$filepath, self$filename, "_validation_scores_effect_", effect_k, ".fst")
+        fst::write_fst(df, fname, compress = self$compress_validation)
+        self$effect_list$saved_scores[[effect_k]] <- fname
+      }
+    } 
+    df <- fst::read_fst(self$effect_list$saved_scores[[effect_i]], as.data.table = TRUE)
+  }
+  return(df)
+}
+
+get_validation_loadings <- function(objectlist = NULL, effect_i = 1) {
+  if (self$save_to_disk) {
+    res <- DBI::dbSendQuery(self$db_con,
+                            paste0("SELECT loading.PC, loading.loading, variables.variable AS covars FROM loading
+                              LEFT JOIN variables
+                              ON variables.id = loading.covars
+                              WHERE effect = ", effect_i, " AND PC IN(", paste(self$get_PCs(effect_i), collapse = ", "), ")"))
+    df <- setDT(DBI::dbFetch(res))
+    DBI::dbClearResult(res)
+  } else {
+    
+    if (is.null(self$effect_list$saved_loadings)) {
+      self$log("Saving validation loadings", level = "DEBUG")
+      for (effect_k in seq_along(self$effect_list$expr)) {
+        df <- rbindlist(
+          lapply(seq_along(objectlist), function(x) {
+            data.table(
+              model = x,
+              objectlist[[x]]$ALASCA$loading[[effect_k]][PC %in% self$get_PCs(effect_k), ]
+            )
+          }),
+          fill = TRUE
+        )
+        fname <- paste0(self$filepath, self$filename, "_validation_loadings_effect_", effect_k, ".fst")
+        fst::write_fst(df, fname, compress = self$compress_validation)
+        self$effect_list$saved_loadings[[effect_k]] <- fname
+      }
+    }
+    
+    df <- fst::read_fst(self$effect_list$saved_loadings[[effect_i]], as.data.table = TRUE)
+  }
+  return(df)
+}
+
+#' Extract percentiles for scores
+#'
+#' This function extract percentiles during validation of scores
+#'
+#' @inheritParams get_validation_percentiles
+get_validation_percentiles_score <- function(objectlist) {
+  
+  for (effect_i in seq_along(self$ALASCA$score)) {
+    
+    all_scores <- self$get_validation_scores(objectlist = objectlist, effect_i = effect_i)
+    
+    tmp <- all_scores[, as.list(
+      quantile(score, probs = self$limitsCI, type = self$validation_quantile_method)
+    ), by = c("PC", self$effect_list$terms[[effect_i]])]
+    colnames(tmp) <- c("PC", self$effect_list$terms[[effect_i]], "low", "high")
+    
+    self$ALASCA$score[[effect_i]] <- merge(self$ALASCA$score[[effect_i]], tmp, all.x = TRUE, by = c("PC",  self$effect_list$terms[[effect_i]]))
+  }
+  
+  #invisible(self)
+}
+
+#' Validate underlying regression models
+#'
+#' This function calcuates predictions from each regression model
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+get_regression_predictions <- function() {
+  if (!self$minimize_object) {
+    # This is not a validation run
+    self$log("Calculating predictions from regression models")
+  }
+  
+  regCoeffAll <- dcast(data = self[["regression_coefficients"]], variable~covar, value.var = "estimate")
+  rownames(regCoeffAll) <- regCoeffAll$variable
+  regModel <- unique(model.matrix(self$formula$formula_wo_random, data = self$df))
+  if (self$equal_baseline) {
+    regModel <- regModel[, !grepl(paste0(self$formula$all_terms[[1]], self$get_ref(self$formula$all_terms[[1]])), colnames(regModel), fixed = TRUE), drop = FALSE]
+  }
+  regModel <- regModel[, grepl(paste0(self$effect_terms, collapse = "|"), colnames(regModel)), drop = FALSE]
+  regModel <- unique(regModel)
+  
+  self$model_prediction <- melt(
+    cbind(
+      as.matrix(regModel) %*% as.matrix(regCoeffAll[colnames(regModel), -1]),
+      self$df[as.numeric(rownames(regModel)), .SD, .SDcols = c(self$effect_terms)]
+    ),
+    id.vars = c(self$effect_terms), value.name = "pred"
+  )
+  
+  if (!self$minimize_object) {
+    # This is not a validation run
+    self$log("-> Finished calculating predictions from regression models!")
+  }
+  #invisible(self)
+}
+
+get_validation_ids <- function() {
+  
+  if (is.null(self$validation_ids)) {
+    self$log("Generating random validation sample", level = "DEBUG")
+    original_IDs <- unique(self$df_raw$data_df[, .SD, .SDcols = c(self$formula$ID, self$stratification_column)])
+    colnames(original_IDs) <- c("ID", "group")
+    
+    if (self$validation_method == "bootstrap") {
+      
+      tmp <- lapply(unique(self$stratification_vector), function(strat_group) {
+        IDs_to_choose_from <- original_IDs[group == strat_group, ID]
+        t(
+          vapply(
+            seq_len(self$n_validation_runs),
+            function(x) sample(IDs_to_choose_from, replace = TRUE),
+            FUN.VALUE = integer(length(sample(IDs_to_choose_from, replace = TRUE)))
+            )
+          )
+      })
+      
+      self$validation_ids <- do.call(cbind, tmp)
+      
+    } else {
+      
+      tmp <- lapply(unique(self$stratification_vector), function(strat_group) {
+        IDs_to_choose_from <- original_IDs[group == strat_group, ID]
+        n_to_choose <- floor(length(IDs_to_choose_from) - length(IDs_to_choose_from)/self$n_validation_folds)
+        if (n_to_choose <= self$n_validation_folds) {
+          self$log(
+              paste0("The stratification group ", strat_group, " has only ", length(IDs_to_choose_from), " members. Choosing ", n_to_choose, " of them. Consider adjusting `n_validation_folds`"),
+              level = "WARN"
+            )
+        }
+        t(
+          vapply(
+            seq_len(self$n_validation_runs),
+            function(x) sample(IDs_to_choose_from, size = n_to_choose),
+            FUN.VALUE = integer(n_to_choose)
+          )
+        )
+      })
+      
+      self$validation_ids <- do.call(cbind, tmp)
+      
+    }
+    if (self$save_validation_ids) {
+      self$log("Saving validation IDs", level = "DEBUG")
+      fwrite(as.data.table(self$validation_ids), file = paste0(self$filepath, "validation_IDs.csv"), col.names = FALSE)
+    }
+  }
+}
+
+#' Make a single validation run
+#'
+#' This function ...
+#'
+#' @param object An ALASCA object
+#' @return An ALASCA object
+prepare_validation_run <- function(runN) {
+  if (self$validation_method %in% c("loo", "jack-knife", "jackknife")) {
+    # Use leave-one-out validation
+    
+    bootobject <- self$clone()
+    bootobject$my_df_rows <- unlist(lapply(self$validation_ids[runN, ], function(x) self$df_raw$rows_by_ID[[as.character(x)]]))
+    bootobject[["df"]] <- NULL
+    bootobject[["effect_list"]][["model_matrix"]] <- NULL
+    bootobject[["df"]] <- self$scale_function(self$df_raw$df[bootobject$my_df_rows])
+    bootobject[["modmat"]] <- self$modmat[bootobject$my_df_rows,]
+    bootobject$update()
+    return(bootobject)
+
+  } else if (self$validation_method == "bootstrap") {
+    # Use bootstrap validation
+    # When using bootstrapping, we resample participants with replacement
+    
+    self$log("Starting preparation of bootstrap sample", level = "DEBUG")
+    
+    # Create bootstrap object without data
+    bootobject <- self$clone()
+    bootobject[["df"]] <- NULL
+    bootobject[["modmat"]] <- NULL
+    bootobject[["effect_list"]][["model_matrix"]] <- NULL
+    bootobject$get_bootstrap_data(df_raw = self$df_raw,
+                                  participants_in_bootstrap = self$validation_ids[runN, ],
+                                  modmat = self$modmat)
+    
+    if (self$validation_assign_new_ids) {
+      bootobject$df[, ID := uniqueIDforBootstrap] # Replace ID
+    }
+    
+    self$log("-> Completed preparation of bootstrap sample", level = "DEBUG")
+    
+    bootobject$update()
+    bootobject$validation$original_ids <- self$validation_ids[runN, ]
+    return(bootobject)
+  }
+}
+
+#' Make bootstrap data set
+#'
+#' Get data frame
+#'
+#' @param object An ALASCA object
+#' @return A data frame
+get_bootstrap_data <- function(df_raw, participants_in_bootstrap, modmat) {
+  
+  selected_rows <- rbindlist(
+    lapply(seq_along(participants_in_bootstrap), function(participant){
+      list(
+        new_id = participant,
+        row_nr = df_raw$rows_by_ID[[as.character(participants_in_bootstrap[participant])]]
+      )
+    })
+  )
+  
+  self[["my_df_rows"]] <- selected_rows$row_nr
+  self$df <- copy(self$scale_function(df_raw$df[self$my_df_rows,]))
+  self$log(paste("Length df:", nrow(self[["df"]])), level = "DEBUG")
+  self$log(paste("First 10 rows:", paste0(selected_rows$row_nr[1:10], collapse = " - ")), level = "DEBUG")
+  self$df[, uniqueIDforBootstrap := selected_rows$new_id]
+  self$df[, originalIDbeforeBootstrap := ID]
+  if (self$reduce_dimensions) {
+    self$modmat <- NULL
+  } else {
+    self$modmat <- modmat[selected_rows$row_nr,]
+    self$log(paste("Length mm:", nrow(self[["modmat"]])), level = "DEBUG")
+  }
+  
+  #invisible(self)
+}
+
+
+
+#' Get screeplot
+#'
+#' This function returns a screeplot for an ALASCA model showing what proportion of the variance each component of the model explains
+#'
+#' @param object An ALASCA object
+#' @param component The highest principal component to plot
+#'
+#' @return An ggplot2 object
+#'
+#' @export
+screeplot.AlascaModel <- function(object, component = 10, ...) {
+  object$splot$call_plot(type = "scree", ...)
+}
+
+#' Get screeplot
+#' 
+#' @inheritParams screeplot.AlascaModel
+#' 
+#' @return An ggplot2 object
+#' 
+#' @export
+screeplot <- function(object, component = 10, ...) {
+  UseMethod("screeplot")
+}
+
+#' Plot covariate coefficients
+#'
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
+#'
+#' @param inheritParams plot_parts
+#' @return A ggplot2 object
+#'
+#' @export
+plot_participants <- function(...){
+  plot_parts(...)
+}
+
+#' Plot participants
+#'
+#' This function returns the scores for an ALASCA model
+#'
+#' @param object An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.
+#' @param variable List of variable names to print. If `NA`, return all (default).
+#' @param participant_column Specify the column with participant identifier. Not necessary if you have already provided it to the ALASCA object
+#' @param valueColumn Specify column with values (y axis). Not necessary to provide if you are plotting an ALASCA object.
+#' @param timeColumn Specify column with times (x axis). Defaults to `time`.
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(width,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param addSmooth. Specify which geom_smooth model you want to apply, eg. `lm`, `glm`, `gam`, `loess` (default). Set to `NA` to remove.
+#' @param my_theme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
+#' @return A list with ggplot2 objects.
+#' 
+#' @export
+plot_parts <- function(object,
+                       variables = NA,
+                       participant_column = FALSE,
+                       x_label = NA,
+                       group_label = NA,
+                       valueColumn = FALSE,
+                       timeColumn = "time",
+                       addSmooth = "loess",
+                       filename = NA,
+                       filetype = object$plot.filetype,
+                       figunit = object$plot.figunit,
+                       plot.ylabel = "value",
+                       as.list = FALSE,
+                       figsize = object$plot.figsize,
+                       my_theme = object$plot.my_theme) {
+  
+  if (!is.na(filename)) object$filename <- filename
+  
+  if(as.list){
+    if (is.data.frame(object)) {
+      df <- object
+      if (any(participant_column == FALSE) | any(valueColumn == FALSE)) {
+        object$log("You need to specify participant and value columns", level = "ERROR")
+        stop()
+      } else {
+        participant_column <- participant_column
+        valueColumn <- valueColumn
+      }
+      plotFunction <- function(df, timeColumn, valueColumn, participant_column, xi, addSmooth, x_label, group_label, my_theme) {
+        g <- ggplot2::ggplot(subset(df, variable == xi), ggplot2::aes_string(x = timeColumn, y = valueColumn, color = "group", group = participant_column)) +
+          ggplot2::geom_point(alpha = 0.7) +
+          ggplot2::geom_line(alpha = 0.3) +
+          ggplot2::scale_color_manual(values = get_plot_palette(list(df = df))) +
+          ggplot2::scale_fill_manual(values = get_plot_palette(list(df = df))) +
+          my_theme +
+          ggplot2::theme(legend.position = "bottom") +
+          ggplot2::labs(x = x_label, y = xi, color = group_label, fill = group_label)
+        if (!any(is.na(addSmooth))) {
+          g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group, fill = group), se = TRUE)
+        }
+        return(g)
+      }
+    } else if (is(object, "ALASCA")) {
+      df <- object$df_raw
+      valueColumn <- as.character(object$formula)[2]
+      if (any(participant_column == FALSE)) {
+        if (any(object$participant_column == FALSE)) {
+          object$log("You need to specify participant column", level = "ERROR")
+          stop()
+        } else {
+          participant_column <- object$participant_column
+        }
+      }
+      
+      if (is.na(x_label)) x_label <- object$plot.x_label
+      if (is.na(group_label)) group_label <- object$plot.group_label
+      
+      plotFunction <- function(df, timeColumn, valueColumn, participant_column, xi, addSmooth, x_label, group_label, my_theme) {
+        g <- ggplot2::ggplot(subset(df, variable == xi), ggplot2::aes_string(x = timeColumn, y = valueColumn, color = "group", group = participant_column)) +
+          ggplot2::geom_point(alpha = 0.7) +
+          ggplot2::geom_line(alpha = 0.3) +
+          ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+          ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
+          my_theme +
+          ggplot2::theme(legend.position = "bottom") +
+          ggplot2::labs(x = x_label, y = xi, color = group_label, fill = group_label)
+        if (!any(is.na(addSmooth))) {
+          g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group, fill = group), se = TRUE)
+        }
+        return(g)
+      }
+    } else {
+      object$log("Wrong input object: must be a ALASCA model or a data frame", level = "ERROR")
+      stop()
+    }
+    
+    if (any(is.na(variables))) variables <- unique(df$variable)
+    
+    g <- lapply(variables, function(xi) {
+      plotFunction(df, timeColumn, valueColumn, participant_column, xi, addSmooth, x_label = x_label, group_label = group_label, my_theme = my_theme)
+    })
+    names(g) <- variables
+    if (is(object, "ALASCA")) {
+      if (object$save) {
+        for (i in seq_along(g)) {
+          saveALASCAPlot(object = object, g = g[[i]], filetype = filetype, figsize = figsize, figunit = figunit, suffix = names(g)[i])
+        }
+      }
+    }
+    return(g)
+  } else {
+    if (any(is.na(variables))) {
+      variables <- object$variablelist
+    }
+    df <- object$df_raw
+    if (is.na(x_label)) {
+      x_label <- object$plot.x_label
+    }
+    if (is.na(group_label)) {
+      group_label <- object$plot.group_label
+    }
+    g <- ggplot2::ggplot(subset(df, variable %in% variables), ggplot2::aes(x = time, y = value, color = group, group = ID)) +
+      ggplot2::geom_point(alpha = 0.7) +
+      ggplot2::geom_line(alpha = 0.3) +
+      ggplot2::scale_color_manual(values = get_plot_palette(object)) +
+      ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
+      my_theme +
+      ggplot2::facet_wrap(~variable, scales = "free_y") +
+      ggplot2::theme(legend.position = "bottom") +
+      ggplot2::labs(x = x_label, y = plot.ylabel, color = group_label, fill = group_label)
+    if (!any(is.na(addSmooth))) {
+      g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group, fill = group), se = TRUE)
+    }
+    
+    if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+    
+    return(g)
+  }
+}
+
+plot_prediction <- function() {
+  
+  if (is.null(self$variable)) {
+    self$model$log(paste0("Selecting the ",round(self$n_limit/2)," variables with highest/lowest loading on `", self$model$effect_list$expr[[self$effect_i[[1]]]], "` (PC",self$component[[1]],"). Use `variable` to specify variables to plot"))
+    variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]], n_limit = round(self$n_limit/2))[[1]]
+  }
+  
+  effect_terms <- self$model$effect_list$terms[[self$effect_i[[1]]]]
+  data_to_plot <- self$model$model_prediction[variable %in% variables_to_plot$covars]
+  data_to_plot[, variable := factor(variable, levels = variables_to_plot[order(loading, decreasing = TRUE), covars])]
+  colnames(data_to_plot)[colnames(data_to_plot) == effect_terms[[1]]] <- "x_data"
+  
+  if (length(self$model$effect_terms) == 1) {
+    # Use some reference
+    data_to_plot[, group_data := self$model$get_ref(self$model$get_plot_group)]
+  } else  {
+    if (self$make_group_column) {
+      data_to_plot[, group_data := do.call(paste, c(.SD, sep = "-")), .SDcols = self$model$effect_terms[-1]]
+    } else {
+      data_to_plot[, group_data := get(self$model$get_plot_group)]
+    }
+  }
+  
+  
+  if(self$model$validate) {
+    g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "x_data",
+                                                           y = "pred",
+                                                           group = "group_data",
+                                                           color = "group_data",
+                                                           linetype = "group_data",
+                                                           ymin = "low",
+                                                           ymax = "high")) +
+      ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = self$dodgewidth)) +
+      ggplot2::geom_line(position = ggplot2::position_dodge(width = self$dodgewidth))
+    if (self$ribbon) {
+      g <- g + ggplot2::geom_ribbon(ggplot2::aes_string(fill = "group_data"),
+                                    alpha = .1,
+                                    position = ggplot2::position_dodge(width = self$dodgewidth), color = NA
+      ) + ggplot2::scale_fill_manual(values = self$get_plot_palette()) + ggplot2::labs(fill = self$group_label)
+    }
+  } else {
+    g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "x_data",
+                                                           y = "pred",
+                                                           group = "group_data",
+                                                           color = "group_data",
+                                                           linetype = "group_data")) +
+      ggplot2::geom_point() +
+      ggplot2::geom_line()
+  }
+  g <- g + ggplot2::scale_color_manual(values = self$get_plot_palette()) +
+    ggplot2::scale_linetype_manual(values = self$get_plot_linetypes()) +
+    ggplot2::labs(color = self$group_label,
+                  linetype = self$group_label,
+                  x = self$x_label,
+                  y = "Std. value") +
+    ggplot2::facet_wrap(~variable, scales = "free_y") + 
+    self$my_theme + 
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = self$x_angle, vjust = self$x_v_just, hjust = self$x_h_just))
+}
+
+#' Plot marginal means
+#'
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
+#'
+#' @param inheritParams plot_validation
+#' @return A ggplot2 object.
+#'
+#' @export
+plot_mm <- function(...){
+  plot_prediction(...)
+}
+
+#' Plot covariate coefficients
+#'
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
+#'
+#' @param inheritParams plot_validation
+#' @return A ggplot2 object.
+#'
+#' @export
+plot_val <- function(...){
+  plot_validation(...)
+}
+
+#' Plot covariate coefficients
+#'
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
+#'
+#' @param inheritParams plot_covars
+#' @return A ggplot2 objects\.
+#'
+#' @export
+plot_covar <- function(...){
+  plot_covars(...)
+}
+
+#' Plot covariate coefficients
+#'
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
+#'
+#' @param inheritParams plot_covars
+#' @return A ggplot2 objects\.
+#'
+#' @export
+plot_covariates <- function(...){
+  plot_covars(...)
+}
+
+#' Plot covariate coefficients
+#'
+#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
+#'
+#' @param inheritParams plot_covars
+#' @return A ggplot2 objects\.
+#'
+#' @export
+plot_covariate <- function(...){
+  plot_covars(...)
+}
+
+
+#' Plot projection of participants
+#'
+#' This function returns a plot of...
+#'
+#' @param object An ALASCA object
+#' @param comp Which two components to plot (default: `c(1, 2`)
+#' @param return_data Set to `TRUE` to return data instead of plot
+#' @param filetype Which filetype you want to save the figure to
+#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(120, 80, 300)`)
+#' @param myTheme A ggplot2 theme to use
+#' @return A ggplot2 objects.
+#'
+#' @export
+plot_projection <- function(object,
+                            comp = c(1, 2),
+                            return_data = FALSE,
+                            filename = NA,
+                            filetype = NA,
+                            figsize = NA,
+                            figunit = NA,
+                            myTheme = NA) {
+  if (any(is.na(myTheme))) myTheme <- object$plot.myTheme
+  if (!is.na(filename)) object$filename <- filename
+  
+  df <- object$df
+  df$ID <- df[, ID]
+  loadings_Time <- subset(get_loadings(object)$time, PC %in% comp)
+  loadings_Time <- reshape2::dcast(data = loadings_Time, covars ~ paste0("PC", PC), value.var = "loading")
+  df_time <- merge(df, loadings_Time, by.x = "variable", by.y = "covars")
+  if (object$separate_effects) {
+    df_time <- Reduce(rbind, lapply(unique(paste0(df_time$ID, df_time$time)), function(x) {
+      data.frame(
+        part = subset(df_time, paste0(ID, time) == x)$ID,
+        pc1 = sum(subset(df_time, paste0(ID, time) == x)$PC1 * subset(df_time, paste0(ID, time) == x)$value),
+        pc2 = sum(subset(df_time, paste0(ID, time) == x)$PC2 * subset(df_time, paste0(ID, time) == x)$value),
+        time = subset(df_time, paste0(ID, time) == x)$time
+      )
+    }))
+    df_time <- df_time[!duplicated(df_time), ]
+    colnames(df_time) <- c("part", paste0("PC", comp[1]), paste0("PC", comp[2]), "time")
+    if (!return_data) {
+      g_t <- ggplot2::ggplot(df_time, ggplot2::aes_string(x = paste0("PC", comp[1]), y = paste0("PC", comp[2]), group = "part")) +
+        ggplot2::geom_point() +
+        ggplot2::geom_line(alpha = 0.7, arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(0.20, "cm"))) +
+        myTheme
+    }
+    loadings_group <- subset(get_loadings(object)$group, PC %in% comp)
+    loadings_group <- reshape2::dcast(data = loadings_group, covars ~ paste0("PC", PC), value.var = "loading")
+    df_group <- merge(df, loadings_group, by.x = "variable", by.y = "covars")
+    df_group <- Reduce(rbind, lapply(unique(paste0(df_time$ID, df_time$time)), function(x) {
+      data.frame(
+        part = subset(df_group, paste0(ID, time) == x)$ID,
+        pc1 = sum(subset(df_group, paste0(ID, time) == x)$PC1 * subset(df_group, paste0(ID, time) == x)$value),
+        pc2 = sum(subset(df_group, paste0(ID, time) == x)$PC2 * subset(df_group, paste0(ID, time) == x)$value),
+        time = subset(df_group, paste0(ID, time) == x)$time,
+        group = subset(df_group, paste0(ID, time) == x)$group
+      )
+    }))
+    df_group <- df_group[!duplicated(df_group), ]
+    colnames(df_group) <- c("part", paste0("PC", comp[1]), paste0("PC", comp[2]), "time", "group")
+    if (!return_data) {
+      g_g <- ggplot2::ggplot(df_group, ggplot2::aes_string(x = paste0("PC", comp[1]), y = paste0("PC", comp[2]), group = "part", color = "group")) +
+        ggplot2::geom_point() +
+        ggplot2::geom_line(alpha = 0.7, arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(0.20, "cm"))) +
+        myTheme
+      g <- ggpubr::ggarrange(g_t, g_g, common.legend = TRUE, legend = "bottom")
+    }
+    g <- list(df_time, df_group)
+    names(g) <- c("time", "group")
+    if (object$save) {
+      for (i in seq_along(g)) {
+        saveALASCAPlot(object = object, g = g[[i]], filetype = filetype, figsize = figsize, figunit = figunit, suffix = names(g)[i])
+      }
+    }
+    return(g)
+  } else {
+    df_time <- Reduce(rbind, lapply(unique(paste0(df_time$ID, df_time$time)), function(x) {
+      data.frame(
+        part = subset(df_time, paste0(ID, time) == x)$ID,
+        pc1 = sum(subset(df_time, paste0(ID, time) == x)$PC1 * subset(df_time, paste0(ID, time) == x)$value),
+        pc2 = sum(subset(df_time, paste0(ID, time) == x)$PC2 * subset(df_time, paste0(ID, time) == x)$value),
+        time = subset(df_time, paste0(ID, time) == x)$time,
+        group = subset(df_time, paste0(ID, time) == x)$group
+      )
+    }))
+    df_time <- df_time[!duplicated(df_time), ]
+    colnames(df_time) <- c("part", paste0("PC", comp[1]), paste0("PC", comp[2]), "time", "group")
+    g <- ggplot2::ggplot(df_time, ggplot2::aes_string(x = paste0("PC", comp[1]), y = paste0("PC", comp[2]), group = "part", color = "group")) +
+      ggplot2::geom_point() +
+      ggplot2::geom_line(alpha = 0.7, arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(0.20, "cm"))) +
+      myTheme
+    if (return_data) {
+      return(df_time)
+    } else {
+      
+      if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
+      
+      return(g)
+    }
+  }
+}
+
+plot_effect <- function() {
+  
+  effect_i <- self$effect_i
+  component <- self$component
+  
+  if (length(effect_i) > 1 || length(component) > 1) {
+    g_list <- list()
+    ii <- 1
+    # 
+    # There are several cases to consider:
+    # - No variable group
+    #   - n_col = 1: Share group legend from last plot
+    #   - n_col = 2: Share group legend from last plot
+    # - Defined variable group
+    #   - n_col = 1: Share combined legend from last plot
+    #   - n_col = 2: Split group legend and variable legend
+    
+    for (effect_k in rev(effect_i)) {
+      for (component_k in rev(component)) {
+        
+        gs <- self$plot_effect_score(effect_i = effect_k, component = component_k)
+        gl <- self$plot_effect_loading(effect_i = effect_k, component = component_k)
+        
+        if (ii == 1 && (self$n_col == 1 || is.null(self$loading_group_column))) {
+          # The first iteration is, in fact, the last, so add legend here
+          if (is.null(self$loading_group_column)) {
+            if (self$n_col == 2) {
+              gs_legend <- gs # use this later
+              g <- ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "none", align = "h")
+            } else {
+              g <- ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "bottom", align = "h")
+            }
+            
+          } else {
+            g <- ggpubr::ggarrange(gs, gl, align = "h")
+          }
+        } else if (ii <= 2 && self$n_col == 2 && !is.null(self$loading_group_column)) {
+          if (ii == 1) {
+            # Should hold the variable legend
+            g <- ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "bottom", align = "h", legend.grob = ggpubr::get_legend(gl))
+          } else {
+            # Should hold the group legend
+            g <- ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "bottom", align = "h", legend.grob = ggpubr::get_legend(gs))
+          }
+        } else {
+          # No legend in these plots
+          g <- ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "none", align = "h")
+        }
+        g_list[[ii]] <- g
+        ii <- ii+1
+      }
+    }
+    if (is.null(self$loading_group_column) && self$n_col == 2) {
+      # Set common group legend
+      do.call(ggpubr::ggarrange, list(plotlist = rev(g_list),
+                                      ncol = self$n_col,
+                                      nrow = length(g_list)/self$n_col,
+                                      labels = self$labels,
+                                      common.legend = TRUE,
+                                      legend = "bottom",
+                                      legend.grob = ggpubr::get_legend(gs_legend))
+      )
+    } else {
+      # The legends are already in the subfigures
+      do.call(ggpubr::ggarrange, list(plotlist = rev(g_list),
+                                      ncol = self$n_col,
+                                      nrow = length(g_list)/self$n_col,
+                                      labels = self$labels)
+      )
+    }
+  } else {
+    # Return only a single effect/component
+    gs <- self$plot_effect_score(effect_i = effect_i, component = component)
+    gl <- self$plot_effect_loading(effect_i = effect_i, component = component)
+    if (is.null(self$loading_group_column)) {
+      ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "bottom", align = "h", labels = self$labels)
+    } else {
+      ggpubr::ggarrange(gs, gl, align = "h", labels = self$labels)
+    }
+  }
+}
+
+plot_effect_score <- function(effect_i = 1, component = 1) {
+  
+  effect_terms <- self$model$effect_list$terms[[effect_i]]
+  data_to_plot <- self$model$get_scores(effect_i = effect_i, component = component)
+  colnames(data_to_plot)[colnames(data_to_plot) == effect_terms[[1]]] <- "x_data"
+  
+  if (length(effect_terms) == 1) {
+    # Use some reference
+    data_to_plot[, group_data := self$model$get_ref(self$model$get_plot_group)]
+  } else  {
+    if (self$make_group_column) {
+      data_to_plot[, group_data := do.call(paste, c(.SD, sep = "-")), .SDcols = self$model$effect_terms[-1]]
+    } else {
+      data_to_plot[, group_data := get(self$model$get_plot_group)]
+    }
+  }
+  
+  if (self$validate) {
+    # Validated model
+    g <- ggplot2::ggplot(data_to_plot,
+                         ggplot2::aes_string(x = "x_data",
+                                             y = "score",
+                                             group = "group_data",
+                                             color = "group_data",
+                                             linetype = "group_data",
+                                             ymin = "low",
+                                             ymax = "high")) +
+      ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = self$dodgewidth)) +
+      ggplot2::geom_line(position = ggplot2::position_dodge(width = self$dodgewidth))
+    if (self$ribbon) {
+      g <- g + ggplot2::geom_ribbon(ggplot2::aes_string(fill = "group_data"),
+                                    alpha = .1,
+                                    position = ggplot2::position_dodge(width = self$dodgewidth), color = NA
+      ) + ggplot2::scale_fill_manual(values = self$get_plot_palette()) + ggplot2::labs(fill = self$group_label)
+    }
+  } else {
+    # No validation
+    g <- ggplot2::ggplot(data_to_plot,
+                         ggplot2::aes_string(x = "x_data",
+                                             y = "score",
+                                             linetype = "group_data",
+                                             group = "group_data",
+                                             color = "group_data")) +
+      ggplot2::geom_point() +
+      ggplot2::geom_line()
+  }
+  g <- g +
+    ggplot2::scale_color_manual(values = self$get_plot_palette()) +
+    ggplot2::scale_linetype_manual(values = self$get_plot_linetypes()) +
+    ggplot2::labs(color = self$group_label,
+                  linetype = self$group_label,
+                  x = self$x_label,
+                  y = self$get_explained_label(effect_i = effect_i, component = component, type= "Score")) +
+    self$my_theme
+  return(g)
+}
+
+plot_effect_loading <- function(effect_i = 1, component = 1) {
+  if (self$n_limit > 0) {
+    self$model$log(paste("Showing", self$n_limit*2, "of",length(self$model$get_levels("variable")),"variables. Adjust the number with `n_limit`"), level = "WARN")
+  }
+  data_to_plot <- self$model$get_loadings(effect_i = effect_i, component = component, n_limit = self$n_limit)[[1]]
+  data_to_plot[, covars := factor(covars, levels = data_to_plot[order(loading), covars])]
+  
+  if(!is.null(self$loading_group_column)) {
+    data_to_plot <- merge(data_to_plot, self$model$variable_labels, by = "covars")
+    if (self$sort_by_loading_group) {
+      data_to_plot[, covars := factor(covars, levels = covars[order(covargroup, loading, decreasing = TRUE)])]
+    }
+  }
+  
+  if (self$validate) {
+    # Validated model
+    
+    if (is.null(self$loading_group_column)) {
+      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", ymin = "low", ymax = "high"))
+    } else {
+      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", ymin = "low", ymax = "high", shape = "covargroup", color = "covargroup"))
+    }
+    
+    g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
+      ggplot2::geom_pointrange()
+    
+  } else {
+    # Unvalidated model
+    
+    if (is.null(self$loading_group_column)) {
+      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading"))
+    } else {
+      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", shape = "covargroup", color = "covargroup"))
+    }
+    
+    g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
+      ggplot2::geom_point()
+  }
+  
+  g <- g +
+    ggplot2::labs(x = self$variable_label,
+                  y = self$get_explained_label(effect_i = effect_i, component = component, type= "Loading")) +
+    self$my_theme + self$xflip
+  
+  if (!is.null(self$loading_group_column)) {
+    g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
+      ggplot2::labs(color = self$loadinggroup_label, shape = self$loadinggroup_label)
+  }
+  
+  return(g)
+}
+
+plot_effect_validation <- function() {
+  
+  effect_i <- self$effect_i
+  component <- self$component
+  
+  if (length(effect_i) > 1 || length(component) > 1) {
+    g_list <- list()
+    ii <- 1
+    # 
+    # There are several cases to consider:
+    # - No variable group
+    #   - n_col = 1: Share group legend from last plot
+    #   - n_col = 2: Share group legend from last plot
+    # - Defined variable group
+    #   - n_col = 1: Share combined legend from last plot
+    #   - n_col = 2: Split group legend and variable legend
+    
+    for (effect_k in rev(effect_i)) {
+      for (component_k in rev(component)) {
+        
+        gs <- self$plot_effect_validation_score(effect_i = effect_k, component = component_k)
+        gl <- self$plot_effect_validation_loading(effect_i = effect_k, component = component_k)
+        
+        if (ii == 1 && (self$n_col == 1 || is.null(self$loading_group_column))) {
+          # The first iteration is, in fact, the last, so add legend here
+          if (is.null(self$loading_group_column)) {
+            if (self$n_col == 2) {
+              gs_legend <- gs # use this later
+              g <- ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "none", align = "h")
+            } else {
+              g <- ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "bottom", align = "h")
+            }
+            
+          } else {
+            g <- ggpubr::ggarrange(gs, gl, align = "h")
+          }
+        } else if (ii <= 2 && self$n_col == 2 && !is.null(self$loading_group_column)) {
+          if (ii == 1) {
+            # Should hold the variable legend
+            g <- ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "bottom", align = "h", legend.grob = ggpubr::get_legend(gl))
+          } else {
+            # Should hold the group legend
+            g <- ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "bottom", align = "h", legend.grob = ggpubr::get_legend(gs))
+          }
+        } else {
+          # No legend in these plots
+          g <- ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "none", align = "h")
+        }
+        g_list[[ii]] <- g
+        ii <- ii+1
+      }
+    }
+    if (is.null(self$loading_group_column) && self$n_col == 2) {
+      # Set common group legend
+      do.call(ggpubr::ggarrange, list(plotlist = rev(g_list),
+                                      ncol = self$n_col,
+                                      nrow = length(g_list)/self$n_col,
+                                      labels = self$labels,
+                                      common.legend = TRUE,
+                                      legend = "bottom",
+                                      legend.grob = ggpubr::get_legend(gs_legend))
+      )
+    } else {
+      # The legends are already in the subfigures
+      do.call(ggpubr::ggarrange, list(plotlist = rev(g_list),
+                                      ncol = self$n_col,
+                                      nrow = length(g_list)/self$n_col,
+                                      labels = self$labels)
+      )
+    }
+  } else {
+    # Return only a single effect/component
+    gs <- self$plot_effect_validation_score(effect_i = effect_i, component = component)
+    gl <- self$plot_effect_validation_loading(effect_i = effect_i, component = component)
+    if (is.null(self$loading_group_column)) {
+      ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "bottom", align = "h", labels = self$labels)
+    } else {
+      ggpubr::ggarrange(gs, gl, align = "h", labels = self$labels)
+    }
+  }
+}
+
+plot_effect_validation_score <- function(effect_i = 1, component = 1) {
+  
+  if (!self$model$validate) {
+    self$model$log("The model has not been validated", level = "ERROR")
+    stop()
+  }
+  
+  effect_terms <- self$model$effect_list$terms[[effect_i]]
+  data_to_plot <- self$model$get_scores(effect_i = effect_i, component = component)
+  data_to_plot$model <- 0
+  data_to_plot$high <- NULL
+  data_to_plot$low <- NULL
+  data_to_add <- self$model$get_validation_scores(effect_i = effect_i)[PC == component]
+  data_to_plot <- rbind(data_to_plot, data_to_add)
+  colnames(data_to_plot)[colnames(data_to_plot) == effect_terms[[1]]] <- "x_data"
+  
+  if (length(effect_terms) == 1) {
+    # Use some reference
+    data_to_plot[, group_data := self$model$get_ref(self$model$get_plot_group)]
+  } else  {
+    if (self$make_group_column) {
+      data_to_plot[, group_data := do.call(paste, c(.SD, sep = "-")), .SDcols = self$model$effect_terms[-1]]
+    } else {
+      data_to_plot[, group_data := get(self$model$get_plot_group)]
+    }
+  }
+  
+  # Lower alpha to the validation runs
+  data_to_plot$alpha <- ifelse(data_to_plot$model > 0, 0.7, 1)
+  
+  data_to_plot$grouping <- paste(data_to_plot$model, "-", data_to_plot$group_data)
+  
+  # Validated model
+  g <- ggplot2::ggplot(data_to_plot,
+                       ggplot2::aes_string(x = "x_data",
+                                           y = "score",
+                                           group = "grouping",
+                                           color = "group_data",
+                                           linetype = "group_data",
+                                           alpha = "alpha")) +
+    ggplot2::geom_point() +
+    ggplot2::geom_line() +
+    ggplot2::scale_alpha(range = c(0.3, 1), guide = "none") +
+    ggplot2::scale_color_manual(values = self$get_plot_palette()) +
+    ggplot2::scale_linetype_manual(values = self$get_plot_linetypes()) +
+    ggplot2::labs(color = self$group_label,
+                  linetype = self$group_label,
+                  x = self$x_label,
+                  y = self$get_explained_label(effect_i = effect_i, component = component, type= "Score")) +
+    self$my_theme
+  return(g)
+}
+
+plot_effect_validation_loading <- function(effect_i = 1, component = 1) {
+  
+  if (!self$model$validate) {
+    self$model$log("The model has not been validated", level = "ERROR")
+    stop()
+  }
+  
+  if (self$n_limit > 0) {
+    self$model$log(paste("Only showing", self$n_limit*2, "variables. Adjust the number with `n_limit`"), level = "WARN")
+  }
+  data_to_plot <- self$model$get_loadings(effect_i = effect_i, component = component, n_limit = self$n_limit)[[1]]
+  data_to_plot$model <- 0
+  data_to_add <- self$model$get_validation_loadings(effect_i = effect_i)[PC == component]
+  data_to_add <- data_to_add[covars %in% unique(data_to_plot$covars)]
+  data_to_plot <- rbind(data_to_plot, data_to_add, fill = TRUE)
+  data_to_plot[, covars := factor(covars, levels = data_to_plot[model == 0][order(loading), covars])]
+  
+  if(!is.null(self$loading_group_column)) {
+    data_to_plot <- merge(data_to_plot, self$model$variable_labels, by = "covars")
+    if (self$sort_by_loading_group) {
+      data_to_plot[, covars := factor(covars, levels = covars[order(covargroup, loading, decreasing = TRUE)])]
+    }
+  }
+  data_to_plot[, nval := as.numeric(covars)]
+  
+    if (is.null(self$loading_group_column)) {
+      g <- ggplot2::ggplot(data_to_plot[model != 0], ggplot2::aes_string(x = "covars", y = "loading", group = "model"))
+    } else {
+      g <- ggplot2::ggplot(data_to_plot[model != 0], ggplot2::aes_string(x = "covars", y = "loading", group = "model", shape = "covargroup", color = "covargroup"))
+    }
+    
+    g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
+      ggplot2::geom_point(alpha = 0.3) +
+      ggplot2::geom_pointrange(data = data_to_plot[model == 0], ggplot2::aes(ymin = low, ymax = high), alpha = 1) +
+      ggplot2::geom_errorbarh(data = data_to_plot[model == 0], ggplot2::aes(xmin = nval-0.6, xmax = nval+0.6), alpha = 1) +
+      ggplot2::labs(x = self$variable_label,
+                    y = self$get_explained_label(effect_i = effect_i, component = component, type= "Loading")) +
+      ggplot2::scale_alpha(range = c(0, 1)) +
+      self$my_theme + self$xflip
+  
+  if (!is.null(self$loading_group_column)) {
+    g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
+      ggplot2::labs(color = self$loadinggroup_label, shape = self$loadinggroup_label)
+  }
+  
+  return(g)
+}
+
+#' Prints a marco object
+#' 
+#' @param object A marco object.
+#' @param variable A marco object.
+#' 
+#' @return A data table with residuals
+#' 
+#' @export
+residuals.AlascaModel <- function(object, variable = NULL) {
+  object$get_residuals(variable = variable)
+}
+
+#' Returns model loadings
+#' 
+#' @param object An ALASCA object.
+#' @param effect The number of the effect(s) of interest
+#' @param component The principal component(s) of interest
+#' @param n_limit Limit the number of variables returned
+#' 
+#' @return A data table with loadings
+#' 
+#' @export
+get_loadings.AlascaModel <- function(object, effect = 1, component = 1, n_limit = 0) {
+  object$log(paste("Loadings for effect number", effect, "and principal component(s)", component))
+  object$get_loadings(effect_i = effect, component = component, n_limit = n_limit)
+}
+
+#' Returns model scores
+#' 
+#' @inheritParams get_loadings.AlascaModel
+#' 
+#' @return A data table with loadings
+#' 
+#' @export
+get_loadings <- function(object, ...) {
+  UseMethod("get_loadings")
+}
+
+#' Returns model scores
+#' 
+#' @param object An ALASCA object.
+#' @param effect The number of the effect of interest
+#' @param component The principal component(s) of interest
+#' 
+#' @return A data table with scores
+#' 
+#' @export
+get_scores.AlascaModel <- function(object, effect = 1, component = 1) {
+  object$log(paste("Scores for effect number", effect, "and principal component(s)", component))
+  object$get_scores(effect_i = effect, component = component)
+}
+
+#' Returns model scores
+#' 
+#' @inheritParams get_scores.AlascaModel
+#' 
+#' @return A data table with scores
+#' 
+#' @export
+get_scores <- function(object, ...) {
+  UseMethod("get_scores")
+}
+
+#' Get coefficients for covariates
+#'
+#'
+#' @param object An ALASCA object
+#' @param n_limit Return only the `n_limit` largest and smallest coefficients
+#' @return A data table with regression coefficients
+#'
+#' @export
+get_covars.AlascaModel <- function(object, n_limit = 0) {
+  object$get_covars(n_limit = n_limit)
+}
+
+#' Get coefficients for covariates
+#' 
+#' @inheritParams get_covars.AlascaModel
+#' 
+#' @return A data table with regression coefficients
+#' 
+#' @export
+get_covars <- function(object, ...) {
+  UseMethod("get_covars")
+}
+
+plot_2D <- function() {
+  
+  if (!self$model$validate) {
+    self$model$log("Please validate the model first", level = "ERROR")
+    stop()
+  }
+  if (length(self$component) != 2) {
+    self$model$log("Please provide two validated components, e.g. `component = c(1,2)`", level = "ERROR")
+    stop()
+  }
+  
+  gs <- self$plot_2D_score()
+  gl1 <- self$plot_2D_loading_1()
+  gl2 <- self$plot_2D_loading_2()
+  tmp <- self$component
+  self$component <- 10
+  gscree <- self$plot_scree()
+  g <- ggpubr::ggarrange(gs, gl2, gl1, gscree,
+                    heights = c(3,2),
+                    widths = c(3,2),
+                    common.legend = TRUE,
+                    legend = "top",
+                    labels = self$labels)
+  self$component <- tmp
+  return(g)
+}
+
+plot_2D_score <- function() {
+  
+  effect_terms <- self$model$effect_list$terms[[self$effect_i]]
+  data_to_plot <- self$model$get_scores(effect_i = self$effect_i, component = c(1,2))[, -c("high", "low")]
+  data_to_plot$model <- 0
+  if (self$model$validate) {
+    data_to_add <- self$model$get_validation_scores(effect_i = self$effect_i)[PC %in% c(1,2)]
+    data_to_plot <- rbind(data_to_plot, data_to_add)
+  }
+  data_to_plot$PC <- paste0("PC_", data_to_plot$PC)
+  colnames(data_to_plot)[colnames(data_to_plot) == effect_terms[[1]]] <- "x_data"
+  
+  if (length(effect_terms) == 1) {
+    # Use some reference
+    data_to_plot[, group_data := self$model$get_ref(self$model$get_plot_group)]
+  } else  {
+    if (self$make_group_column) {
+      data_to_plot[, group_data := do.call(paste, c(.SD, sep = "-")), .SDcols = self$model$effect_terms[-1]]
+    } else {
+      data_to_plot[, group_data := get(self$model$get_plot_group)]
+    }
+  }
+  
+  data_to_plot <- dcast(data = data_to_plot, ...~PC, value.var = "score")
+  
+  g <- ggplot2::ggplot(data_to_plot,
+                       ggplot2::aes_string(x = "PC_1",
+                                           y = "PC_2",
+                                           shape = "x_data",
+                                           color = "group_data")) +
+    ggplot2::geom_point(alpha = 0.8) +
+    ggplot2::geom_line(ggplot2::aes(group = paste(group_data, model)), alpha = 0.3) +
+    ggplot2::stat_ellipse(ggplot2::aes(linetype = x_data)) +
+    ggplot2::scale_color_manual(values = self$get_plot_palette()) +
+    ggplot2::scale_alpha(range = c(0, 1)) +
+    ggplot2::labs(color = self$group_label,
+                  linetype = self$x_label,
+                  shape = self$x_label,
+                  x = self$get_explained_label(effect_i = self$effect_i, component = self$component[[1]], type= "Score"),
+                  y = self$get_explained_label(effect_i = self$effect_i, component = self$component[[2]], type= "Score")) +
+    self$my_theme
+}
+
+plot_2D_loading_1 <- function() {
+  
+  data_to_plot <- self$model$get_loadings(effect_i = self$effect_i, component = self$component[[1]], n_limit = self$n_limit)[[1]]
+  
+  data_to_plot[, covars := factor(covars, levels = data_to_plot[order(loading), covars])]
+  data_to_plot$facet <- ifelse(data_to_plot$loading > median(data_to_plot$loading), "Upper loadings \u2192", "\u2190 Lower loadings")
+  
+  ggpubr::ggarrange(
+    ggplot2::ggplot(data_to_plot[facet == "\u2190 Lower loadings"][, covars := factor(covars, levels = covars[order(loading, decreasing = TRUE)])], 
+                    ggplot2::aes(loading, covars, xmin = low, xmax = high)) + 
+      ggplot2::geom_pointrange() +
+      ggplot2::facet_grid(~facet) +
+      ggplot2::scale_y_discrete(position = "left") +
+      ggplot2::scale_x_continuous(limits = c(NA, max(0, data_to_plot[facet == "\u2190 Lower loadings"]$loading))) +
+      self$my_theme +
+      ggplot2::labs(x = "\u2190 Loading PC1") +
+      ggplot2::theme(axis.title.y = element_blank()),
+    ggplot2::ggplot(data_to_plot[facet == "Upper loadings \u2192"], ggplot2::aes(loading, covars, xmin = low, xmax = high)) +
+      ggplot2::geom_pointrange() +
+      ggplot2::facet_grid(~facet) +
+      ggplot2::scale_y_discrete(position = "right") +
+      ggplot2::scale_x_continuous(limits = c(min(0, data_to_plot[facet == "Upper loadings \u2192"]$loading), NA)) +
+      self$my_theme +
+      ggplot2::labs(x = "Loading PC1 \u2192") +
+      ggplot2::theme(axis.title.y = element_blank())
+  )
+}
+
+plot_2D_loading_2 <- function() {
+  
+  data_to_plot <- self$model$get_loadings(effect_i = self$effect_i, component = self$component[[2]], n_limit = self$n_limit)[[1]]
+  
+  data_to_plot[, covars := factor(covars, levels = data_to_plot[order(loading), covars])]
+  data_to_plot$facet <- ifelse(data_to_plot$loading < median(data_to_plot$loading), "\u2190 Lower loadings", "Upper loadings \u2192")
+  
+  ggpubr::ggarrange(
+    ggplot2::ggplot(data_to_plot[facet == "Upper loadings \u2192"], ggplot2::aes(loading, covars, xmin = low, xmax = high)) + 
+      ggplot2::geom_pointrange() +
+      ggplot2::facet_grid(rows = vars(facet), switch = "y") +
+      ggplot2::scale_x_continuous(limits = c(min(0, data_to_plot[facet == "Upper loadings \u2192"]$loading), NA), position = "top") +
+      self$my_theme +
+      ggplot2::labs(x = "Loading PC2 \u2192") +
+      ggplot2::theme(axis.title.y = element_blank()),
+    ggplot(data_to_plot[facet == "\u2190 Lower loadings"], ggplot2::aes(loading, covars, xmin = low, xmax = high)) +
+      ggplot2::geom_pointrange() +
+      ggplot2::facet_grid(rows = vars(facet), switch = "y") +
+      ggplot2::scale_x_continuous(limits = c(NA, max(0, data_to_plot[facet == "\u2190 Lower loadings"]$loading))) +
+      self$my_theme +
+      ggplot2::labs(x = "\u2190 Loading PC2") +
+      ggplot2::theme(axis.title.y = element_blank()),
+    ncol = 1, align = "v")
+}
+
+plot_histogram_score <- function() {
+  
+  if (!self$model$validate) {
+    self$model$log("The model has not been validated", level = "ERROR")
+    stop()
+  }
+  
+  effect_terms <- self$model$effect_list$terms[[self$effect_i]]
+  data_to_plot <- self$model$get_scores(effect_i = self$effect_i, component = self$component)
+  data_to_plot$model <- 0
+  data_to_add <- self$model$get_validation_scores(effect_i = self$effect_i)[PC == self$component]
+  data_to_plot <- rbind(data_to_plot, data_to_add, fill = TRUE)
+  colnames(data_to_plot)[colnames(data_to_plot) == effect_terms[[1]]] <- "x_data"
+  data_to_plot[, x_data := paste0(self$x_label, ": ", x_data)]
+  
+  if (length(effect_terms) == 1) {
+    # Use some reference
+    data_to_plot[, group_data := self$model$get_ref(self$model$get_plot_group)]
+  } else  {
+    if (self$make_group_column) {
+      data_to_plot[, group_data := do.call(paste, c(.SD, sep = "-")), .SDcols = self$model$effect_terms[-1]]
+    } else {
+      data_to_plot[, group_data := get(self$model$get_plot_group)]
+    }
+  }
+  
+  # Lower alpha to the validation runs
+  data_to_plot$alpha <- ifelse(data_to_plot$model > 0, 0.7, 1)
+  
+  data_to_plot$grouping <- paste(data_to_plot$model, "-", data_to_plot$group_data)
+  
+  g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(score, fill = group_data)) +
+    ggplot2::geom_histogram(alpha = 0.6, position = "identity", bins = self$n_bins) +
+    ggplot2::geom_vline(data = data_to_plot[model == 0], ggplot2::aes(xintercept = score, color = group_data, linetype = group_data)) +
+    ggplot2::scale_fill_manual(values = self$get_plot_palette()) +
+    ggplot2::scale_color_manual(values = self$get_plot_palette()) +
+    ggplot2::scale_linetype_manual(values = self$get_plot_linetypes()) +
+    ggplot2::facet_wrap(~x_data, ncol = self$n_col) +
+    ggplot2::labs(color = self$group_label,
+                  fill = self$group_label,
+                  linetype = self$group_label,
+                  x = self$get_explained_label(effect_i = self$effect_i, component = self$component, type= "Score"),
+                  y = "Count") +
+    self$my_theme
+  
+} 
+
+plot_histogram_loading <- function() {
+  
+  if (!self$model$validate) {
+    self$model$log("The model has not been validated", level = "ERROR")
+    stop()
+  }
+  
+  if (self$n_limit > 0) {
+    self$model$log(paste("Only showing", self$n_limit*2, "variables. Adjust the number with `n_limit`"), level = "WARN")
+  }
+  data_to_plot <- self$model$get_loadings(effect_i = self$effect_i, component = self$component, n_limit = self$n_limit)[[1]]
+  data_to_plot$model <- 0
+  data_to_add <- self$model$get_validation_loadings(effect_i = self$effect_i)[PC == self$component]
+  data_to_add <- data_to_add[covars %in% unique(data_to_plot$covars)]
+  data_to_plot <- rbind(data_to_plot, data_to_add, fill = TRUE)
+  data_to_plot[, covars := factor(covars, levels = data_to_plot[model == 0][order(loading, decreasing = TRUE), covars])]
+  
+  if(!is.null(self$loading_group_column)) {
+    data_to_plot <- merge(data_to_plot, self$model$variable_labels, by = "covars")
+    if (self$sort_by_loading_group) {
+      data_to_plot[, covars := factor(covars, levels = covars[order(covargroup, loading, decreasing = TRUE)])]
+    }
+  }
+  data_to_plot[, nval := as.numeric(covars)]
+  
+  ggplot2::ggplot(data_to_plot, ggplot2::aes(loading)) +
+    ggplot2::geom_histogram(alpha = 0.6, position = "identity", bins = self$n_bins) +
+    ggplot2::geom_vline(data = data_to_plot[model == 0], ggplot2::aes(xintercept = loading)) +
+    ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
+    ggplot2::facet_wrap(~covars) +
+    ggplot2::labs(x = self$get_explained_label(effect_i = self$effect_i, component = self$component, type= "Loading"), y = "Count") +
+    self$my_theme
+  
+}
+
+plot_histogram <- function() {
+  gl <- self$plot_histogram_loading()
+  gs <- self$plot_histogram_score()
+  ggpubr::ggarrange(gs, gl, widths = c(1,2), labels = self$labels, common.legend = TRUE, legend = "bottom")
+}
+

@@ -4,14 +4,11 @@
 \alias{find_missing_predictor_variables}
 \title{Check if predictor variables are missing}
 \usage{
-find_missing_predictor_variables(object)
-}
-\arguments{
-\item{object}{An ALASCA object}
+find_missing_predictor_variables()
 }
 \value{
-An ALASCA object
+void
 }
 \description{
-...
+Called from AlascaDataset
 }

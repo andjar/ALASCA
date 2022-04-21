@@ -4,7 +4,7 @@
 \alias{remove_embedded_data}
 \title{Remove df from object}
 \usage{
-remove_embedded_data(object)
+remove_embedded_data()
 }
 \arguments{
 \item{object}{An ALASCA object}

@@ -2,80 +2,34 @@
 % Please edit documentation in R/ALASCA.R
 \name{ALASCA}
 \alias{ALASCA}
-\title{Get an ALASCA object}
+\title{Create an ALASCA model}
 \usage{
-ALASCA(
-  df,
-  formula,
-  wide = FALSE,
-  separate_time_and_group = FALSE,
-  scale_function = "sdall",
-  reduce_dimensions = FALSE,
-  equal_baseline = FALSE,
-  sum_coding = FALSE,
-  method = NA,
-  use_Rfast = TRUE,
-  p_adjust_method = NA,
-  participant_column = "ID",
-  x_column = "time",
-  ignore_missing = FALSE,
-  ignore_missing_covars = FALSE,
-  silent = FALSE,
-  scale_function.center = FALSE,
-  stratification_column = "group",
-  stratification_vector = NA,
-  minimize_object = FALSE,
-  limitsCI = c(0.025, 0.975),
-  pca_function = "prcomp",
-  plot.x_label = "Time",
-  plot.group_label = "Group",
-  plot.figsize = c(180, 120, 300),
-  plot.figunit = "mm",
-  plot.filetype = "png",
-  plot.palette = NA,
-  plot.loadinggroupcolumn = NA,
-  plot.loadinggroup_label = "Variable group",
-  plot.palette.end = 0.8,
-  explanatorylimit = 0.05,
-  do_debug = FALSE,
-  n_validation_folds = 7,
-  n_validation_runs = 1000,
-  validation_quantile_method = 2,
-  plot.my_theme = ggplot2::theme_classic(),
-  keep_columns = c(""),
-  keep_terms = c(""),
-  filename = NA,
-  filepath = NA,
-  reduce_dimensions.nComps = NULL,
-  reduce_dimensions.limit = 0.95,
-  save = FALSE,
-  save_to_disk = FALSE,
-  save_validation_ids = FALSE,
-  optimize_score = TRUE,
-  validate = FALSE,
-  validate_regression = TRUE,
-  validation = FALSE,
-  validation_method = "bootstrap",
-  validation_ids = NA,
-  validation_object = NA,
-  validation_assign_new_ids = FALSE,
-  validation_participants = NA
-)
+ALASCA(df, formula, effects = NULL, ...)
 }
 \arguments{
 \item{df}{Data frame to be analyzed}
 
-\item{formula}{Regression model}
+\item{formula}{Regression formula}
 
-\item{separate_time_and_group}{Logical: should time and group effect be separated?}
+\item{effects}{Vector with effect terms. If \code{NULL}, ALASCA will guess (default)}
 
 \item{scale_function}{Either a custom function or string to define scaling function: \code{sdall}, \code{sdref}, \code{sdt1}, \code{sdreft1}}
 
-\item{equal_baseline}{Set to \code{TRUE} (default) to remove interaction between group and first time point}
+\item{separate_effects}{Boolean. Separate effects?}
 
-\item{sum_coding}{Set to \code{TRUE} to use sum coding instead of contrast coding for group (defaults to \code{FALSE})}
+\item{equal_baseline}{Set to \code{TRUE} to remove interaction between effects}
 
-\item{method}{Defaults to \code{NA} where method is either LM or LMM, depending on whether your formula contains a random effect or not}
+\item{validate}{Boolean. If \code{TRUE}, give estimates for robustness}
+
+\item{n_validation_runs}{number of validation runs}
+
+\item{validation_method}{Choose between \code{bootstrap} (default) and "jack-knife"}
+
+\item{stratification_column}{The column to stratify participants by}
+
+\item{save}{Save models and plots automatically (default: \code{FALSE})}
+
+\item{filename}{File name to save model and plots (when \code{save = TRUE})}
 
 \item{use_Rfast}{Boolean. Defaults to \code{TRUE}}
 
@@ -83,56 +37,14 @@ ALASCA(
 
 \item{participant_column}{String. Name of the column containing participant identification}
 
-\item{scale_function.center}{Boolean. Mean centering as part of scaling}
-
-\item{stratification_vector}{Vector of same length as \code{df} that specifies stratification groups during validate_ Defaults to \code{NA}, where the group column is used.}
-
-\item{minimize_object}{Logical. If \code{TRUE}, remove unnecessary clutter, optimize for validation}
-
-\item{plot.x_label}{Defaults to "Time"}
-
-\item{plot.group_label}{Defaults to "Group"}
-
-\item{plot.figsize}{A vector containing \code{c(width,height,dpi)} (default: \code{c(180, 120, 300)})}
-
-\item{plot.figunit}{Defaults to "mm"}
-
-\item{plot.filetype}{Which filetype you want to save the figure to (default: \code{png})}
-
-\item{plot.palette}{List of colors, named by group}
-
-\item{do_debug}{Print what happens (default: \code{FALSE})}
-
 \item{n_validation_folds}{Partitions when validating}
-
-\item{n_validation_runs}{number of validation runs}
-
-\item{keep_terms}{Additional terms to keep in the model matrix}
-
-\item{filename}{File name to save model and plots (when \code{save = TRUE})}
-
-\item{save}{Save models and plots automatically (default: \code{FALSE})}
-
-\item{validate}{Logical. If \code{TRUE}, give estimates for robustness}
-
-\item{validate_regression}{Whether to validate regression predictions or not (only if \code{validate} is \code{TRUE})}
-
-\item{validation_method}{among  \code{loo} (leave-one-out, default)}
-
-\item{validation_object}{Don't worry about me:)}
-
-\item{validation_participants}{Don't worry about me:)}
 }
 \value{
 An ALASCA object
 }
 \description{
-\code{ALASCA} initializes an ALASCA model and returns an ALASCA object
+\code{ALASCA} initializes an ALASCA model and returns an ALASCA object.
 }
 \details{
-This function builds your ALASCA model. It needs a data frame containing at least a column identifying participants, a column called \code{time} contining time information, a column \code{group} containing group information, a column \code{variable} containing variable names, and a value column. In addition you need to specify the model you want, and whether you want to separate group and time effects (defaults to \code{TRUE}).
-}
-\examples{
-load("PE.Rdata")
-model <- ALASCA(df = df, formula = value ~ time * group + (1 | ID))
+This function builds your ALASCA model. It needs, at least, a data frame and a formula. The effect matrices can be specified with \code{effects}, e.g., \code{c("time", "time+group+time:group", "group+time:group")}.
 }

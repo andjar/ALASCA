@@ -4,17 +4,13 @@
 \alias{flip}
 \title{Flip an ALASCA object}
 \usage{
-flip(object, component = NA, effect = "both")
+flip(x, ...)
 }
 \arguments{
-\item{object}{An ALASCA object}
-
-\item{component}{Components to be flipped, \code{NA} flips all (default)}
-
-\item{effect}{Specify \code{time} or \code{group} to only flip subplot}
+\item{x}{An ALASCA object}
 }
 \value{
-An ALASCA object
+The rotated object
 }
 \description{
 Changes the sign of loadings and scores

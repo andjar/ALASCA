@@ -4,7 +4,7 @@
 \alias{get_default_scaling_function}
 \title{Get a scaling function}
 \usage{
-get_default_scaling_function(object)
+get_default_scaling_function()
 }
 \arguments{
 \item{scale_function_string}{String to define scaing function: \code{sdall}, \code{sdref}, \code{sdt1}, \code{sdreft1}}

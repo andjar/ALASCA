@@ -1,6 +1,6 @@
 Package: ALASCA
 Title: Assorted, Linear ASCA Functions
-Version: 0.0.0.92
+Version: 0.0.0.95
 Authors@R: 
     person(given = "Anders H.",
            family = "Jarmund",
@@ -22,7 +22,8 @@ Imports:
 	ggplot2,
 	DBI,
 	log4r,
-	RSQLite,
+	duckdb,
+	fst,
 	ggpubr,
 	lme4,
 	lmerTest,
@@ -32,5 +33,6 @@ Imports:
 	scales
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    RSQLite
 VignetteBuilder: knitr

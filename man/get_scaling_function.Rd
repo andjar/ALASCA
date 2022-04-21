@@ -4,7 +4,7 @@
 \alias{get_scaling_function}
 \title{Get a scaling function}
 \usage{
-get_scaling_function(object)
+get_scaling_function()
 }
 \arguments{
 \item{object}{An ALASCA object}
