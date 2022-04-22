@@ -448,15 +448,17 @@ run_regression <- function() {
   
   #df_by_variable <- split(self$df, self$df$variable)
   self$log("Find rows by variable", level = "DEBUG")
-  #setkey(self[["df"]], variable)
-  #rows_by_variable <- lapply(self$get_levels("variable"), function(x) self[["df"]][x, which = TRUE] )
-  #rows_by_variable <- lapply(self$get_levels("variable"), function(x) self[["df"]][variable == x, which = TRUE] )
+  
+  # https://stackoverflow.com/questions/71946874/what-is-the-most-efficient-method-for-finding-row-indices-by-group-in-a-data-tab
   if (nrow(self[["df"]]) > 1000) {
-    rows_by_variable <- split(self[["df"]][, .I, by = variable], by = "variable")
+    tmp <- self[["df"]][, .(idx = .(.I)), variable]
+    rows_by_variable <- tmp$idx
+    names(rows_by_variable) <- tmp$variable
   } else {
     rows_by_variable <- lapply(self$get_levels("variable"), function(x) data.table(I = which(self[["df"]][["variable"]] == x)) )
     names(rows_by_variable) <- self$get_levels("variable")
   }
+  
   
   
   #names(rows_by_variable) <- self$get_levels("variable")
@@ -482,9 +484,9 @@ run_regression <- function() {
     self$regression_coefficients <- setDT(as.data.frame(
       vapply(self$get_levels("variable"), function(x) {
         Rfast::rint.reg(
-          y = self[["df"]][ rows_by_variable[[x]]$I, value],
-          x = self[["modmat"]][rows_by_variable[[x]]$I, -1],
-          id = as.numeric(factor(self[["df"]][ rows_by_variable[[x]]$I, ID])),
+          y = self[["df"]][ rows_by_variable[[x]], value],
+          x = self[["modmat"]][rows_by_variable[[x]], -1],
+          id = as.numeric(factor(self[["df"]][ rows_by_variable[[x]], ID])),
           ranef = FALSE
         )$be
       }, FUN.VALUE = numeric(ncol(self[["modmat"]])))
@@ -504,7 +506,7 @@ run_regression <- function() {
     #' self[["formula"]][["regression_formula"]] has replaced the terms with the modified model matrix
     
     self$regression_model <- lapply(self$get_levels("variable"), function(x) {
-      modmat <- model.matrix(self[["formula"]][["formula"]], data = self$df[ rows_by_variable[[x]]$I ])
+      modmat <- model.matrix(self[["formula"]][["formula"]], data = self$df[ rows_by_variable[[x]] ])
       #self[["modmat"]] <- self[["modmat"]][, -1] # Remove intercept
       if (self[["equal_baseline"]]) {
         # Remove interaction between group and first time point
@@ -512,7 +514,7 @@ run_regression <- function() {
       }
       self[["cnames_modmat"]] <- colnames(modmat)
       environment(self[["formula"]][["regression_formula"]]) <- environment()
-      regression_model <- lm(self[["formula"]][["regression_formula"]], data = self$df[ rows_by_variable[[x]]$I ])
+      regression_model <- lm(self[["formula"]][["regression_formula"]], data = self$df[ rows_by_variable[[x]] ])
       attr(regression_model, "name") <- x
       regression_model
     })
@@ -536,8 +538,8 @@ run_regression <- function() {
     self$regression_coefficients <- setDT(as.data.frame(
       vapply(self$get_levels("variable"), function(x) {
         Rfast::lmfit(
-          y = self[["df"]][ rows_by_variable[[x]]$I, value],
-          x = self[["modmat"]][rows_by_variable[[x]]$I, ]
+          y = self[["df"]][ rows_by_variable[[x]], value],
+          x = self[["modmat"]][rows_by_variable[[x]], ]
         )$be
       }, FUN.VALUE = numeric(ncol(self[["modmat"]])))
     ))[]
@@ -556,7 +558,7 @@ run_regression <- function() {
     #' self[["formula"]][["regression_formula"]] has replaced the terms with the modified model matrix
     
     self$regression_model <- lapply(self$get_levels("variable"), function(x) {
-      modmat <- model.matrix(self[["formula"]][["formula"]], data = self$df[ rows_by_variable[[x]]$I ])
+      modmat <- model.matrix(self[["formula"]][["formula"]], data = self$df[ rows_by_variable[[x]] ])
       #odmat <- modmat[, -1] # Remove intercept
       if (self[["equal_baseline"]]) {
         # Remove interaction between group and first time point
@@ -565,7 +567,7 @@ run_regression <- function() {
       self[["cnames_modmat"]] <- colnames(modmat)
       # modmat <- modmat[,ncol(modmat):1]
       environment(self[["formula"]][["regression_formula"]]) <- environment()
-      regression_model <- lmerTest::lmer(self[["formula"]][["regression_formula"]], data = self$df[ rows_by_variable[[x]]$I ])
+      regression_model <- lmerTest::lmer(self[["formula"]][["regression_formula"]], data = self$df[ rows_by_variable[[x]] ])
       attr(regression_model, "name") <- x
       regression_model
     })
@@ -1630,109 +1632,6 @@ plot_covariates <- function(...){
 #' @export
 plot_covariate <- function(...){
   plot_covars(...)
-}
-
-
-#' Plot projection of participants
-#'
-#' This function returns a plot of...
-#'
-#' @param object An ALASCA object
-#' @param comp Which two components to plot (default: `c(1, 2`)
-#' @param return_data Set to `TRUE` to return data instead of plot
-#' @param filetype Which filetype you want to save the figure to
-#' @param figsize A vector containing `c(widht,height,dpi)` (default: `c(120, 80, 300)`)
-#' @param myTheme A ggplot2 theme to use
-#' @return A ggplot2 objects.
-#'
-#' @export
-plot_projection <- function(object,
-                            comp = c(1, 2),
-                            return_data = FALSE,
-                            filename = NA,
-                            filetype = NA,
-                            figsize = NA,
-                            figunit = NA,
-                            myTheme = NA) {
-  if (any(is.na(myTheme))) myTheme <- object$plot.myTheme
-  if (!is.na(filename)) object$filename <- filename
-  
-  df <- object$df
-  df$ID <- df[, ID]
-  loadings_Time <- subset(get_loadings(object)$time, PC %in% comp)
-  loadings_Time <- reshape2::dcast(data = loadings_Time, covars ~ paste0("PC", PC), value.var = "loading")
-  df_time <- merge(df, loadings_Time, by.x = "variable", by.y = "covars")
-  if (object$separate_effects) {
-    df_time <- Reduce(rbind, lapply(unique(paste0(df_time$ID, df_time$time)), function(x) {
-      data.frame(
-        part = subset(df_time, paste0(ID, time) == x)$ID,
-        pc1 = sum(subset(df_time, paste0(ID, time) == x)$PC1 * subset(df_time, paste0(ID, time) == x)$value),
-        pc2 = sum(subset(df_time, paste0(ID, time) == x)$PC2 * subset(df_time, paste0(ID, time) == x)$value),
-        time = subset(df_time, paste0(ID, time) == x)$time
-      )
-    }))
-    df_time <- df_time[!duplicated(df_time), ]
-    colnames(df_time) <- c("part", paste0("PC", comp[1]), paste0("PC", comp[2]), "time")
-    if (!return_data) {
-      g_t <- ggplot2::ggplot(df_time, ggplot2::aes_string(x = paste0("PC", comp[1]), y = paste0("PC", comp[2]), group = "part")) +
-        ggplot2::geom_point() +
-        ggplot2::geom_line(alpha = 0.7, arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(0.20, "cm"))) +
-        myTheme
-    }
-    loadings_group <- subset(get_loadings(object)$group, PC %in% comp)
-    loadings_group <- reshape2::dcast(data = loadings_group, covars ~ paste0("PC", PC), value.var = "loading")
-    df_group <- merge(df, loadings_group, by.x = "variable", by.y = "covars")
-    df_group <- Reduce(rbind, lapply(unique(paste0(df_time$ID, df_time$time)), function(x) {
-      data.frame(
-        part = subset(df_group, paste0(ID, time) == x)$ID,
-        pc1 = sum(subset(df_group, paste0(ID, time) == x)$PC1 * subset(df_group, paste0(ID, time) == x)$value),
-        pc2 = sum(subset(df_group, paste0(ID, time) == x)$PC2 * subset(df_group, paste0(ID, time) == x)$value),
-        time = subset(df_group, paste0(ID, time) == x)$time,
-        group = subset(df_group, paste0(ID, time) == x)$group
-      )
-    }))
-    df_group <- df_group[!duplicated(df_group), ]
-    colnames(df_group) <- c("part", paste0("PC", comp[1]), paste0("PC", comp[2]), "time", "group")
-    if (!return_data) {
-      g_g <- ggplot2::ggplot(df_group, ggplot2::aes_string(x = paste0("PC", comp[1]), y = paste0("PC", comp[2]), group = "part", color = "group")) +
-        ggplot2::geom_point() +
-        ggplot2::geom_line(alpha = 0.7, arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(0.20, "cm"))) +
-        myTheme
-      g <- ggpubr::ggarrange(g_t, g_g, common.legend = TRUE, legend = "bottom")
-    }
-    g <- list(df_time, df_group)
-    names(g) <- c("time", "group")
-    if (object$save) {
-      for (i in seq_along(g)) {
-        saveALASCAPlot(object = object, g = g[[i]], filetype = filetype, figsize = figsize, figunit = figunit, suffix = names(g)[i])
-      }
-    }
-    return(g)
-  } else {
-    df_time <- Reduce(rbind, lapply(unique(paste0(df_time$ID, df_time$time)), function(x) {
-      data.frame(
-        part = subset(df_time, paste0(ID, time) == x)$ID,
-        pc1 = sum(subset(df_time, paste0(ID, time) == x)$PC1 * subset(df_time, paste0(ID, time) == x)$value),
-        pc2 = sum(subset(df_time, paste0(ID, time) == x)$PC2 * subset(df_time, paste0(ID, time) == x)$value),
-        time = subset(df_time, paste0(ID, time) == x)$time,
-        group = subset(df_time, paste0(ID, time) == x)$group
-      )
-    }))
-    df_time <- df_time[!duplicated(df_time), ]
-    colnames(df_time) <- c("part", paste0("PC", comp[1]), paste0("PC", comp[2]), "time", "group")
-    g <- ggplot2::ggplot(df_time, ggplot2::aes_string(x = paste0("PC", comp[1]), y = paste0("PC", comp[2]), group = "part", color = "group")) +
-      ggplot2::geom_point() +
-      ggplot2::geom_line(alpha = 0.7, arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(0.20, "cm"))) +
-      myTheme
-    if (return_data) {
-      return(df_time)
-    } else {
-      
-      if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
-      
-      return(g)
-    }
-  }
 }
 
 plot_effect <- function() {
