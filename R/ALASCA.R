@@ -693,6 +693,7 @@ do_pca <- function() {
     self$effect_list$effect_matrix,
     function(x) {
       k <- prcomp(x, scale = FALSE, center = !self$scale_function.center)
+      
       if (ncol(k$x) > self$max_PC) {
         if(!self$minimize_object) self$log(paste("Keeping", self$max_PC, "of", ncol(k$x), "components. Change `max_PC` if necessary."), level = "WARN")
         k$x <- k$x[, seq_len(self$max_PC)]
@@ -808,7 +809,7 @@ clean_pca <- function() {
   })
   
   self$ALASCA$significant_PCs <- lapply(self$ALASCA$explained, function(x){
-    which(x >= self$explanatory_limit)
+    unique(c(1, 2, which(x >= self$explanatory_limit)))
   })
   
   if(self$reduce_dimensions){
@@ -968,37 +969,6 @@ do_validate <- function() {
   out$t1 <- ww %*% t(v) # Rotation matrix
   out$procrust <- loadings %*% out$t1 # Rotated loadings
   return(out)
-}
-
-#' Rotate PCA
-#'
-#' This function rotates loadings and scores during validation
-#'
-#' @param target ALASCA object acting as target
-rotate_matrix <- function(target) {
-  PCloading <- target$get_PCs(effect = "time")
-  PCloading_t <- paste0("PC", PCloading)
-  c <- .procrustes(
-    loadings = as.matrix(self$pca$loading$time[target$pca$loading$time, ..PCloading_t]),
-    target = as.matrix(target$pca$loading$time[, ..PCloading_t])
-  )
-  
-  self$pca$loading$time[target$pca$loading$time, (PCloading_t) := as.data.frame(c$procrust)]
-  self$pca$score$time[target$pca$score$time, (PCloading_t) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
-  
-  if (self$separate_effects) {
-    PCloading <- taret$get_PCs(effect = "group")
-    PCloading_t <- paste0("PC", PCloading)
-    c <- .procrustes(
-      loadings = as.matrix(self$pca$loading$group[target$pca$loading$group, ..PCloading_t]),
-      target = as.matrix(target$pca$loading$group[, ..PCloading_t])
-    )
-    
-    self$pca$loading$group[target$pca$loading$group, (PCloading_t) := as.data.frame(c$procrust)]
-    self$pca$score$group[target$pca$score$group, (PCloading_t) := as.data.frame(as.matrix(.SD) %*% solve(c$t1)), .SDcols = PCloading_t]
-  }
-  
-  #invisible(self)
 }
 
 #' Extract percentiles

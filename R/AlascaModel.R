@@ -600,13 +600,13 @@ AlascaModel <- R6::R6Class("AlascaModel",
         }
         
         # Final rotation
-        c <- .procrustes(
+        rotated_loadings <- .procrustes(
           loadings = as.matrix(self$ALASCA$loading[[effect_i]][target$ALASCA$loading[[effect_i]], ..cols_to_look_at]),
           target = as.matrix(target$ALASCA$loading[[effect_i]][, ..cols_to_look_at])
         )
         
-        self$ALASCA$loading[[effect_i]][target$ALASCA$loading[[effect_i]], (cols_to_look_at) := as.data.table(c$procrust)]
-        self$ALASCA$score[[effect_i]][target$ALASCA$score[[effect_i]], (cols_to_look_at) := as.data.table(as.matrix(.SD) %*% solve(c$t1)), .SDcols = cols_to_look_at]
+        self$ALASCA$loading[[effect_i]][target$ALASCA$loading[[effect_i]], (cols_to_look_at) := as.data.table(rotated_loadings$procrust)]
+        self$ALASCA$score[[effect_i]][target$ALASCA$score[[effect_i]], (cols_to_look_at) := as.data.table(as.matrix(.SD) %*% solve(rotated_loadings$t1)), .SDcols = cols_to_look_at]
         
       }
       
@@ -614,7 +614,27 @@ AlascaModel <- R6::R6Class("AlascaModel",
       
       #invisible(self)
     },
-    rotate_matrix = rotate_matrix
+    rotate_matrix = function(target) {
+      target$log("Starting rotation (not optimized)", level = "DEBUG")
+      for (effect_i in seq_along(self$ALASCA$loading)) {
+        
+        # Number of components to look at
+        cols_to_look_at <- paste0("PC", self$get_PCs(effect_i))
+        
+        rotated_loadings <- .procrustes(
+          loadings = as.matrix(self$ALASCA$loading[[effect_i]][target$ALASCA$loading[[effect_i]], ..cols_to_look_at]),
+          target = as.matrix(target$ALASCA$loading[[effect_i]][, ..cols_to_look_at])
+        )
+        
+        self$ALASCA$loading[[effect_i]][target$ALASCA$loading[[effect_i]], (cols_to_look_at) := as.data.table(rotated_loadings$procrust)]
+        self$ALASCA$score[[effect_i]][target$ALASCA$score[[effect_i]], (cols_to_look_at) := as.data.table(as.matrix(.SD) %*% solve(rotated_loadings$t1)), .SDcols = cols_to_look_at]
+        
+      }
+      
+      target$log("Completed rotation", level = "DEBUG")
+      
+      #invisible(self)
+    }
   ),
   active = list(
     get_plot_group = function() {
