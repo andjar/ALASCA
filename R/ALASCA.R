@@ -1936,7 +1936,7 @@ plot_effect_validation_loading <- function(effect_i = 1, component = 1) {
   }
   
   if (self$n_limit > 0) {
-    self$model$log(paste("Only showing", self$n_limit*2, "variables. Adjust the number with `n_limit`"), level = "WARN")
+    self$model$log(paste("Showing", self$n_limit*2, "of",length(self$model$get_levels("variable")),"variables. Adjust the number with `n_limit`"), level = "WARN")
   }
   data_to_plot <- self$model$get_loadings(effect_i = effect_i, component = component, n_limit = self$n_limit)[[1]]
   data_to_plot$model <- 0
@@ -2240,7 +2240,7 @@ plot_histogram_loading <- function() {
   }
   
   if (self$n_limit > 0) {
-    self$model$log(paste("Only showing", self$n_limit*2, "variables. Adjust the number with `n_limit`"), level = "WARN")
+    self$model$log(paste("Showing", self$n_limit*2, "of",length(self$model$get_levels("variable")),"variables. Adjust the number with `n_limit`"), level = "WARN")
   }
   data_to_plot <- self$model$get_loadings(effect_i = self$effect_i, component = self$component, n_limit = self$n_limit)[[1]]
   data_to_plot$model <- 0
