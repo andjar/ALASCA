@@ -1904,22 +1904,20 @@ plot_effect_validation_score <- function(effect_i = 1, component = 1) {
     }
   }
   
-  # Lower alpha to the validation runs
-  data_to_plot$alpha <- ifelse(data_to_plot$model > 0, 0.7, 1)
-  
   data_to_plot$grouping <- paste(data_to_plot$model, "-", data_to_plot$group_data)
   
   # Validated model
-  g <- ggplot2::ggplot(data_to_plot,
+  g <- ggplot2::ggplot(data_to_plot[model != 0],
                        ggplot2::aes_string(x = "x_data",
                                            y = "score",
                                            group = "grouping",
                                            color = "group_data",
-                                           linetype = "group_data",
-                                           alpha = "alpha")) +
-    ggplot2::geom_point() +
-    ggplot2::geom_line() +
-    ggplot2::scale_alpha(range = c(0.3, 1), guide = "none") +
+                                           linetype = "group_data")) +
+    ggplot2::geom_point(alpha = 0.5) +
+    ggplot2::geom_line(alpha = 0.5) +
+    ggplot2::geom_point(data = data_to_plot[model == 0], color = "black") +
+    ggplot2::geom_line(data = data_to_plot[model == 0], color = "black") +
+    ggplot2::scale_alpha(range = c(0.1, 1), guide = "none") +
     ggplot2::scale_color_manual(values = self$get_plot_palette()) +
     ggplot2::scale_linetype_manual(values = self$get_plot_linetypes()) +
     ggplot2::labs(color = self$group_label,
