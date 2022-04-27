@@ -86,7 +86,6 @@ The object builds the ALASCA model and contains the data
 \item \href{#method-clean_pca}{\code{AlascaModel$clean_pca()}}
 \item \href{#method-clean_alasca}{\code{AlascaModel$clean_alasca()}}
 \item \href{#method-do_validate}{\code{AlascaModel$do_validate()}}
-\item \href{#method-rotate_matrix}{\code{AlascaModel$rotate_matrix()}}
 \item \href{#method-get_validation_percentiles}{\code{AlascaModel$get_validation_percentiles()}}
 \item \href{#method-get_validation_percentiles_regression}{\code{AlascaModel$get_validation_percentiles_regression()}}
 \item \href{#method-get_validation_percentiles_covars}{\code{AlascaModel$get_validation_percentiles_covars()}}
@@ -118,6 +117,7 @@ The object builds the ALASCA model and contains the data
 \item \href{#method-save_to_csv}{\code{AlascaModel$save_to_csv()}}
 \item \href{#method-save_model}{\code{AlascaModel$save_model()}}
 \item \href{#method-rotate_matrix_optimize_score}{\code{AlascaModel$rotate_matrix_optimize_score()}}
+\item \href{#method-rotate_matrix}{\code{AlascaModel$rotate_matrix()}}
 \item \href{#method-clone}{\code{AlascaModel$clone()}}
 }
 }
@@ -244,15 +244,6 @@ The object builds the ALASCA model and contains the data
 \subsection{Method \code{do_validate()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$do_validate()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-rotate_matrix"></a>}}
-\if{latex}{\out{\hypertarget{method-rotate_matrix}{}}}
-\subsection{Method \code{rotate_matrix()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$rotate_matrix(target)}\if{html}{\out{</div>}}
 }
 
 }
@@ -598,6 +589,15 @@ Save scores, loading, covars and predictions to csv files
 \subsection{Method \code{rotate_matrix_optimize_score()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$rotate_matrix_optimize_score(target)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-rotate_matrix"></a>}}
+\if{latex}{\out{\hypertarget{method-rotate_matrix}{}}}
+\subsection{Method \code{rotate_matrix()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$rotate_matrix(target)}\if{html}{\out{</div>}}
 }
 
 }
