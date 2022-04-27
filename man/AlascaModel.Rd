@@ -122,6 +122,7 @@ The object builds the ALASCA model and contains the data
 \item \href{#method-get_ref}{\code{AlascaModel$get_ref()}}
 \item \href{#method-get_levels}{\code{AlascaModel$get_levels()}}
 \item \href{#method-get_PCs}{\code{AlascaModel$get_PCs()}}
+\item \href{#method-get_predictions}{\code{AlascaModel$get_predictions()}}
 \item \href{#method-get_scores}{\code{AlascaModel$get_scores()}}
 \item \href{#method-get_loadings}{\code{AlascaModel$get_loadings()}}
 \item \href{#method-get_covars}{\code{AlascaModel$get_covars()}}
@@ -466,13 +467,13 @@ Switch the sign of scores and loadings
 \subsection{Method \code{get_ref()}}{
 Returns the reference level of a given column
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_ref(column)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_ref(columns)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{column}}{A column containing factors}
+\item{\code{columns}}{A column containing factors}
 }
 \if{html}{\out{</div>}}
 }
@@ -519,6 +520,15 @@ Returns the most interesting principal components (i.e., components explaining m
 \subsection{Returns}{
 A vector with principal components
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-get_predictions"></a>}}
+\if{latex}{\out{\hypertarget{method-get_predictions}{}}}
+\subsection{Method \code{get_predictions()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_predictions()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_scores"></a>}}

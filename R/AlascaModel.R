@@ -367,15 +367,17 @@ AlascaModel <- R6::R6Class("AlascaModel",
     },
     #' @description
     #' Returns the reference level of a given column
-    #' @param column A column containing factors
+    #' @param columns A column containing factors
     #' @return The reference level
-    get_ref = function(column) {
-      if (self$reduce_dimensions && column == "variable") {
-        self$reduced_df[["variables"]][[1]]
-      } else {
-        self$df_raw$level_list[[column]][[1]]
-      }
-      },
+    get_ref = function(columns)  {
+      vapply(columns, FUN = function(column) {
+        if (self$reduce_dimensions && column == "variable") {
+          self$reduced_df[["variables"]][[1]]
+        } else {
+          self$df_raw$level_list[[column]][[1]]
+        }
+      }, FUN.VALUE = character(1))
+    },
     #' @description
     #' Returns all the levels of a given column
     #' @param column A column containing factors
@@ -392,6 +394,19 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @param x Index corresponding to the effect of interest
     #' @return A vector with principal components
     get_PCs = function(x) self$ALASCA$significant_PCs[[x]],
+    get_predictions = function() {
+      if (self$equal_baseline) {
+        baseline_to_add <- self$model_prediction[get(self$effect_terms) %in% self$get_ref(self$effect_terms)]
+        baseline_to_add <- rbindlist(lapply(self$get_levels(self$get_plot_group)[-1], function(gr) {
+          baseline_to_add[, (self$get_plot_group) := gr]
+        }))
+        
+        predictions <- rbind(self$model_prediction, baseline_to_add)
+      } else {
+        predictions <- self$model_prediction
+      }
+      return(predictions)
+    },
     get_scores = function(effect_i = 1, component = 1) {
       if (length(effect_i) == 1) {
         if (effect_i < 1) {

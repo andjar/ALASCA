@@ -1489,10 +1489,14 @@ plot_prediction <- function() {
   if (is.null(self$variable)) {
     self$model$log(paste0("Selecting the ",round(self$n_limit/2)," variables with highest/lowest loading on `", self$model$effect_list$expr[[self$effect_i[[1]]]], "` (PC",self$component[[1]],"). Use `variable` to specify variables to plot"))
     variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]], n_limit = round(self$n_limit/2))[[1]]
+  } else if (self$variable == 0) {
+    variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])
   }
   
   effect_terms <- self$model$effect_list$terms[[self$effect_i[[1]]]]
-  data_to_plot <- self$model$model_prediction[variable %in% variables_to_plot$covars]
+  data_to_plot <- self$model$get_predictions()
+  data_to_plot <- data_to_plot[variable %in% variables_to_plot$covars]
+  
   data_to_plot[, variable := factor(variable, levels = variables_to_plot[order(loading, decreasing = TRUE), covars])]
   colnames(data_to_plot)[colnames(data_to_plot) == effect_terms[[1]]] <- "x_data"
   
@@ -2060,6 +2064,28 @@ get_covars.AlascaModel <- function(object, n_limit = 0) {
 #' @export
 get_covars <- function(object, ...) {
   UseMethod("get_covars")
+}
+
+#' Returns model predictions
+#' 
+#' @param object An ALASCA object
+#' 
+#' @return A data table with model predictions
+#' 
+#' @export
+get_predictions.AlascaModel <- function(object) {
+  object$get_predictions()
+}
+
+#' Get coefficients for covariates
+#' 
+#' @inheritParams get_predictions.AlascaModel
+#' 
+#' @return A data table with regression coefficients
+#' 
+#' @export
+get_predictions <- function(object) {
+  UseMethod("get_predictions")
 }
 
 plot_2D <- function() {
