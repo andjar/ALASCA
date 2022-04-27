@@ -160,7 +160,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
         }
       }
       
-      dir.create(paste0(self$filepath, "path/"), recursive = TRUE)
+      dir.create(paste0(self$filepath, "plot/"), recursive = TRUE)
       self$log_file <- paste0(self$filepath, "ALASCA.log")
       
       # Start logging
