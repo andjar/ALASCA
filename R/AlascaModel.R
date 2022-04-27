@@ -152,8 +152,15 @@ AlascaModel <- R6::R6Class("AlascaModel",
       }
       
       self$init_time <- Sys.time()
-      self$filepath <- paste0("ALASCA/", strftime(self$init_time, format = "%Y-%m-%dT%H%M%S"), "/")
-      dir.create(self$filepath, recursive = TRUE)
+      if (is.null(self$filepath)) {
+        self$filepath <- paste0("ALASCA/", strftime(self$init_time, format = "%Y-%m-%dT%H%M%S"), "/")
+      } else {
+        if (substr(self$filepath, nchar(self$filepath), nchar(self$filepath)) != "/") {
+          self$filepath <- paste0(self$filepath, "/")
+        }
+      }
+      
+      dir.create(paste0(self$filepath, "path/"), recursive = TRUE)
       self$log_file <- paste0(self$filepath, "ALASCA.log")
       
       # Start logging
