@@ -53,7 +53,7 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
         )
         
         if (self$type == "effect") {
-          self$dheight <- 120
+          self$dheight <- 120*length(self$effect_i)*length(self$component)
           self$dwidth <- 180
           g <- self$plot_effect()
         } else if (self$type == "score") {
@@ -61,11 +61,11 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
           self$dwidth <- 90
           g <- self$plot_effect_score(effect_i = self$effect_i, component = self$component)
         } else if (self$type == "loading") {
-          self$dheight <- 120
+          self$dheight <- 120*length(self$effect_i)*length(self$component)
           self$dwidth <- 90
           g <- self$plot_effect_loading(effect_i = self$effect_i, component = self$component)
         } else if (self$type == "validation") {
-          self$dheight <- 120
+          self$dheight <- 120*length(self$effect_i)*length(self$component)
           self$dwidth <- 180
           g <- self$plot_effect_validation()
         } else if (self$type == "2D") {
@@ -75,7 +75,9 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
         } else if (self$type == "histogram") {
           self$dheight <- 180
           self$dwidth <- 180
-          if (is.null(self$n_bins)) self$n_bins <- self$model$n_validation_runs/2
+          if (is.null(self$n_bins)) {
+            self$n_bins <- self$model$n_validation_runs/5
+          }
           g <- self$plot_histogram()
         } else if (self$type == "scree") {
           self$dheight <- 60
