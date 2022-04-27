@@ -637,6 +637,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     }
   ),
   active = list(
+    #' @field Name of the grouping factor (used for plotting)
     get_plot_group = function() {
       if (is.null(self$splot$group)) {
         if (length(self$effect_terms) == 1) {
@@ -655,9 +656,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
       } 
       self$splot$group
     },
-    #' @description
-    #' List of the terms in the effect matrices
-    #' @return A vector with the terms in the effect matrices
+    #' @field List of the terms in the effect matrices
     effect_terms = function() {
       unique(unlist(self$effect_list$terms))
     }

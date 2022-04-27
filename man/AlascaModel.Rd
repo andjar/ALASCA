@@ -66,6 +66,19 @@ The object builds the ALASCA model and contains the data
 \item{\code{log_to}}{String deciding logging target: \code{all} (default), \code{file}, \code{console}, \code{none}}
 
 \item{\code{do_debug}}{Boolean. Log more details}
+
+\item{\code{Name}}{of the grouping factor (used for plotting)}
+
+\item{\code{List}}{of the terms in the effect matrices}
+}
+\if{html}{\out{</div>}}
+}
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{Name}}{of the grouping factor (used for plotting)}
+
+\item{\code{List}}{of the terms in the effect matrices}
 }
 \if{html}{\out{</div>}}
 }
