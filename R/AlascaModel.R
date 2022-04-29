@@ -14,17 +14,21 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field scale_function How to scale the data. Options are `NULL`, custom function, or `"sdall"`, `"sdref"`, `"sdt1"`, `"sdreft1"`
     scale_function = "sdall",
     
+    #' @field ignore_missing If TRUE, ignore missing predictive values
     ignore_missing = FALSE,
+    #' @field ignore_missing_covars If TRUE, ignore missing covariate values
     ignore_missing_covars = FALSE,
     #' @field version Version number
-    version = "0.0.0.95",
+    version = "0.0.0.96",
     #' @field update_date Date of latest update
-    update_date = "2022-04-21",
+    update_date = "2022-04-29",
     
     # Effect matrices
     #' @field separate_effects If TRUE, try to separate the effects
     separate_effects = FALSE,
+    #' @field equal_baseline If TRUE, remove interaction between baselines
     equal_baseline = FALSE,
+    #' @field effect_list List. Contains info related to the effects
     effect_list = list(
       expr = NULL,
       terms = NULL,
@@ -42,15 +46,19 @@ AlascaModel <- R6::R6Class("AlascaModel",
     n_validation_runs = 1000L,
     #' @field validation_quantile_method Integer between 1 and 9. See [stats::quantile()] for details
     validation_quantile_method = 2L,
+    #' @field save_validation_ids If TRUE, save the participants in each validation iteration to a csv file
     save_validation_ids = FALSE,
+    #' @field optimize_score If TRUE, test all combinations of signs for the most important loadings, and choose the combination being the best fit
     optimize_score = TRUE,
-    #' @field validate Boolean. Validate the model
+    #' @field validate If TRUE, validate the model
     validate = FALSE,
+    #' @field validate_regression If TRUE, validate get marginal means
     validate_regression = TRUE,
     #' @field validation Boolean. Synonym to `validate`
     validation = FALSE,
     #' @field validation_method String. Defines the validation method; `"bootstrap"` (default) or `"jack-knife"`
     validation_method = "bootstrap",
+    #' @field validation_ids A data frame where each row contains the ids for one validation iteration
     validation_ids = NULL,
     validation_object = NA,
     validation_assign_new_ids = FALSE,
@@ -63,6 +71,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     # Reduce dimensions
     #' @field reduce_dimensions Boolean. Use PCA to reduce data dimensions prior to analysis
     reduce_dimensions = FALSE,
+    #' @field pca_function String or custom function. Which pca function to use for dimension reduction, either "prcomp" or "irlba" or "princomp" or custom function
     pca_function = "prcomp",
     reduced_df = list(
       explanatory_power = NULL,
@@ -88,8 +97,6 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field save Save model data and plots
     save = FALSE,
     
-    
-    sum_coding = FALSE,
     #' @field method String. Can be `"LM"` or `"LMM"`
     method = NULL,
     #' @field max_PC Integer. The maximal number of principal components to keep for further analysis
@@ -101,6 +108,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     participant_column = NULL,
     
     scale_function.center = FALSE,
+    #' @field stratification_column String. Name of the column to use for stratification during validation
     stratification_column = NULL,
     stratification_vector = NA,
     minimize_object = FALSE,
@@ -110,10 +118,11 @@ AlascaModel <- R6::R6Class("AlascaModel",
     init_time = NULL,
 
     # Log settings
-    #' @field log_to String deciding logging target: `all` (default), `file`, `console`, `none`
+    #' @field log_to String deciding logging target: `"all"` (default), `"file"`, `"console"`, `"none"`
     log_to = "all",
     log_file = NULL,
     logger = NULL,
+    #' @field log_level String. What level of log messages to print; `"DEBUG"`, `"INFO"`, `"WARN"`, `"ERROR"`
     log_level = NULL,
     uselog = TRUE,
     #' @field do_debug Boolean. Log more details
@@ -127,7 +136,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     cnames_modmat = NULL,
     covar_coefficients = NULL,
     
-    
+    #' @field ALASCA List. Contains all model outputs: `score`, `loading`, `explained` and `significant_PCs`
     ALASCA = list(
       score = NULL,
       loading = NULL,
@@ -636,6 +645,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
       
       #invisible(self)
     },
+    
     rotate_matrix = function(target) {
       target$log("Starting rotation (not optimized)", level = "DEBUG")
       for (effect_i in seq_along(self$ALASCA$loading)) {
@@ -659,7 +669,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     }
   ),
   active = list(
-    #' @field Name of the grouping factor (used for plotting)
+    #' @field get_plot_group Name of the grouping factor (used for plotting)
     get_plot_group = function() {
       if (is.null(self$splot$group)) {
         if (length(self$effect_terms) == 1) {
@@ -678,7 +688,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
       } 
       self$splot$group
     },
-    #' @field List of the terms in the effect matrices
+    #' @field effect_terms List of the terms in the effect matrices
     effect_terms = function() {
       unique(unlist(self$effect_list$terms))
     }

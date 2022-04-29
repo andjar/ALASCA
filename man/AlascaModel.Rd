@@ -17,11 +17,19 @@ The object builds the ALASCA model and contains the data
 
 \item{\code{scale_function}}{How to scale the data. Options are \code{NULL}, custom function, or \code{"sdall"}, \code{"sdref"}, \code{"sdt1"}, \code{"sdreft1"}}
 
+\item{\code{ignore_missing}}{If TRUE, ignore missing predictive values}
+
+\item{\code{ignore_missing_covars}}{If TRUE, ignore missing covariate values}
+
 \item{\code{version}}{Version number}
 
 \item{\code{update_date}}{Date of latest update}
 
 \item{\code{separate_effects}}{If TRUE, try to separate the effects}
+
+\item{\code{equal_baseline}}{If TRUE, remove interaction between baselines}
+
+\item{\code{effect_list}}{List. Contains info related to the effects}
 
 \item{\code{n_validation_folds}}{Integer. If using jack-knife validation, exclude 1/n_validation_folds of the participants at each iteration}
 
@@ -29,17 +37,27 @@ The object builds the ALASCA model and contains the data
 
 \item{\code{validation_quantile_method}}{Integer between 1 and 9. See \code{\link[stats:quantile]{stats::quantile()}} for details}
 
-\item{\code{validate}}{Boolean. Validate the model}
+\item{\code{save_validation_ids}}{If TRUE, save the participants in each validation iteration to a csv file}
+
+\item{\code{optimize_score}}{If TRUE, test all combinations of signs for the most important loadings, and choose the combination being the best fit}
+
+\item{\code{validate}}{If TRUE, validate the model}
+
+\item{\code{validate_regression}}{If TRUE, validate get marginal means}
 
 \item{\code{validation}}{Boolean. Synonym to \code{validate}}
 
 \item{\code{validation_method}}{String. Defines the validation method; \code{"bootstrap"} (default) or \code{"jack-knife"}}
+
+\item{\code{validation_ids}}{A data frame where each row contains the ids for one validation iteration}
 
 \item{\code{limitsCI}}{Lower and upper quantile to use for validation}
 
 \item{\code{compress_validation}}{Integer between 0 and 100. See \code{\link[fst:write_fst]{fst::write_fst()}} for details}
 
 \item{\code{reduce_dimensions}}{Boolean. Use PCA to reduce data dimensions prior to analysis}
+
+\item{\code{pca_function}}{String or custom function. Which pca function to use for dimension reduction, either "prcomp" or "irlba" or "princomp" or custom function}
 
 \item{\code{save_to_disk}}{Write model data to disk to reduce memory usage}
 
@@ -59,26 +77,28 @@ The object builds the ALASCA model and contains the data
 
 \item{\code{p_adjust_method}}{String. See \code{\link[stats:p.adjust]{stats::p.adjust()}}}
 
+\item{\code{stratification_column}}{String. Name of the column to use for stratification during validation}
+
 \item{\code{explanatory_limit}}{Only validate components explaining more than \code{explanatory_limit} of the variance}
 
 \item{\code{init_time}}{The time when the object is initialized}
 
-\item{\code{log_to}}{String deciding logging target: \code{all} (default), \code{file}, \code{console}, \code{none}}
+\item{\code{log_to}}{String deciding logging target: \code{"all"} (default), \code{"file"}, \code{"console"}, \code{"none"}}
+
+\item{\code{log_level}}{String. What level of log messages to print; \code{"DEBUG"}, \code{"INFO"}, \code{"WARN"}, \code{"ERROR"}}
 
 \item{\code{do_debug}}{Boolean. Log more details}
 
-\item{\code{Name}}{of the grouping factor (used for plotting)}
-
-\item{\code{List}}{of the terms in the effect matrices}
+\item{\code{ALASCA}}{List. Contains all model outputs: \code{score}, \code{loading}, \code{explained} and \code{significant_PCs}}
 }
 \if{html}{\out{</div>}}
 }
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{Name}}{of the grouping factor (used for plotting)}
+\item{\code{get_plot_group}}{Name of the grouping factor (used for plotting)}
 
-\item{\code{List}}{of the terms in the effect matrices}
+\item{\code{effect_terms}}{List of the terms in the effect matrices}
 }
 \if{html}{\out{</div>}}
 }
