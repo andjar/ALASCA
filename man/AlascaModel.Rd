@@ -402,6 +402,7 @@ The object builds the ALASCA model and contains the data
 \if{html}{\out{<a id="method-update"></a>}}
 \if{latex}{\out{\hypertarget{method-update}{}}}
 \subsection{Method \code{update()}}{
+Update the current model (used for validation)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$update()}\if{html}{\out{</div>}}
 }
@@ -430,10 +431,20 @@ Function for logging messages using the log4r package
 \if{html}{\out{<a id="method-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-plot}{}}}
 \subsection{Method \code{plot()}}{
+Main function for plots
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$plot(effect = 1, component = 1, ...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{effect}}{Integer or vector. Which(s) effect(s) to plot}
+
+\item{\code{component}}{Integer or vector. Which(s) component(s) to plot}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_residuals"></a>}}
