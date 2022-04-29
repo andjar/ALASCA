@@ -916,7 +916,6 @@ do_validate <- function() {
   self$log("Starting validation")
   
   start_time_all <- Sys.time()
-  
   self$get_validation_ids()
   
   temp_object <- lapply(seq_len(self$n_validation_runs), FUN = function(ii) {
@@ -1182,13 +1181,13 @@ get_validation_ids <- function() {
   
   if (is.null(self$validation_ids)) {
     self$log("Generating random validation sample", level = "DEBUG")
-    original_IDs <- unique(self$df_raw$data_df[, .SD, .SDcols = c(self$formula$ID, self$stratification_column)])
+    original_IDs <- unique(self$df_raw$df[, .SD, .SDcols = c(self$formula$ID, self$stratification_column)])
     colnames(original_IDs) <- c("ID", "group")
     
     if (self$validation_method == "bootstrap") {
       
       tmp <- lapply(unique(self$stratification_vector), function(strat_group) {
-        IDs_to_choose_from <- original_IDs[group == strat_group, ID]
+        IDs_to_choose_from <- as.integer(original_IDs[group == strat_group, ID])
         t(
           vapply(
             seq_len(self$n_validation_runs),

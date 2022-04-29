@@ -14,9 +14,9 @@ AlascaDataset <- R6::R6Class("AlascaDataset",
     reduced_df = list(
        loading = NULL
     ),
-    initialize = function(df, model) {
+    initialize = function(data_df, model) {
       self$model <- model
-      self$data_df <- df
+      self$data_df <- setDT(data_df)
       if (self$model$wide) {
         private$wide_to_long()
       }
@@ -34,12 +34,12 @@ AlascaDataset <- R6::R6Class("AlascaDataset",
       
       # Find stratification column from formula
       private$guess_stratification_column()
-      self$model$stratification_vector = self$df[, get(self$model$stratification_column)]
+      self$model$stratification_vector <- self$data_df[, get(self$model$stratification_column)]
       
       # Keep variable labels
       if (!is.null(self$model$splot$loading_group_column)) {
         self$model$formula$add(self$model$splot$loading_group_column)
-        self$model$variable_labels <- unique(self$df[, .SD, .SDcols = c("variable", self$model$splot$loading_group_column)])
+        self$model$variable_labels <- unique(self$data_df[, .SD, .SDcols = c("variable", self$model$splot$loading_group_column)])
         colnames(self$model$variable_labels) <- c("covars", "covargroup")
       }
       
@@ -64,7 +64,7 @@ AlascaDataset <- R6::R6Class("AlascaDataset",
       }
     },
     count_participants = function() {
-      wide_df <- dcast(data = self$data_df,
+      wide_df <- dcast(data = self$df,
                       as.formula(paste(
                          self$model$formula$ID, "+", self$model$stratification_column, "+variable",
                          "~",
@@ -86,27 +86,27 @@ AlascaDataset <- R6::R6Class("AlascaDataset",
         )
       
       list(
-        participants_by_group = self$data_df[, .(count = uniqueN(get(self$model$formula$ID))), by = get(self$model$stratification_column)],
+        participants_by_group = self$df[, .(count = uniqueN(get(self$model$formula$ID))), by = get(self$model$stratification_column)],
         cases_by_group = cases_by_group,
-        participants_by_effect_1 = self$data_df[, .(count = uniqueN(get(self$model$formula$ID))), by = get(self$model$effect_terms[[1]])],
+        participants_by_effect_1 = self$df[, .(count = uniqueN(get(self$model$formula$ID))), by = get(self$model$effect_terms[[1]])],
         participants_by_effect_1_and_group = ifelse(length(self$model$effect_terms) < 2, NULL,
           dcast(
-          data = self$data_df[, .(count = uniqueN(get(self$model$formula$ID))), by = c(self$model$effect_terms)],
+          data = self$df[, .(count = uniqueN(get(self$model$formula$ID))), by = c(self$model$effect_terms)],
           formula(paste(paste(self$model$effect_terms[[-1]], collapse = "+"), "~", self$model$effect_terms[[1]])),
           value.var = "count")),
         participants_by_variable_and_effect_1_and_group = dcast(
-            data = self$data_df[, .(count = uniqueN(get(self$model$formula$ID))), by = c("variable", self$model$effect_terms)],
+            data = self$df[, .(count = uniqueN(get(self$model$formula$ID))), by = c("variable", self$model$effect_terms)],
             formula(paste(paste(self$model$effect_terms, collapse = "+"), "~ variable")),
             value.var = "count"
           ),
         samples_by_variable_and_effect_1_and_group = dcast(
-            data = self$data_df[, .(count = .N), by = c("variable", self$model$effect_terms)],
+            data = self$df[, .(count = .N), by = c("variable", self$model$effect_terms)],
             formula(paste(paste(self$model$effect_terms, collapse = "+"), "~ variable")),
             value.var = "count"
           ),
         samples_by_participant = samples_by_participant,
         samples_by_participant_and_effect_1 = dcast(
-            data = self$data_df,
+            data = self$df,
             formula(paste(self$model$formula$ID, "+", self$model$effect_terms[[1]], "~ .")),
             value.var = "variable",
             fun.aggregate = length
@@ -131,13 +131,13 @@ AlascaDataset <- R6::R6Class("AlascaDataset",
       self$data_df <- melt(self$data_df,
                       id.vars = self$model$formula$all_terms, value.name = self$model$formula$lhs)
       
-      self$model$log(paste0("Found ", length(unique(self$df$variable))," variables"))
+      self$model$log(paste0("Found ", length(unique(self$data_df$variable))," variables"))
       self$model$wide <- FALSE
       
       #invisible(self)
     },
     check_against_formula = function() {
-      if(any(!self$model$formula$all_terms %in% colnames(self$data_df))){
+      if(any(!self$model$formula$all_terms %in% colnames(self$df))){
         self$model$log("Some formula terms does match with the provided data", level = "ERROR")
         stop()
       }

@@ -35,7 +35,6 @@ AlascaFormula <- R6::R6Class("AlascaFormula",
       self$additional_terms <- unique(c(self$additional_terms, new_term))
     },
     replace = function(old_term, new_term) {
-      # if (!is.null(self$random_terms)) {
       #   self$random_terms[self$random_terms == old_term] <- new_term
       # }
       # if (!is.null(self$fixed_terms)) {

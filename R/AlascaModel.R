@@ -190,15 +190,15 @@ AlascaModel <- R6::R6Class("AlascaModel",
       self$formula <- AlascaFormula$new(formula, model = self)
       
       # Keep a copy of unscaled data
-      self$df_raw <- AlascaDataset$new(df = setDT(df), model = self)
+      self$df_raw <- AlascaDataset$new(data_df = df, model = self)
       self$formula$get_regression_formula()
       self$my_df_rows <- self$df_raw$rows_to_serve
 
-      self$stratification_vector <- self$df_raw$data_df[, get(self$stratification_column)]
+      #self$stratification_vector <- self$df_raw$data_df[, get(self$stratification_column)]
       
       # Scale data
       self$get_scaling_function()
-      self$df <- self$scale_function(self$df_raw$data_df)
+      self$df <- self$scale_function(self$df_raw$df)
       
       self$get_pca_function()
       self$set_effect_terms()
@@ -244,6 +244,8 @@ AlascaModel <- R6::R6Class("AlascaModel",
         }
       }
     },
+    #' @description
+    #' Update the current model (used for validation)
     update = function() {
 
       ## Avoid recursion
@@ -272,6 +274,10 @@ AlascaModel <- R6::R6Class("AlascaModel",
         log4r::levellog(self$logger, level = level, message)
       }
     },
+    #' @description
+    #' Main function for plots
+    #' @param effect Integer or vector. Which(s) effect(s) to plot
+    #' @param component Integer or vector. Which(s) component(s) to plot
     plot = function(effect = 1, component = 1, ...) {
       self$splot$effect_i <- effect
       self$splot$component <- component
