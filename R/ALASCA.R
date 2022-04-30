@@ -1742,7 +1742,7 @@ plot_effect_score <- function(effect_i = 1, component = 1) {
                   linetype = self$group_label,
                   x = self$x_label,
                   y = self$get_explained_label(effect_i = effect_i, component = component, type= "Score")) +
-    self$my_theme
+    self$my_theme + self$xflip
   return(g)
 }
 
