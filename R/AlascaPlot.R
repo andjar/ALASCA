@@ -206,7 +206,8 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
             ggplot2::labs(color = self$loadinggroup_label, shape = self$loadinggroup_label)
         }
         
-        g <- g + labs(x = "Covariate", y = "Coefficient") + 
+        g <- g + ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
+          ggplot2::labs(x = "Covariate", y = "Coefficient") + 
           ggplot2::facet_wrap(~variable, scales = "free_y") + 
           self$my_theme + self$xflip
         
