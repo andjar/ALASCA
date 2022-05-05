@@ -23,7 +23,7 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
       file_counter = 1,
       linetypes = NULL,
       loading_group_column = NULL,
-      loadinggroup_label = "Variable group",
+      loading_group_label = "Variable group",
       sort_by_loading_group = TRUE,
       palette.end = 0.8,
       effect_i = 1,
@@ -203,7 +203,7 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
         
         if (!is.null(self$loading_group_column)) {
           g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
-            ggplot2::labs(color = self$loadinggroup_label, shape = self$loadinggroup_label)
+            ggplot2::labs(color = self$loading_group_label, shape = self$loading_group_label)
         }
         
         g <- g + ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
@@ -245,8 +245,8 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
       validate = function() self$model$validate,
       h = function() ifelse(is.null(self$height), self$dheight, self$height),
       w = function() ifelse(is.null(self$width), self$dwidth, self$width),
-      xflip = function() {
-        if (self$flip_axis) {
+      xflip = function(flip = TRUE) {
+        if (flip && self$flip_axis) {
           ggplot2::coord_flip()
         } else {
           ggplot2::theme(axis.text.x = ggplot2::element_text(angle = self$x_angle, vjust = self$x_v_just, hjust = self$x_h_just))

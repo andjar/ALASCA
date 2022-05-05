@@ -214,8 +214,16 @@ remove_embedded_data <- function() {
 #' @param scale_function.center Boolean. Mean centering
 #' @return A scaling function
 get_default_scaling_function <- function() {
+  
+  if (length(self$effect_terms) < 2) {
+    if (self$scale_function %in% c("sdref", "sdreft1"))
+    self$log(paste0("The scaling `", self$scale_function, "` has been replaced by `sdt1` as there is only one effect term. This corresponds to the column `", self$effect_terms[[1]], "`"), level = "WARN")
+    self$scale_function <- "sdt1"
+  }
+  
   scale_function_string <- self$scale_function
   scale_function.center <- self$scale_function.center
+  
   if (scale_function_string == "sdall") {
     if (scale_function.center) {
       self$scale_function <- function(df) {
@@ -232,36 +240,36 @@ get_default_scaling_function <- function() {
     if (scale_function.center) {
       self$scale_function <- function(df) {
         # Scale by the SD of all rows in the refence group
-        df[, value := as.double(value)][, value := (value-mean(value)) / sd(value[group == levels(group)[1]]), by = variable]
+        df[, value := as.double(value)][, value := (value-mean(value)) / sd(value[get(self$effect_terms[[2]]) == self$get_ref(self$effect_terms[[2]])]), by = variable]
       }
     } else {
       self$scale_function <- function(df) {
         # Scale by the SD of all rows in the refence group
-        df[, value := as.double(value)][, value := value / sd(value[group == levels(group)[1]]), by = variable]
+        df[, value := as.double(value)][, value := value / sd(value[get(self$effect_terms[[2]]) == self$get_ref(self$effect_terms[[2]])]), by = variable]
       }
     }
   } else if (scale_function_string == "sdt1") {
     if (scale_function.center) {
       self$scale_function <- function(df) {
         # Scale by the SD of all baseline rows
-        df[, value := as.double(value)][, value := (value - mean(value)) / sd(value[time == levels(time)[1]]), by = variable]
+        df[, value := as.double(value)][, value := (value - mean(value)) / sd(value[get(self$effect_terms[[1]]) == self$get_ref(self$effect_terms[[1]])]), by = variable]
       }
     } else {
       self$scale_function <- function(df) {
         # Scale by the SD of all baseline rows
-        df[, value := as.double(value)][, value := value / sd(value[time == levels(time)[1]]), by = variable]
+        df[, value := as.double(value)][, value := value / sd(value[get(self$effect_terms[[1]]) == self$get_ref(self$effect_terms[[1]])]), by = variable]
       }
     }
   } else if (scale_function_string == "sdreft1") {
     if (scale_function.center) {
       self$scale_function <- function(df) {
         # Scale by the SD of all baseline rows in the reference group
-        df[, value := as.double(value)][, value := (value - mean(value)) / sd(value[group == levels(group)[1] & time == levels(time)[1]]), by = variable]
+        df[, value := as.double(value)][, value := (value - mean(value)) / sd(value[get(self$effect_terms[[1]]) == self$get_ref(self$effect_terms[[1]]) & get(self$effect_terms[[2]]) == self$get_ref(self$effect_terms[[2]])]), by = variable]
       }
     } else {
       self$scale_function <- function(df) {
         # Scale by the SD of all baseline rows in the reference group
-        df[, value := as.double(value)][, value := value / sd(value[group == levels(group)[1] & time == levels(time)[1]]), by = variable]
+        df[, value := as.double(value)][, value := value / sd(value[get(self$effect_terms[[1]]) == self$get_ref(self$effect_terms[[1]]) & get(self$effect_terms[[2]]) == self$get_ref(self$effect_terms[[2]])]), by = variable]
       }
     }
   } else {
@@ -656,7 +664,7 @@ remove_covars <- function() {
 #' @return An ALASCA object
 get_effect_matrix <- function() {
   if (!self$minimize_object) {
-    self$log("Calculating effect matrix")
+    self$log("Calculating effect matrix", level = "DEBUG")
   }
   #stop()
   reg_coefs <- dcast(self$regression_coefficients, variable~covar, value.var = "estimate")
@@ -667,7 +675,7 @@ get_effect_matrix <- function() {
   )
   
   if (!self$minimize_object) {
-    self$log("-> Finished calculating effect matrix!")
+    self$log("-> Finished calculating effect matrix!", level = "DEBUG")
   }
   #invisible(self)
 }
@@ -1150,7 +1158,7 @@ get_validation_percentiles_score <- function(objectlist) {
 get_regression_predictions <- function() {
   if (!self$minimize_object) {
     # This is not a validation run
-    self$log("Calculating predictions from regression models")
+    self$log("Calculating predictions from regression models", level = "DEBUG")
   }
   
   regCoeffAll <- dcast(data = self[["regression_coefficients"]], variable~covar, value.var = "estimate")
@@ -1172,7 +1180,7 @@ get_regression_predictions <- function() {
   
   if (!self$minimize_object) {
     # This is not a validation run
-    self$log("-> Finished calculating predictions from regression models!")
+    self$log("-> Finished calculating predictions from regression models!", level = "DEBUG")
   }
   #invisible(self)
 }
@@ -1742,7 +1750,7 @@ plot_effect_score <- function(effect_i = 1, component = 1) {
                   linetype = self$group_label,
                   x = self$x_label,
                   y = self$get_explained_label(effect_i = effect_i, component = component, type= "Score")) +
-    self$my_theme + self$xflip
+    self$my_theme + self$xflip(flip = FALSE)
   return(g)
 }
 
@@ -1792,7 +1800,7 @@ plot_effect_loading <- function(effect_i = 1, component = 1) {
   
   if (!is.null(self$loading_group_column)) {
     g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
-      ggplot2::labs(color = self$loadinggroup_label, shape = self$loadinggroup_label)
+      ggplot2::labs(color = self$loading_group_label, shape = self$loading_group_label)
   }
   
   return(g)
@@ -1927,7 +1935,7 @@ plot_effect_validation_score <- function(effect_i = 1, component = 1) {
                   linetype = self$group_label,
                   x = self$x_label,
                   y = self$get_explained_label(effect_i = effect_i, component = component, type= "Score")) +
-    self$my_theme
+    self$my_theme + self$xflip(flip = FALSE)
   return(g)
 }
 
@@ -1973,7 +1981,7 @@ plot_effect_validation_loading <- function(effect_i = 1, component = 1) {
   
   if (!is.null(self$loading_group_column)) {
     g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
-      ggplot2::labs(color = self$loadinggroup_label, shape = self$loadinggroup_label)
+      ggplot2::labs(color = self$loading_group_label, shape = self$loading_group_label)
   }
   
   return(g)

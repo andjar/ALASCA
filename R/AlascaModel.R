@@ -19,9 +19,9 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field ignore_missing_covars If TRUE, ignore missing covariate values
     ignore_missing_covars = FALSE,
     #' @field version Version number
-    version = "0.0.0.96",
+    version = "0.0.0.97",
     #' @field update_date Date of latest update
-    update_date = "2022-04-29",
+    update_date = "2022-05-05",
     
     # Effect matrices
     #' @field separate_effects If TRUE, try to separate the effects
@@ -188,6 +188,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
 
       # Process the formula
       self$formula <- AlascaFormula$new(formula, model = self)
+      self$set_effect_terms()
       
       # Keep a copy of unscaled data
       self$df_raw <- AlascaDataset$new(data_df = df, model = self)
@@ -201,7 +202,6 @@ AlascaModel <- R6::R6Class("AlascaModel",
       self$df <- self$scale_function(self$df_raw$df)
       
       self$get_pca_function()
-      self$set_effect_terms()
       self$splot$group <- self$get_plot_group
       
       self$validate <- self$validate || self$validation
