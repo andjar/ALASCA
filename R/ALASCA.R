@@ -1186,16 +1186,16 @@ get_regression_predictions <- function() {
 }
 
 get_validation_ids <- function() {
-  
   if (is.null(self$validation_ids)) {
     self$log("Generating random validation sample", level = "DEBUG")
+    
     original_IDs <- unique(self$df_raw$df[, .SD, .SDcols = c(self$formula$ID, self$stratification_column)])
     colnames(original_IDs) <- c("ID", "group")
     
     if (self$validation_method == "bootstrap") {
       
       tmp <- lapply(unique(self$stratification_vector), function(strat_group) {
-        IDs_to_choose_from <- as.integer(original_IDs[group == strat_group, ID])
+        IDs_to_choose_from <- original_IDs[group == strat_group, ID]
         t(
           vapply(
             seq_len(self$n_validation_runs),
@@ -1305,7 +1305,7 @@ get_bootstrap_data <- function(df_raw, participants_in_bootstrap, modmat) {
   self$log(paste("Length df:", nrow(self[["df"]])), level = "DEBUG")
   self$log(paste("First 10 rows:", paste0(selected_rows$row_nr[1:10], collapse = " - ")), level = "DEBUG")
   self$df[, uniqueIDforBootstrap := selected_rows$new_id]
-  self$df[, originalIDbeforeBootstrap := ID]
+  self$df[, originalIDbeforeBootstrap := get(self$formula$ID)]
   if (self$reduce_dimensions) {
     self$modmat <- NULL
   } else {
@@ -1796,7 +1796,7 @@ plot_effect_loading <- function(effect_i = 1, component = 1) {
   g <- g +
     ggplot2::labs(x = self$variable_label,
                   y = self$get_explained_label(effect_i = effect_i, component = component, type= "Loading")) +
-    self$my_theme + self$xflip
+    self$my_theme + self$xflip()
   
   if (!is.null(self$loading_group_column)) {
     g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
@@ -1977,7 +1977,7 @@ plot_effect_validation_loading <- function(effect_i = 1, component = 1) {
       ggplot2::labs(x = self$variable_label,
                     y = self$get_explained_label(effect_i = effect_i, component = component, type= "Loading")) +
       ggplot2::scale_alpha(range = c(0, 1)) +
-      self$my_theme + self$xflip
+      self$my_theme + self$xflip()
   
   if (!is.null(self$loading_group_column)) {
     g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +

@@ -17,6 +17,28 @@ AlascaDataset <- R6::R6Class("AlascaDataset",
     initialize = function(data_df, model) {
       self$model <- model
       self$data_df <- setDT(data_df)
+      
+      # Get ID column
+      if (self$model$formula$ID == "needs_to_add_ID") {
+        # No mixed effects + the participant_column has not been properly defined
+        if ("ID" %in% colnames(self$data_df)) {
+          self$model$participant_column <- "ID"
+        } else {
+          if (self$model$wide) {
+            self$data_df[ID := seq_len(nrow(self$data_df))]
+          } else {
+            self$model$log("Please provide a column with ID, either named `ID` or specify the `participant_column` argument", level = "ERROR")
+            stop()
+          }
+        }
+      }
+      
+      if (self$model$validate && typeof(self$data_df[[self$model$formula$ID]]) != "integer") {
+        self$model$log("Converting IDs to integer values", level = "WARN")
+        set(self$data_df, j = self$model$formula$ID, value = as.integer(as.factor(self$data_df[[self$model$formula$ID]])))
+      }
+      
+      # Convert from wide to long
       if (self$model$wide) {
         private$wide_to_long()
       }
@@ -45,9 +67,9 @@ AlascaDataset <- R6::R6Class("AlascaDataset",
       
       # Remove surplus columns
       self$data_df <- self$data_df[, .SD, .SDcols = c(self$model$formula$all_terms, "variable", self$model$formula$lhs)]
-      
       self$rows_to_serve <- seq_len(nrow(self$data_df))
-      self$IDs <- self$data_df$ID
+      
+      self$IDs <- self$data_df[[self$model$formula$ID]]
       self$rows_by_ID <- lapply(unique(self$IDs), function(x) which(x == self$IDs))
       names(self$rows_by_ID) <- unique(self$IDs)
       
@@ -153,7 +175,7 @@ AlascaDataset <- R6::R6Class("AlascaDataset",
         self$model$log("The `group` column is used for stratification", level = "WARN")
       } else if (is.null(self$model$stratification_column)) {
         self$model$stratification_column <- self$model$formula$all_fixed_terms[[1]]
-        self$model$log(paste("The `", self$model$formula$all_fixed_terms[[1]],"` column is used for stratification"), level = "WARN")
+        self$model$log(paste0("The `", self$model$formula$all_fixed_terms[[1]],"` column is used for stratification"), level = "WARN")
       }
     },
     find_missing_response_variables = find_missing_response_variables,

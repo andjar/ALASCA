@@ -209,7 +209,7 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
         g <- g + ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
           ggplot2::labs(x = "Covariate", y = "Coefficient") + 
           ggplot2::facet_wrap(~variable, scales = "free_y") + 
-          self$my_theme + self$xflip
+          self$my_theme + self$xflip()
         
         return(g)
       },
@@ -239,19 +239,19 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
         paste0(type, " PC", component, " (", round(100 * self$model$ALASCA$explained[[effect_i]][[component]], 2), "%)")
       },
       get_levels = function(x) self$model$get_levels(x),
-      get_ref = function(x) self$model$get_ref(x)
-    ),
-    active = list(
-      validate = function() self$model$validate,
-      h = function() ifelse(is.null(self$height), self$dheight, self$height),
-      w = function() ifelse(is.null(self$width), self$dwidth, self$width),
+      get_ref = function(x) self$model$get_ref(x),
       xflip = function(flip = TRUE) {
         if (flip && self$flip_axis) {
           ggplot2::coord_flip()
         } else {
           ggplot2::theme(axis.text.x = ggplot2::element_text(angle = self$x_angle, vjust = self$x_v_just, hjust = self$x_h_just))
         }
-      },
+      }
+    ),
+    active = list(
+      validate = function() self$model$validate,
+      h = function() ifelse(is.null(self$height), self$dheight, self$height),
+      w = function() ifelse(is.null(self$width), self$dwidth, self$width),
       effects = function() {
         if (length(self$effect_i) == 1 && self$effect_i == 0) {
           self$effect_i <- seq_along(self$model$ALASCA$loading)

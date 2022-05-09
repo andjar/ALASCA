@@ -71,8 +71,8 @@ AlascaFormula <- R6::R6Class("AlascaFormula",
     ID = function() {
       if (is.null(self$model$participant_column)) {
         if (length(self$random_terms) == 0) {
-          self$model$df_raw$df[, ID := seq_len(nrow(self$model$df_raw$df))]
-          self$model$participant_column <- "ID"
+          self$model$participant_column <- "needs_to_add_ID"
+          self$add("ID")
           self$model$participant_column
         } else if (length(self$random_terms) > 1) {
           self$model$log("Unable to find ID", level = "ERROR")
