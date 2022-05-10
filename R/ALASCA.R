@@ -640,13 +640,14 @@ remove_covars <- function() {
     }))
     
     if (self$reduce_dimensions) {
+      stop()
       self$covar_coefficients <- rbindlist(lapply(unique(self$covar_coefficients$variable), function(v){
         ref <- self$covar_coefficients[variable == v]
         list(
           variable = v,
-          covar = rownames(self$Limm$loadings),
+          covar = self$reduced_df$loading$covars,
           pvalue = NA,
-          estimate = rowSums(self$Limm$loadings*ref$estimate[match(colnames(self$Limm$loadings), ref$covar)][col(self$Limm$loadings)])
+          estimate = rowSums(self$reduced_df$loading[, -"covars"] * ref$estimate[match(colnames(self$reduced_df$loading[,-"covars"]), ref$covar)])
         )
       }))
     }
@@ -1031,7 +1032,7 @@ get_validation_percentiles_regression <- function(objectlist) {
 get_validation_percentiles_covars <- function(objectlist) {
   
   if (self$save_to_disk) {
-    res <- DBI::dbSendQuery(self$db_con, paste0("SELECT covars.variable, covars.estimate, covars.low, covars.high, variables.variable AS covar FROM covars
+    res <- DBI::dbSendQuery(self$db_con, paste0("SELECT covars.variable, covars.estimate, variables.variable AS covar FROM covars
                                                 LEFT JOIN variables
                                                 ON variables.id = covars.variable"))
     df <- setDT(DBI::dbFetch(res))
