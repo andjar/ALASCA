@@ -164,7 +164,7 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
         # Note: Here `variable` refers to the regression term and `covar` to the variable/marker/...
         
         if (self$n_limit > 0) {
-          self$model$log(paste("Only showing", self$n_limit*2, "variables. Adjust the number with `n_limit`"), level = "WARN")
+          self$model$log(paste("Showing", self$n_limit*2, "of",length(self$model$get_levels("variable")),"variables. Adjust the number with `n_limit`"), level = "WARN")
         }
         data_to_plot <- self$model$get_covars(n_limit = self$n_limit)
         
@@ -181,7 +181,8 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
         }
         
         # Sort terms
-        data_to_plot[, covar := factor(covar, levels = covar[order(estimate, decreasing = TRUE)])]
+        data_order_by <- data_to_plot[!duplicated(covar)]
+        data_to_plot[, covar := factor(covar, levels = data_order_by$covar[order(data_order_by$estimate, decreasing = TRUE)])]
         
         if (is.null(self$loading_group_column)) {
           if(self$model$validate) {

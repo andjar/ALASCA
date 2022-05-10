@@ -135,6 +135,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     modmat = NULL,
     cnames_modmat = NULL,
     covar_coefficients = NULL,
+    finished = FALSE,
     
     #' @field ALASCA List. Contains all model outputs: `score`, `loading`, `explained` and `significant_PCs`
     ALASCA = list(
@@ -217,7 +218,8 @@ AlascaModel <- R6::R6Class("AlascaModel",
           self$db_filename <- paste0(self$filepath, "ALASCA.db")
           self$db_con <- DBI::dbConnect(self$db_driver, dbname = self$db_filename)
         } else {
-          self$db_con <- DBI::dbConnect(duckdb::duckdb(), dbdir= paste0(self$filepath, "ALASCA.duckdb"), read_only=FALSE)
+          self$db_filename <- paste0(self$filepath, "ALASCA.duckdb")
+          self$db_con <- DBI::dbConnect(duckdb::duckdb(), dbdir= self$db_filename, read_only=FALSE)
         }
         DBI::dbWriteTable(self$db_con, "variables", 
             data.table(
@@ -386,7 +388,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @return The reference level
     get_ref = function(columns)  {
       vapply(columns, FUN = function(column) {
-        if (self$reduce_dimensions && column == "variable") {
+        if (self$reduce_dimensions && column == "variable" && !self$finished) {
           self$reduced_df[["variables"]][[1]]
         } else {
           self$df_raw$level_list[[column]][[1]]
@@ -398,7 +400,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @param column A column containing factors
     #' @return A vector with factor levels
     get_levels = function(column) {
-      if (self$reduce_dimensions && column == "variable") {
+      if (self$reduce_dimensions && column == "variable" && !self$finished) {
         self$reduced_df[["variables"]]
       } else {
         self$df_raw$level_list[[column]]

@@ -54,6 +54,7 @@ ALASCA <- function(df,
   }
   
   object$log("==== ALASCA has finished ====")
+  object$finished <- TRUE
   object$log("To visualize the model, try `plot(<object>, effect = 1, component = 1, type = 'effect')`")
   return(object)
 }
@@ -640,14 +641,13 @@ remove_covars <- function() {
     }))
     
     if (self$reduce_dimensions) {
-      stop()
       self$covar_coefficients <- rbindlist(lapply(unique(self$covar_coefficients$variable), function(v){
         ref <- self$covar_coefficients[variable == v]
         list(
           variable = v,
           covar = self$reduced_df$loading$covars,
           pvalue = NA,
-          estimate = rowSums(self$reduced_df$loading[, -"covars"] * ref$estimate[match(colnames(self$reduced_df$loading[,-"covars"]), ref$covar)])
+          estimate = as.matrix(self$reduced_df$loading[, -"covars"]) %*% as.matrix(ref$estimate[match(colnames(self$reduced_df$loading[,-"covars"]), ref$covar)])
         )
       }))
     }
@@ -1704,30 +1704,46 @@ plot_effect_score <- function(effect_i = 1, component = 1) {
   data_to_plot <- self$model$get_scores(effect_i = effect_i, component = component)
   colnames(data_to_plot)[colnames(data_to_plot) == effect_terms[[1]]] <- "x_data"
   
-  if (length(effect_terms) == 1) {
+  if (length(effect_terms) == 1 && self$model$method == "LMM") {
     # Use some reference
     data_to_plot[, group_data := self$model$get_ref(self$model$get_plot_group)]
-  } else  {
+  } else {
     if (self$make_group_column) {
       data_to_plot[, group_data := do.call(paste, c(.SD, sep = "-")), .SDcols = self$model$effect_terms[-1]]
     } else {
-      data_to_plot[, group_data := get(self$model$get_plot_group)]
+      if (self$model$get_plot_group %in% colnames(data_to_plot)) {
+        data_to_plot[, group_data := get(self$model$get_plot_group)]
+      } else {
+        data_to_plot[, group_data := x_data]
+      }
     }
   }
   
   if (self$validate) {
     # Validated model
-    g <- ggplot2::ggplot(data_to_plot,
-                         ggplot2::aes_string(x = "x_data",
-                                             y = "score",
-                                             group = "group_data",
-                                             color = "group_data",
-                                             linetype = "group_data",
-                                             ymin = "low",
-                                             ymax = "high")) +
-      ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = self$dodgewidth)) +
-      ggplot2::geom_line(position = ggplot2::position_dodge(width = self$dodgewidth))
-    if (self$ribbon) {
+    
+    if(self$model$method == "LMM") {
+      g <- ggplot2::ggplot(data_to_plot,
+                           ggplot2::aes_string(x = "x_data",
+                                               y = "score",
+                                               group = "group_data",
+                                               color = "group_data",
+                                               linetype = "group_data",
+                                               ymin = "low",
+                                               ymax = "high")) +
+        ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = self$dodgewidth)) +
+        ggplot2::geom_line(position = ggplot2::position_dodge(width = self$dodgewidth))
+    } else {
+      g <- ggplot2::ggplot(data_to_plot,
+                           ggplot2::aes_string(x = "x_data",
+                                               y = "score",
+                                               color = "group_data",
+                                               ymin = "low",
+                                               ymax = "high")) +
+        ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = self$dodgewidth))
+    }
+      
+    if (self$ribbon && self$model$method == "LMM") {
       g <- g + ggplot2::geom_ribbon(ggplot2::aes_string(fill = "group_data"),
                                     alpha = .1,
                                     position = ggplot2::position_dodge(width = self$dodgewidth), color = NA
@@ -1735,14 +1751,23 @@ plot_effect_score <- function(effect_i = 1, component = 1) {
     }
   } else {
     # No validation
-    g <- ggplot2::ggplot(data_to_plot,
-                         ggplot2::aes_string(x = "x_data",
-                                             y = "score",
-                                             linetype = "group_data",
-                                             group = "group_data",
-                                             color = "group_data")) +
-      ggplot2::geom_point() +
-      ggplot2::geom_line()
+    
+    if (self$model$method == "LMM") {
+      g <- ggplot2::ggplot(data_to_plot,
+                           ggplot2::aes_string(x = "x_data",
+                                               y = "score",
+                                               linetype = "group_data",
+                                               group = "group_data",
+                                               color = "group_data")) +
+        ggplot2::geom_point() +
+        ggplot2::geom_line()
+    } else {
+      g <- ggplot2::ggplot(data_to_plot,
+                           ggplot2::aes_string(x = "x_data",
+                                               y = "score",
+                                               color = "group_data")) +
+        ggplot2::geom_point()
+    }
   }
   g <- g +
     ggplot2::scale_color_manual(values = self$get_plot_palette()) +
@@ -1905,14 +1930,18 @@ plot_effect_validation_score <- function(effect_i = 1, component = 1) {
   data_to_plot <- rbind(data_to_plot, data_to_add)
   colnames(data_to_plot)[colnames(data_to_plot) == effect_terms[[1]]] <- "x_data"
   
-  if (length(effect_terms) == 1) {
+  if (length(effect_terms) == 1 && self$model$method == "LMM") {
     # Use some reference
     data_to_plot[, group_data := self$model$get_ref(self$model$get_plot_group)]
-  } else  {
+  } else {
     if (self$make_group_column) {
       data_to_plot[, group_data := do.call(paste, c(.SD, sep = "-")), .SDcols = self$model$effect_terms[-1]]
     } else {
-      data_to_plot[, group_data := get(self$model$get_plot_group)]
+      if (self$model$get_plot_group %in% colnames(data_to_plot)) {
+        data_to_plot[, group_data := get(self$model$get_plot_group)]
+      } else {
+        data_to_plot[, group_data := x_data]
+      }
     }
   }
   
@@ -2135,14 +2164,18 @@ plot_2D_score <- function() {
   data_to_plot$PC <- paste0("PC_", data_to_plot$PC)
   colnames(data_to_plot)[colnames(data_to_plot) == effect_terms[[1]]] <- "x_data"
   
-  if (length(effect_terms) == 1) {
+  if (length(effect_terms) == 1 && self$model$method == "LMM") {
     # Use some reference
     data_to_plot[, group_data := self$model$get_ref(self$model$get_plot_group)]
-  } else  {
+  } else {
     if (self$make_group_column) {
       data_to_plot[, group_data := do.call(paste, c(.SD, sep = "-")), .SDcols = self$model$effect_terms[-1]]
     } else {
-      data_to_plot[, group_data := get(self$model$get_plot_group)]
+      if (self$model$get_plot_group %in% colnames(data_to_plot)) {
+        data_to_plot[, group_data := get(self$model$get_plot_group)]
+      } else {
+        data_to_plot[, group_data := x_data]
+      }
     }
   }
   
@@ -2234,14 +2267,18 @@ plot_histogram_score <- function() {
   colnames(data_to_plot)[colnames(data_to_plot) == effect_terms[[1]]] <- "x_data"
   data_to_plot[, x_data := paste0(self$x_label, ": ", x_data)]
   
-  if (length(effect_terms) == 1) {
+  if (length(effect_terms) == 1 && self$model$method == "LMM") {
     # Use some reference
     data_to_plot[, group_data := self$model$get_ref(self$model$get_plot_group)]
-  } else  {
+  } else {
     if (self$make_group_column) {
       data_to_plot[, group_data := do.call(paste, c(.SD, sep = "-")), .SDcols = self$model$effect_terms[-1]]
     } else {
-      data_to_plot[, group_data := get(self$model$get_plot_group)]
+      if (self$model$get_plot_group %in% colnames(data_to_plot)) {
+        data_to_plot[, group_data := get(self$model$get_plot_group)]
+      } else {
+        data_to_plot[, group_data := x_data]
+      }
     }
   }
   
