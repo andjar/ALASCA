@@ -726,10 +726,10 @@ do_reduce_dimensions <- function(){
     self$log("Reducing the number of dimensions with PCA")
   }
   
-  wide_data <- dcast(data = self$df, paste(self$formula$ID, "~ variable"), value.var = "value", drop = TRUE)
+  wide_data <- dcast(data = self$df, paste(self$formula$all_formula_terms, "~ variable"), value.var = "value", drop = TRUE)
   
   temp_pca_values <- self$function.pca(
-    wide_data[, .SD, .SDcols = -self$formula$ID],
+    wide_data[, .SD, .SDcols = -self$formula$all_formula_terms],
     center = !self$scale_function.center
   )
   
@@ -779,14 +779,14 @@ do_reduce_dimensions <- function(){
   self$reduced_df$loading <- temp_pca_values$rotation
   self$reduced_df$score <- temp_pca_values$x
   self$reduced_df$df <- self$df
-  self$df <- melt(data = cbind(wide_data[, .SD, .SDcols = self$formula$ID], self$reduced_df$score),
-                  id.vars = self$formula$ID, variable.factor = FALSE)
+  self$df <- melt(data = cbind(wide_data[, .SD, .SDcols = self$formula$all_formula_terms], self$reduced_df$score),
+                  id.vars = self$formula$all_formula_terms, variable.factor = FALSE)
   if (is.null(self$splot$loading_group_column)) {
-    self$df <- merge(self$df, self$reduced_df$df[, .SD, .SDcols = self$formula$all_terms], by = self$formula$ID, all.x = TRUE, all.y = FALSE)
+    self$df <- merge(self$df, self$reduced_df$df[, .SD, .SDcols = self$formula$all_terms], by = self$formula$all_formula_terms, all.x = TRUE, all.y = FALSE)
   } else {
     self$df <- merge(self$df, unique(self$reduced_df$df[, .SD, .SDcols = self$formula$all_terms[
       self$formula$all_terms != self$splot$loading_group_column]
-      ]), by = self$formula$ID, all = TRUE)
+      ]), by = self$formula$all_formula_terms, all = TRUE)
     if (any(is.na(self$df$value))) {
       self$log("Something went wrong. Check your data set for duplicated values", level = "ERROR")
       stop()

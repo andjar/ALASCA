@@ -68,6 +68,13 @@ AlascaFormula <- R6::R6Class("AlascaFormula",
           self$additional_terms)
       )
     },
+    all_formula_terms = function() {
+      unique(
+        c(self$fixed_terms,
+          unlist(strsplit(gsub("1\\||\\(|\\)", "", self$random_terms), split = "\\|"))
+          )
+      )
+    },
     ID = function() {
       if (is.null(self$model$participant_column)) {
         if (length(self$random_terms) == 0) {

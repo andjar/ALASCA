@@ -518,7 +518,7 @@ The reference level
 \subsection{Method \code{get_levels()}}{
 Returns all the levels of a given column
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_levels(column)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_levels(column, reduced = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
