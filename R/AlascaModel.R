@@ -61,7 +61,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field validation_ids A data frame where each row contains the ids for one validation iteration
     validation_ids = NULL,
     validation_object = NA,
-    validation_assign_new_ids = FALSE,
+    validation_assign_new_ids = TRUE,
     validation_participants = NA,
     #' @field limitsCI Lower and upper quantile to use for validation
     limitsCI = c(0.025, 0.975),
@@ -221,10 +221,11 @@ AlascaModel <- R6::R6Class("AlascaModel",
           self$db_filename <- paste0(self$filepath, "ALASCA.duckdb")
           self$db_con <- DBI::dbConnect(duckdb::duckdb(), dbdir= self$db_filename, read_only=FALSE)
         }
+        
         DBI::dbWriteTable(self$db_con, "variables", 
             data.table(
-              id = seq_along(self$get_levels("variable")),
-              variable = self$get_levels("variable")
+              id = seq_along(self$get_levels("variable", reduced = FALSE)),
+              variable = self$get_levels("variable", reduced = FALSE)
             ))
       }
       
@@ -399,8 +400,8 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' Returns all the levels of a given column
     #' @param column A column containing factors
     #' @return A vector with factor levels
-    get_levels = function(column) {
-      if (self$reduce_dimensions && column == "variable" && !self$finished) {
+    get_levels = function(column, reduced = TRUE) {
+      if (self$reduce_dimensions && reduced && column == "variable" && !self$finished) {
         self$reduced_df[["variables"]]
       } else {
         self$df_raw$level_list[[column]]
@@ -534,7 +535,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
             self$ALASCA$loading[[i]],
             model = ii,
             effect = i
-          )[, covars := factor(covars, levels = self$get_levels("variable"))][, covars := as.integer(covars)],
+          )[, covars := factor(covars, levels = self$get_levels("variable", reduced = FALSE))][, covars := as.integer(covars)],
         append = TRUE)
         
         DBI::dbWriteTable(self$db_con, "score",
@@ -558,7 +559,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
         data.table(
           self$model_prediction,
           model = ii
-        )[, variable := factor(variable, levels = self$get_levels("variable"))][, variable := as.integer(variable)], append = TRUE)
+        )[, variable := factor(variable, levels = self$get_levels("variable", reduced = FALSE))][, variable := as.integer(variable)], append = TRUE)
       self$model_prediction <- NULL
       
       if(length(self$covar_coefficients) > 0) {
@@ -566,7 +567,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
                           data.table(
                             self$covar_coefficients,
                             model = ii
-                          )[, variable := factor(variable, levels = self$get_levels("variable"))][, variable := as.integer(variable)], append = TRUE)
+                          )[, covar := factor(covar, levels = self$get_levels("variable", reduced = FALSE))][, covar := as.integer(covar)], append = TRUE)
         self$covar_coefficients <- NULL
       }
       

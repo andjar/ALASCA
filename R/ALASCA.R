@@ -726,10 +726,10 @@ do_reduce_dimensions <- function(){
     self$log("Reducing the number of dimensions with PCA")
   }
   
-  wide_data <- dcast(data = self$df, ... ~ variable)
+  wide_data <- dcast(data = self$df, paste(self$formula$ID, "~ variable"), value.var = "value", drop = TRUE)
   
   temp_pca_values <- self$function.pca(
-    wide_data[, .SD, .SDcols = -self$formula$all_terms],
+    wide_data[, .SD, .SDcols = -self$formula$ID],
     center = !self$scale_function.center
   )
   
@@ -779,8 +779,20 @@ do_reduce_dimensions <- function(){
   self$reduced_df$loading <- temp_pca_values$rotation
   self$reduced_df$score <- temp_pca_values$x
   self$reduced_df$df <- self$df
-  self$df <- melt(data = cbind(wide_data[, .SD, .SDcols = self$formula$all_terms], self$reduced_df$score),
-                  id.vars = self$formula$all_terms, variable.factor = FALSE)
+  self$df <- melt(data = cbind(wide_data[, .SD, .SDcols = self$formula$ID], self$reduced_df$score),
+                  id.vars = self$formula$ID, variable.factor = FALSE)
+  if (is.null(self$splot$loading_group_column)) {
+    self$df <- merge(self$df, self$reduced_df$df[, .SD, .SDcols = self$formula$all_terms], by = self$formula$ID, all.x = TRUE, all.y = FALSE)
+  } else {
+    self$df <- merge(self$df, unique(self$reduced_df$df[, .SD, .SDcols = self$formula$all_terms[
+      self$formula$all_terms != self$splot$loading_group_column]
+      ]), by = self$formula$ID, all = TRUE)
+    if (any(is.na(self$df$value))) {
+      self$log("Something went wrong. Check your data set for duplicated values", level = "ERROR")
+      stop()
+    }
+  }
+  
   #if (!self$minimize_object) {
   #  self$raw_data$modmat
   #}
@@ -1034,7 +1046,7 @@ get_validation_percentiles_covars <- function(objectlist) {
   if (self$save_to_disk) {
     res <- DBI::dbSendQuery(self$db_con, paste0("SELECT covars.variable, covars.estimate, variables.variable AS covar FROM covars
                                                 LEFT JOIN variables
-                                                ON variables.id = covars.variable"))
+                                                ON variables.id = covars.covar"))
     df <- setDT(DBI::dbFetch(res))
     DBI::dbClearResult(res)
   } else {
