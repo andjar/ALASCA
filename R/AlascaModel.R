@@ -538,12 +538,17 @@ AlascaModel <- R6::R6Class("AlascaModel",
           )[, covars := factor(covars, levels = self$get_levels("variable", reduced = FALSE))][, covars := as.integer(covars)],
         append = TRUE)
         
+        scores_to_append <- data.table(
+          self$ALASCA$score[[i]],
+          model = ii,
+          effect = i
+        )
+        for (new_cols in self$effect_terms[!self$effect_terms %in% colnames(scores_to_append)]) {
+          set(scores_to_append, j = new_cols, value = NA)
+        }
+        
         DBI::dbWriteTable(self$db_con, "score",
-          data.table(
-            self$ALASCA$score[[i]],
-            model = ii,
-            effect = i
-          ), append = TRUE)
+                          scores_to_append, append = TRUE)
         
         DBI::dbWriteTable(self$db_con, "explained",
                           data.table(
