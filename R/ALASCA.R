@@ -196,7 +196,6 @@ remove_embedded_data <- function() {
   self$bootPartID <- self$df$originalIDbeforeBootstrap
   self$df <- NULL
   self$parts <- NULL
-  self$validation_participants <- NULL
   self$stratification_vector <- NULL
   self$parts_with_variable <- NULL
   self$validation_self <- NULL

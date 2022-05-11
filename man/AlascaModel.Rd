@@ -51,6 +51,8 @@ The object builds the ALASCA model and contains the data
 
 \item{\code{validation_ids}}{A data frame where each row contains the ids for one validation iteration}
 
+\item{\code{validation_ids}}{Logical. Assign new IDs during validation. Must be \code{TRUE} for reduce_dimensions to work}
+
 \item{\code{limitsCI}}{Lower and upper quantile to use for validation}
 
 \item{\code{compress_validation}}{Integer between 0 and 100. See \code{\link[fst:write_fst]{fst::write_fst()}} for details}
@@ -77,6 +79,8 @@ The object builds the ALASCA model and contains the data
 
 \item{\code{p_adjust_method}}{String. See \code{\link[stats:p.adjust]{stats::p.adjust()}}}
 
+\item{\code{participant_column}}{String. The column used for IDs. If not provided, it will guess based on random effect or \code{ID}}
+
 \item{\code{stratification_column}}{String. Name of the column to use for stratification during validation}
 
 \item{\code{explanatory_limit}}{Only validate components explaining more than \code{explanatory_limit} of the variance}
@@ -88,6 +92,8 @@ The object builds the ALASCA model and contains the data
 \item{\code{log_level}}{String. What level of log messages to print; \code{"DEBUG"}, \code{"INFO"}, \code{"WARN"}, \code{"ERROR"}}
 
 \item{\code{do_debug}}{Boolean. Log more details}
+
+\item{\code{finished}}{Boolean. Indicates whether the model has been successfully initiated}
 
 \item{\code{ALASCA}}{List. Contains all model outputs: \code{score}, \code{loading}, \code{explained} and \code{significant_PCs}}
 }
@@ -450,6 +456,7 @@ Main function for plots
 \if{html}{\out{<a id="method-get_residuals"></a>}}
 \if{latex}{\out{\hypertarget{method-get_residuals}{}}}
 \subsection{Method \code{get_residuals()}}{
+Resample participants for validation
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_residuals(variable = NULL)}\if{html}{\out{</div>}}
 }
@@ -525,6 +532,8 @@ Returns all the levels of a given column
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{column}}{A column containing factors}
+
+\item{\code{reduced}}{Boolean. If \code{TRUE}, returns the PCs instead of actual variables if dimensions are reduced with PCA}
 }
 \if{html}{\out{</div>}}
 }
@@ -565,19 +574,41 @@ A vector with principal components
 \if{html}{\out{<a id="method-get_scores"></a>}}
 \if{latex}{\out{\hypertarget{method-get_scores}{}}}
 \subsection{Method \code{get_scores()}}{
+Return scores
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_scores(effect_i = 1, component = 1)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{effect_i}}{The effect to reflect, \code{0} or \code{NULL} reflects the entire model}
+
+\item{\code{component}}{The component to reflect, \code{0} or \code{NULL} reflects the entire model}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_loadings"></a>}}
 \if{latex}{\out{\hypertarget{method-get_loadings}{}}}
 \subsection{Method \code{get_loadings()}}{
+Return loadings
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_loadings(effect_i = 1, component = 1, n_limit = 0)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{effect_i}}{The effect to reflect, \code{0} or \code{NULL} reflects the entire model}
+
+\item{\code{component}}{The component to reflect, \code{0} or \code{NULL} reflects the entire model}
+
+\item{\code{n_limit}}{Return only two times this number of loadings (the \code{n_limit} highest and lowest loadings). Use \code{0} to return all (default)}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_covars"></a>}}
@@ -587,6 +618,13 @@ A vector with principal components
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_covars(n_limit = 0)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{n_limit}}{Return only two times this number of coefficients (the \code{n_limit} highest and lowest coefficients). Use \code{0} to return all (default)}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-print_version"></a>}}
@@ -622,7 +660,7 @@ Write scores, loadings, covars and predictions from validation run to database a
 \if{html}{\out{<a id="method-save_to_csv"></a>}}
 \if{latex}{\out{\hypertarget{method-save_to_csv}{}}}
 \subsection{Method \code{save_to_csv()}}{
-Save scores, loading, covars and predictions to csv files
+Save scores, loading, covars, and predictions to csv files
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$save_to_csv()}\if{html}{\out{</div>}}
 }
@@ -632,6 +670,7 @@ Save scores, loading, covars and predictions to csv files
 \if{html}{\out{<a id="method-save_model"></a>}}
 \if{latex}{\out{\hypertarget{method-save_model}{}}}
 \subsection{Method \code{save_model()}}{
+Save model to RDS and scores, loading, covars, and predictions to csv files
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$save_model()}\if{html}{\out{</div>}}
 }
@@ -641,19 +680,35 @@ Save scores, loading, covars and predictions to csv files
 \if{html}{\out{<a id="method-rotate_matrix_optimize_score"></a>}}
 \if{latex}{\out{\hypertarget{method-rotate_matrix_optimize_score}{}}}
 \subsection{Method \code{rotate_matrix_optimize_score()}}{
+Rotate model loadings and scores with procrustes. This function checks all combinations of signs to minimize variation
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$rotate_matrix_optimize_score(target)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{target}}{Rotate model (\code{self}) with this as target}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-rotate_matrix"></a>}}
 \if{latex}{\out{\hypertarget{method-rotate_matrix}{}}}
 \subsection{Method \code{rotate_matrix()}}{
+Rotate model loadings and scores with procrustes
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$rotate_matrix(target)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{target}}{Rotate model (\code{self}) with this as target}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}

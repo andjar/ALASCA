@@ -61,8 +61,8 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field validation_ids A data frame where each row contains the ids for one validation iteration
     validation_ids = NULL,
     validation_object = NA,
+    #' @field validation_ids Logical. Assign new IDs during validation. Must be `TRUE` for reduce_dimensions to work
     validation_assign_new_ids = TRUE,
-    validation_participants = NA,
     #' @field limitsCI Lower and upper quantile to use for validation
     limitsCI = c(0.025, 0.975),
     #' @field compress_validation Integer between 0 and 100. See [fst::write_fst()] for details
@@ -105,6 +105,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     use_Rfast = TRUE,
     #' @field p_adjust_method String. See [stats::p.adjust()]
     p_adjust_method = NULL,
+    #' @field participant_column String. The column used for IDs. If not provided, it will guess based on random effect or `ID`
     participant_column = NULL,
     
     scale_function.center = FALSE,
@@ -135,6 +136,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     modmat = NULL,
     cnames_modmat = NULL,
     covar_coefficients = NULL,
+    #' @field finished Boolean. Indicates whether the model has been successfully initiated
     finished = FALSE,
     
     #' @field ALASCA List. Contains all model outputs: `score`, `loading`, `explained` and `significant_PCs`
@@ -286,6 +288,8 @@ AlascaModel <- R6::R6Class("AlascaModel",
       self$splot$component <- component
       self$splot$call_plot(...)
     },
+    #' @description
+    #' Resample participants for validation
     get_validation_ids = get_validation_ids,
     get_residuals = function(variable = NULL) {
       if (self$use_Rfast) {
@@ -399,6 +403,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @description
     #' Returns all the levels of a given column
     #' @param column A column containing factors
+    #' @param reduced Boolean. If `TRUE`, returns the PCs instead of actual variables if dimensions are reduced with PCA
     #' @return A vector with factor levels
     get_levels = function(column, reduced = TRUE) {
       if (self$reduce_dimensions && reduced && column == "variable" && !self$finished) {
@@ -425,6 +430,10 @@ AlascaModel <- R6::R6Class("AlascaModel",
       }
       return(predictions)
     },
+    #' @description
+    #' Return scores
+    #' @param effect_i The effect to reflect, `0` or `NULL` reflects the entire model
+    #' @param component The component to reflect, `0` or `NULL` reflects the entire model
     get_scores = function(effect_i = 1, component = 1) {
       if (length(effect_i) == 1) {
         if (effect_i < 1) {
@@ -437,6 +446,11 @@ AlascaModel <- R6::R6Class("AlascaModel",
         lapply(effect_i, function(i) self$ALASCA$score[[i]][PC %in% component])
       }
     },
+    #' @description
+    #' Return loadings
+    #' @param effect_i The effect to reflect, `0` or `NULL` reflects the entire model
+    #' @param component The component to reflect, `0` or `NULL` reflects the entire model
+    #' @param n_limit Return only two times this number of loadings (the `n_limit` highest and lowest loadings). Use `0` to return all (default)
     get_loadings = function(effect_i = 1, component = 1, n_limit = 0) {
       if (n_limit > 0) {
         # Fetch top and bottom for each requested effect and component
@@ -482,6 +496,8 @@ AlascaModel <- R6::R6Class("AlascaModel",
         }
       }
     },
+    #' @description
+    #' @param n_limit Return only two times this number of coefficients (the `n_limit` highest and lowest coefficients). Use `0` to return all (default)
     get_covars = function(n_limit = 0) {
       if (n_limit > 0) {
         rbindlist(lapply(unique(self$covar_coefficients$variable), function(x){
@@ -543,8 +559,9 @@ AlascaModel <- R6::R6Class("AlascaModel",
           model = ii,
           effect = i
         )
+        
         for (new_cols in self$effect_terms[!self$effect_terms %in% colnames(scores_to_append)]) {
-          set(scores_to_append, j = new_cols, value = NA)
+          set(scores_to_append, j = new_cols, value = self$get_ref(new_cols))
         }
         
         DBI::dbWriteTable(self$db_con, "score",
@@ -576,6 +593,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
         self$covar_coefficients <- NULL
       }
       
+      
     #   for (i in seq_along(self$ALASCA$score)) {
     #     fst::write_fst(self$ALASCA$score[[i]], paste0("val/iteration_", ii, "_effect_", i, "_score.fst"))
     #     fst::write_fst(self$ALASCA$loading[[i]], paste0("val/iteration_", ii, "_effect_", i, "_loading.fst"))
@@ -585,7 +603,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     get_validation_scores = get_validation_scores,
     get_validation_loadings = get_validation_loadings,
     #' @description
-    #' Save scores, loading, covars and predictions to csv files
+    #' Save scores, loading, covars, and predictions to csv files
     save_to_csv = function() {
       for(i in seq_along(self$ALASCA$loading)) {
         fwrite(self$ALASCA$loading[[i]],
@@ -604,11 +622,16 @@ AlascaModel <- R6::R6Class("AlascaModel",
                paste0(self$filepath, "covars.csv"))
       }
     },
+    #' @description
+    #' Save model to RDS and scores, loading, covars, and predictions to csv files
     save_model = function() {
       self$log("Exporting data")
       self$save_to_csv()
       saveRDS(self, paste0(self$filepath, self$filename, ".RDS"))
     },
+    #' @description
+    #' Rotate model loadings and scores with procrustes. This function checks all combinations of signs to minimize variation
+    #' @param target Rotate model (`self`) with this as target
     rotate_matrix_optimize_score = function(target) {
       target$log("Starting rotation", level = "DEBUG")
       
@@ -659,7 +682,9 @@ AlascaModel <- R6::R6Class("AlascaModel",
       
       #invisible(self)
     },
-    
+    #' @description
+    #' Rotate model loadings and scores with procrustes
+    #' @param target Rotate model (`self`) with this as target
     rotate_matrix = function(target) {
       target$log("Starting rotation (not optimized)", level = "DEBUG")
       for (effect_i in seq_along(self$ALASCA$loading)) {
