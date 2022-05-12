@@ -724,11 +724,11 @@ do_reduce_dimensions <- function(){
   if (!self$minimize_object) {
     self$log("Reducing the number of dimensions with PCA")
   }
-  
-  wide_data <- dcast(data = self$df, paste(paste(self$formula$all_formula_terms, collapse = " + "), "~ variable"), value.var = "value")
+  terms_to_use_for_identification <- c(self$formula$ID, self$formula$all_formula_terms)
+  wide_data <- dcast(data = self$df, paste(paste(terms_to_use_for_identification, collapse = " + "), "~ variable"), value.var = "value")
   
   temp_pca_values <- self$function.pca(
-    wide_data[, .SD, .SDcols = -self$formula$all_formula_terms],
+    wide_data[, .SD, .SDcols = -terms_to_use_for_identification],
     center = !self$scale_function.center
   )
   
@@ -778,12 +778,12 @@ do_reduce_dimensions <- function(){
   self$reduced_df$loading <- temp_pca_values$rotation
   self$reduced_df$score <- temp_pca_values$x
   self$reduced_df$df <- self$df
-  self$df <- melt(data = cbind(wide_data[, .SD, .SDcols = self$formula$all_formula_terms], self$reduced_df$score),
-                  id.vars = self$formula$all_formula_terms, variable.factor = FALSE)
+  self$df <- melt(data = cbind(wide_data[, .SD, .SDcols = terms_to_use_for_identification], self$reduced_df$score),
+                  id.vars = terms_to_use_for_identification, variable.factor = FALSE)
   if (is.null(self$splot$loading_group_column)) {
     self$df <- merge(self$df,
                      unique(self$reduced_df$df[, .SD, .SDcols = self$formula$all_terms]),
-                     by = self$formula$all_formula_terms,
+                     by = terms_to_use_for_identification,
                      all = TRUE)
   } else {
     self$df <- merge(self$df,
@@ -791,7 +791,7 @@ do_reduce_dimensions <- function(){
                           self$formula$all_terms != self$splot$loading_group_column]
                         ]
                       ),
-      by = self$formula$all_formula_terms,
+      by = terms_to_use_for_identification,
       all = TRUE)
     if (any(is.na(self$df$value))) {
       self$log("Something went wrong. Check your data set for duplicated values", level = "ERROR")
