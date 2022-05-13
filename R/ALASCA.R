@@ -724,7 +724,7 @@ do_reduce_dimensions <- function(){
   if (!self$minimize_object) {
     self$log("Reducing the number of dimensions with PCA")
   }
-  terms_to_use_for_identification <- c(self$formula$ID, self$formula$all_formula_terms)
+  terms_to_use_for_identification <- unique(c(self$formula$ID, self$formula$all_formula_terms))
   wide_data <- dcast(data = self$df, paste(paste(terms_to_use_for_identification, collapse = " + "), "~ variable"), value.var = "value")
   
   temp_pca_values <- self$function.pca(
@@ -778,6 +778,7 @@ do_reduce_dimensions <- function(){
   self$reduced_df$loading <- temp_pca_values$rotation
   self$reduced_df$score <- temp_pca_values$x
   self$reduced_df$df <- self$df
+  
   self$df <- melt(data = cbind(wide_data[, .SD, .SDcols = terms_to_use_for_identification], self$reduced_df$score),
                   id.vars = terms_to_use_for_identification, variable.factor = FALSE)
   if (is.null(self$splot$loading_group_column)) {
