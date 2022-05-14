@@ -1363,154 +1363,6 @@ screeplot <- function(object, component = 10, ...) {
   UseMethod("screeplot")
 }
 
-#' Plot covariate coefficients
-#'
-#' This function returns a plot of the regression coefficients for covariates that is not included in the ASCA model itself
-#'
-#' @param inheritParams plot_parts
-#' @return A ggplot2 object
-#'
-#' @export
-plot_participants <- function(...){
-  plot_parts(...)
-}
-
-#' Plot participants
-#'
-#' This function returns the scores for an ALASCA model
-#'
-#' @param object An ALASCA object or a data frame. If a data frame, you need to specify the column names for participant and value. This also applies if you have not specified the participant column in the ALASCA model before.
-#' @param variable List of variable names to print. If `NA`, return all (default).
-#' @param participant_column Specify the column with participant identifier. Not necessary if you have already provided it to the ALASCA object
-#' @param valueColumn Specify column with values (y axis). Not necessary to provide if you are plotting an ALASCA object.
-#' @param timeColumn Specify column with times (x axis). Defaults to `time`.
-#' @param filetype Which filetype you want to save the figure to
-#' @param figsize A vector containing `c(width,height,dpi)` (default: `c(120, 80, 300)`)
-#' @param addSmooth. Specify which geom_smooth model you want to apply, eg. `lm`, `glm`, `gam`, `loess` (default). Set to `NA` to remove.
-#' @param my_theme A ggplot2 theme to use, defaults to `ggplot2::theme_bw()`
-#' @return A list with ggplot2 objects.
-#' 
-#' @export
-plot_parts <- function(object,
-                       variables = NA,
-                       participant_column = FALSE,
-                       x_label = NA,
-                       group_label = NA,
-                       valueColumn = FALSE,
-                       timeColumn = "time",
-                       addSmooth = "loess",
-                       filename = NA,
-                       filetype = object$plot.filetype,
-                       figunit = object$plot.figunit,
-                       plot.ylabel = "value",
-                       as.list = FALSE,
-                       figsize = object$plot.figsize,
-                       my_theme = object$plot.my_theme) {
-  
-  if (!is.na(filename)) object$filename <- filename
-  
-  if(as.list){
-    if (is.data.frame(object)) {
-      df <- object
-      if (any(participant_column == FALSE) | any(valueColumn == FALSE)) {
-        object$log("You need to specify participant and value columns", level = "ERROR")
-        stop()
-      } else {
-        participant_column <- participant_column
-        valueColumn <- valueColumn
-      }
-      plotFunction <- function(df, timeColumn, valueColumn, participant_column, xi, addSmooth, x_label, group_label, my_theme) {
-        g <- ggplot2::ggplot(subset(df, variable == xi), ggplot2::aes_string(x = timeColumn, y = valueColumn, color = "group", group = participant_column)) +
-          ggplot2::geom_point(alpha = 0.7) +
-          ggplot2::geom_line(alpha = 0.3) +
-          ggplot2::scale_color_manual(values = get_plot_palette(list(df = df))) +
-          ggplot2::scale_fill_manual(values = get_plot_palette(list(df = df))) +
-          my_theme +
-          ggplot2::theme(legend.position = "bottom") +
-          ggplot2::labs(x = x_label, y = xi, color = group_label, fill = group_label)
-        if (!any(is.na(addSmooth))) {
-          g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group, fill = group), se = TRUE)
-        }
-        return(g)
-      }
-    } else if (is(object, "ALASCA")) {
-      df <- object$df_raw
-      valueColumn <- as.character(object$formula)[2]
-      if (any(participant_column == FALSE)) {
-        if (any(object$participant_column == FALSE)) {
-          object$log("You need to specify participant column", level = "ERROR")
-          stop()
-        } else {
-          participant_column <- object$participant_column
-        }
-      }
-      
-      if (is.na(x_label)) x_label <- object$plot.x_label
-      if (is.na(group_label)) group_label <- object$plot.group_label
-      
-      plotFunction <- function(df, timeColumn, valueColumn, participant_column, xi, addSmooth, x_label, group_label, my_theme) {
-        g <- ggplot2::ggplot(subset(df, variable == xi), ggplot2::aes_string(x = timeColumn, y = valueColumn, color = "group", group = participant_column)) +
-          ggplot2::geom_point(alpha = 0.7) +
-          ggplot2::geom_line(alpha = 0.3) +
-          ggplot2::scale_color_manual(values = get_plot_palette(object)) +
-          ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
-          my_theme +
-          ggplot2::theme(legend.position = "bottom") +
-          ggplot2::labs(x = x_label, y = xi, color = group_label, fill = group_label)
-        if (!any(is.na(addSmooth))) {
-          g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group, fill = group), se = TRUE)
-        }
-        return(g)
-      }
-    } else {
-      object$log("Wrong input object: must be a ALASCA model or a data frame", level = "ERROR")
-      stop()
-    }
-    
-    if (any(is.na(variables))) variables <- unique(df$variable)
-    
-    g <- lapply(variables, function(xi) {
-      plotFunction(df, timeColumn, valueColumn, participant_column, xi, addSmooth, x_label = x_label, group_label = group_label, my_theme = my_theme)
-    })
-    names(g) <- variables
-    if (is(object, "ALASCA")) {
-      if (object$save) {
-        for (i in seq_along(g)) {
-          saveALASCAPlot(object = object, g = g[[i]], filetype = filetype, figsize = figsize, figunit = figunit, suffix = names(g)[i])
-        }
-      }
-    }
-    return(g)
-  } else {
-    if (any(is.na(variables))) {
-      variables <- object$variablelist
-    }
-    df <- object$df_raw
-    if (is.na(x_label)) {
-      x_label <- object$plot.x_label
-    }
-    if (is.na(group_label)) {
-      group_label <- object$plot.group_label
-    }
-    g <- ggplot2::ggplot(subset(df, variable %in% variables), ggplot2::aes(x = time, y = value, color = group, group = ID)) +
-      ggplot2::geom_point(alpha = 0.7) +
-      ggplot2::geom_line(alpha = 0.3) +
-      ggplot2::scale_color_manual(values = get_plot_palette(object)) +
-      ggplot2::scale_fill_manual(values = get_plot_palette(object)) +
-      my_theme +
-      ggplot2::facet_wrap(~variable, scales = "free_y") +
-      ggplot2::theme(legend.position = "bottom") +
-      ggplot2::labs(x = x_label, y = plot.ylabel, color = group_label, fill = group_label)
-    if (!any(is.na(addSmooth))) {
-      g <- g + ggplot2::geom_smooth(method = addSmooth, ggplot2::aes(group = group, fill = group), se = TRUE)
-    }
-    
-    if (object$save) saveALASCAPlot(object = object, g = g, filetype = filetype, figsize = figsize, figunit = figunit)
-    
-    return(g)
-  }
-}
-
 plot_prediction <- function() {
   
   if (is.null(self$variable)) {
@@ -1570,7 +1422,7 @@ plot_prediction <- function() {
                   linetype = self$group_label,
                   x = self$x_label,
                   y = "Std. value") +
-    ggplot2::facet_wrap(~variable, scales = "free_y") + 
+    ggplot2::facet_wrap(~variable, scales = "free_y", nrow = self$facet_nrow, ncol = self$facet_ncol) + 
     self$my_theme + 
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = self$x_angle, vjust = self$x_v_just, hjust = self$x_h_just))
 }
@@ -1663,25 +1515,25 @@ plot_effect <- function() {
           if (is.null(self$loading_group_column)) {
             if (self$n_col == 2) {
               gs_legend <- gs # use this later
-              g <- ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "none", align = "h")
+              g <- ggpubr::ggarrange(gs, gl, widths = c(2,3), common.legend = TRUE, legend = "none", align = "h")
             } else {
-              g <- ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "bottom", align = "h")
+              g <- ggpubr::ggarrange(gs, gl, widths = c(2,3), common.legend = TRUE, legend = "bottom", align = "h")
             }
             
           } else {
-            g <- ggpubr::ggarrange(gs, gl, align = "h")
+            g <- ggpubr::ggarrange(gs, gl, widths = c(2,3), align = "h")
           }
         } else if (ii <= 2 && self$n_col == 2 && !is.null(self$loading_group_column)) {
           if (ii == 1) {
             # Should hold the variable legend
-            g <- ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "bottom", align = "h", legend.grob = ggpubr::get_legend(gl))
+            g <- ggpubr::ggarrange(gs, gl, widths = c(2,3), common.legend = TRUE, legend = "bottom", align = "h", legend.grob = ggpubr::get_legend(gl))
           } else {
             # Should hold the group legend
-            g <- ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "bottom", align = "h", legend.grob = ggpubr::get_legend(gs))
+            g <- ggpubr::ggarrange(gs, gl, widths = c(2,3), common.legend = TRUE, legend = "bottom", align = "h", legend.grob = ggpubr::get_legend(gs))
           }
         } else {
           # No legend in these plots
-          g <- ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "none", align = "h")
+          g <- ggpubr::ggarrange(gs, gl, widths = c(2,3), common.legend = TRUE, legend = "none", align = "h")
         }
         g_list[[ii]] <- g
         ii <- ii+1
@@ -1710,9 +1562,9 @@ plot_effect <- function() {
     gs <- self$plot_effect_score(effect_i = effect_i, component = component)
     gl <- self$plot_effect_loading(effect_i = effect_i, component = component)
     if (is.null(self$loading_group_column)) {
-      ggpubr::ggarrange(gs, gl, common.legend = TRUE, legend = "bottom", align = "h", labels = self$labels)
+      ggpubr::ggarrange(gs, gl, widths = c(2,3), common.legend = TRUE, legend = "bottom", align = "h", labels = self$labels)
     } else {
-      ggpubr::ggarrange(gs, gl, align = "h", labels = self$labels)
+      ggpubr::ggarrange(gs, gl, widths = c(2,3), align = "h", labels = self$labels)
     }
   }
 }
@@ -2312,7 +2164,7 @@ plot_histogram_score <- function() {
     ggplot2::scale_fill_manual(values = self$get_plot_palette()) +
     ggplot2::scale_color_manual(values = self$get_plot_palette()) +
     ggplot2::scale_linetype_manual(values = self$get_plot_linetypes()) +
-    ggplot2::facet_wrap(~x_data, ncol = self$n_col) +
+    ggplot2::facet_wrap(~x_data, ncol = 1) +
     ggplot2::labs(color = self$group_label,
                   fill = self$group_label,
                   linetype = self$group_label,
@@ -2351,7 +2203,7 @@ plot_histogram_loading <- function() {
     ggplot2::geom_histogram(alpha = 0.6, position = "identity", bins = self$n_bins) +
     ggplot2::geom_vline(data = data_to_plot[model == 0], ggplot2::aes(xintercept = loading)) +
     ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
-    ggplot2::facet_wrap(~covars) +
+    ggplot2::facet_wrap(~covars, nrow = self$facet_nrow, ncol = self$facet_ncol) +
     ggplot2::labs(x = self$get_explained_label(effect_i = self$effect_i, component = self$component, type= "Loading"), y = "Count") +
     self$my_theme
   

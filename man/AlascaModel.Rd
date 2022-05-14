@@ -51,7 +51,7 @@ The object builds the ALASCA model and contains the data
 
 \item{\code{validation_ids}}{A data frame where each row contains the ids for one validation iteration}
 
-\item{\code{validation_ids}}{Logical. Assign new IDs during validation. Must be \code{TRUE} for reduce_dimensions to work}
+\item{\code{validation_assign_new_ids}}{Logical. Assign new IDs during validation. Must be \code{TRUE} for reduce_dimensions to work}
 
 \item{\code{limitsCI}}{Lower and upper quantile to use for validation}
 

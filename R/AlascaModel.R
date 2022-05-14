@@ -61,7 +61,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field validation_ids A data frame where each row contains the ids for one validation iteration
     validation_ids = NULL,
     validation_object = NA,
-    #' @field validation_ids Logical. Assign new IDs during validation. Must be `TRUE` for reduce_dimensions to work
+    #' @field validation_assign_new_ids Logical. Assign new IDs during validation. Must be `TRUE` for reduce_dimensions to work
     validation_assign_new_ids = TRUE,
     #' @field limitsCI Lower and upper quantile to use for validation
     limitsCI = c(0.025, 0.975),

@@ -1,22 +1,32 @@
 AlascaPlot <- R6::R6Class("AlascaPlot",
     class = FALSE,
     public = list(
+      #' @field model ALASCA model
       model = NULL,
+      #' @field my_theme Theme for ggplot2 plots
       my_theme = ggplot2::theme_classic() + ggplot2::theme(legend.position = "bottom"),
+      #' @field variable_label Text label for the y axis
       variable_label = "Variable",
+      #' @field variable Selected variables to plot
       variable = NULL,
+      #' @field x_label Text label for the x axis
       x_label = NULL,
+      #' @field group_label Legend title
       group_label = "Group",
       n_bins = NULL,
       group = NULL,
+      #' @field ribbon Boolean. Plot ribbons for uncertainties
       ribbon = TRUE,
+      #' @field dodgewidth Validated figures have dodged points to avoid overlap
       dodgewidth = 0.5,
       height = NULL,
       width = NULL,
       dheight = NULL,
       dwidth = NULL,
       dpi = 300,
+      #' @field units Units for figure sizes
       units = "mm",
+      #' @field filetype File type for saved plots
       filetype = "png",
       make_group_column = FALSE,
       palette = NULL,
@@ -26,16 +36,24 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
       loading_group_label = "Variable group",
       sort_by_loading_group = TRUE,
       palette.end = 0.8,
+      #' @field effect_i Effect(s) to plot
       effect_i = 1,
+      #' @field component Component(s) to plot
       component = 1,
       n_col = 1,
+      facet_ncol = NULL,
+      facet_nrow = NULL,
       save = FALSE,
+      #' @field flip_axis Boolean. If `TRUE`, variabels are plotted along the y axis
       flip_axis = TRUE,
+      #' @field x_angle Angle for the x labels
       x_angle = 45,
       x_v_just = 1,
       x_h_just = 1,
       n_limit = 12,
+      #' @field labels Figure labels, see [ggpubr::ggarrange()]
       labels = "AUTO",
+      #' @field type Plot type
       type = "effect",
       initialize = function(model) {
         self$model <- model
@@ -92,7 +110,7 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
           self$dwidth <- 180
           g <- self$plot_residuals()
         } else if (self$type == "prediction") {
-          self$dheight <- 120
+          self$dheight <- 160
           self$dwidth <- 180
           g <- self$plot_prediction()
         } else {
@@ -154,7 +172,7 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
         ) + 
           ggplot2::stat_qq() +
           ggplot2::stat_qq_line() +
-          ggplot2::facet_wrap(~variable) +
+          ggplot2::facet_wrap(~variable, nrow = self$facet_nrow, ncol = self$facet_ncol) +
           ggplot2::labs(x = "Theoretical", y = "Sample") +
           self$my_theme
       },
@@ -209,7 +227,7 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
         
         g <- g + ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
           ggplot2::labs(x = "Covariate", y = "Coefficient") + 
-          ggplot2::facet_wrap(~variable, scales = "free_y") + 
+          ggplot2::facet_wrap(~variable, scales = "free_y", nrow = self$facet_nrow, ncol = self$facet_ncol) + 
           self$my_theme + self$xflip()
         
         return(g)
