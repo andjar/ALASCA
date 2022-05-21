@@ -420,11 +420,56 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @return A vector with principal components
     get_PCs = function(x) self$ALASCA$significant_PCs[[x]],
     get_predictions = function() {
+      
+      if (!self$get_plot_group %in% colnames(self$model_prediction)) {
+        self$model_prediction[, (self$splot$group):= do.call(paste, c(.SD, sep = "-")), .SDcols = self$effect_terms[-1]]
+      }
+      
       if (self$equal_baseline) {
+        # Must add baselines for missing interactions (baseline x group)
         baseline_to_add <- self$model_prediction[get(self$effect_terms) %in% self$get_ref(self$effect_terms)]
-        baseline_to_add <- rbindlist(lapply(self$get_levels(self$get_plot_group)[-1], function(gr) {
-          baseline_to_add[, (self$get_plot_group) := gr]
-        }))
+        
+        if (length(self$effect_terms) == 2) {
+          # In this case, there are no main effects except time
+          baseline_to_add <- rbindlist(lapply(self$get_levels(self$get_plot_group)[-1], function(gr) {
+            baseline_to_add[, (self$get_plot_group) := gr]
+          }))
+        } else if (length(self$effect_terms) == 3) {
+          # In this case, there may be additional main effects to take into account
+          terms_in_formula <- attr(terms(self$formula$formula_wo_random), "term.labels")
+          
+          # Find main terms
+          terms_in_formula <- terms_in_formula[!grepl(pattern = ":", terms_in_formula, fixed = TRUE)]
+          
+          # Remove x_data
+          terms_in_formula <- terms_in_formula[-1]
+          
+          # These are the groups missing
+          terms_to_add <- self$get_levels(self$get_plot_group)
+          terms_to_add <- terms_to_add[!terms_to_add %in% baseline_to_add[, get(self$get_plot_group)]]
+          match_groups <- self$model_prediction[, unique(.SD), .SDcols = c(self$effect_terms[-1], self$get_plot_group)]
+          
+          terms_to_update <- self$effect_terms[-1]
+          terms_to_update <- terms_to_update[!terms_to_update %in% terms_in_formula]
+          
+          baseline_to_add <- rbindlist(lapply(terms_to_add, function(gr) {
+            baseline_to_add[get(terms_in_formula) == match_groups[get(self$get_plot_group) == gr, get(terms_in_formula)],
+                            (self$get_plot_group) := gr]
+            
+          }))
+          
+          baseline_to_add <- unique(baseline_to_add)
+          
+          for (gr in terms_to_add) {
+            rf <- match_groups[get(self$get_plot_group) == gr, get(terms_to_update)]
+            baseline_to_add[get(self$get_plot_group) == gr, (terms_to_update) := rf]
+          }
+          
+        } else {
+          self$model$log("Sorry, this is not supported at the moment", level = "ERROR")
+          stop()
+        }
+        
 
         predictions <- rbind(self$model_prediction, baseline_to_add)
       } else {

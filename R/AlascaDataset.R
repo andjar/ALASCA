@@ -74,6 +74,13 @@ AlascaDataset <- R6::R6Class("AlascaDataset",
       names(self$rows_by_ID) <- unique(self$IDs)
 
       self$column_types <- vapply(self$data_df, class, FUN.VALUE = character(1))
+      if (any(self$column_types == "character")) {
+        self$model$log("Converting `character` columns to factors", level = "WARN")
+        for (char_to_factor in names(self$column_types)[self$column_types == "character"]) {
+          set(self$data_df, j = char_to_factor, value = as.factor(self$data_df[[char_to_factor]]))
+        }
+        self$column_types[self$column_types == "character"] <- "factor"
+      }
       self$level_list <- lapply(self$data_df[, .SD, .SDcols = self$column_types == "factor"], function(x) levels(x))
 
       self$model$log("Checking for missing information", level = "DEBUG")

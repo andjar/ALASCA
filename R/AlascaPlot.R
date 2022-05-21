@@ -13,6 +13,7 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
     x_label = NULL,
     #' @field group_label Legend title
     group_label = "Group",
+    #' @field n_bins Number of bins for histograms
     n_bins = NULL,
     group = NULL,
     #' @field ribbon Boolean. Plot ribbons for uncertainties
@@ -23,26 +24,34 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
     width = NULL,
     dheight = NULL,
     dwidth = NULL,
+    #' @field dpi Resolution when saving figures. See [ggplot2::ggsave()]
     dpi = 300,
-    #' @field units Units for figure sizes
+    #' @field units Units for figure sizes. See [ggplot2::ggsave()]
     units = "mm",
-    #' @field filetype File type for saved plots
+    #' @field filetype File type for saved plots. See [ggplot2::ggsave()]
     filetype = "png",
     make_group_column = FALSE,
     palette = NULL,
     file_counter = 1,
     linetypes = NULL,
+    #' @field loading_group_column Column for variable groups
     loading_group_column = NULL,
+    #' @field loading_group_label Legend table for variable groups
     loading_group_label = "Variable group",
+    #' @field sort_by_loading_group Boolean. Sort loadings within loading group
     sort_by_loading_group = TRUE,
-    palette.end = 0.8,
+    #' @field palette_end Improve contrast by not using the full color space. See [scales::viridis_pal()]
+    palette_end = 0.8,
     #' @field effect_i Effect(s) to plot
     effect_i = 1,
     #' @field component Component(s) to plot
     component = 1,
     n_col = 1,
+    #' @field facet_ncol Number of facet columns. See [ggplot2::facet_wrap()]
     facet_ncol = NULL,
+    #' @field facet_nrow Number of facet rows. See [ggplot2::facet_wrap()]
     facet_nrow = NULL,
+    #' @field save Boolean. Whether to save plots
     save = FALSE,
     #' @field flip_axis Boolean. If `TRUE`, variabels are plotted along the y axis
     flip_axis = TRUE,
@@ -252,7 +261,7 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
     },
     get_plot_palette = function() {
       if (is.null(self$palette)) {
-        self$palette <- scales::viridis_pal(end = self$palette.end)(length(self$get_levels(self$get_plot_group)))
+        self$palette <- scales::viridis_pal(end = self$palette_end)(length(self$get_levels(self$get_plot_group)))
         names(self$palette) <- self$get_levels(self$get_plot_group)
       }
       return(self$palette)
