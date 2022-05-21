@@ -24,12 +24,11 @@ AlascaFormula <- R6::R6Class("AlascaFormula",
       if (is.null(self$model$effect_list$expr)) {
         private$guess_effects()
       }
-      
+
       private$set_method()
       if (self$model$use_Rfast) {
         self$model$log("Will use Rfast!")
       }
-      
     },
     add = function(new_term) {
       self$additional_terms <- unique(c(self$additional_terms, new_term))
@@ -63,16 +62,19 @@ AlascaFormula <- R6::R6Class("AlascaFormula",
   active = list(
     all_terms = function() {
       unique(
-        c(self$fixed_terms,
+        c(
+          self$fixed_terms,
           unlist(strsplit(gsub("1\\||\\(|\\)", "", self$random_terms), split = "\\|")),
-          self$additional_terms)
+          self$additional_terms
+        )
       )
     },
     all_formula_terms = function() {
       unique(
-        c(self$fixed_terms,
+        c(
+          self$fixed_terms,
           unlist(strsplit(gsub("1\\||\\(|\\)", "", self$random_terms), split = "\\|"))
-          )
+        )
       )
     },
     ID = function() {
@@ -88,7 +90,7 @@ AlascaFormula <- R6::R6Class("AlascaFormula",
           self$model$log("Unable to find ID", level = "ERROR")
           stop()
         } else {
-          gsub("\\(|\\)|1\\|","",self$random_terms[[1]])
+          gsub("\\(|\\)|1\\|", "", self$random_terms[[1]])
         }
       } else {
         self$model$participant_column
@@ -96,13 +98,15 @@ AlascaFormula <- R6::R6Class("AlascaFormula",
     },
     all_fixed_terms = function() {
       unique(
-        c(self$fixed_terms,
-          self$additional_terms)
+        c(
+          self$fixed_terms,
+          self$additional_terms
+        )
       )
     }
   ),
   private = list(
-    find_sides= function() {
+    find_sides = function() {
       self$lhs <- as.character(self$formula)[2]
       self$rhs <- gsub(" ", "", as.character(self$formula)[3])
     },
@@ -110,7 +114,7 @@ AlascaFormula <- R6::R6Class("AlascaFormula",
       str_terms <- unlist(strsplit(self$rhs, split = "\\:|\\+|\\*"))
       self$fixed_terms <- unique(str_terms[!grepl("|", str_terms, fixed = TRUE)])
       self$random_terms <- unique(str_terms[grepl("|", str_terms, fixed = TRUE)])
-      
+
       str_terms <- unlist(strsplit(self$rhs, split = "+", fixed = TRUE))
       self$formula_wo_random <- formula(
         paste(self$lhs, "~", paste(str_terms[!grepl("|", str_terms, fixed = TRUE)], collapse = "+"))
@@ -139,23 +143,23 @@ AlascaFormula <- R6::R6Class("AlascaFormula",
         self$model$effect_list$expr <- self$fixed_terms[[1]]
       } else {
         # Use the first fixed term as basis
-        str_all_terms <- colnames(attr(terms(self$formula_wo_random),"factors"))
+        str_all_terms <- colnames(attr(terms(self$formula_wo_random), "factors"))
         str_all_terms <- str_all_terms[!grepl("|", str_all_terms, fixed = TRUE)]
-        
+
         # This will typically be a main effect and an interaction
         str_terms <- str_all_terms[grepl(self$fixed_terms[[1]], str_all_terms)]
-        
+
         # Look for the main term of the interaction term and add other terms involving it
         if (!self$model$equal_baseline) {
-          additional_terms <- unique(unlist(strsplit(str_terms, split= ":", fixed = TRUE)))
+          additional_terms <- unique(unlist(strsplit(str_terms, split = ":", fixed = TRUE)))
           additional_terms <- additional_terms[additional_terms != self$fixed_terms[[1]]]
-          for(i in str_all_terms) {
+          for (i in str_all_terms) {
             if (i %in% additional_terms) {
               str_terms <- c(str_terms, additional_terms)
             }
           }
-        } 
-        
+        }
+
         if (self$model$separate_effects) {
           self$model$effect_list$expr <- c(str_terms[1], paste(str_terms[-1], collapse = "+"))
         } else {
