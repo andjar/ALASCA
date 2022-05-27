@@ -4,7 +4,10 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
     #' @field model ALASCA model
     model = NULL,
     #' @field my_theme Theme for ggplot2 plots
-    my_theme = ggplot2::theme_classic() + ggplot2::theme(legend.position = "bottom"),
+    my_theme = ggplot2::theme_classic() +
+      ggplot2::theme(
+        legend.position = "bottom"
+        ),
     #' @field variable_label Text label for the y axis
     variable_label = "Variable",
     #' @field variable Selected variables to plot
@@ -99,6 +102,10 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
         self$dheight <- 240
         self$dwidth <- 240
         g <- self$plot_2D()
+      } else if (self$type == "2D_advanced") {
+        self$dheight <- 240
+        self$dwidth <- 240
+        g <- self$plot_2D_advanced()
       } else if (self$type == "histogram") {
         self$dheight <- 180
         self$dwidth <- 180
@@ -122,6 +129,10 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
         self$dheight <- 160
         self$dwidth <- 180
         g <- self$plot_prediction()
+      } else if (self$type == "participants") {
+        self$dheight <- 160
+        self$dwidth <- 180
+        g <- self$plot_participants()
       } else {
         self$model$log(paste("Unkown plot type:", self$type), level = "ERROR")
         stop()
@@ -137,9 +148,11 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
     plot_effect_validation_score = plot_effect_validation_score,
     plot_effect_validation_loading = plot_effect_validation_loading,
     plot_histogram = plot_histogram,
+    plot_participants = plot_participants,
     plot_histogram_score = plot_histogram_score,
     plot_histogram_loading = plot_histogram_loading,
     plot_2D = plot_2D,
+    plot_2D_advanced = plot_2D_advanced,
     plot_2D_score = plot_2D_score,
     plot_2D_loading_1 = plot_2D_loading_1,
     plot_2D_loading_2 = plot_2D_loading_2,

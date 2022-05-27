@@ -1370,6 +1370,9 @@ plot_prediction <- function() {
     variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]], n_limit = round(self$n_limit/2))[[1]]
   } else if (self$variable == 0) {
     variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])
+  } else {
+    variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])
+    variables_to_plot <- variables_to_plot[covars %in% self$variable]
   }
   
   effect_terms <- self$model$effect_list$terms[[self$effect_i[[1]]]]
@@ -2000,7 +2003,7 @@ get_predictions <- function(object) {
   UseMethod("get_predictions")
 }
 
-plot_2D <- function() {
+plot_2D_advanced <- function() {
   
   if (!self$model$validate) {
     self$model$log("Please validate the model first", level = "ERROR")
@@ -2023,6 +2026,44 @@ plot_2D <- function() {
                     common.legend = TRUE,
                     legend = "top",
                     labels = self$labels)
+  self$component <- tmp
+  return(g)
+}
+
+plot_2D <- function() {
+  
+  if (!self$model$validate) {
+    self$model$log("Please validate the model first", level = "ERROR")
+    stop()
+  }
+  if (length(self$component) != 2) {
+    self$model$log("Please provide two validated components, e.g. `component = c(1,2)`", level = "ERROR")
+    stop()
+  }
+  
+  gs <- self$plot_2D_score()
+  gl1 <- self$plot_effect_loading(effect_i = self$effect_i, component = self$component[1])
+  gl2 <- self$plot_effect_loading(effect_i = self$effect_i, component = self$component[2])
+  tmp <- self$component
+  self$component <- 10
+  gscree <- self$plot_scree()
+  g <- ggpubr::ggarrange(
+    ggpubr::ggarrange(gscree,
+                      gs,
+                      labels = c("A", "B"),
+                      widths =  c(1,2),
+                      legend = "bottom",
+                      common.legend = TRUE,
+                      legend.grob = ggpubr::get_legend(gs)
+                      ),
+    ggpubr::ggarrange(gl1,
+                      gl2,
+                      labels = c("C", "D"),
+                      legend = "none"),
+    nrow = 2,
+    ncol = 1,
+    heights = c(11,10)
+    )
   self$component <- tmp
   return(g)
 }
@@ -2219,3 +2260,64 @@ plot_histogram <- function() {
   ggpubr::ggarrange(gs, gl, widths = c(1,2), labels = self$labels, common.legend = TRUE, legend = "bottom")
 }
 
+plot_participants <- function(effect_i = 1, component = 1) {
+  
+  # Which variables to plot?
+  if (is.null(self$variable)) {
+    self$model$log(paste0("Selecting the ",round(self$n_limit/2)," variables with highest/lowest loading on `", self$model$effect_list$expr[[self$effect_i[[1]]]], "` (PC",self$component[[1]],"). Use `variable` to specify variables to plot"))
+    variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]], n_limit = round(self$n_limit/2))[[1]]
+  } else if (self$variable == 0) {
+    variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])
+  } else {
+    variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])
+    variables_to_plot <- variables_to_plot[covars %in% self$variable]
+  }
+  
+  data_to_plot <- self$model$df_raw$df
+  data_to_plot <- data_to_plot[variable %in% variables_to_plot$covars]
+  data_to_plot[, variable := factor(variable, levels = variables_to_plot[order(loading, decreasing = TRUE), covars])]
+  effect_terms <- self$model$effect_list$terms[[self$effect_i[[1]]]]
+  colnames(data_to_plot)[colnames(data_to_plot) == effect_terms[[1]]] <- "x_data"
+  
+  if (length(effect_terms) == 1 && self$model$method == "LMM") {
+    # Use some reference
+    data_to_plot[, group_data := self$model$get_ref(self$model$get_plot_group)]
+  } else {
+    if (self$make_group_column) {
+      data_to_plot[, group_data := do.call(paste, c(.SD, sep = "-")), .SDcols = self$model$effect_terms[-1]]
+    } else {
+      if (self$model$get_plot_group %in% colnames(data_to_plot)) {
+        data_to_plot[, group_data := get(self$model$get_plot_group)]
+      } else {
+        data_to_plot[, group_data := x_data]
+      }
+    }
+  }
+  
+  if(self$model$method == "LMM") {
+    g <- ggplot2::ggplot(data_to_plot,
+                         ggplot2::aes_string(x = "x_data",
+                                             y = self$model$formula$lhs,
+                                             group = self$model$formula$ID,
+                                             color = "group_data",
+                                             linetype = "group_data")) +
+      ggplot2::geom_point(position = ggplot2::position_dodge(width = self$dodgewidth)) +
+      ggplot2::geom_line(position = ggplot2::position_dodge(width = self$dodgewidth))
+  } else {
+    g <- ggplot2::ggplot(data_to_plot,
+                         ggplot2::aes_string(x = "x_data",
+                                             y = self$model$formula$lhs,
+                                             color = "group_data")) +
+      ggplot2::geom_point(position = ggplot2::position_dodge(width = self$dodgewidth))
+  }
+  g <- g + ggplot2::scale_color_manual(values = self$get_plot_palette()) +
+    ggplot2::scale_linetype_manual(values = self$get_plot_linetypes()) +
+    ggplot2::labs(color = self$group_label,
+                  linetype = self$group_label,
+                  x = self$x_label,
+                  y = "Value") +
+    ggplot2::facet_wrap(~variable, scales = "free_y", nrow = self$facet_nrow, ncol = self$facet_ncol) + 
+    self$my_theme + 
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = self$x_angle, vjust = self$x_v_just, hjust = self$x_h_just))
+  
+}

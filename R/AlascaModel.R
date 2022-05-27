@@ -19,9 +19,9 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field ignore_missing_covars If TRUE, ignore missing covariate values
     ignore_missing_covars = FALSE,
     #' @field version Version number
-    version = "0.0.0.99",
+    version = "0.0.0.100",
     #' @field update_date Date of latest update
-    update_date = "2022-05-22",
+    update_date = "2022-05-27",
 
     # Effect matrices
     #' @field separate_effects If TRUE, try to separate the effects
