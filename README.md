@@ -2,34 +2,21 @@
 ## Installation
 
 ```{r}
-devtools::install_github("andjar/ALASCA",ref="main")
+devtools::install_github("andjar/ALASCA", ref="main")
 ```
 
 ## Notice
 
 <div class="alert alert-danger" role="alert">
-  This is work in process and should not be relied upon at the moment.
+  The documentation is under revision
 </div>
 
 ## Usage
 
-For a working example, see [Get Started](articles/ALASCA.html). For various case examples, see
-
-* Repeated-measures observational data: [Proteomics and Preeclampsia](articles/pregnancy.html)
-* Repeated-measures intervention data: [Metabolomics and Cancer Treatment](articles/metabolomics.html)
-* Single-measures observational data: [Personality and Age](articles/personality.html)
-
-ALASCA expects a data frame, eg. `df`, with at least the following columns (with these exact names)
-
-* `time` Either factor, string or integer. Defines when a sample is taken.
-  * Note: Even though you call it `time`, it can contain other variable values, eg. age or BMI!
-* `variable` Either a factor or a string. The measured variable.
-* `group` Either a factor, string or integer. Defines the group of a participant
-
-In addition you need to define your model, including at least one random effect (usually participant), for example `mod <- value ~ time*group + (1|partid)`. The participant column has to be specified with `participantColumn`. Usually, you also want to test the robustness of your model.
+Let `df` be a long-format data frame with repeated measurements and the columns `ID`, `time`, `group`, `variable` and `value`;
 
 ```{r}
-mod.ALASCA <- ALASCA(df = df, formula = mod, participantColumn = "partid", validate = TRUE)
+mod.ALASCA <- ALASCA(df = df, formula = value ~ time * group + (1|ID), validate = TRUE)
 ```
 
 ## Background
