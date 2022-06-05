@@ -14,25 +14,16 @@ reference:
 - contents: 
   - ALASCA
   - validate
-  - getScores
-  - getLoadings
-  - getCovars
+  - get_scores
+  - get_loadings
+  - get_covars
   - summary.ALASCA
-  - RMASCA
-  - SMASCA
-  - appendModel
-  - printVer
+  - get_predictions
 - title: "Plotting"
   desc: "Functions for visualizing results"
 - contents: 
   - plot.ALASCA
   - screeplot.ALASCA
-  - flipIt
-  - assessGroupDifferences
-  - plotCovar
-  - plotParts
-  - plotPred
-  - plotProjection
 - title: "Diagnostics"
   desc: "Functions for checking statistical validity"
 - contents: 
