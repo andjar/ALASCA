@@ -103,7 +103,7 @@ get_regression_formula <- function() {
     if (self$ID != "ID") {
       
       # The user has specified a column
-      self$model$df[, ID := get(self$ID)]
+      self$model$df_raw$data_df[, ID := get(self$ID)]
       self$model$participant_column <- "ID"
       self$replace(old_term = self$ID, new_term = "ID")
       
