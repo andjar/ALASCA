@@ -19,9 +19,9 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field ignore_missing_covars If TRUE, ignore missing covariate values
     ignore_missing_covars = FALSE,
     #' @field version Version number
-    version = "1.0.1",
+    version = "1.0.2",
     #' @field update_date Date of latest update
-    update_date = "2022-06-17",
+    update_date = "2022-06-25",
 
     # Effect matrices
     #' @field separate_effects If TRUE, try to separate the effects
@@ -67,6 +67,8 @@ AlascaModel <- R6::R6Class("AlascaModel",
     limitsCI = c(0.025, 0.975),
     #' @field compress_validation Integer between 0 and 100. See [fst::write_fst()] for details
     compress_validation = 80,
+    permutation_within_participants = NULL,
+    permutation_across_participants = NULL,
 
     # Reduce dimensions
     #' @field reduce_dimensions Boolean. Use PCA to reduce data dimensions prior to analysis
@@ -231,6 +233,15 @@ AlascaModel <- R6::R6Class("AlascaModel",
             variable = self$get_levels("variable", reduced = FALSE)
           )
         )
+      }
+      
+      if (self$validate && self$validation_method == "permutation") {
+        if (is.null(self$permutation_within_participants)) {
+          self$permutation_within_participants <- self$effect_terms[1]
+        }
+        if (is.null(self$permutation_across_participants)) {
+          self$permutation_across_participants <- self$effect_terms[-1]
+        }
       }
 
       # self$ALASCA.version <- print_version(get = "version")

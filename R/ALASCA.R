@@ -467,8 +467,6 @@ run_regression <- function() {
     names(rows_by_variable) <- self$get_levels("variable")
   }
   
-  
-  
   #names(rows_by_variable) <- self$get_levels("variable")
   
   if (self$use_Rfast && self$method %in% c("LMM")) {
@@ -478,7 +476,7 @@ run_regression <- function() {
       stop()
     }
     self$log("Make model matrix", level = "DEBUG")
-    if (!self[["minimize_object"]] || self$reduce_dimensions) {
+    if (!self[["minimize_object"]] || self$reduce_dimensions || self$validation_method == "permutation") {
       self[["modmat"]] <- model.matrix(self[["formula"]][["regression_formula"]], data = self[["df"]])
       if (self[["equal_baseline"]]) {
         self[["modmat"]] <- self[["modmat"]][, !grepl(paste0(self$effect_terms[[1]], self$get_ref(self$effect_terms[[1]])), colnames(self[["modmat"]]))]
@@ -489,12 +487,13 @@ run_regression <- function() {
     
     self$log("Starting regression", level = "DEBUG")
     # https://stackoverflow.com/questions/61013078/fastest-way-to-convert-a-matrix-to-a-data-table
+    
     self$regression_coefficients <- setDT(as.data.frame(
       vapply(self$get_levels("variable"), function(x) {
         Rfast::rint.reg(
-          y = self[["df"]][ rows_by_variable[[x]], value],
-          x = self[["modmat"]][rows_by_variable[[x]], -1],
-          id = as.numeric(factor(self[["df"]][ rows_by_variable[[x]], ID])),
+          y = self[["df"]][["value"]][ rows_by_variable[[x]] ],
+          x = self[["modmat"]][ rows_by_variable[[x]], -1],
+          id = self[["df"]][["ID"]][ rows_by_variable[[x]] ],
           ranef = FALSE
         )$be
       }, FUN.VALUE = numeric(ncol(self[["modmat"]])))
@@ -546,7 +545,7 @@ run_regression <- function() {
     self$regression_coefficients <- setDT(as.data.frame(
       vapply(self$get_levels("variable"), function(x) {
         Rfast::lmfit(
-          y = self[["df"]][ rows_by_variable[[x]], value],
+          y = self[["df"]]["value"][ rows_by_variable[[x]] ],
           x = self[["modmat"]][rows_by_variable[[x]], ]
         )$be
       }, FUN.VALUE = numeric(ncol(self[["modmat"]])))
@@ -941,7 +940,7 @@ do_validate <- function() {
     # stop("The object has already been validated")
   }
   
-  self$log("Starting validation")
+  self$log(paste("Starting validation:", self$validation_method))
   
   start_time_all <- Sys.time()
   self$get_validation_ids()
@@ -1206,53 +1205,55 @@ get_regression_predictions <- function() {
 }
 
 get_validation_ids <- function() {
-  if (is.null(self$validation_ids)) {
-    self$log("Generating random validation sample", level = "DEBUG")
-    
-    original_IDs <- unique(self$df_raw$df[, .SD, .SDcols = c(self$formula$ID, self$stratification_column)])
-    colnames(original_IDs) <- c("ID", "group")
-    
-    if (self$validation_method == "bootstrap") {
+  if (self$validation_method %in% c("bootstrap", "loo", "jack-knife", "jackknife")) {
+    if (is.null(self$validation_ids)) {
+      self$log("Generating random validation sample", level = "DEBUG")
       
-      tmp <- lapply(unique(self$stratification_vector), function(strat_group) {
-        IDs_to_choose_from <- original_IDs[group == strat_group, ID]
-        t(
-          vapply(
-            seq_len(self$n_validation_runs),
-            function(x) sample(IDs_to_choose_from, replace = TRUE),
-            FUN.VALUE = integer(length(sample(IDs_to_choose_from, replace = TRUE)))
+      original_IDs <- unique(self$df_raw$df[, .SD, .SDcols = c(self$formula$ID, self$stratification_column)])
+      colnames(original_IDs) <- c("ID", "group")
+      
+      if (self$validation_method == "bootstrap") {
+        
+        tmp <- lapply(unique(self$stratification_vector), function(strat_group) {
+          IDs_to_choose_from <- original_IDs[group == strat_group, ID]
+          t(
+            vapply(
+              seq_len(self$n_validation_runs),
+              function(x) sample(IDs_to_choose_from, replace = TRUE),
+              FUN.VALUE = integer(length(sample(IDs_to_choose_from, replace = TRUE)))
+              )
+            )
+        })
+        
+        self$validation_ids <- do.call(cbind, tmp)
+        
+      } else {
+        
+        tmp <- lapply(unique(self$stratification_vector), function(strat_group) {
+          IDs_to_choose_from <- original_IDs[group == strat_group, ID]
+          n_to_choose <- floor(length(IDs_to_choose_from) - length(IDs_to_choose_from)/self$n_validation_folds)
+          if (n_to_choose <= self$n_validation_folds) {
+            self$log(
+                paste0("The stratification group ", strat_group, " has only ", length(IDs_to_choose_from), " members. Choosing ", n_to_choose, " of them. Consider adjusting `n_validation_folds`"),
+                level = "WARN"
+              )
+          }
+          t(
+            vapply(
+              seq_len(self$n_validation_runs),
+              function(x) sample(IDs_to_choose_from, size = n_to_choose),
+              FUN.VALUE = integer(n_to_choose)
             )
           )
-      })
-      
-      self$validation_ids <- do.call(cbind, tmp)
-      
-    } else {
-      
-      tmp <- lapply(unique(self$stratification_vector), function(strat_group) {
-        IDs_to_choose_from <- original_IDs[group == strat_group, ID]
-        n_to_choose <- floor(length(IDs_to_choose_from) - length(IDs_to_choose_from)/self$n_validation_folds)
-        if (n_to_choose <= self$n_validation_folds) {
-          self$log(
-              paste0("The stratification group ", strat_group, " has only ", length(IDs_to_choose_from), " members. Choosing ", n_to_choose, " of them. Consider adjusting `n_validation_folds`"),
-              level = "WARN"
-            )
-        }
-        t(
-          vapply(
-            seq_len(self$n_validation_runs),
-            function(x) sample(IDs_to_choose_from, size = n_to_choose),
-            FUN.VALUE = integer(n_to_choose)
-          )
-        )
-      })
-      
-      self$validation_ids <- do.call(cbind, tmp)
-      
-    }
-    if (self$save_validation_ids) {
-      self$log("Saving validation IDs", level = "DEBUG")
-      fwrite(as.data.table(self$validation_ids), file = paste0(self$filepath, "validation_IDs.csv"), col.names = FALSE)
+        })
+        
+        self$validation_ids <- do.call(cbind, tmp)
+        
+      }
+      if (self$save_validation_ids) {
+        self$log("Saving validation IDs", level = "DEBUG")
+        fwrite(as.data.table(self$validation_ids), file = paste0(self$filepath, "validation_IDs.csv"), col.names = FALSE)
+      }
     }
   }
 }
@@ -1300,6 +1301,69 @@ prepare_validation_run <- function(runN) {
     bootobject$update()
     bootobject$validation$original_ids <- self$validation_ids[runN, ]
     return(bootobject)
+  } else if (self$validation_method == "permutation") {
+    # Use permutation testing
+    
+    self$log("Starting validation with permutation testing", level = "DEBUG")
+    
+    update.DT <- function(DATA1, DATA2, join.variable, overwrite.variable, overwrite.with.variable) {
+      DATA1[DATA2, c(overwrite.variable) := mget(paste0("i.", overwrite.with.variable)), on = join.variable][]
+      }
+    
+    # Create permutation object
+    bootobject <- self$clone()
+    bootobject$df <- copy(self$df_raw$df)
+    
+    data_with_effects_across <- bootobject$df[,
+                                    unique(.SD),
+                                    .SDcols = c(self$permutation_across_participants, "ID")]
+    
+    # Shuffle self$permutation_across_participants
+    for (i_cols in seq_along(self$permutation_across_participants)) {
+      data_with_effects_across[[i_cols]] <- data_with_effects_across[[i_cols]][sample(nrow(data_with_effects_across))]
+      bootobject$df <- update.DT(bootobject$df,
+                                 data_with_effects_across,
+                                 join.variable = "ID",
+                                 overwrite.variable = self$permutation_across_participants[i_cols],
+                                 overwrite.with.variable = self$permutation_across_participants[i_cols])
+    }
+    
+    
+    if (self$save_validation_ids) {
+      fwrite(data_with_effects_across, file = paste0(self$filepath, "permutation_",runN,"_across.csv"), col.names = TRUE)
+    }
+    
+    # Shuffle self$permutation_within_participants
+    for (i_effects in self$permutation_within_participants) {
+      data_with_effects_within <- bootobject$df[,
+                                                unique(.SD),
+                                                .SDcols = c(i_effects, "ID")]
+      
+      bootobject$df[, key_to_join := paste(ID, get(i_effects))]
+      data_with_effects_within[, key_to_join := paste(ID, get(i_effects))]
+      data_with_effects_within[, (i_effects) := get(i_effects)[sample(.N)], by = ID]
+      bootobject$df <- update.DT(bootobject$df,
+                                 data_with_effects_within,
+                                 join.variable = "ID",
+                                 overwrite.variable = i_effects,
+                                 overwrite.with.variable = i_effects)
+      
+      if (self$save_validation_ids) {
+        fwrite(data_with_effects_within, file = paste0(self$filepath, "permutation_",runN,"_within_",i_effects,".csv"), col.names = TRUE)
+      }
+    }
+    bootobject$df$key_to_join <- NULL
+    
+    bootobject$df <- bootobject$scale_function(bootobject$df)
+    bootobject[["modmat"]] <- NULL
+    bootobject[["effect_list"]][["model_matrix"]] <- NULL
+    bootobject$set_design_matrices()
+    bootobject$update()
+    
+    return(bootobject)
+  } else {
+    self$log("Validation method not recognized!", level = "ERROR")
+    stop()
   }
 }
 
@@ -2203,7 +2267,7 @@ plot_histogram_score <- function() {
   
   data_to_plot$grouping <- paste(data_to_plot$model, "-", data_to_plot$group_data)
   
-  g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(score, fill = group_data)) +
+  g <- ggplot2::ggplot(data_to_plot[model > 0], ggplot2::aes(score, fill = group_data)) +
     ggplot2::geom_histogram(alpha = 0.6, position = "identity", bins = self$n_bins) +
     ggplot2::geom_vline(data = data_to_plot[model == 0], ggplot2::aes(xintercept = score, color = group_data, linetype = group_data)) +
     ggplot2::scale_fill_manual(values = self$get_plot_palette()) +
@@ -2244,7 +2308,7 @@ plot_histogram_loading <- function() {
   }
   data_to_plot[, nval := as.numeric(covars)]
   
-  ggplot2::ggplot(data_to_plot, ggplot2::aes(loading)) +
+  ggplot2::ggplot(data_to_plot[model > 0], ggplot2::aes(loading)) +
     ggplot2::geom_histogram(alpha = 0.6, position = "identity", bins = self$n_bins) +
     ggplot2::geom_vline(data = data_to_plot[model == 0], ggplot2::aes(xintercept = loading)) +
     ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +

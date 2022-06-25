@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.0</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
       </span>
     </div>
 
@@ -51,266 +51,41 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.109" id="alasca-000109">ALASCA 0.0.0.109<a class="anchor" aria-label="anchor" href="#alasca-000109"></a></h2>
-<div class="section level3">
-<h3 id="new-features-0-0-0-109">New features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-109"></a></h3>
-<ul><li>Use <code>method = "Limm"</code> for Limm-PCA</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.107" id="alasca-000107">ALASCA 0.0.0.107<a class="anchor" aria-label="anchor" href="#alasca-000107"></a></h2>
-<div class="section level3">
-<h3 id="new-features-0-0-0-107">New features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-107"></a></h3>
-<ul><li>Provide a data frame <code>validationIDs</code> to reuse validation
-samples</li>
-<li>Covariates excluded from the effect matrices are now validated by
-percentiles</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.106" id="alasca-000106">ALASCA 0.0.0.106<a class="anchor" aria-label="anchor" href="#alasca-000106"></a></h2>
-<div class="section level3">
-<h3 id="new-features-0-0-0-106">New features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-106"></a></h3>
-<ul><li>
-<code>validationAssignNewID</code> Choose whether or not bootstrap
-samples should get assigned a new and unique ID when drawn</li>
-</ul></div>
-<div class="section level3">
-<h3 id="bug-fix-0-0-0-106">Bug fix<a class="anchor" aria-label="anchor" href="#bug-fix-0-0-0-106"></a></h3>
-<ul><li>All participants got the same ID when bootstrapping</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.105" id="alasca-000105">ALASCA 0.0.0.105<a class="anchor" aria-label="anchor" href="#alasca-000105"></a></h2>
-<div class="section level3">
-<h3 id="new-features-0-0-0-105">New features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-105"></a></h3>
-<ul><li>
-<code>savetodisk = TRUE</code> in <code><a href="../reference/ALASCA.html">ALASCA()</a></code> will use a
-SQLite database so save the validation runs</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.102" id="alasca-000102">ALASCA 0.0.0.102<a class="anchor" aria-label="anchor" href="#alasca-000102"></a></h2>
-<div class="section level3">
-<h3 id="new-features-0-0-0-102">New features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-102"></a></h3>
-<ul><li>
-<code>plothistogram()</code> will make nice histograms of the
-validation runs
-<ul><li>For subplots: <code>plothistogram_loading()</code> and
-<code>plothistogram_score()</code>
+<h2 class="page-header" data-toc-text="1.0.2" id="alasca-102">ALASCA 1.0.2<a class="anchor" aria-label="anchor" href="#alasca-102"></a></h2>
+<ul><li>New feature: Permutation testing
+(<code>validation_method = "permutation"</code>)
+<ul><li>Simple permutation testing where data labels are shuffled at two
+levels: either the participant is re-assigned (e.g., a participant is
+randomly moved to a new group (or not)), or labels are shifted
+<em>within</em> participant (e.g. the time labels for a participant are
+shuffled)</li>
+<li>By default, the first effect is assumed to be shuffled
+<em>within</em> participant and the others shuffled across
+<em>participant</em>. The default can be overwritten by specifying
+<code>permutation_within_participants</code> and
+<code>permutation_across_participants</code>,
+e.g. <code>permutation_within_participants = c("time")</code>
 </li>
+<li>The participants should only belong to <em>one</em> group for each
+of the variables in <code>permutation_across_participants</code> and
+samples will be be reassigned as a block for
+<code>permutation_within_participants</code> (i.e., if a participant has
+two samples in group A and one sample in group B, then the two former
+samples will be reassigned <em>together</em> and not individually)</li>
 </ul></li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.102" id="alasca-000102-1">ALASCA 0.0.0.102<a class="anchor" aria-label="anchor" href="#alasca-000102-1"></a></h2>
-<div class="section level3">
-<h3 id="new-features-0-0-0-102-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-102-1"></a></h3>
-<ul><li>Use <code>limitloading = TRUE</code> in plot functions to remove
-loadings containing 0 in CI</li>
-</ul></div>
-<div class="section level3">
-<h3 id="improvements-0-0-0-102">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-0-0-102"></a></h3>
-<ul><li>Fixed linetype legend for <code>plotPred()</code>
+<li>Improved performance: <code>df["value"][ rowNumers ]</code> is
+somewhat faster than <code>df[ rowNumers, value ]</code>
 </li>
 </ul></div>
-</div>
     <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.101" id="alasca-000101">ALASCA 0.0.0.101<a class="anchor" aria-label="anchor" href="#alasca-000101"></a></h2>
-<div class="section level3">
-<h3 id="bug-fix-0-0-0-101">Bug fix<a class="anchor" aria-label="anchor" href="#bug-fix-0-0-0-101"></a></h3>
-<ul><li>
-<code>plotParts()</code> is now working for dataframes</li>
-<li>
-<code>plotPred()</code> is now working for Rfast. Note that if
-covariates are added, the values will be the average by time:group</li>
+<h2 class="page-header" data-toc-text="1.0.1" id="alasca-101">ALASCA 1.0.1<a class="anchor" aria-label="anchor" href="#alasca-101"></a></h2>
+<ul><li>Fix: Error when using another column name than <code>ID</code> for
+ID</li>
 </ul></div>
-<div class="section level3">
-<h3 id="improvements-0-0-0-101">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-0-0-101"></a></h3>
-<ul><li>Theme for <code>ggplot2</code> can now be set in the
-<code><a href="../reference/ALASCA.html">ALASCA()</a></code> call</li>
-</ul></div>
-</div>
     <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.100" id="alasca-000100">ALASCA 0.0.0.100<a class="anchor" aria-label="anchor" href="#alasca-000100"></a></h2>
-<div class="section level3">
-<h3 id="improvements-0-0-0-100">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-0-0-100"></a></h3>
-<ul><li>The <code>scaleFun</code> argument now accepts strings and
-functions:
-<ul><li>
-<code>scaleFun = "none"</code>: no scaling</li>
-<li>
-<code>scaleFun = "sdall"</code>: scale by dividing on standard
-deviation (by variable)</li>
-<li>
-<code>scaleFun = "sdref"</code>: scale by dividing on standard
-deviation of the reference group (by variable)</li>
-<li>
-<code>scaleFun = "sdt1"</code>: scale by dividing on standard
-deviation of baseline (by variable)</li>
-<li>
-<code>scaleFun = "sdreft1"</code>: scale by dividing on standard
-deviation of baseline in the reference group (by variable)</li>
-<li>
-<code>scaleFun = FUN</code>: scale with custom function
-<code>FUN</code>
-</li>
-</ul></li>
-<li>Better export of files, including automatic export to csv</li>
-<li>
-<code>summary.ALASCA()</code> should now be working</li>
+<h2 class="page-header" data-toc-text="1.0.0" id="alasca-100">ALASCA 1.0.0<a class="anchor" aria-label="anchor" href="#alasca-100"></a></h2>
+<ul><li>First release with new framework</li>
 </ul></div>
-<div class="section level3">
-<h3 id="new-features-0-0-0-100">New features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-100"></a></h3>
-<ul><li>
-<code>savetocsv()</code> can save a model to csv files</li>
-<li>
-<code>saveALASCA()</code> will export the central data of the
-model</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.98" id="alasca-00098">ALASCA 0.0.0.98<a class="anchor" aria-label="anchor" href="#alasca-00098"></a></h2>
-<div class="section level3">
-<h3 id="improvements-0-0-0-98">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-0-0-98"></a></h3>
-<ul><li>Nicer default plots</li>
-<li>Minor improvements in performance</li>
-</ul></div>
-<div class="section level3">
-<h3 id="new-features-0-0-0-98">New features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-98"></a></h3>
-<ul><li>
-<code>plotresiduals()</code> will plot residuals as a QQ-plot</li>
-</ul></div>
-<div class="section level3">
-<h3 id="bug-fixes-0-0-0-98">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-0-0-98"></a></h3>
-<ul><li>ALASCA failes on large datasets when the number of PCs is different
-between variables</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.98" id="alasca-00098-1">ALASCA 0.0.0.98<a class="anchor" aria-label="anchor" href="#alasca-00098-1"></a></h2>
-<div class="section level3">
-<h3 id="new-features-0-0-0-98-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-98-1"></a></h3>
-<ul><li>
-<code>plot.ALASCA()</code> will now plot components if
-<code>component</code> is a vector with more than one value</li>
-<li>
-<code>plotComponents()</code> plots two components against each
-other</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.97" id="alasca-00097">ALASCA 0.0.0.97<a class="anchor" aria-label="anchor" href="#alasca-00097"></a></h2>
-<div class="section level3">
-<h3 id="improvements-0-0-0-97">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-0-0-97"></a></h3>
-<ul><li>Better plotting with the <code>viridis()</code> palette, different
-line types, and inherited plot settings from the ALASCA object</li>
-</ul></div>
-<div class="section level3">
-<h3 id="bug-fixes-0-0-0-97">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-0-0-97"></a></h3>
-<ul><li>
-<code>assessGroupDifferences()</code> should now be working</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.96" id="alasca-00096">ALASCA 0.0.0.96<a class="anchor" aria-label="anchor" href="#alasca-00096"></a></h2>
-<div class="section level3">
-<h3 id="new-features-0-0-0-96">New features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-96"></a></h3>
-<ul><li>
-<code>assessGroupDifferences()</code> now supports
-<code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>
-</li>
-<li>One can now use Cox regression to take limits of detection into
-account. To do this, specify <code>method = "KM"</code> (using
-<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code>) for ASCA or <code>method = "KMM"</code>
-(using <code><a href="https://rdrr.io/pkg/coxme/man/coxme.html" class="external-link">coxme::coxme()</a></code>) for RM-ASCA. You should be careful
-with scaling; <code>scaleFun &lt;- function(x){return(x)}</code> is an
-alternative. Next, you need to make a data frame and provide it to the
-function <code>lowerLimit = lowerLimit</code>. <code>lowerLimit</code>
-should have a column <code>value</code> with the lower cutoff values,
-and <code>variable</code> for the variable names (must correspond to the
-variables in <code>df</code>!)
-<ul><li>Note: This function is in alpha and has not been thoroughly
-tested!</li>
-</ul></li>
-</ul></div>
-<div class="section level3">
-<h3 id="breaking-changes-0-0-0-96">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-0-0-96"></a></h3>
-<ul><li>The choice to use <code>Rfast</code> is now moved to a separate
-parameter: <code>useRfast</code> which defaults to <code>TRUE</code>.
-The goal is to implement <code>Rfast</code> for linear models as
-well.</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.95" id="alasca-00095">ALASCA 0.0.0.95<a class="anchor" aria-label="anchor" href="#alasca-00095"></a></h2>
-<div class="section level3">
-<h3 id="new-features-0-0-0-95">New features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-95"></a></h3>
-<ul><li>
-<code>assessGroupDifferences()</code> applies
-<code><a href="https://rdrr.io/pkg/emmeans/man/emmeans.html" class="external-link">emmeans::emmeans()</a></code> to calculate pairwise group
-differences</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.94" id="alasca-00094">ALASCA 0.0.0.94<a class="anchor" aria-label="anchor" href="#alasca-00094"></a></h2>
-<div class="section level3">
-<h3 id="new-features-0-0-0-94">New features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-94"></a></h3>
-<ul><li>
-<code>flipIt()</code> can now selectively flip either time or group
-by specifying <code>effect = "time"</code> or
-<code>effect = "group"</code> (default:
-<code>effect = "both"</code>)</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.93" id="alasca-00093">ALASCA 0.0.0.93<a class="anchor" aria-label="anchor" href="#alasca-00093"></a></h2>
-<div class="section level3">
-<h3 id="new-features-0-0-0-93">New features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-93"></a></h3>
-<ul><li>Set <code>save = TRUE</code> when running <code><a href="../reference/ALASCA.html">ALASCA()</a></code> to
-automatically save the model and the plots you make. (Only tested on
-Windows)</li>
-</ul></div>
-<div class="section level3">
-<h3 id="bux-fix-0-0-0-93">Bux fix<a class="anchor" aria-label="anchor" href="#bux-fix-0-0-0-93"></a></h3>
-<ul><li>Fixed: <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">ALASCA::summary()</a></code> is now working</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.92" id="alasca-00092">ALASCA 0.0.0.92<a class="anchor" aria-label="anchor" href="#alasca-00092"></a></h2>
-<div class="section level3">
-<h3 id="bux-fix-0-0-0-92">Bux fix<a class="anchor" aria-label="anchor" href="#bux-fix-0-0-0-92"></a></h3>
-<ul><li>Fixed: <code>flipIt()</code> did not flip the upper limit for score
-of the group effect correctly</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.91" id="alasca-00091">ALASCA 0.0.0.91<a class="anchor" aria-label="anchor" href="#alasca-00091"></a></h2>
-<div class="section level3">
-<h3 id="new-features-0-0-0-91">New features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-91"></a></h3>
-<ul><li>
-<code>validationMethod = "permutation"</code> now produces actual P
-values.
-<ul><li>P values are kept in <code>$pvals</code>
-</li>
-<li>The lowest P values will be set to 1/nValRuns, so it may be wise to
-use eg. <code>nValRuns=1001</code> to be able to detect P&lt;.001</li>
-<li>Plotting this model adds asterisks indicating significance</li>
-</ul></li>
-<li>
-<code>validationMethod = "bootstrap"</code> is now functional</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.9" id="alasca-0009">ALASCA 0.0.0.9<a class="anchor" aria-label="anchor" href="#alasca-0009"></a></h2>
-<div class="section level3">
-<h3 id="known-bugs-0-0-0-9">Known bugs<a class="anchor" aria-label="anchor" href="#known-bugs-0-0-0-9"></a></h3>
-<ul><li>Reference level cannot be set when using multiple interactions</li>
-<li>
-<code>plotPart()</code> sometimes fails to provide more than a blank
-plot</li>
-</ul></div>
-</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
