@@ -1,3 +1,7 @@
+# ALASCA 1.0.3
+
+* Fix: Crash when some participants are missing certain measurements
+
 # ALASCA 1.0.2
 
 * New feature: Permutation testing (`validation_method = "permutation"`)

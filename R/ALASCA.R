@@ -466,12 +466,12 @@ run_regression <- function() {
     rows_by_variable <- lapply(self$get_levels("variable"), function(x) data.table(I = which(self[["df"]][["variable"]] == x)) )
     names(rows_by_variable) <- self$get_levels("variable")
   }
-  
+
   #names(rows_by_variable) <- self$get_levels("variable")
   
   if (self$use_Rfast && self$method %in% c("LMM")) {
     # start.time <- Sys.time()
-    if (any(is.na(self[["df"]][, value]))) {
+    if (any(is.na(self[["df"]][["value"]]))) {
       self$log("Rfast does NOT like NA's! Check your scaling function or value column.", level = "ERROR")
       stop()
     }
@@ -488,12 +488,15 @@ run_regression <- function() {
     self$log("Starting regression", level = "DEBUG")
     # https://stackoverflow.com/questions/61013078/fastest-way-to-convert-a-matrix-to-a-data-table
     
+    # TODO: Manage ID in a better way. Crashes when some participants are missing values...
+    # I think Rfast is expecting a continuous number series
+    
     self$regression_coefficients <- setDT(as.data.frame(
-      vapply(self$get_levels("variable"), function(x) {
+      vapply(self$get_levels("variable"), function(i_variable) {
         Rfast::rint.reg(
-          y = self[["df"]][["value"]][ rows_by_variable[[x]] ],
-          x = self[["modmat"]][ rows_by_variable[[x]], -1],
-          id = self[["df"]][["ID"]][ rows_by_variable[[x]] ],
+          y = self[["df"]][["value"]][ rows_by_variable[[i_variable]] ],
+          x = as.matrix(self[["modmat"]][ rows_by_variable[[i_variable]], -1]),
+          id = as.numeric(factor(self[["df"]][["ID"]][ rows_by_variable[[i_variable]] ])),
           ranef = FALSE
         )$be
       }, FUN.VALUE = numeric(ncol(self[["modmat"]])))
