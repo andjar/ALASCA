@@ -1,3 +1,10 @@
+#' R6 Class that helps visualizing an ALASCA model
+#'
+#' @description
+#' The class contains plot options and the functions for plotting themselves. It can be accessed as `obj$splot` where `obj` is an ALASCA object.
+#' 
+#' Note: The object is typically accessed by `plot(obj, ...)` where the arguments are passed to the class. The arguments can also be set when the ALASCA model is created by providing arguments with prefix `plot.` (e.g., `plot.my_theme = ...`)
+#' 
 AlascaPlot <- R6::R6Class("AlascaPlot",
   class = FALSE,
   public = list(
