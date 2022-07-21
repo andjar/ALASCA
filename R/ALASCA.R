@@ -1449,21 +1449,15 @@ plot_prediction <- function() {
   data_to_plot[, variable := factor(variable, levels = variables_to_plot[order(loading, decreasing = TRUE), covars])]
   colnames(data_to_plot)[colnames(data_to_plot) == effect_terms[[1]]] <- "x_data"
   
-  if (length(effect_terms) == 1 && self$model$method == "LMM") {
-    # Use some reference
-    data_to_plot[, group_data := self$model$get_ref(self$model$get_plot_group)]
+  if (self$make_group_column) {
+    data_to_plot[, group_data := do.call(paste, c(.SD, sep = "-")), .SDcols = self$model$effect_terms[-1]]
   } else {
-    if (self$make_group_column) {
-      data_to_plot[, group_data := do.call(paste, c(.SD, sep = "-")), .SDcols = self$model$effect_terms[-1]]
+    if (self$model$get_plot_group %in% colnames(data_to_plot)) {
+      data_to_plot[, group_data := get(self$model$get_plot_group)]
     } else {
-      if (self$model$get_plot_group %in% colnames(data_to_plot)) {
-        data_to_plot[, group_data := get(self$model$get_plot_group)]
-      } else {
-        data_to_plot[, group_data := x_data]
-      }
+      data_to_plot[, group_data := x_data]
     }
   }
-  
   
   if(self$model$validate) {
     g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "x_data",
