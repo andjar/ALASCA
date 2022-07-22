@@ -28,6 +28,12 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
     group = NULL,
     #' @field ribbon Boolean. Plot ribbons for uncertainties
     ribbon = TRUE,
+    #' @field bw Boolean. Plot in gray scale
+    grayscale = FALSE,
+    #' @field bw Boolean. Same as `grayscale`
+    greyscale = FALSE,
+    #' @field bw Boolean. Same as `grayscale`
+    bw = FALSE,
     #' @field dodgewidth Validated figures have dodged points to avoid overlap
     dodgewidth = 0.5,
     height = NULL,
@@ -44,6 +50,7 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
     palette = NULL,
     file_counter = 1,
     linetypes = NULL,
+    shapes = NULL,
     #' @field loading_group_column Column for variable groups
     loading_group_column = NULL,
     #' @field loading_group_label Legend table for variable groups
@@ -279,6 +286,13 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
       }
       return(self$linetypes)
     },
+    get_plot_shapes = function() {
+      if (is.null(self$shapes)) {
+        self$shapes <- scales::shape_pal()(length(self$get_levels(self$get_plot_group)))
+        names(self$shapes) <- self$get_levels(self$get_plot_group)
+      }
+      return(self$shapes)
+    },
     get_plot_palette = function() {
       if (is.null(self$palette)) {
         self$palette <- scales::viridis_pal(end = self$palette_end)(length(self$get_levels(self$get_plot_group)))
@@ -303,6 +317,7 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
     validate = function() self$model$validate,
     h = function() ifelse(is.null(self$height), self$dheight, self$height),
     w = function() ifelse(is.null(self$width), self$dwidth, self$width),
+    black_and_white = function() self$bw || self$greyscale || self$grayscale,
     effects = function() {
       if (length(self$effect_i) == 1 && self$effect_i == 0) {
         self$effect_i <- seq_along(self$model$ALASCA$loading)

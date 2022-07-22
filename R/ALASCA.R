@@ -1661,61 +1661,108 @@ plot_effect_score <- function(effect_i = 1, component = 1) {
   if (self$validate) {
     # Validated model
     
-    if(self$model$method == "LMM") {
-      g <- ggplot2::ggplot(data_to_plot,
-                           ggplot2::aes_string(x = "x_data",
-                                               y = "score",
-                                               group = "group_data",
-                                               color = "group_data",
-                                               linetype = "group_data",
-                                               ymin = "low",
-                                               ymax = "high")) +
-        ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = self$dodgewidth)) +
-        ggplot2::geom_line(position = ggplot2::position_dodge(width = self$dodgewidth))
+    if (self$model$method == "LMM") {
+      if (self$black_and_white) {
+        g <- ggplot2::ggplot(data_to_plot,
+                             ggplot2::aes_string(x = "x_data",
+                                                 y = "score",
+                                                 group = "group_data",
+                                                 shape = "group_data",
+                                                 linetype = "group_data",
+                                                 ymin = "low",
+                                                 ymax = "high"))
+      } else {
+        g <- ggplot2::ggplot(data_to_plot,
+                             ggplot2::aes_string(x = "x_data",
+                                                 y = "score",
+                                                 group = "group_data",
+                                                 color = "group_data",
+                                                 linetype = "group_data",
+                                                 ymin = "low",
+                                                 ymax = "high"))
+      }
+      g <- g + ggplot2::geom_line(position = ggplot2::position_dodge(width = self$dodgewidth))
     } else {
-      g <- ggplot2::ggplot(data_to_plot,
-                           ggplot2::aes_string(x = "x_data",
-                                               y = "score",
-                                               color = "group_data",
-                                               ymin = "low",
-                                               ymax = "high")) +
-        ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = self$dodgewidth))
+      if (self$black_and_white) {
+        g <- ggplot2::ggplot(data_to_plot,
+                             ggplot2::aes_string(x = "x_data",
+                                                 y = "score",
+                                                 shape = "group_data",
+                                                 ymin = "low",
+                                                 ymax = "high"))
+      } else {
+        g <- ggplot2::ggplot(data_to_plot,
+                             ggplot2::aes_string(x = "x_data",
+                                                 y = "score",
+                                                 color = "group_data",
+                                                 ymin = "low",
+                                                 ymax = "high"))
+      }
     }
-      
-    if (self$ribbon && self$model$method == "LMM") {
+    g <- g + ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = self$dodgewidth))
+
+    if (self$ribbon && !self$black_and_white && self$model$method == "LMM") {
       g <- g + ggplot2::geom_ribbon(ggplot2::aes_string(fill = "group_data"),
                                     alpha = .1,
                                     position = ggplot2::position_dodge(width = self$dodgewidth), color = NA
       ) + ggplot2::scale_fill_manual(values = self$get_plot_palette()) + ggplot2::labs(fill = self$group_label)
     }
+    
   } else {
     # No validation
     
     if (self$model$method == "LMM") {
-      g <- ggplot2::ggplot(data_to_plot,
-                           ggplot2::aes_string(x = "x_data",
-                                               y = "score",
-                                               linetype = "group_data",
-                                               group = "group_data",
-                                               color = "group_data")) +
-        ggplot2::geom_point() +
-        ggplot2::geom_line()
+      if (self$black_and_white) {
+        g <- ggplot2::ggplot(data_to_plot,
+                             ggplot2::aes_string(x = "x_data",
+                                                 y = "score",
+                                                 linetype = "group_data",
+                                                 group = "group_data",
+                                                 shape = "group_data"))
+      } else {
+        g <- ggplot2::ggplot(data_to_plot,
+                             ggplot2::aes_string(x = "x_data",
+                                                 y = "score",
+                                                 linetype = "group_data",
+                                                 group = "group_data",
+                                                 color = "group_data"))
+      }
+      g <- g + ggplot2::geom_line()
     } else {
-      g <- ggplot2::ggplot(data_to_plot,
-                           ggplot2::aes_string(x = "x_data",
-                                               y = "score",
-                                               color = "group_data")) +
-        ggplot2::geom_point()
+      if (self$black_and_white) {
+        g <- ggplot2::ggplot(data_to_plot,
+                             ggplot2::aes_string(x = "x_data",
+                                                 y = "score",
+                                                 shape = "group_data"))
+      } else {
+        g <- ggplot2::ggplot(data_to_plot,
+                             ggplot2::aes_string(x = "x_data",
+                                                 y = "score",
+                                                 color = "group_data"))
+      }
     }
+    g <- g + ggplot2::geom_point()
   }
-  g <- g +
-    ggplot2::scale_color_manual(values = self$get_plot_palette()) +
-    ggplot2::scale_linetype_manual(values = self$get_plot_linetypes()) +
-    ggplot2::labs(color = self$group_label,
-                  linetype = self$group_label,
-                  x = self$x_label,
-                  y = self$get_explained_label(effect_i = effect_i, component = component, type= "Score")) +
-    self$my_theme + self$xflip(flip = FALSE)
+  
+  if (self$black_and_white) {
+    g <- g +
+      ggplot2::scale_shape_manual(values = self$get_plot_shapes()) +
+      ggplot2::scale_linetype_manual(values = self$get_plot_linetypes()) +
+      ggplot2::labs(shape = self$group_label,
+                    linetype = self$group_label,
+                    x = self$x_label,
+                    y = self$get_explained_label(effect_i = effect_i, component = component, type= "Score"))
+  } else {
+    g <- g +
+      ggplot2::scale_color_manual(values = self$get_plot_palette()) +
+      ggplot2::scale_linetype_manual(values = self$get_plot_linetypes()) +
+      ggplot2::labs(color = self$group_label,
+                    linetype = self$group_label,
+                    x = self$x_label,
+                    y = self$get_explained_label(effect_i = effect_i, component = component, type= "Score"))
+  }
+  
+    g <- g + self$my_theme + self$xflip(flip = FALSE)
   return(g)
 }
 

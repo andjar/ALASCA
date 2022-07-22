@@ -19,9 +19,9 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field ignore_missing_covars If TRUE, ignore missing covariate values
     ignore_missing_covars = FALSE,
     #' @field version Version number
-    version = "1.0.3",
+    version = "1.0.4",
     #' @field update_date Date of latest update
-    update_date = "2022-06-29",
+    update_date = "2022-07-22",
 
     # Effect matrices
     #' @field separate_effects If TRUE, try to separate the effects
@@ -296,6 +296,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' Main function for plots
     #' @param effect Integer or vector. Which(s) effect(s) to plot
     #' @param component Integer or vector. Which(s) component(s) to plot
+    #' @inheritParams AlascaPlot
     plot = function(effect = 1, component = 1, ...) {
       self$splot$effect_i <- effect
       self$splot$component <- component

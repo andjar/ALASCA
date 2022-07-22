@@ -1,3 +1,8 @@
+# ALASCA 1.0.4
+
+* New feature: Plot effects in gray scale/black-and-white with symbols instead of colors. Can be tested with `plot(..., bw = TRUE)` (or `grayscale = TRUE` or `greyscale = TRUE`) or similarly with `ALASCA(..., plot.bw = TRUE)`
+* Fix: Prediction plot with single-variable effect (e.g., `time`) did not color the groups correctly
+
 # ALASCA 1.0.3
 
 * Fix: Crash when some participants are missing certain measurements
