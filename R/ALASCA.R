@@ -1460,37 +1460,64 @@ plot_prediction <- function() {
   }
   
   if(self$model$validate) {
-    g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "x_data",
-                                                           y = "pred",
-                                                           group = "group_data",
-                                                           color = "group_data",
-                                                           linetype = "group_data",
-                                                           ymin = "low",
-                                                           ymax = "high")) +
-      ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = self$dodgewidth)) +
+    if (self$black_and_white) {
+      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "x_data",
+                                                             y = "pred",
+                                                             group = "group_data",
+                                                             linetype = "group_data",
+                                                             ymin = "low",
+                                                             ymax = "high"))
+    } else {
+      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "x_data",
+                                                             y = "pred",
+                                                             group = "group_data",
+                                                             color = "group_data",
+                                                             linetype = "group_data",
+                                                             ymin = "low",
+                                                             ymax = "high"))
+    }
+    
+    g <- g + ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = self$dodgewidth)) +
       ggplot2::geom_line(position = ggplot2::position_dodge(width = self$dodgewidth))
-    if (self$ribbon) {
+    
+    if (self$ribbon && self$black_and_white) {
       g <- g + ggplot2::geom_ribbon(ggplot2::aes_string(fill = "group_data"),
                                     alpha = .1,
                                     position = ggplot2::position_dodge(width = self$dodgewidth), color = NA
       ) + ggplot2::scale_fill_manual(values = self$get_plot_palette()) + ggplot2::labs(fill = self$group_label)
     }
   } else {
-    g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "x_data",
-                                                           y = "pred",
-                                                           group = "group_data",
-                                                           color = "group_data",
-                                                           linetype = "group_data")) +
-      ggplot2::geom_point() +
-      ggplot2::geom_line()
+    if (self$black_and_white) {
+      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "x_data",
+                                                             y = "pred",
+                                                             group = "group_data",
+                                                             linetype = "group_data"))
+    } else {
+      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "x_data",
+                                                             y = "pred",
+                                                             group = "group_data",
+                                                             color = "group_data",
+                                                             linetype = "group_data"))
+    }
+    g <- g + ggplot2::geom_point() + ggplot2::geom_line()
   }
-  g <- g + ggplot2::scale_color_manual(values = self$get_plot_palette()) +
-    ggplot2::scale_linetype_manual(values = self$get_plot_linetypes()) +
-    ggplot2::labs(color = self$group_label,
-                  linetype = self$group_label,
-                  x = self$x_label,
-                  y = "Std. value") +
-    ggplot2::facet_wrap(~variable, scales = "free_y", nrow = self$facet_nrow, ncol = self$facet_ncol) + 
+  
+  if (self$black_and_white) {
+    g <- g +
+      ggplot2::scale_linetype_manual(values = self$get_plot_linetypes()) +
+      ggplot2::labs(linetype = self$group_label,
+                    x = self$x_label,
+                    y = "Std. value")
+  } else {
+    g <- g + ggplot2::scale_color_manual(values = self$get_plot_palette()) +
+      ggplot2::scale_linetype_manual(values = self$get_plot_linetypes()) +
+      ggplot2::labs(color = self$group_label,
+                    linetype = self$group_label,
+                    x = self$x_label,
+                    y = "Std. value")
+  }
+  
+  g <- g + ggplot2::facet_wrap(~variable, scales = "free_y", nrow = self$facet_nrow, ncol = self$facet_ncol) + 
     self$my_theme + 
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = self$x_angle, vjust = self$x_v_just, hjust = self$x_h_just))
 }
