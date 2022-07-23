@@ -251,17 +251,31 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
           data_to_plot[, covar := factor(covar, levels = covar[order(covargroup, estimate, decreasing = TRUE)])]
         }
         if (self$model$validate) {
-          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covar", y = "estimate", ymin = "low", ymax = "high", shape = "covargroup", color = "covargroup")) +
-            ggplot2::geom_pointrange()
+          if (self$black_and_white) {
+            g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covar", y = "estimate", ymin = "low", ymax = "high", shape = "covargroup"))
+          } else {
+            g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covar", y = "estimate", ymin = "low", ymax = "high", shape = "covargroup", color = "covargroup"))
+          }
+          g <- g + ggplot2::geom_pointrange()
         } else {
-          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covar", y = "estimate", shape = "covargroup", color = "covargroup")) +
-            ggplot2::geom_point()
+          if (self$black_and_white) {
+            g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covar", y = "estimate", shape = "covargroup"))
+          } else {
+            g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covar", y = "estimate", shape = "covargroup", color = "covargroup"))
+          }
+          
+          g <- g + ggplot2::geom_point()
         }
       }
 
       if (!is.null(self$loading_group_column)) {
-        g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
-          ggplot2::labs(color = self$loading_group_label, shape = self$loading_group_label)
+        if (self$black_and_white) {
+          g <- g +
+            ggplot2::labs(shape = self$loading_group_label)
+        } else {
+          g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
+            ggplot2::labs(color = self$loading_group_label, shape = self$loading_group_label)
+        }
       }
 
       g <- g + ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
