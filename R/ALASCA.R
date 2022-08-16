@@ -578,6 +578,20 @@ run_regression <- function() {
                  self$get_ref(self$effect_terms[[1]])),
           colnames(modmat),
           fixed = TRUE)]
+        # Remove interaction between reference groups in three-way interaction
+        # TODO: Improve this temporary solution
+        if (lengths(regmatches(self$formula$rhs, gregexpr(":", self$formula$rhs))) == 2) {
+          modmat <- modmat[, !(grepl(
+            paste0(self$effect_terms[[2]],
+                   self$get_ref(self$effect_terms[[2]])),
+            colnames(modmat),
+            fixed = TRUE) & !grepl(
+              paste0(self$effect_terms[[3]],
+                     self$get_ref(self$effect_terms[[3]])),
+              colnames(modmat),
+              fixed = TRUE))]
+        }
+        
       }
       self[["cnames_modmat"]] <- colnames(modmat)
       # modmat <- modmat[,ncol(modmat):1]
@@ -676,6 +690,7 @@ get_effect_matrix <- function() {
   #stop()
   reg_coefs <- dcast(self$regression_coefficients, variable~covar, value.var = "estimate")
   rownames(reg_coefs) <- reg_coefs$variable
+  #stop()
   self$effect_list$effect_matrix <- lapply(self$set_design_matrices(), function(mm) {
     mm[self$df[variable == self$get_ref("variable"), which = TRUE ], ] %*% as.matrix(reg_coefs[colnames(mm), -1])
   }

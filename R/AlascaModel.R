@@ -19,9 +19,9 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field ignore_missing_covars If TRUE, ignore missing covariate values
     ignore_missing_covars = FALSE,
     #' @field version Version number
-    version = "1.0.4",
+    version = "1.0.5",
     #' @field update_date Date of latest update
-    update_date = "2022-07-22",
+    update_date = "2022-08-16",
 
     # Effect matrices
     #' @field separate_effects If TRUE, try to separate the effects
@@ -332,6 +332,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
       }
     },
     set_design_matrices = function() {
+      #' TODO: There is a bug when the order of the terms in `self$effect_list$expr` differs from `t1:t2:t3` in  a three-way interaction
       if (is.null(self$effect_list$model_matrix)) {
         self$effect_list$model_matrix <- lapply(self$effect_list$expr, function(x) {
           mm <- model.matrix(as.formula(paste0("value ~ ", x)), data = self$df)

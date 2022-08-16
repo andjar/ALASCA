@@ -1,3 +1,9 @@
+# ALASCA 1.0.5
+
+* New feature: Black-and-white mode for more plot types
+* Fix: Crash when combining `use_Rfast = FALSE` and another random intercept than `ID`
+* Fix: Crash when trying to use only a three-way interaction as effect. Still a but unstable
+
 # ALASCA 1.0.4
 
 * New feature: Plot effects in gray scale/black-and-white with symbols instead of colors. Can be tested with `plot(..., bw = TRUE)` (or `grayscale = TRUE` or `greyscale = TRUE`) or similarly with `ALASCA(..., plot.bw = TRUE)`
