@@ -103,6 +103,11 @@ AlascaFormula <- R6::R6Class("AlascaFormula",
           self$additional_terms
         )
       )
+    },
+    formula_wo_id = function() {
+      as.formula(
+        as.formula(paste(self$lhs, "~", gsub("+(1|ID)", "", self$rhs, fixed = TRUE)))
+      )
     }
   ),
   private = list(

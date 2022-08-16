@@ -104,8 +104,8 @@ get_regression_formula <- function() {
       
       # The user has specified a column
       self$model$df_raw$data_df[, ID := get(self$ID)]
-      self$model$participant_column <- "ID"
       self$replace(old_term = self$ID, new_term = "ID")
+      self$model$participant_column <- "ID"
       
     } else if (self$ID == "ID") {
       
@@ -567,12 +567,17 @@ run_regression <- function() {
     #' We need to modify the model matrix. Therefore, self[["formula"]][["formula"]] contains the original terms, whereas
     #' self[["formula"]][["regression_formula"]] has replaced the terms with the modified model matrix
     
+    formula_wo_random <- self$formula$formula_wo_random
     self$regression_model <- lapply(self$get_levels("variable"), function(x) {
-      modmat <- model.matrix(self[["formula"]][["formula"]], data = self$df[ rows_by_variable[[x]] ])
+      modmat <- model.matrix(formula_wo_random, data = self$df[ rows_by_variable[[x]] ])
       #odmat <- modmat[, -1] # Remove intercept
       if (self[["equal_baseline"]]) {
         # Remove interaction between group and first time point
-        modmat <- modmat[, !grepl(paste0(self$effect_terms[[1]], self$get_ref(self$effect_terms[[1]])), colnames(modmat), fixed = TRUE)]
+        modmat <- modmat[, !grepl(
+          paste0(self$effect_terms[[1]],
+                 self$get_ref(self$effect_terms[[1]])),
+          colnames(modmat),
+          fixed = TRUE)]
       }
       self[["cnames_modmat"]] <- colnames(modmat)
       # modmat <- modmat[,ncol(modmat):1]
