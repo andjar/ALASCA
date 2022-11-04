@@ -1,7 +1,7 @@
-pandoc: 2.17.1.1
-pkgdown: 2.0.2
+pandoc: '2.18'
+pkgdown: 2.0.6
 pkgdown_sha: ~
 articles:
   ALASCA: ALASCA.html
-last_built: 2022-06-25T11:27Z
+last_built: 2022-11-04T21:07Z
 

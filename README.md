@@ -1,23 +1,29 @@
 # Assorted, linear ASCA (ALASCA) Functions
+The [ALASCA package](https://andjar.github.io/ALASCA) is described in the paper [ALASCA: An R package for longitudinal and cross-sectional analysis of multivariate data by ASCA-based methods](https://www.frontiersin.org/articles/10.3389/fmolb.2022.962431/full). The paper contains several examples of how the package can be used.
+
 ## Installation
 
-```{r}
-devtools::install_github("andjar/ALASCA", ref="main")
+```
+if (!requireNamespace("devtools", quietly = TRUE))
+    install.packages("devtools")
+
+devtools:install_github(“andjar/ALASCA”, ref = “main”)
 ```
 
-## Notice
+## Citation
+If you have utilized the ALASCA package, please consider citing:
 
-<div class="alert alert-danger" role="alert">
-  The documentation is under revision
-</div>
+Jarmund AH, Madssen TS and Giskeødegård GF (2022) ALASCA: An R package for longitudinal and cross-sectional analysis of multivariate data by ASCA-based methods. *Front. Mol. Biosci.* 9:962431. doi: 10.3389/fmolb.2022.962431
 
-## Usage
-
-Let `df` be a long-format data frame with repeated measurements and the columns `ID`, `time`, `group`, `variable` and `value`;
-
-```{r}
-mod.ALASCA <- ALASCA(df = df, formula = value ~ time * group + (1|ID), validate = TRUE)
 ```
-
-## Background
-This implementation of ALASCA is based on the MATLAB version presented in [Repeated measures ASCA+ for analysis of longitudinal intervention studies with multivariate outcome data](https://www.medrxiv.org/content/10.1101/2020.12.03.20243097v1) by Torfinn S. Madssen, Guro F. Giskeødegård, Age K. Smilde and Johan A. Westerhuis. They are, however, not involved in the development of this R package.
+@ARTICLE{10.3389/fmolb.2022.962431,
+  AUTHOR={Jarmund, Anders Hagen and Madssen, Torfinn Støve and Giskeødegård, Guro F.},
+  TITLE={ALASCA: An R package for longitudinal and cross-sectional analysis of multivariate data by ASCA-based methods},
+  JOURNAL={Frontiers in Molecular Biosciences},
+  VOLUME={9},
+  YEAR={2022},
+  URL={https://www.frontiersin.org/articles/10.3389/fmolb.2022.962431},       
+  DOI={10.3389/fmolb.2022.962431},      
+  ISSN={2296-889X}
+}
+```

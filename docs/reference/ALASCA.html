@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.5</span>
       </span>
     </div>
 
@@ -56,47 +56,80 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">ALASCA</span><span class="op">(</span><span class="va">df</span>, <span class="va">formula</span>, effects <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ALASCA</span><span class="op">(</span><span class="va">df</span>, <span class="va">formula</span>, effects <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>df</dt>
 <dd><p>Data frame to be analyzed</p></dd>
+
+
 <dt>formula</dt>
 <dd><p>Regression formula</p></dd>
+
+
 <dt>effects</dt>
 <dd><p>Vector with effect terms. If <code>NULL</code>, ALASCA will guess (default)</p></dd>
+
+
 <dt>scale_function</dt>
 <dd><p>Either a custom function or string to define scaling function: <code>sdall</code>, <code>sdref</code>, <code>sdt1</code>, <code>sdreft1</code></p></dd>
+
+
 <dt>separate_effects</dt>
 <dd><p>Boolean. Separate effects?</p></dd>
+
+
 <dt>equal_baseline</dt>
 <dd><p>Set to <code>TRUE</code> to remove interaction between effects</p></dd>
+
+
 <dt>validate</dt>
 <dd><p>Boolean. If <code>TRUE</code>, give estimates for robustness</p></dd>
+
+
 <dt>n_validation_runs</dt>
 <dd><p>number of validation runs</p></dd>
+
+
 <dt>validation_method</dt>
 <dd><p>Choose between <code>bootstrap</code> (default) and "jack-knife"</p></dd>
+
+
 <dt>stratification_column</dt>
 <dd><p>The column to stratify participants by</p></dd>
+
+
 <dt>save</dt>
 <dd><p>Save models and plots automatically (default: <code>FALSE</code>)</p></dd>
+
+
 <dt>filename</dt>
 <dd><p>File name to save model and plots (when <code>save = TRUE</code>)</p></dd>
+
+
 <dt>use_Rfast</dt>
 <dd><p>Boolean. Defaults to <code>TRUE</code></p></dd>
+
+
 <dt>p_adjust_method</dt>
 <dd><p>Method for correcting p values for multiple testing, see p.adjust.methods</p></dd>
+
+
 <dt>participant_column</dt>
 <dd><p>String. Name of the column containing participant identification</p></dd>
+
+
 <dt>n_validation_folds</dt>
 <dd><p>Partitions when validating</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>An ALASCA object</p>
+    
+
+<p>An ALASCA object</p>
     </div>
     <div id="details">
     <h2>Details</h2>
@@ -115,8 +148,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

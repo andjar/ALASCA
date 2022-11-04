@@ -3,28 +3,7 @@ template:
     bootswatch: flatly
 development:
   mode: auto
-  version_label: danger
-  version_tooltip: "Under development"
 home:
   title: "Assorted, Linear ASCA Functions"
-  description: "Multivariate analysis of data"
-reference:
-- title: "Running ASCA"
-  desc: "Functions for performing analysis and work with the results"
-- contents: 
-  - ALASCA
-  - validate
-  - get_scores
-  - get_loadings
-  - get_covars
-  - summary.ALASCA
-  - get_predictions
-- title: "Plotting"
-  desc: "Functions for visualizing results"
-- contents: 
-  - plot.ALASCA
-  - screeplot.ALASCA
-- title: "Diagnostics"
-  desc: "Functions for checking statistical validity"
-- contents: 
-  - residuals.ALASCA
+  description: "Multivariate analysis of data with ASCA-based methods"
+  

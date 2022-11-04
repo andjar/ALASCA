@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.5</span>
       </span>
     </div>
 
@@ -51,36 +51,36 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="1.0.2" id="alasca-102">ALASCA 1.0.2<a class="anchor" aria-label="anchor" href="#alasca-102"></a></h2>
-<ul><li>New feature: Permutation testing
-(<code>validation_method = "permutation"</code>)
-<ul><li>Simple permutation testing where data labels are shuffled at two
-levels: either the participant is re-assigned (e.g., a participant is
-randomly moved to a new group (or not)), or labels are shifted
-<em>within</em> participant (e.g. the time labels for a participant are
-shuffled)</li>
-<li>By default, the first effect is assumed to be shuffled
-<em>within</em> participant and the others shuffled across
-<em>participant</em>. The default can be overwritten by specifying
-<code>permutation_within_participants</code> and
-<code>permutation_across_participants</code>,
-e.g. <code>permutation_within_participants = c("time")</code>
+<h2 class="page-header" data-toc-text="1.0.5" id="alasca-105">ALASCA 1.0.5<a class="anchor" aria-label="anchor" href="#alasca-105"></a></h2>
+<ul><li>New feature: Black-and-white mode for more plot types</li>
+<li>Fix: Crash when combining <code>use_Rfast = FALSE</code> and another random intercept than <code>ID</code>
 </li>
-<li>The participants should only belong to <em>one</em> group for each
-of the variables in <code>permutation_across_participants</code> and
-samples will be be reassigned as a block for
-<code>permutation_within_participants</code> (i.e., if a participant has
-two samples in group A and one sample in group B, then the two former
-samples will be reassigned <em>together</em> and not individually)</li>
+<li>Fix: Crash when trying to use only a three-way interaction as effect. Still a but unstable</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.0.4" id="alasca-104">ALASCA 1.0.4<a class="anchor" aria-label="anchor" href="#alasca-104"></a></h2>
+<ul><li>New feature: Plot effects in gray scale/black-and-white with symbols instead of colors. Can be tested with <code>plot(..., bw = TRUE)</code> (or <code>grayscale = TRUE</code> or <code>greyscale = TRUE</code>) or similarly with <code>ALASCA(..., plot.bw = TRUE)</code>
+</li>
+<li>Fix: Prediction plot with single-variable effect (e.g., <code>time</code>) did not color the groups correctly</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.0.3" id="alasca-103">ALASCA 1.0.3<a class="anchor" aria-label="anchor" href="#alasca-103"></a></h2>
+<ul><li>Fix: Crash when some participants are missing certain measurements</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.0.2" id="alasca-102">ALASCA 1.0.2<a class="anchor" aria-label="anchor" href="#alasca-102"></a></h2>
+<ul><li>New feature: Permutation testing (<code>validation_method = "permutation"</code>)
+<ul><li>Simple permutation testing where data labels are shuffled at two levels: either the participant is re-assigned (e.g., a participant is randomly moved to a new group (or not)), or labels are shifted <em>within</em> participant (e.g. the time labels for a participant are shuffled)</li>
+<li>By default, the first effect is assumed to be shuffled <em>within</em> participant and the others shuffled across <em>participant</em>. The default can be overwritten by specifying <code>permutation_within_participants</code> and <code>permutation_across_participants</code>, e.g. <code>permutation_within_participants = c("time")</code>
+</li>
+<li>The participants should only belong to <em>one</em> group for each of the variables in <code>permutation_across_participants</code> and samples will be be reassigned as a block for <code>permutation_within_participants</code> (i.e., if a participant has two samples in group A and one sample in group B, then the two former samples will be reassigned <em>together</em> and not individually)</li>
 </ul></li>
-<li>Improved performance: <code>df["value"][ rowNumers ]</code> is
-somewhat faster than <code>df[ rowNumers, value ]</code>
+<li>Improved performance: <code>df["value"][ rowNumers ]</code> is somewhat faster than <code>df[ rowNumers, value ]</code>
 </li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.0.1" id="alasca-101">ALASCA 1.0.1<a class="anchor" aria-label="anchor" href="#alasca-101"></a></h2>
-<ul><li>Fix: Error when using another column name than <code>ID</code> for
-ID</li>
+<ul><li>Fix: Error when using another column name than <code>ID</code> for ID</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.0.0" id="alasca-100">ALASCA 1.0.0<a class="anchor" aria-label="anchor" href="#alasca-100"></a></h2>
@@ -100,8 +100,7 @@ ID</li>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.5</span>
       </span>
     </div>
 
@@ -73,7 +73,7 @@
                         <h4 data-toc-skip class="author">Anders H.
 Jarmund</h4>
             
-            <h4 data-toc-skip class="date">2022-06-25</h4>
+            <h4 data-toc-skip class="date">2022-11-04</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/andjar/ALASCA/blob/HEAD/vignettes/ALASCA.Rmd" class="external-link"><code>vignettes/ALASCA.Rmd</code></a></small>
       <div class="hidden name"><code>ALASCA.Rmd</code></div>
@@ -111,19 +111,38 @@ pre.plot {
   background-color: white !important;
 }
 </style>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/andjar/ALASCA" class="external-link">"ALASCA"</a></span><span class="op">)</span>
-<span class="co">#&gt; Loading required package: data.table</span>
-<span class="co">#&gt; Warning: package 'data.table' was built under R version 4.0.5</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Attaching package: 'ALASCA'</span>
-<span class="co">#&gt; The following object is masked from 'package:stats':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     screeplot</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://ggplot2.tidyverse.org" class="external-link">"ggplot2"</a></span><span class="op">)</span>
-<span class="co">#&gt; Warning: package 'ggplot2' was built under R version 4.0.5</span></code></pre></div>
-<p>The <a href="https://andjar.github.io/ALASCA" class="external-link">ALASCA package</a> has
-recently been updated and the documentation is to be rewritten</p>
+<p>The <a href="https://andjar.github.io/ALASCA" class="external-link">ALASCA package</a> is
+described in the paper <a href="https://www.frontiersin.org/articles/10.3389/fmolb.2022.962431/full" class="external-link">ALASCA:
+An R package for longitudinal and cross-sectional analysis of
+multivariate data by ASCA-based methods.</a>. The paper contains several
+examples of how the package can be used.</p>
+<div class="section level3">
+<h3 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h3>
+<pre><code>if (!requireNamespace("devtools", quietly = TRUE))
+    install.packages("devtools")
+
+devtools:install_github(“andjar/ALASCA”, ref = “main”)</code></pre>
+</div>
+<div class="section level3">
+<h3 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
+</h3>
+<p>If you have utilized the ALASCA package, please consider citing:</p>
+<p>Jarmund AH, Madssen TS and Giskeødegård GF (2022) ALASCA: An R
+package for longitudinal and cross-sectional analysis of multivariate
+data by ASCA-based methods. <em>Front. Mol. Biosci.</em> 9:962431. doi:
+10.3389/fmolb.2022.962431</p>
+<pre><code>@ARTICLE{10.3389/fmolb.2022.962431,
+  AUTHOR={Jarmund, Anders Hagen and Madssen, Torfinn Støve and Giskeødegård, Guro F.},
+  TITLE={ALASCA: An R package for longitudinal and cross-sectional analysis of multivariate data by ASCA-based methods},
+  JOURNAL={Frontiers in Molecular Biosciences},
+  VOLUME={9},
+  YEAR={2022},
+  URL={https://www.frontiersin.org/articles/10.3389/fmolb.2022.962431},       
+  DOI={10.3389/fmolb.2022.962431},      
+  ISSN={2296-889X}
+}</code></pre>
+</div>
 <div class="section level3">
 <h3 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h3>
@@ -148,8 +167,7 @@ recently been updated and the documentation is to be rewritten</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer>

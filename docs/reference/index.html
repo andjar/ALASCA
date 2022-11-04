@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.5</span>
       </span>
     </div>
 
@@ -50,38 +50,206 @@
     </div>
 
     <table class="ref-index"><colgroup><col class="alias"><col class="title"></colgroup><tbody><tr><th colspan="2">
-          <h2 id="running-asca">Running ASCA <a href="#running-asca" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p><p>Functions for performing analysis and work with the results</p>
+          <h2 id="all-functions">All functions <a href="#all-functions" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
           <p><code><a href="ALASCA.html">ALASCA()</a></code> </p>
         </td>
         <td><p>Create an ALASCA model</p></td>
       </tr><tr><td>
-          <p><code><a href="get_scores.html">get_scores()</a></code> </p>
+          <p><code><a href="AlascaModel.html">AlascaModel</a></code> </p>
         </td>
-        <td><p>Returns model scores</p></td>
+        <td><p>R6 Class Representing an ALASCA model</p></td>
       </tr><tr><td>
-          <p><code><a href="get_loadings.html">get_loadings()</a></code> </p>
+          <p><code><a href="AlascaPlot.html">AlascaPlot</a></code> </p>
         </td>
-        <td><p>Returns model scores</p></td>
+        <td><p>R6 Class that helps visualizing an ALASCA model</p></td>
+      </tr><tr><td>
+          <p><code><a href="build_model.html">build_model()</a></code> </p>
+        </td>
+        <td><p>Organize the ALASCA model construction</p></td>
+      </tr><tr><td>
+          <p><code><a href="clean_alasca.html">clean_alasca()</a></code> </p>
+        </td>
+        <td><p>Clean the ALASCA data</p></td>
+      </tr><tr><td>
+          <p><code><a href="clean_pca.html">clean_pca()</a></code> </p>
+        </td>
+        <td><p>Clean the PCA data</p></td>
+      </tr><tr><td>
+          <p><code><a href="do_pca.html">do_pca()</a></code> </p>
+        </td>
+        <td><p>Perform PCA</p></td>
+      </tr><tr><td>
+          <p><code><a href="do_reduce_dimensions.html">do_reduce_dimensions()</a></code> </p>
+        </td>
+        <td><p>Perform PCA for Limm-PCA</p></td>
+      </tr><tr><td>
+          <p><code><a href="do_validate.html">do_validate()</a></code> </p>
+        </td>
+        <td><p>Validate the ALASCA model LMM</p></td>
+      </tr><tr><td>
+          <p><code><a href="find_missing_predictor_variables.html">find_missing_predictor_variables()</a></code> </p>
+        </td>
+        <td><p>Check if predictor variables are missing</p></td>
+      </tr><tr><td>
+          <p><code><a href="find_missing_response_variables.html">find_missing_response_variables()</a></code> </p>
+        </td>
+        <td><p>Check if response variables are missing</p></td>
+      </tr><tr><td>
+          <p><code><a href="flip.AlascaModel.html">flip(<i>&lt;AlascaModel&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Flip an ALASCA object</p></td>
+      </tr><tr><td>
+          <p><code><a href="flip.html">flip()</a></code> </p>
+        </td>
+        <td><p>Flip an ALASCA object</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_bootstrap_data.html">get_bootstrap_data()</a></code> </p>
+        </td>
+        <td><p>Make bootstrap data set</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_covars.AlascaModel.html">get_covars(<i>&lt;AlascaModel&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Get coefficients for covariates</p></td>
       </tr><tr><td>
           <p><code><a href="get_covars.html">get_covars()</a></code> </p>
         </td>
         <td><p>Get coefficients for covariates</p></td>
       </tr><tr><td>
+          <p><code><a href="get_default_scaling_function.html">get_default_scaling_function()</a></code> </p>
+        </td>
+        <td><p>Get a scaling function</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_effect_matrix.html">get_effect_matrix()</a></code> </p>
+        </td>
+        <td><p>Get effect matrix</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_loadings.AlascaModel.html">get_loadings(<i>&lt;AlascaModel&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Returns model loadings</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_loadings.html">get_loadings()</a></code> </p>
+        </td>
+        <td><p>Returns model scores</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_pca_function.html">get_pca_function()</a></code> </p>
+        </td>
+        <td><p>Summary</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_predictions.AlascaModel.html">get_predictions(<i>&lt;AlascaModel&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Returns model predictions</p></td>
+      </tr><tr><td>
           <p><code><a href="get_predictions.html">get_predictions()</a></code> </p>
         </td>
         <td><p>Get coefficients for covariates</p></td>
-      </tr></tbody><tbody><tr><th colspan="2">
-          <h2 id="plotting">Plotting <a href="#plotting" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p><p>Functions for visualizing results</p>
-        </th>
-      </tr></tbody><tbody></tbody><tbody><tr><th colspan="2">
-          <h2 id="diagnostics">Diagnostics <a href="#diagnostics" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p><p>Functions for checking statistical validity</p>
-        </th>
-      </tr></tbody><tbody></tbody></table></div>
+      </tr><tr><td>
+          <p><code><a href="get_regression_coefficients.html">get_regression_coefficients()</a></code> </p>
+        </td>
+        <td><p>Get regression coefficients</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_regression_formula.html">get_regression_formula()</a></code> </p>
+        </td>
+        <td><p>Modify formula</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_regression_predictions.html">get_regression_predictions()</a></code> </p>
+        </td>
+        <td><p>Validate underlying regression models</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_scaling_function.html">get_scaling_function()</a></code> </p>
+        </td>
+        <td><p>Get a scaling function</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_scores.AlascaModel.html">get_scores(<i>&lt;AlascaModel&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Returns model scores</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_scores.html">get_scores()</a></code> </p>
+        </td>
+        <td><p>Returns model scores</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_validation_percentiles.html">get_validation_percentiles()</a></code> </p>
+        </td>
+        <td><p>Extract percentiles</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_validation_percentiles_covars.html">get_validation_percentiles_covars()</a></code> </p>
+        </td>
+        <td><p>Extract percentiles for covariates</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_validation_percentiles_loading.html">get_validation_percentiles_loading()</a></code> </p>
+        </td>
+        <td><p>Extract percentiles for loading</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_validation_percentiles_regression.html">get_validation_percentiles_regression()</a></code> </p>
+        </td>
+        <td><p>Extract percentiles for regressions</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_validation_percentiles_score.html">get_validation_percentiles_score()</a></code> </p>
+        </td>
+        <td><p>Extract percentiles for scores</p></td>
+      </tr><tr><td>
+          <p><code><a href="plot_covar.html">plot_covar()</a></code> </p>
+        </td>
+        <td><p>Plot covariate coefficients</p></td>
+      </tr><tr><td>
+          <p><code><a href="plot_covariate.html">plot_covariate()</a></code> </p>
+        </td>
+        <td><p>Plot covariate coefficients</p></td>
+      </tr><tr><td>
+          <p><code><a href="plot_covariates.html">plot_covariates()</a></code> </p>
+        </td>
+        <td><p>Plot covariate coefficients</p></td>
+      </tr><tr><td>
+          <p><code><a href="plot_mm.html">plot_mm()</a></code> </p>
+        </td>
+        <td><p>Plot marginal means</p></td>
+      </tr><tr><td>
+          <p><code><a href="plot_val.html">plot_val()</a></code> </p>
+        </td>
+        <td><p>Plot covariate coefficients</p></td>
+      </tr><tr><td>
+          <p><code><a href="prepare_validation_run.html">prepare_validation_run()</a></code> </p>
+        </td>
+        <td><p>Make a single validation run</p></td>
+      </tr><tr><td>
+          <p><code><a href="remove_covars.html">remove_covars()</a></code> </p>
+        </td>
+        <td><p>Remove unwanted covariables</p></td>
+      </tr><tr><td>
+          <p><code><a href="remove_embedded_data.html">remove_embedded_data()</a></code> </p>
+        </td>
+        <td><p>Remove df from object</p></td>
+      </tr><tr><td>
+          <p><code><a href="residuals.AlascaModel.html">residuals(<i>&lt;AlascaModel&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Prints a marco object</p></td>
+      </tr><tr><td>
+          <p><code><a href="run_regression.html">run_regression()</a></code> </p>
+        </td>
+        <td><p>Run regressions</p></td>
+      </tr><tr><td>
+          <p><code><a href="save.AlascaModel.html">save.AlascaModel()</a></code> </p>
+        </td>
+        <td><p>Save ALASCA model</p></td>
+      </tr><tr><td>
+          <p><code><a href="screeplot.AlascaModel.html">screeplot(<i>&lt;AlascaModel&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Get screeplot</p></td>
+      </tr><tr><td>
+          <p><code><a href="screeplot.html">screeplot()</a></code> </p>
+        </td>
+        <td><p>Get screeplot</p></td>
+      </tr><tr><td>
+          <p><code><a href="set_method.html">set_method()</a></code> </p>
+        </td>
+        <td><p>Determine whether to use LM or LMM</p></td>
+      </tr><tr><td>
+          <p><code><a href="summary.AlascaModel.html">summary(<i>&lt;AlascaModel&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Summary</p></td>
+      </tr></tbody></table></div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>
@@ -94,8 +262,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>
