@@ -1,5 +1,5 @@
 ---
-title: "Get Started"
+title: "Getting Started"
 author: "Anders H. Jarmund"
 date: "`r Sys.Date()`"
 bibliography: ALASCA.bib
@@ -21,6 +21,10 @@ knitr::opts_chunk$set(
   cache = FALSE,
   external = FALSE
 )
+library("ALASCA")
+library("data.table")
+library("ggplot2")
+theme_set(theme_bw() + theme(legend.position = "bottom"))
 ```
 
 # Introduction to ALASCA
@@ -82,5 +86,134 @@ Jarmund AH, Madssen TS and Giskeødegård GF (2022) ALASCA: An R package for lon
 }
 ```
 
+## Creating an ASCA model
+
+### Generating a data set
+
+We will start by creating an artificial data set with 100 participants, 5 time points, 2 groups, and 20 variables. The variables follow four patterns
+
+* Linear increase
+* Linear decrease
+* A v-shape
+* An inverted v-shape
+
+The two groups have similar baseline, but one of the groups have a larger change in the values.
+
+```{r}
+n_time     <- 5
+n_id       <- 100
+n_variable <- 20
+
+df <- rbindlist(lapply(seq(1,n_id), function(i_id) {
+  rbindlist(lapply(seq(1,n_variable), function(i_variable) {
+    
+    r_intercept <- rnorm(1, sd = 5)
+    i_group <- i_id %% 2
+    if (i_group == 1) {
+      beta <- 2 + rnorm(1)
+    } else {
+      beta <- 3 + rnorm(1)
+    }
+    
+    temp_data <- data.table(
+                  id = paste0("id_", i_id),
+                  group = paste0("group_", i_group),
+                  time = seq(1, n_time) - 1,
+                  variable = paste0("variable_", i_variable)
+                )
+    if ((i_variable %% 4) == 0) {
+      temp_data[, value := r_intercept + beta * time]
+    } else if ((i_variable %% 4) == 1) {
+      temp_data[, value := r_intercept - beta * time]
+    } else if ((i_variable %% 4) == 2) {
+      temp_data[, value := r_intercept - beta*n_time/2 + beta * abs(time - n_time/2)]
+    } else {
+      temp_data[, value := r_intercept + beta*n_time/2 - beta * abs(time - n_time/2)]
+    }
+    
+    temp_data[, value := value + rnorm(n_time)]
+    temp_data[, value := value * i_variable/2]
+    temp_data
+  }))
+}))
+```
+
+Overall (ignoring the random effects), the four patterns look like this:
+
+```{r}
+ggplot(df[variable %in% c("variable_1", "variable_2", "variable_3", "variable_4"),],
+       aes(time, value, color = group)) +
+  geom_smooth() +
+  facet_wrap(~variable, scales = "free_y")
+```
+
+### Initialize the ALASCA model
+
+We want time to be a categorical variable:
+
+```{r}
+df[, time := paste0("t_", time)]
+```
+
+#### The effect of time
+
+```{r}
+res_1 <- ALASCA(
+  df,
+  value ~ time + (1|id)
+)
+plot(res_1, comp = c(1,2))
+```
+
+#### The effect of group and time
+
+```{r}
+res_2 <- ALASCA(
+  df,
+  value ~ time*group + (1|id)
+)
+plot(res_2, comp = c(1,2))
+```
+
+
+#### As a randomized trial
+
+```{r}
+res_3 <- ALASCA(
+  df,
+  value ~ time + time:group + (1|id),
+  equal_baseline = TRUE
+)
+plot(res_3, comp = c(1,2))
+```
+
+Why is `equal_baseline = TRUE` necessary? Well, it is due to how the regression equations are made by r. Just look at these two model matrices:
+
+```{r}
+res_4 <- ALASCA(
+  df,
+  value ~ time + time:group + (1|id),
+  equal_baseline = FALSE
+)
+
+res_3$effect_list$model_matrix[[1]][1:3, ]
+
+res_4$effect_list$model_matrix[[1]][1:3, ]
+```
+
+You can see that without `equal_baseline = TRUE`, there is an extra interaction term at baseline: `timet_0:groupgroup_1`
+
+#### As a randomized trial with separate effects
+
+```{r}
+res_5 <- ALASCA(
+  df,
+  value ~ time + time:group + (1|id),
+  separate_effects = TRUE,
+  equal_baseline = TRUE
+)
+plot(res_5, comp = c(1,2), effect = 1)
+plot(res_5, comp = c(1,2), effect = 2)
+```
 
 ## References
