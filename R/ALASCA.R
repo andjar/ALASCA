@@ -1193,7 +1193,7 @@ get_validation_percentiles_score <- function(objectlist) {
 
 #' Validate underlying regression models
 #'
-#' This function calcuates predictions from each regression model
+#' This function calculates predictions from each regression model
 #'
 #' @param object An ALASCA object
 #' @return An ALASCA object
@@ -1455,7 +1455,7 @@ plot_prediction <- function() {
   if (is.null(self$variable)) {
     self$model$log(paste0("Selecting the ",round(self$n_limit/2)," variables with highest/lowest loading on `", self$model$effect_list$expr[[self$effect_i[[1]]]], "` (PC",self$component[[1]],"). Use `variable` to specify variables to plot"))
     variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]], n_limit = round(self$n_limit/2))[[1]]
-  } else if (self$variable == 0) {
+  } else if (length(self$variable) == 0) {
     variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])
   } else {
     variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])

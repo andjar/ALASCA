@@ -1,0 +1,304 @@
+---
+title: "Plotting"
+author: "Anders H. Jarmund"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Plotting}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  out.width = "100%", 
+  fig.asp = 0.7,
+  fig.width = 12,
+  fig.align = "center",
+  cache = FALSE,
+  external = FALSE
+)
+library("ALASCA")
+library("data.table")
+library("ggplot2")
+
+n_time     <- 5
+n_id       <- 100
+n_variable <- 20
+
+df <- rbindlist(lapply(seq(1,n_id), function(i_id) {
+  rbindlist(lapply(seq(1,n_variable), function(i_variable) {
+    
+    r_intercept <- rnorm(1, sd = 5)
+    i_group <- i_id %% 2
+    if (i_group == 1) {
+      beta <- 2 + rnorm(1)
+    } else {
+      beta <- 3 + rnorm(1)
+    }
+    
+    temp_data <- data.table(
+                  id = paste0("id_", i_id),
+                  group = paste0("group_", i_group),
+                  time = seq(1, n_time) - 1,
+                  variable = paste0("variable_", i_variable)
+                )
+    if ((i_variable %% 4) == 0) {
+      temp_data[, value := r_intercept + beta * time]
+    } else if ((i_variable %% 4) == 1) {
+      temp_data[, value := r_intercept - beta * time]
+    } else if ((i_variable %% 4) == 2) {
+      temp_data[, value := r_intercept + beta * abs(time - n_time/2)]
+    } else {
+      temp_data[, value := r_intercept - beta * abs(time - n_time/2)]
+    }
+    
+    temp_data[, value := value + rnorm(n_time)]
+    temp_data[, value := value * i_variable/2]
+    temp_data
+  }))
+}))
+
+df[, time := paste0("t_", time)]
+
+res <- ALASCA(
+  df,
+  value ~ time*group + (1|id)
+)
+
+res_2 <- ALASCA(
+  df,
+  value ~ time*group + (1|id),
+  separate_effects = TRUE
+)
+```
+
+# Visualizations in ALASCA
+
+<script src="js/hideOutput.js"></script>
+<style>
+.showopt {
+  background-color: #004c93;
+  color: #FFFFFF; 
+  width: 150px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle !important;
+  float: left;
+  font-family: sans-serif;
+  border-radius: 8px;
+}
+
+.showopt:hover {
+    background-color: #dfe4f2;
+    color: #004c93;
+}
+
+.showopttext::before{
+  content: "Show/Hide Source"
+}
+
+pre.plot {
+  background-color: white !important;
+}
+</style>
+
+We have aimed to implement a range of plotting options for ALASCA. In general, the plotting function is
+
+```
+plot(<object>, component = <component>, effect = <effect>, type = <type>, ...)
+```
+
+where `<object>` is your ALASCA model, `<component>` and `<effect>` the components and effects of interest, and `<type>` the plot type.
+
+ALASCA can save the plots directly if you specify `save = TRUE` when you initialize the ALASCA model. Otherwise, the plots are returned as ordinary `ggplot2` objects and can be saved with `ggsave()`.
+
+Note that you can specify properties of the plot during plotting, e.g. specifying `palette`:
+
+```{r}
+plot(res, component = 1, effect = 1, type = 'effect', palette = c("red", "blue"))
+```
+
+
+## The effect plot
+
+The effect plot is the default plot showing both *scores* and *loadings* for the selected components/effects. You can select one effect and one component:
+
+```{r}
+plot(res, component = 1, effect = 1, type = 'effect')
+```
+
+Or two components:
+
+```{r}
+plot(res, component = c(1, 2), effect = 1, type = 'effect')
+```
+
+Or two effects (note: this requires a model with multiple effects):
+
+```{r}
+plot(res_2, component = 1, effect = c(1, 2), type = 'effect')
+```
+
+Or even a combination of multiple components and effects:
+
+```{r}
+plot(res_2, component = c(1,2), effect = c(1, 2), type = 'effect')
+```
+
+### Plotting scores or loadings
+
+The effect plot consists of two parts: scores and loadings. You can get those components directly:
+
+```{r}
+plot(res, component = 1, effect = 1, type = 'score')
+```
+
+And similarly for loadings:
+
+```{r}
+plot(res, component = 1, effect = 1, type = 'loading')
+```
+
+## Grayscale
+
+Some journals require plots in grayscale (or require fees for colors). You can therefore ask for grayscale figures in ALASCA:
+
+```{r}
+res_3 <- ALASCA(
+  df,
+  value ~ time*group + (1|id),
+  plot.grayscale = TRUE
+)
+plot(res_3, component = 1, effect = 1, type = 'effect')
+```
+
+## Adapting the theme
+
+You can specify theme etc. of the plots when you initialize the ALASCA model:
+
+```{r}
+res_4 <- ALASCA(
+  df,
+  value ~ time*group + (1|id),
+  plot.my_theme = theme_linedraw(),
+  plot.palette = c("red", "blue")
+)
+plot(res_4, component = 1, effect = 1, type = 'effect')
+```
+
+The color palette is by default made from the viridis palette, ending at 0.8: `scales::viridis_pal(end = 0.8)(2)`. You can of course use the colors you want;
+
+```{r, results='hide'}
+res_5 <- ALASCA(
+  df,
+  value ~ time*group + (1|id),
+  plot.my_theme = theme_light(),
+  validate = TRUE,
+  n_validation_runs = 10,
+  plot.palette = scales::brewer_pal(type = "qual")(2)
+)
+plot(res_5, component = 1, effect = 1, type = 'effect')
+```
+
+To remove the ribbon, you can set `plot.ribbon = FALSE`:
+
+```{r}
+res_5 <- ALASCA(
+  df,
+  value ~ time*group + (1|id),
+  plot.my_theme = theme_light(),
+  validate = TRUE,
+  n_validation_runs = 10,
+  plot.palette = scales::brewer_pal(type = "qual")(2),
+  plot.ribbon = FALSE
+)
+plot(res_5, component = 1, effect = 1, type = 'effect')
+```
+
+You can also change these properties directly in the `plot()` function:
+
+```{r}
+plot(res_5,
+     component = 1,
+     effect = 1,
+     type = 'effect',
+     ribbon = TRUE,
+     palette = scales::hue_pal()(2),
+     my_theme = theme_classic())
+```
+
+or (`x_angle` controls the rotation of the x axis labels, and `x_h_just` is used to center them horizontally)
+
+```{r}
+plot(res_5,
+     component = 1,
+     effect = 1,
+     type = 'effect',
+     grayscale = TRUE,
+     x_angle = 0, x_h_just= 0.5
+)
+```
+
+Some even prefer to have loadings along the x axis:
+
+```{r}
+plot(res_5,
+     component = 1,
+     effect = 1,
+     type = 'effect',
+     x_angle = 90, x_h_just = 1, x_v_just = 0.5,
+     flip_axis= FALSE
+)
+```
+
+## Screeplot
+
+Note: The plotting function remembers previous choices, so if you plotted component 1 in the previous plot, you have to specify which components to plot:
+
+```{r}
+plot(res, component = seq(1,10), effect = 1, type = 'scree')
+```
+
+## Predictions / Marginal means
+
+By default, only some variables are selected based on their loadings:
+
+```{r}
+plot(res, component = 1, effect = 1, type = 'prediction')
+```
+
+You can ask for specific variables:
+
+```{r}
+plot(res, component = 1, effect = 1, type = 'prediction', variable = c("variable_8", "variable_13", "variable_15"))
+```
+
+Or adjust the number of retrieved variables (note that we have to set `variable = c()` for the plot function to forget the previous setting):
+
+```{r}
+plot(res, component = 1, effect = 1, type = 'prediction', n_limit = 4, variable = c())
+```
+
+## Histogram
+
+Visualize the distribution of the bootstrap runs:
+
+```{r, results='hide'}
+res_6 <- ALASCA(
+  df,
+  value ~ time*group + (1|id),
+  validate = TRUE,
+  n_validation_runs = 100
+)
+plot(res_6, component = 1, effect = 1, type = 'histogram', n_bins = 30)
+```

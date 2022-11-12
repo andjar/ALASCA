@@ -2,10 +2,9 @@
 title: "Getting Started"
 author: "Anders H. Jarmund"
 date: "`r Sys.Date()`"
-bibliography: ALASCA.bib
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Get Started}
+  %\VignetteIndexEntry{Getting Started}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -59,6 +58,11 @@ pre.plot {
 
 The [ALASCA package](https://andjar.github.io/ALASCA) is described in the paper [ALASCA: An R package for longitudinal and cross-sectional analysis of multivariate data by ASCA-based methods.](https://www.frontiersin.org/articles/10.3389/fmolb.2022.962431/full). The paper contains several examples of how the package can be used.
 
+This vignette will only show how to quickly get started with the ALASCA package. For more examples, see
+
+* [Regression models](articles/regression.html)
+* [Plotting](articles/plot.html)
+
 ## Installation
 
 ```
@@ -68,7 +72,7 @@ if (!requireNamespace("devtools", quietly = TRUE))
 devtools:install_github(“andjar/ALASCA”, ref = “main”)
 ```
 
-## Citation
+### Citation
 If you have utilized the ALASCA package, please consider citing:
 
 Jarmund AH, Madssen TS and Giskeødegård GF (2022) ALASCA: An R package for longitudinal and cross-sectional analysis of multivariate data by ASCA-based methods. *Front. Mol. Biosci.* 9:962431. doi: 10.3389/fmolb.2022.962431
@@ -90,15 +94,14 @@ Jarmund AH, Madssen TS and Giskeødegård GF (2022) ALASCA: An R package for lon
 
 ### Generating a data set
 
-We will start by creating an artificial data set with 100 participants, 5 time points, 2 groups, and 20 variables. The variables follow four patterns
+We will start by creating an artificial data set with 100 participants, 5 time points, and 20 variables. The variables follow four patterns
 
 * Linear increase
 * Linear decrease
 * A v-shape
 * An inverted v-shape
 
-The two groups have similar baseline, but one of the groups have a larger change in the values.
-
+<div class="fold s o">
 ```{r}
 n_time     <- 5
 n_id       <- 100
@@ -108,16 +111,10 @@ df <- rbindlist(lapply(seq(1,n_id), function(i_id) {
   rbindlist(lapply(seq(1,n_variable), function(i_variable) {
     
     r_intercept <- rnorm(1, sd = 5)
-    i_group <- i_id %% 2
-    if (i_group == 1) {
-      beta <- 2 + rnorm(1)
-    } else {
-      beta <- 3 + rnorm(1)
-    }
+    beta <- 2 + rnorm(1)
     
     temp_data <- data.table(
                   id = paste0("id_", i_id),
-                  group = paste0("group_", i_group),
                   time = seq(1, n_time) - 1,
                   variable = paste0("variable_", i_variable)
                 )
@@ -137,17 +134,18 @@ df <- rbindlist(lapply(seq(1,n_id), function(i_id) {
   }))
 }))
 ```
+</div>
 
 Overall (ignoring the random effects), the four patterns look like this:
 
 ```{r}
 ggplot(df[variable %in% c("variable_1", "variable_2", "variable_3", "variable_4"),],
-       aes(time, value, color = group)) +
+       aes(time, value)) +
   geom_smooth() +
   facet_wrap(~variable, scales = "free_y")
 ```
 
-### Initialize the ALASCA model
+### Data format
 
 We want time to be a categorical variable:
 
@@ -155,65 +153,48 @@ We want time to be a categorical variable:
 df[, time := paste0("t_", time)]
 ```
 
-#### The effect of time
+Your data can either be provided in long or wide format. In long format, there is one column with variable names and one column with the variable values. For example:
 
 ```{r}
-res_1 <- ALASCA(
+head(df)
+```
+
+In wide format, each variable has a separate column:
+
+```{r}
+head(dcast(data = df, ... ~ variable))
+```
+
+ALASCA supports both formats but defaults to long format. To use wide format, you have to set `wide = TRUE`. 
+
+### Initialize an ALASCA model
+
+In this example, we are only looking at the common time development. For examples involving group differences, see [the vignette on regression models](articles/regression.html).
+
+To assess the time development in this data set, we will use the regression formula `value ~ time + (1|id)`. Here, `value` is the measured variable value, `time` the predictor, and `(1|id)` a random intercept per participant-id. ALASCA will implicitly run the regression for each variable separately.
+
+```{r}
+res <- ALASCA(
   df,
   value ~ time + (1|id)
 )
-plot(res_1, comp = c(1,2))
 ```
 
-#### The effect of group and time
+The ALASCA function will provide output with important information:
+
+* `Guessing effects: 'time'` When effects are not explicitly provided to ALASCA, the package will try to guess the effects you are interested in. See [the vignette on regression models](articles/regression.html) for details.
+* `Will use linear mixed models!` ALASCA will use linear mixed models when you provide a random effect in the regression formula (i.e., `(1|id)`)
+* `Will use Rfast!` Linear mixed model regression can be performed by one out of two different R packages: the [lme4 package](https://cran.r-project.org/web/packages/lme4/index.html) or the [Rfast package](https://cran.r-project.org/web/packages/Rfast/index.html)
+* `The 'time' column is used for stratification` This is only important for model validation. For details, see [the vignette on model validation](articles/validation.html)
+* `Converting 'character' columns to factors` We provided time as a character variable and ALASCA converts it to a factor variable. If the levels of your variable matters and they are not in alphabetical order, you may want to convert the variable to a factor by yourself.
+* `Scaling data with sdall ...` ALASCA supports various scalings, and `sdall` is the default. For details, see our paper [ALASCA: An R package for longitudinal and cross-sectional analysis of multivariate data by ASCA-based methods.](https://www.frontiersin.org/articles/10.3389/fmolb.2022.962431/full)
+* `Calculating LMM coefficients` Simply informs you that the regression is ongoing as this may take some time
+
+
+To see the resulting model:
 
 ```{r}
-res_2 <- ALASCA(
-  df,
-  value ~ time*group + (1|id)
-)
-plot(res_2, comp = c(1,2))
+plot(res, component = c(1,2), type = 'effect')
 ```
 
-
-#### As a randomized trial
-
-```{r}
-res_3 <- ALASCA(
-  df,
-  value ~ time + time:group + (1|id),
-  equal_baseline = TRUE
-)
-plot(res_3, comp = c(1,2))
-```
-
-Why is `equal_baseline = TRUE` necessary? Well, it is due to how the regression equations are made by r. Just look at these two model matrices:
-
-```{r}
-res_4 <- ALASCA(
-  df,
-  value ~ time + time:group + (1|id),
-  equal_baseline = FALSE
-)
-
-res_3$effect_list$model_matrix[[1]][1:3, ]
-
-res_4$effect_list$model_matrix[[1]][1:3, ]
-```
-
-You can see that without `equal_baseline = TRUE`, there is an extra interaction term at baseline: `timet_0:groupgroup_1`
-
-#### As a randomized trial with separate effects
-
-```{r}
-res_5 <- ALASCA(
-  df,
-  value ~ time + time:group + (1|id),
-  separate_effects = TRUE,
-  equal_baseline = TRUE
-)
-plot(res_5, comp = c(1,2), effect = 1)
-plot(res_5, comp = c(1,2), effect = 2)
-```
-
-## References
+See [the vignette on plotting the model](articles/plot.html) for more visualizations.

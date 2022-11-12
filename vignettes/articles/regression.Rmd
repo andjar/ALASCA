@@ -1,0 +1,309 @@
+---
+title: "Regression models"
+author: "Anders H. Jarmund"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Regression models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  out.width = "100%", 
+  fig.asp = 0.7,
+  fig.width = 12,
+  fig.align = "center",
+  cache = FALSE,
+  external = FALSE
+)
+library("ALASCA")
+library("data.table")
+library("ggplot2")
+theme_set(theme_bw() + theme(legend.position = "bottom"))
+```
+
+# Regression models in ALASCA
+
+<script src="js/hideOutput.js"></script>
+<style>
+.showopt {
+  background-color: #004c93;
+  color: #FFFFFF; 
+  width: 150px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle !important;
+  float: left;
+  font-family: sans-serif;
+  border-radius: 8px;
+}
+
+.showopt:hover {
+    background-color: #dfe4f2;
+    color: #004c93;
+}
+
+.showopttext::before{
+  content: "Show/Hide Source"
+}
+
+pre.plot {
+  background-color: white !important;
+}
+</style>
+
+Please note: We do not comment on scaling in this vignette. For details, see our paper [ALASCA: An R package for longitudinal and cross-sectional analysis of multivariate data by ASCA-based methods.](https://www.frontiersin.org/articles/10.3389/fmolb.2022.962431/full)
+
+## Observational data
+
+### Generating a data set
+
+We will start by creating an artificial data set with 100 participants, 5 time points, 2 groups, and 20 variables. The variables follow four patterns
+
+* Linear increase
+* Linear decrease
+* A v-shape
+* An inverted v-shape
+
+The two groups are different at baseline and one of the groups have larger changes throughout the study.
+
+<div class="fold s o">
+```{r}
+n_time     <- 5
+n_id       <- 100
+n_variable <- 20
+
+df <- rbindlist(lapply(seq(1,n_id), function(i_id) {
+  rbindlist(lapply(seq(1,n_variable), function(i_variable) {
+    
+    r_intercept <- rnorm(1, sd = 5)
+    i_group <- i_id %% 2
+    if (i_group == 1) {
+      beta <- 2 + rnorm(1)
+    } else {
+      beta <- 3 + rnorm(1)
+    }
+    
+    temp_data <- data.table(
+                  id = paste0("id_", i_id),
+                  group = paste0("group_", i_group),
+                  time = seq(1, n_time) - 1,
+                  variable = paste0("variable_", i_variable)
+                )
+    if ((i_variable %% 4) == 0) {
+      temp_data[, value := r_intercept + beta * time]
+    } else if ((i_variable %% 4) == 1) {
+      temp_data[, value := r_intercept - beta * time]
+    } else if ((i_variable %% 4) == 2) {
+      temp_data[, value := r_intercept + beta * abs(time - n_time/2)]
+    } else {
+      temp_data[, value := r_intercept - beta * abs(time - n_time/2)]
+    }
+    
+    temp_data[, value := value + rnorm(n_time)]
+    temp_data[, value := value * i_variable/2]
+    temp_data
+  }))
+}))
+```
+</div>
+
+Overall (ignoring the random effects), the four patterns look like this:
+
+```{r}
+ggplot(df[variable %in% c("variable_1", "variable_2", "variable_3", "variable_4"),],
+       aes(time, value, color = group)) +
+  geom_smooth() +
+  facet_wrap(~variable, scales = "free_y")
+```
+
+We want time to be a categorical variable:
+
+```{r}
+df[, time := paste0("t_", time)]
+```
+
+### Common time and group development
+
+With ALASCA, you can either assess how the two groups develop overall, or you can focus your analyses on how they diverge (see below). In R, you commonly specify your regression equation as `value ~ v1*v2 + (1|v3)` where `value` is outcome, `v1` and `v2` are predictors, and `v3` defines the random intercept. `v1*v2` is shorthand for `v1 + v1:v2 + v2`, that is, the main effects of `v1`, `v2`, and their interaction `v1:v2`. You can, of course, also write `v1 + v1:v2 + v2` - this will become important when you do *not* want the main effect of `v2` (see randomized trial below).
+
+```{r}
+res <- ALASCA(
+  df,
+  value ~ time*group + (1|id)
+)
+plot(res, component = c(1,2), type = 'effect')
+```
+
+### Accessing the regression coefficients and p-values
+
+The regression coefficients can be fetched with:
+
+```{r}
+res$regression_coefficients
+```
+
+P-values are not available when you use hte [Rfast package](https://cran.r-project.org/web/packages/Rfast/index.html). If you choose to use the [lme4 package](https://cran.r-project.org/web/packages/lme4/index.html) instead, p-values will be estimated with the [lmerTest package](https://cran.r-project.org/web/packages/lmerTest/index.html):
+
+```{r}
+res <- ALASCA(
+  df,
+  value ~ time*group + (1|id),
+  use_Rfast = FALSE
+)
+res$regression_coefficients
+```
+
+You can also specify a method to adjust for multiple testing (by default, unadjusted p-values are provided). Here, Benjamini-Hochberg is used (alternative: `c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none")`):
+
+```{r}
+res <- ALASCA(
+  df,
+  value ~ time*group + (1|id),
+  use_Rfast = FALSE,
+  p_adjust_method = "BH"
+)
+res$regression_coefficients
+```
+
+The values are then adjusted within each variable level (e.g., adjusted within time point 1).
+
+### Separating time and group effects
+
+Now, we would like to assess how the two groups *diverge* over time. To do this, we will separate the time and group effect: `separate_effects = TRUE`.
+
+```{r}
+res <- ALASCA(
+  df,
+  value ~ time*group + (1|id),
+  separate_effects = TRUE
+)
+```
+
+Importantly, we must plot the two effects separately. We begin with the time effect of the reference group:
+
+```{r}
+plot(res, component = c(1,2), effect = 2, type = 'effect')
+```
+
+Next, we will look at the effect of group and how the two groups *differ*:
+
+```{r}
+flip(res, effect = 2) # We flip the model to simplify the comparison with the previous model
+plot(res, component = c(1,2), effect = 2, type = 'effect')
+```
+
+In short, we can see that the difference between the two groups increases for some variables (e.g., `variable_13` and `variable_8`). But, the lower plot shows that some variables become more *similar* with time (e.g., `variable_15`). An easy way to confirm how a variable develops is to look at the marginal means. For example, `variable_8`, `variable_13`, and `variable_15` can be assessed like this:
+
+```{r}
+plot(res, type = 'prediction', variable = c("variable_8", "variable_13", "variable_15"))
+```
+
+See [the vignette on plotting the model](articles/plot.html) for more visualizations. 
+
+## Randomized, interventional data
+
+### Generating a data set
+
+We will start by creating an artificial data set with 100 participants, 5 time points, 2 groups, and 20 variables. The variables follow four patterns
+
+* Linear increase
+* Linear decrease
+* A v-shape
+* An inverted v-shape
+
+The two groups have similar baseline, but one of the groups have a larger change in the values.
+
+<div class="fold s o">
+```{r}
+n_time     <- 5
+n_id       <- 100
+n_variable <- 20
+
+df <- rbindlist(lapply(seq(1,n_id), function(i_id) {
+  rbindlist(lapply(seq(1,n_variable), function(i_variable) {
+    
+    r_intercept <- rnorm(1, sd = 5)
+    i_group <- i_id %% 2
+    if (i_group == 1) {
+      beta <- 2 + rnorm(1)
+    } else {
+      beta <- 3 + rnorm(1)
+    }
+    
+    temp_data <- data.table(
+                  id = paste0("id_", i_id),
+                  group = paste0("group_", i_group),
+                  time = seq(1, n_time) - 1,
+                  variable = paste0("variable_", i_variable)
+                )
+    if ((i_variable %% 4) == 0) {
+      temp_data[, value := r_intercept + beta * time]
+    } else if ((i_variable %% 4) == 1) {
+      temp_data[, value := r_intercept - beta * time]
+    } else if ((i_variable %% 4) == 2) {
+      temp_data[, value := r_intercept - beta*n_time/2 + beta * abs(time - n_time/2)] # Note: set to intercept at baseline
+    } else {
+      temp_data[, value := r_intercept + beta*n_time/2 - beta * abs(time - n_time/2)] # Note: set to intercept at baseline
+    }
+    
+    temp_data[, value := value + rnorm(n_time)]
+    temp_data[, value := value * i_variable/2]
+    temp_data
+  }))
+}))
+```
+</div>
+
+Overall (ignoring the random effects), the four patterns look like this:
+
+```{r}
+ggplot(df[variable %in% c("variable_1", "variable_2", "variable_3", "variable_4"),],
+       aes(time, value, color = group)) +
+  geom_smooth() +
+  facet_wrap(~variable, scales = "free_y")
+```
+
+We want time to be a categorical variable:
+
+```{r}
+df[, time := paste0("t_", time)]
+```
+
+### Regression model
+
+A regression model that assumes equal baseline between the two groups can be defined as:
+
+```{r}
+res <- ALASCA(
+  df,
+  value ~ time + time:group + (1|id),
+  equal_baseline = TRUE
+)
+
+plot(res, component = c(1,2), type = 'effect')
+```
+
+Why is `equal_baseline = TRUE` necessary? Well, it is due to how the model matrices are made by r - by default, there is an interaction term between group and the first time point. Just look at these two model matrices:
+
+```{r}
+res_2 <- ALASCA(
+  df,
+  value ~ time + time:group + (1|id),
+  equal_baseline = FALSE
+)
+
+res$effect_list$model_matrix[[1]][1:3, ]
+res_2$effect_list$model_matrix[[1]][1:3, ]
+```

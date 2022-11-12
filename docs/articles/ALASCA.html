@@ -45,6 +45,21 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="../articles/plot.html">Plotting</a>
+    </li>
+    <li>
+      <a href="../articles/regression.html">Regression models</a>
+    </li>
+  </ul>
+</li>
 <li>
   <a href="../news/index.html">Changelog</a>
 </li>
@@ -73,7 +88,7 @@
                         <h4 data-toc-skip class="author">Anders H.
 Jarmund</h4>
             
-            <h4 data-toc-skip class="date">2022-11-10</h4>
+            <h4 data-toc-skip class="date">2022-11-12</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/andjar/ALASCA/blob/HEAD/vignettes/ALASCA.Rmd" class="external-link"><code>vignettes/ALASCA.Rmd</code></a></small>
       <div class="hidden name"><code>ALASCA.Rmd</code></div>
@@ -116,6 +131,12 @@ described in the paper <a href="https://www.frontiersin.org/articles/10.3389/fmo
 An R package for longitudinal and cross-sectional analysis of
 multivariate data by ASCA-based methods.</a>. The paper contains several
 examples of how the package can be used.</p>
+<p>This vignette will only show how to quickly get started with the
+ALASCA package. For more examples, see</p>
+<ul>
+<li><a href="articles/regression.html">Regression models</a></li>
+<li><a href="articles/plot.html">Plotting</a></li>
+</ul>
 <div class="section level3">
 <h3 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h3>
@@ -123,10 +144,9 @@ examples of how the package can be used.</p>
     install.packages("devtools")
 
 devtools:install_github(“andjar/ALASCA”, ref = “main”)</code></pre>
-</div>
-<div class="section level3">
-<h3 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
-</h3>
+<div class="section level4">
+<h4 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
+</h4>
 <p>If you have utilized the ALASCA package, please consider citing:</p>
 <p>Jarmund AH, Madssen TS and Giskeødegård GF (2022) ALASCA: An R
 package for longitudinal and cross-sectional analysis of multivariate
@@ -143,6 +163,7 @@ data by ASCA-based methods. <em>Front. Mol. Biosci.</em> 9:962431. doi:
   ISSN={2296-889X}
 }</code></pre>
 </div>
+</div>
 <div class="section level3">
 <h3 id="creating-an-asca-model">Creating an ASCA model<a class="anchor" aria-label="anchor" href="#creating-an-asca-model"></a>
 </h3>
@@ -150,16 +171,15 @@ data by ASCA-based methods. <em>Front. Mol. Biosci.</em> 9:962431. doi:
 <h4 id="generating-a-data-set">Generating a data set<a class="anchor" aria-label="anchor" href="#generating-a-data-set"></a>
 </h4>
 <p>We will start by creating an artificial data set with 100
-participants, 5 time points, 2 groups, and 20 variables. The variables
-follow four patterns</p>
+participants, 5 time points, and 20 variables. The variables follow four
+patterns</p>
 <ul>
 <li>Linear increase</li>
 <li>Linear decrease</li>
 <li>A v-shape</li>
 <li>An inverted v-shape</li>
 </ul>
-<p>The two groups have similar baseline, but one of the groups have a
-larger change in the values.</p>
+<div class="fold s o">
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">n_time</span>     <span class="op">&lt;-</span> <span class="fl">5</span></span>
 <span><span class="va">n_id</span>       <span class="op">&lt;-</span> <span class="fl">100</span></span>
@@ -169,16 +189,10 @@ larger change in the values.</p>
 <span>  <span class="fu">rbindlist</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>,<span class="va">n_variable</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i_variable</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    </span>
 <span>    <span class="va">r_intercept</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span>, sd <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
-<span>    <span class="va">i_group</span> <span class="op">&lt;-</span> <span class="va">i_id</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="fl">2</span></span>
-<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">i_group</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span></span>
-<span>      <span class="va">beta</span> <span class="op">&lt;-</span> <span class="fl">2</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
-<span>    <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>      <span class="va">beta</span> <span class="op">&lt;-</span> <span class="fl">3</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
-<span>    <span class="op">}</span></span>
+<span>    <span class="va">beta</span> <span class="op">&lt;-</span> <span class="fl">2</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span>    </span>
 <span>    <span class="va">temp_data</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="op">(</span></span>
 <span>                  id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"id_"</span>, <span class="va">i_id</span><span class="op">)</span>,</span>
-<span>                  group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"group_"</span>, <span class="va">i_group</span><span class="op">)</span>,</span>
 <span>                  time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">n_time</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span>,</span>
 <span>                  variable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"variable_"</span>, <span class="va">i_variable</span><span class="op">)</span></span>
 <span>                <span class="op">)</span></span>
@@ -197,174 +211,146 @@ larger change in the values.</p>
 <span>    <span class="va">temp_data</span></span>
 <span>  <span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
 <p>Overall (ignoring the random effects), the four patterns look like
 this:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">ggplot</span><span class="op">(</span><span class="va">df</span><span class="op">[</span><span class="va">variable</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"variable_1"</span>, <span class="st">"variable_2"</span>, <span class="st">"variable_3"</span>, <span class="st">"variable_4"</span><span class="op">)</span>,<span class="op">]</span>,</span>
-<span>       <span class="fu">aes</span><span class="op">(</span><span class="va">time</span>, <span class="va">value</span>, color <span class="op">=</span> <span class="va">group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>       <span class="fu">aes</span><span class="op">(</span><span class="va">time</span>, <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_smooth</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">facet_wrap</span><span class="op">(</span><span class="op">~</span><span class="va">variable</span>, scales <span class="op">=</span> <span class="st">"free_y"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; `geom_smooth()` using method = 'loess' and formula 'y ~ x'</span></span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/unnamed-chunk-3-1.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
-<h4 id="initialize-the-alasca-model">Initialize the ALASCA model<a class="anchor" aria-label="anchor" href="#initialize-the-alasca-model"></a>
+<h4 id="data-format">Data format<a class="anchor" aria-label="anchor" href="#data-format"></a>
 </h4>
 <p>We want time to be a categorical variable:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span><span class="op">[</span>, <span class="va">time</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"t_"</span>, <span class="va">time</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
-<div class="section level5">
-<h5 id="the-effect-of-time">The effect of time<a class="anchor" aria-label="anchor" href="#the-effect-of-time"></a>
-</h5>
+<p>Your data can either be provided in long or wide format. In long
+format, there is one column with variable names and one column with the
+variable values. For example:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">res_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      id time   variable      value</span></span>
+<span><span class="co">#&gt; 1: id_1  t_0 variable_1 -0.4107850</span></span>
+<span><span class="co">#&gt; 2: id_1  t_1 variable_1 -0.4228979</span></span>
+<span><span class="co">#&gt; 3: id_1  t_2 variable_1 -2.3191724</span></span>
+<span><span class="co">#&gt; 4: id_1  t_3 variable_1 -2.8566654</span></span>
+<span><span class="co">#&gt; 5: id_1  t_4 variable_1 -4.0954743</span></span>
+<span><span class="co">#&gt; 6: id_1  t_0 variable_2  7.0111080</span></span></code></pre></div>
+<p>In wide format, each variable has a separate column:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dcast</span><span class="op">(</span>data <span class="op">=</span> <span class="va">df</span>, <span class="va">...</span> <span class="op">~</span> <span class="va">variable</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;       id time variable_1 variable_10 variable_11 variable_12 variable_13</span></span>
+<span><span class="co">#&gt; 1:  id_1  t_0 -0.4107850   -12.10241  -11.335046    16.35553   13.151089</span></span>
+<span><span class="co">#&gt; 2:  id_1  t_1 -0.4228979   -22.10110   13.273392    37.30779    4.990381</span></span>
+<span><span class="co">#&gt; 3:  id_1  t_2 -2.3191724   -26.66476   29.943651    41.86734    1.294877</span></span>
+<span><span class="co">#&gt; 4:  id_1  t_3 -2.8566654   -18.14535   27.580596    58.12845  -14.470668</span></span>
+<span><span class="co">#&gt; 5:  id_1  t_4 -4.0954743   -13.58084    7.278539    70.16188  -23.198079</span></span>
+<span><span class="co">#&gt; 6: id_10  t_0  0.6297020   -43.45320    5.694183    44.63166   28.779246</span></span>
+<span><span class="co">#&gt;    variable_14 variable_15 variable_16 variable_17 variable_18 variable_19</span></span>
+<span><span class="co">#&gt; 1:   -42.26695  -27.328606  -60.950271   -39.04433   -43.84217    66.36502</span></span>
+<span><span class="co">#&gt; 2:   -45.04198   -2.389011  -51.191763   -43.03200   -42.68127    65.00940</span></span>
+<span><span class="co">#&gt; 3:   -63.59270    5.720437  -16.404847   -57.39952   -70.68569    95.88907</span></span>
+<span><span class="co">#&gt; 4:   -60.75598   30.316662    4.025742   -97.27412   -56.59281   102.45100</span></span>
+<span><span class="co">#&gt; 5:   -35.42127   -7.933395   24.263552  -123.77891   -34.98679    73.52573</span></span>
+<span><span class="co">#&gt; 6:    14.24015   41.325166  -37.013399    12.26692    18.47293    29.43129</span></span>
+<span><span class="co">#&gt;    variable_2 variable_20 variable_3 variable_4  variable_5 variable_6</span></span>
+<span><span class="co">#&gt; 1:   7.011108   55.374499 -21.190037 -12.912047  12.6619884  5.3961825</span></span>
+<span><span class="co">#&gt; 2:   4.345391   38.805343 -21.960332 -13.299249   6.4218545 -0.9264059</span></span>
+<span><span class="co">#&gt; 3:   4.889782   25.210520 -21.330414 -13.805122   2.4744431 -1.4309944</span></span>
+<span><span class="co">#&gt; 4:   1.433155   41.707953 -22.480504  -8.394922  -0.7517203  1.3970513</span></span>
+<span><span class="co">#&gt; 5:   6.059698   54.516468 -19.294210  -6.071827 -10.4399769 -0.1027827</span></span>
+<span><span class="co">#&gt; 6:   1.209940   -2.397661   1.254119  15.748183   6.6125958 31.3964643</span></span>
+<span><span class="co">#&gt;     variable_7 variable_8 variable_9</span></span>
+<span><span class="co">#&gt; 1: -10.2831453  12.569485  -10.95698</span></span>
+<span><span class="co">#&gt; 2:  -6.1079800  19.637492  -25.01320</span></span>
+<span><span class="co">#&gt; 3:  -9.7731528  27.846054  -41.04947</span></span>
+<span><span class="co">#&gt; 4:   2.7920973  35.581032  -50.40921</span></span>
+<span><span class="co">#&gt; 5:  -8.3387683  37.948062  -49.69446</span></span>
+<span><span class="co">#&gt; 6:  -0.6834244   4.444117   47.11285</span></span></code></pre></div>
+<p>ALASCA supports both formats but defaults to long format. To use wide
+format, you have to set <code>wide = TRUE</code>.</p>
+</div>
+<div class="section level4">
+<h4 id="initialize-an-alasca-model">Initialize an ALASCA model<a class="anchor" aria-label="anchor" href="#initialize-an-alasca-model"></a>
+</h4>
+<p>In this example, we are only looking at the common time development.
+For examples involving group differences, see <a href="articles/regression.html">the vignette on regression
+models</a>.</p>
+<p>To assess the time development in this data set, we will use the
+regression formula <code>value ~ time + (1|id)</code>. Here,
+<code>value</code> is the measured variable value, <code>time</code> the
+predictor, and <code>(1|id)</code> a random intercept per
+participant-id. ALASCA will implicitly run the regression for each
+variable separately.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span></span>
 <span>  <span class="va">df</span>,</span>
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:17] Initializing ALASCA (v1.0.5, 2022-08-16)</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:17] Guessing effects: `time`</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:17] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:17] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:17] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:17] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:17] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:17] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:18] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:18] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res_1</span>, comp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:18] Effect plot. Selected effect (nr 1): `time`. Component: 1 and 2.</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:18] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:18] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
-<p><img src="ALASCA_files/figure-html/unnamed-chunk-5-1.png" width="100%" style="display: block; margin: auto;"></p>
-</div>
-<div class="section level5">
-<h5 id="the-effect-of-group-and-time">The effect of group and time<a class="anchor" aria-label="anchor" href="#the-effect-of-group-and-time"></a>
-</h5>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">res_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span></span>
-<span>  <span class="va">df</span>,</span>
-<span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:20] Initializing ALASCA (v1.0.5, 2022-08-16)</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:20] Guessing effects: `time+time:group+group`</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:20] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:20] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:20] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:20] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:20] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:20] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:20] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:20] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res_2</span>, comp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:20] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1 and 2.</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:20] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:20] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
-<p><img src="ALASCA_files/figure-html/unnamed-chunk-6-1.png" width="100%" style="display: block; margin: auto;"></p>
-</div>
-<div class="section level5">
-<h5 id="as-a-randomized-trial">As a randomized trial<a class="anchor" aria-label="anchor" href="#as-a-randomized-trial"></a>
-</h5>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">res_3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span></span>
-<span>  <span class="va">df</span>,</span>
-<span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span>,</span>
-<span>  equal_baseline <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:22] Initializing ALASCA (v1.0.5, 2022-08-16)</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:22] Guessing effects: `time+time:group`</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:22] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:22] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:22] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:22] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:22] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:22] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:22] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:22] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res_3</span>, comp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:22] Effect plot. Selected effect (nr 1): `time+time:group`. Component: 1 and 2.</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:22] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:23] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
-<p><img src="ALASCA_files/figure-html/unnamed-chunk-7-1.png" width="100%" style="display: block; margin: auto;"></p>
-<p>Why is <code>equal_baseline = TRUE</code> necessary? Well, it is due
-to how the regression equations are made by r. Just look at these two
-model matrices:</p>
+<span><span class="co">#&gt; INFO  [2022-11-12 16:27:11] Initializing ALASCA (v1.0.5, 2022-08-16)</span></span>
+<span><span class="co">#&gt; WARN  [2022-11-12 16:27:11] Guessing effects: `time`</span></span>
+<span><span class="co">#&gt; INFO  [2022-11-12 16:27:11] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2022-11-12 16:27:11] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2022-11-12 16:27:11] The `time` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2022-11-12 16:27:11] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2022-11-12 16:27:11] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2022-11-12 16:27:11] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2022-11-12 16:27:12] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2022-11-12 16:27:12] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span></code></pre></div>
+<p>The ALASCA function will provide output with important
+information:</p>
+<ul>
+<li>
+<code>Guessing effects: 'time'</code> When effects are not
+explicitly provided to ALASCA, the package will try to guess the effects
+you are interested in. See <a href="articles/regression.html">the
+vignette on regression models</a> for details.</li>
+<li>
+<code>Will use linear mixed models!</code> ALASCA will use linear
+mixed models when you provide a random effect in the regression formula
+(i.e., <code>(1|id)</code>)</li>
+<li>
+<code>Will use Rfast!</code> Linear mixed model regression can be
+performed by one out of two different R packages: the <a href="https://cran.r-project.org/web/packages/lme4/index.html" class="external-link">lme4
+package</a> or the <a href="https://cran.r-project.org/web/packages/Rfast/index.html" class="external-link">Rfast
+package</a>
+</li>
+<li>
+<code>The 'time' column is used for stratification</code> This is
+only important for model validation. For details, see <a href="articles/validation.html">the vignette on model
+validation</a>
+</li>
+<li>
+<code>Converting 'character' columns to factors</code> We provided
+time as a character variable and ALASCA converts it to a factor
+variable. If the levels of your variable matters and they are not in
+alphabetical order, you may want to convert the variable to a factor by
+yourself.</li>
+<li>
+<code>Scaling data with sdall ...</code> ALASCA supports various
+scalings, and <code>sdall</code> is the default. For details, see our
+paper <a href="https://www.frontiersin.org/articles/10.3389/fmolb.2022.962431/full" class="external-link">ALASCA:
+An R package for longitudinal and cross-sectional analysis of
+multivariate data by ASCA-based methods.</a>
+</li>
+<li>
+<code>Calculating LMM coefficients</code> Simply informs you that
+the regression is ongoing as this may take some time</li>
+</ul>
+<p>To see the resulting model:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">res_4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span></span>
-<span>  <span class="va">df</span>,</span>
-<span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span>,</span>
-<span>  equal_baseline <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:24] Initializing ALASCA (v1.0.5, 2022-08-16)</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:24] Guessing effects: `time+time:group`</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:24] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:24] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:24] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:24] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:24] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:24] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:24] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:24] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
-<span></span>
-<span><span class="va">res_3</span><span class="op">$</span><span class="va">effect_list</span><span class="op">$</span><span class="va">model_matrix</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="op">]</span></span>
-<span><span class="co">#&gt;   timet_1 timet_2 timet_3 timet_4 timet_1:groupgroup_1 timet_2:groupgroup_1</span></span>
-<span><span class="co">#&gt; 1       0       0       0       0                    0                    0</span></span>
-<span><span class="co">#&gt; 2       1       0       0       0                    1                    0</span></span>
-<span><span class="co">#&gt; 3       0       1       0       0                    0                    1</span></span>
-<span><span class="co">#&gt;   timet_3:groupgroup_1 timet_4:groupgroup_1</span></span>
-<span><span class="co">#&gt; 1                    0                    0</span></span>
-<span><span class="co">#&gt; 2                    0                    0</span></span>
-<span><span class="co">#&gt; 3                    0                    0</span></span>
-<span></span>
-<span><span class="va">res_4</span><span class="op">$</span><span class="va">effect_list</span><span class="op">$</span><span class="va">model_matrix</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="op">]</span></span>
-<span><span class="co">#&gt;   timet_1 timet_2 timet_3 timet_4 timet_0:groupgroup_1 timet_1:groupgroup_1</span></span>
-<span><span class="co">#&gt; 1       0       0       0       0                    1                    0</span></span>
-<span><span class="co">#&gt; 2       1       0       0       0                    0                    1</span></span>
-<span><span class="co">#&gt; 3       0       1       0       0                    0                    0</span></span>
-<span><span class="co">#&gt;   timet_2:groupgroup_1 timet_3:groupgroup_1 timet_4:groupgroup_1</span></span>
-<span><span class="co">#&gt; 1                    0                    0                    0</span></span>
-<span><span class="co">#&gt; 2                    0                    0                    0</span></span>
-<span><span class="co">#&gt; 3                    1                    0                    0</span></span></code></pre></div>
-<p>You can see that without <code>equal_baseline = TRUE</code>, there is
-an extra interaction term at baseline:
-<code>timet_0:groupgroup_1</code></p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
+<span><span class="co">#&gt; INFO  [2022-11-12 16:27:12] Effect plot. Selected effect (nr 1): `time`. Component: 1 and 2.</span></span>
+<span><span class="co">#&gt; WARN  [2022-11-12 16:27:12] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
+<span><span class="co">#&gt; WARN  [2022-11-12 16:27:12] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
+<p><img src="ALASCA_files/figure-html/unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;"></p>
+<p>See <a href="articles/plot.html">the vignette on plotting the
+model</a> for more visualizations.</p>
 </div>
-<div class="section level5">
-<h5 id="as-a-randomized-trial-with-separate-effects">As a randomized trial with separate effects<a class="anchor" aria-label="anchor" href="#as-a-randomized-trial-with-separate-effects"></a>
-</h5>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">res_5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ALASCA.html">ALASCA</a></span><span class="op">(</span></span>
-<span>  <span class="va">df</span>,</span>
-<span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span>,</span>
-<span>  separate_effects <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  equal_baseline <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:25] Initializing ALASCA (v1.0.5, 2022-08-16)</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:25] Guessing effects: `time` and `time:group`</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:25] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:25] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:25] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:25] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:25] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:25] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:25] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:25] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res_5</span>, comp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, effect <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:25] Effect plot. Selected effect (nr 1): `time`. Component: 1 and 2.</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:25] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:25] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
-<p><img src="ALASCA_files/figure-html/unnamed-chunk-9-1.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res_5</span>, comp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, effect <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-10 23:21:26] Effect plot. Selected effect (nr 2): `time:group`. Component: 1 and 2.</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:26] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-10 23:21:27] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
-<p><img src="ALASCA_files/figure-html/unnamed-chunk-9-2.png" width="100%" style="display: block; margin: auto;"></p>
-</div>
-</div>
-</div>
-<div class="section level3">
-<h3 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
-</h3>
 </div>
 </div>
   </div>
