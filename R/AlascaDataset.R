@@ -179,7 +179,7 @@ AlascaDataset <- R6::R6Class("AlascaDataset",
     guess_stratification_column = function() {
       # Check or guess stratification column
       if (!is.null(self$model$stratification_column) && !self$model$stratification_column %in% self$model$formula$all_fixed_terms) {
-        self$formula$add(self$model$stratification_column)
+        self$model$formula$add(self$model$stratification_column)
         self$model$log(paste0("The `", self$model$stratification_column, "` column is used for stratification"))
       } else if (is.null(self$model$stratification_column) && "group" %in% colnames(self$data_df)) {
         self$model$formula$add("group")

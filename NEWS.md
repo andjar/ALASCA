@@ -1,3 +1,8 @@
+# ALASCA 1.0.7
+
+* Fix: Error for small datasets
+* Fix: Error for custom stratification columns
+
 # ALASCA 1.0.5
 
 * New feature: Black-and-white mode for more plot types

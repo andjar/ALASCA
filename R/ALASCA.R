@@ -463,7 +463,7 @@ run_regression <- function() {
     rows_by_variable <- tmp$idx
     names(rows_by_variable) <- tmp$variable
   } else {
-    rows_by_variable <- lapply(self$get_levels("variable"), function(x) data.table(I = which(self[["df"]][["variable"]] == x)) )
+    rows_by_variable <- lapply(self$get_levels("variable"), function(x) which(self[["df"]][["variable"]] == x) )
     names(rows_by_variable) <- self$get_levels("variable")
   }
 
