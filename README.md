@@ -1,7 +1,7 @@
 # Assorted, linear ASCA (ALASCA) Functions
 The [ALASCA package](https://andjar.github.io/ALASCA) is described in the paper [ALASCA: An R package for longitudinal and cross-sectional analysis of multivariate data by ASCA-based methods](https://www.frontiersin.org/articles/10.3389/fmolb.2022.962431/full). The paper contains several examples of how the package can be used.
 
-See [Getting started](articles/ALASCA.html) for more examples!
+See [Getting started](https://andjar.github.io/ALASCA/articles/ALASCA.html) for more examples!
 
 
 ## Installation
@@ -10,7 +10,7 @@ See [Getting started](articles/ALASCA.html) for more examples!
 if (!requireNamespace("devtools", quietly = TRUE))
     install.packages("devtools")
 
-devtools::install_github(“andjar/ALASCA”, ref = “main”)
+devtools::install_github("andjar/ALASCA", ref = "main")
 ```
 
 ## Citation
