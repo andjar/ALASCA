@@ -10,7 +10,7 @@ See [Getting started](articles/ALASCA.html) for more examples!
 if (!requireNamespace("devtools", quietly = TRUE))
     install.packages("devtools")
 
-devtools:install_github(“andjar/ALASCA”, ref = “main”)
+devtools::install_github(“andjar/ALASCA”, ref = “main”)
 ```
 
 ## Citation
