@@ -548,7 +548,7 @@ run_regression <- function() {
     self$regression_coefficients <- setDT(as.data.frame(
       vapply(self$get_levels("variable"), function(x) {
         Rfast::lmfit(
-          y = self[["df"]]["value"][ rows_by_variable[[x]] ],
+          y = self[["df"]][["value"]][ rows_by_variable[[x]] ],
           x = self[["modmat"]][rows_by_variable[[x]], ]
         )$be
       }, FUN.VALUE = numeric(ncol(self[["modmat"]])))
