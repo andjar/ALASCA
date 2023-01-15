@@ -1,3 +1,7 @@
+# ALASCA 1.0.8
+
+* Fix: Error when running linear models with Rfast (`Error in crossprod(x, y) : requires numeric/complex matrix/vector arguments`)
+
 # ALASCA 1.0.7
 
 * Fix: Error for small datasets
