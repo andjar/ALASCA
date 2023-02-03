@@ -296,7 +296,7 @@ get_scaling_function <- function() {
     if (!self$minimize_object) {
       self$log("Not scaling data...", level = "WARN")
     }
-    self$scale_function <- identity()
+    self$scale_function <- function(df) { return(df) }
   } else if (is.character(self$scale_function)) {
     # Use a deafult scaling
     if (!self$minimize_object) {
