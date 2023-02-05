@@ -552,7 +552,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
             effect_i <- length(self$ALASCA$loading)
             lapply(effect_i, function(i) self$ALASCA$loading[[i]][PC %in% component])
           } else {
-            self$ALASCA$loading[[effect_i]][PC %in% component]
+            list(self$ALASCA$loading[[effect_i]][PC %in% component])
           }
         } else {
           lapply(effect_i, function(i) self$ALASCA$loading[[i]][PC %in% component])
