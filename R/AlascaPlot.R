@@ -25,6 +25,8 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
     group_label = "Group",
     #' @field n_bins Number of bins for histograms
     n_bins = NULL,
+    #' @field sort_loadings String: loading, alpha, vector
+    sort_loadings = "loading",
     group = NULL,
     #' @field ribbon Boolean. Plot ribbons for uncertainties
     ribbon = TRUE,
@@ -220,6 +222,16 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
         self$model$log(paste("Showing", self$n_limit * 2, "of", length(self$model$get_levels("variable")), "variables. Adjust the number with `n_limit`"), level = "WARN")
       }
       data_to_plot <- self$model$get_covars(n_limit = self$n_limit)
+      
+      if (length(self$sort_loadings) > 1) {
+        data_to_plot <- data_to_plot[covars %in% self$sort_loadings, ]
+        data_to_plot[, covars := factor(covars, levels = rev(self$sort_loadings))]
+        self$model$log(paste("Note the above warning; some of the selected variables may not be shown. Adjust the number with `n_limit`"), level = "WARN")
+      } else if (self$sort_loadings == "alpha") {
+        data_to_plot[, covars := factor(covars)][, covars := factor(covars, levels = rev(levels(covars)))]
+      } else {
+        data_to_plot[, covars := factor(covars, levels = data_to_plot[order(loading), covars])]
+      }
 
       # Prettify terms
       all_variables <- unique(data_to_plot[, variable])

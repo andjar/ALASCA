@@ -1,6 +1,6 @@
 Package: ALASCA
 Title: Assorted, Linear ASCA Functions
-Version: 1.0.9
+Version: 1.0.10
 Authors@R: 
     person(given = "Anders H.",
            family = "Jarmund",

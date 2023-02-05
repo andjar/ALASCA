@@ -1817,9 +1817,19 @@ plot_effect_loading <- function(effect_i = 1, component = 1) {
   if (self$n_limit > 0) {
     self$model$log(paste("Showing", self$n_limit*2, "of",length(self$model$get_levels("variable")),"variables. Adjust the number with `n_limit`"), level = "WARN")
   }
-  data_to_plot <- self$model$get_loadings(effect_i = effect_i, component = component, n_limit = self$n_limit)[[1]]
-  data_to_plot[, covars := factor(covars, levels = data_to_plot[order(loading), covars])]
   
+  data_to_plot <- self$model$get_loadings(effect_i = effect_i, component = component, n_limit = self$n_limit)[[1]]
+
+  if (length(self$sort_loadings) > 1) {
+    data_to_plot <- data_to_plot[covars %in% self$sort_loadings, ]
+    data_to_plot[, covars := factor(covars, levels = rev(self$sort_loadings))]
+    self$model$log(paste("Note the above warning; some of the selected variables may not be shown. Adjust the number with `n_limit`"), level = "WARN")
+  } else if (self$sort_loadings == "alpha") {
+    data_to_plot[, covars := factor(covars)][, covars := factor(covars, levels = rev(levels(covars)))]
+  } else {
+    data_to_plot[, covars := factor(covars, levels = data_to_plot[order(loading), covars])]
+  }
+
   if(!is.null(self$loading_group_column)) {
     data_to_plot <- merge(data_to_plot, self$model$variable_labels, by = "covars")
     if (self$sort_by_loading_group) {

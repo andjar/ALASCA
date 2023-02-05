@@ -1,3 +1,10 @@
+# ALASCA 1.0.10
+
+* New feature: `plot()` now accepts the argument `sort_loadings` to control the order of the loading variables
+  * `sort_loadings = "loading"` sorts the variables by loading (default)
+  * `sort_loadings = "alpha"` sorts the variables alphabetically
+  * `sort_loadings = c(...)` sorts the variables in the same order as `c(...)`, where `...` is the variables of interest. Note that it may be required to increase `n_limit` (or use `n_limit = 0`) to ensure that all variables are shown. It is recommended to use `n_limit = 0`, i.e., `plot(..., sort_loadings = c(...), n_limit = 0)`
+
 # ALASCA 1.0.9
 
 * Fix: Error when running LMMs without scaling
