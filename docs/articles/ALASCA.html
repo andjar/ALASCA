@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.11</span>
       </span>
     </div>
 
@@ -88,7 +88,7 @@
                         <h4 data-toc-skip class="author">Anders H.
 Jarmund</h4>
             
-            <h4 data-toc-skip class="date">2022-11-12</h4>
+            <h4 data-toc-skip class="date">2023-06-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/andjar/ALASCA/blob/HEAD/vignettes/ALASCA.Rmd" class="external-link"><code>vignettes/ALASCA.Rmd</code></a></small>
       <div class="hidden name"><code>ALASCA.Rmd</code></div>
@@ -219,7 +219,7 @@ this:</p>
 <span>       <span class="fu">aes</span><span class="op">(</span><span class="va">time</span>, <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_smooth</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">facet_wrap</span><span class="op">(</span><span class="op">~</span><span class="va">variable</span>, scales <span class="op">=</span> <span class="st">"free_y"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; `geom_smooth()` using method = 'loess' and formula 'y ~ x'</span></span></code></pre></div>
+<span><span class="co">#&gt; `geom_smooth()` using method = 'loess' and formula = 'y ~ x'</span></span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/unnamed-chunk-3-1.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
@@ -234,43 +234,43 @@ variable values. For example:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      id time   variable      value</span></span>
-<span><span class="co">#&gt; 1: id_1  t_0 variable_1 -0.4107850</span></span>
-<span><span class="co">#&gt; 2: id_1  t_1 variable_1 -0.4228979</span></span>
-<span><span class="co">#&gt; 3: id_1  t_2 variable_1 -2.3191724</span></span>
-<span><span class="co">#&gt; 4: id_1  t_3 variable_1 -2.8566654</span></span>
-<span><span class="co">#&gt; 5: id_1  t_4 variable_1 -4.0954743</span></span>
-<span><span class="co">#&gt; 6: id_1  t_0 variable_2  7.0111080</span></span></code></pre></div>
+<span><span class="co">#&gt; 1: id_1  t_0 variable_1  1.3828485</span></span>
+<span><span class="co">#&gt; 2: id_1  t_1 variable_1 -0.1201201</span></span>
+<span><span class="co">#&gt; 3: id_1  t_2 variable_1 -1.9517166</span></span>
+<span><span class="co">#&gt; 4: id_1  t_3 variable_1 -2.6064875</span></span>
+<span><span class="co">#&gt; 5: id_1  t_4 variable_1 -3.7038462</span></span>
+<span><span class="co">#&gt; 6: id_1  t_0 variable_2 -3.7026631</span></span></code></pre></div>
 <p>In wide format, each variable has a separate column:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dcast</span><span class="op">(</span>data <span class="op">=</span> <span class="va">df</span>, <span class="va">...</span> <span class="op">~</span> <span class="va">variable</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       id time variable_1 variable_10 variable_11 variable_12 variable_13</span></span>
-<span><span class="co">#&gt; 1:  id_1  t_0 -0.4107850   -12.10241  -11.335046    16.35553   13.151089</span></span>
-<span><span class="co">#&gt; 2:  id_1  t_1 -0.4228979   -22.10110   13.273392    37.30779    4.990381</span></span>
-<span><span class="co">#&gt; 3:  id_1  t_2 -2.3191724   -26.66476   29.943651    41.86734    1.294877</span></span>
-<span><span class="co">#&gt; 4:  id_1  t_3 -2.8566654   -18.14535   27.580596    58.12845  -14.470668</span></span>
-<span><span class="co">#&gt; 5:  id_1  t_4 -4.0954743   -13.58084    7.278539    70.16188  -23.198079</span></span>
-<span><span class="co">#&gt; 6: id_10  t_0  0.6297020   -43.45320    5.694183    44.63166   28.779246</span></span>
+<span><span class="co">#&gt; 1:  id_1  t_0  1.3828485   -6.228376  -15.265175   37.096028   -38.06494</span></span>
+<span><span class="co">#&gt; 2:  id_1  t_1 -0.1201201  -26.588474    6.044736   69.501164   -60.78676</span></span>
+<span><span class="co">#&gt; 3:  id_1  t_2 -1.9517166  -44.381441   19.647231   90.658443   -69.23089</span></span>
+<span><span class="co">#&gt; 4:  id_1  t_3 -2.6064875  -30.279954   20.706314  123.272526   -87.70685</span></span>
+<span><span class="co">#&gt; 5:  id_1  t_4 -3.7038462  -24.107493   10.612104  154.207681   -99.25033</span></span>
+<span><span class="co">#&gt; 6: id_10  t_0  5.8397677   -2.485652    1.539469   -2.489778   -17.62265</span></span>
 <span><span class="co">#&gt;    variable_14 variable_15 variable_16 variable_17 variable_18 variable_19</span></span>
-<span><span class="co">#&gt; 1:   -42.26695  -27.328606  -60.950271   -39.04433   -43.84217    66.36502</span></span>
-<span><span class="co">#&gt; 2:   -45.04198   -2.389011  -51.191763   -43.03200   -42.68127    65.00940</span></span>
-<span><span class="co">#&gt; 3:   -63.59270    5.720437  -16.404847   -57.39952   -70.68569    95.88907</span></span>
-<span><span class="co">#&gt; 4:   -60.75598   30.316662    4.025742   -97.27412   -56.59281   102.45100</span></span>
-<span><span class="co">#&gt; 5:   -35.42127   -7.933395   24.263552  -123.77891   -34.98679    73.52573</span></span>
-<span><span class="co">#&gt; 6:    14.24015   41.325166  -37.013399    12.26692    18.47293    29.43129</span></span>
-<span><span class="co">#&gt;    variable_2 variable_20 variable_3 variable_4  variable_5 variable_6</span></span>
-<span><span class="co">#&gt; 1:   7.011108   55.374499 -21.190037 -12.912047  12.6619884  5.3961825</span></span>
-<span><span class="co">#&gt; 2:   4.345391   38.805343 -21.960332 -13.299249   6.4218545 -0.9264059</span></span>
-<span><span class="co">#&gt; 3:   4.889782   25.210520 -21.330414 -13.805122   2.4744431 -1.4309944</span></span>
-<span><span class="co">#&gt; 4:   1.433155   41.707953 -22.480504  -8.394922  -0.7517203  1.3970513</span></span>
-<span><span class="co">#&gt; 5:   6.059698   54.516468 -19.294210  -6.071827 -10.4399769 -0.1027827</span></span>
-<span><span class="co">#&gt; 6:   1.209940   -2.397661   1.254119  15.748183   6.6125958 31.3964643</span></span>
-<span><span class="co">#&gt;     variable_7 variable_8 variable_9</span></span>
-<span><span class="co">#&gt; 1: -10.2831453  12.569485  -10.95698</span></span>
-<span><span class="co">#&gt; 2:  -6.1079800  19.637492  -25.01320</span></span>
-<span><span class="co">#&gt; 3:  -9.7731528  27.846054  -41.04947</span></span>
-<span><span class="co">#&gt; 4:   2.7920973  35.581032  -50.40921</span></span>
-<span><span class="co">#&gt; 5:  -8.3387683  37.948062  -49.69446</span></span>
-<span><span class="co">#&gt; 6:  -0.6834244   4.444117   47.11285</span></span></code></pre></div>
+<span><span class="co">#&gt; 1:    54.23920    1.315715   -10.57533   0.3414308    11.31133    1.142439</span></span>
+<span><span class="co">#&gt; 2:    52.46458   29.328098    21.82058 -12.5444773   -32.91480   22.564073</span></span>
+<span><span class="co">#&gt; 3:    35.62920   49.129389    20.12162 -28.8686196   -42.65936   47.322981</span></span>
+<span><span class="co">#&gt; 4:    43.84871   49.257333    42.05962 -54.7630871   -16.13788   40.718641</span></span>
+<span><span class="co">#&gt; 5:    45.02664   27.979451    35.83606 -86.3978895   -19.98617   36.743038</span></span>
+<span><span class="co">#&gt; 6:   -22.63858  -35.019133    15.08800 -19.7010536    25.51573  -21.008835</span></span>
+<span><span class="co">#&gt;    variable_2 variable_20 variable_3 variable_4 variable_5 variable_6</span></span>
+<span><span class="co">#&gt; 1:  -3.702663    48.08820  -7.393191   8.467175  -9.164179  -10.84332</span></span>
+<span><span class="co">#&gt; 2:  -1.645860    70.73733  -4.448549  12.497811 -18.577833  -17.67454</span></span>
+<span><span class="co">#&gt; 3:  -1.839278   121.27117  -1.234828  12.021641 -25.275798  -13.08360</span></span>
+<span><span class="co">#&gt; 4:  -2.512751   133.98493  -1.986770  16.288698 -36.566066  -12.00940</span></span>
+<span><span class="co">#&gt; 5:  -1.872892   161.08040  -3.318645  16.644950 -42.413655  -17.70020</span></span>
+<span><span class="co">#&gt; 6:  -5.492693   -94.80807  -1.196333 -14.673716  19.880784   27.20675</span></span>
+<span><span class="co">#&gt;    variable_7 variable_8 variable_9</span></span>
+<span><span class="co">#&gt; 1:   9.263786  7.8786732  -45.98909</span></span>
+<span><span class="co">#&gt; 2:   6.007909 11.5854577  -50.39939</span></span>
+<span><span class="co">#&gt; 3:   9.915654 17.6115236  -46.19500</span></span>
+<span><span class="co">#&gt; 4:  10.165576 13.1239293  -56.45868</span></span>
+<span><span class="co">#&gt; 5:   6.096899 14.3080955  -57.90246</span></span>
+<span><span class="co">#&gt; 6: -11.054364 -0.2876509   14.96302</span></span></code></pre></div>
 <p>ALASCA supports both formats but defaults to long format. To use wide
 format, you have to set <code>wide = TRUE</code>.</p>
 </div>
@@ -291,16 +291,16 @@ variable separately.</p>
 <span>  <span class="va">df</span>,</span>
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:27:11] Initializing ALASCA (v1.0.5, 2022-08-16)</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:27:11] Guessing effects: `time`</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:27:11] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:27:11] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:27:11] The `time` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:27:11] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:27:11] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:27:11] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:27:12] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:27:12] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2023-06-19 22:06:10] Initializing ALASCA (v1.0.11, 2023-06-19)</span></span>
+<span><span class="co">#&gt; WARN  [2023-06-19 22:06:10] Guessing effects: `time`</span></span>
+<span><span class="co">#&gt; INFO  [2023-06-19 22:06:10] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2023-06-19 22:06:10] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2023-06-19 22:06:10] The `time` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2023-06-19 22:06:10] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2023-06-19 22:06:10] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2023-06-19 22:06:10] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2023-06-19 22:06:10] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2023-06-19 22:06:10] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span></code></pre></div>
 <p>The ALASCA function will provide output with important
 information:</p>
 <ul>
@@ -344,9 +344,9 @@ the regression is ongoing as this may take some time</li>
 <p>To see the resulting model:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:27:12] Effect plot. Selected effect (nr 1): `time`. Component: 1 and 2.</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:27:12] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:27:12] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2023-06-19 22:06:11] Effect plot. Selected effect (nr 1): `time`. Component: 1 and 2.</span></span>
+<span><span class="co">#&gt; WARN  [2023-06-19 22:06:11] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
+<span><span class="co">#&gt; WARN  [2023-06-19 22:06:12] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>See <a href="articles/plot.html">the vignette on plotting the
 model</a> for more visualizations.</p>
@@ -372,7 +372,7 @@ model</a> for more visualizations.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

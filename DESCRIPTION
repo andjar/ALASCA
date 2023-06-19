@@ -1,6 +1,6 @@
 Package: ALASCA
 Title: Assorted, Linear ASCA Functions
-Version: 1.0.10
+Version: 1.0.11
 Authors@R: 
     person(given = "Anders H.",
            family = "Jarmund",
@@ -30,7 +30,8 @@ Imports:
 	ggrepel,
 	Rfast,
 	data.table,
-	scales
+	scales,
+	clue
 Suggests: 
     knitr,
     rmarkdown,

@@ -19,9 +19,9 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field ignore_missing_covars If TRUE, ignore missing covariate values
     ignore_missing_covars = FALSE,
     #' @field version Version number
-    version = "1.0.9",
+    version = "1.0.11",
     #' @field update_date Date of latest update
-    update_date = "2023-02-03",
+    update_date = "2023-06-19",
 
     # Effect matrices
     #' @field separate_effects If TRUE, try to separate the effects
@@ -50,6 +50,8 @@ AlascaModel <- R6::R6Class("AlascaModel",
     save_validation_ids = FALSE,
     #' @field optimize_score If TRUE, test all combinations of signs for the most important loadings, and choose the combination being the best fit
     optimize_score = TRUE,
+    #' @field optimize_PCs If TRUE, test if principal components have to be re-ordered during validation
+    optimize_PCs = TRUE,
     #' @field validate If TRUE, validate the model
     validate = FALSE,
     #' @field validate_regression If TRUE, validate get marginal means
@@ -725,7 +727,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
         vec <- c(-1, 1)
         lst <- lapply(numeric(N), function(x) vec)
         signMatrix <- as.matrix(expand.grid(lst))
-
+        
         # Test all combinations and calculate residuals
         signVar <- vapply(seq_len(nrow(signMatrix) / 2), function(i) {
           c <- .procrustes(
@@ -760,6 +762,36 @@ AlascaModel <- R6::R6Class("AlascaModel",
       target$log("Completed rotation", level = "DEBUG")
 
       # invisible(self)
+    },
+    #' @description
+    #' Check if components have to be re-ordered to better match the target
+    #' @param target Compare components of the model (`self`) with this as target
+    optimize_components = function(target) {
+      target$log("Comparing the order of PCs", level = "DEBUG")
+
+      for (effect_i in seq_along(self$ALASCA$loading)) {
+        # Number of components to look at
+        cols_to_look_at <- paste0("PC", self$get_PCs(effect_i))
+        
+        # Compute the cost matrix for column reordering
+        cost_matrix <- 1 - abs(
+          cor(
+            target$ALASCA$loading[[effect_i]][, ..cols_to_look_at],
+            self$ALASCA$loading[[effect_i]][target$ALASCA$loading[[effect_i]], ..cols_to_look_at]
+          )
+        )
+        
+        # Apply the Hungarian algorithm to find the optimal column permutation
+        column_permutation <- clue::solve_LSAP(cost_matrix)
+        
+        if ( any(column_permutation != seq(1, length(cols_to_look_at))) ) {
+          target$log(paste("Changing the order of PCs for effect", effect_i, ":", column_permutation), level = "WARNING")
+          column_names <- colnames(self$ALASCA$loading[[effect_i]])
+          setcolorder(self$ALASCA$loading[[effect_i]], neworder = paste0("PC", column_permutation))
+          colnames(self$ALASCA$loading[[effect_i]]) <- column_names
+        }
+        
+      }
     },
     #' @description
     #' Rotate model loadings and scores with procrustes

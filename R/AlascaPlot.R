@@ -30,6 +30,7 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
     group = NULL,
     #' @field ribbon Boolean. Plot ribbons for uncertainties
     ribbon = TRUE,
+    waterfall = FALSE,
     #' @field bw Boolean. Plot in gray scale
     grayscale = FALSE,
     #' @field bw Boolean. Same as `grayscale`

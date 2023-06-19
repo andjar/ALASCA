@@ -976,6 +976,10 @@ do_validate <- function() {
     temp_object <- self$prepare_validation_run(runN = ii)
     if (nrow(self$df) > 100000) gc()
     
+    if (self$optimize_PCs) {
+      temp_object$optimize_components(target = self)
+    }
+    
     # Rotate new loadings/scores to the original model
     if (self$optimize_score) {
       temp_object$rotate_matrix_optimize_score(target = self)
@@ -1402,7 +1406,7 @@ get_bootstrap_data <- function(df_raw, participants_in_bootstrap, modmat) {
     lapply(seq_along(participants_in_bootstrap), function(participant){
       list(
         new_id = participant,
-        row_nr = df_raw$rows_by_ID[[as.character(participants_in_bootstrap[participant])]]
+        row_nr = df_raw$rows_by_ID[[as.character(participants_in_bootstrap[[participant]])]]
       )
     })
   )
@@ -1846,12 +1850,22 @@ plot_effect_loading <- function(effect_i = 1, component = 1) {
       if (self$black_and_white) {
         g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", ymin = "low", ymax = "high", shape = "covargroup"))
       } else {
-        g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", ymin = "low", ymax = "high", shape = "covargroup", color = "covargroup"))
+        if (self$waterfall == TRUE) {
+          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", ymin = "low", ymax = "high", shape = "covargroup", fill = "covargroup"))
+        } else {
+          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", ymin = "low", ymax = "high", shape = "covargroup", color = "covargroup"))
+        }
       }
     }
     
-    g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
-      ggplot2::geom_pointrange()
+    if (self$waterfall == TRUE) {
+      g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
+        ggplot2::geom_bar(stat = "identity", alpha = 0.5, color = "black") +
+        ggplot2::geom_errorbar(width = 0.2, color = "black") 
+    } else {
+      g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
+        ggplot2::geom_pointrange()
+    }
     
   } else {
     # Unvalidated model
@@ -1862,12 +1876,22 @@ plot_effect_loading <- function(effect_i = 1, component = 1) {
       if (self$black_and_white) {
         g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", shape = "covargroup"))
       } else {
-        g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", shape = "covargroup", color = "covargroup"))
+        if (self$waterfall == TRUE) {
+          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", shape = "covargroup", fill = "covargroup"))
+        } else {
+          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", shape = "covargroup", color = "covargroup"))
+        }
       }
     }
     
-    g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
-      ggplot2::geom_point()
+    if (self$waterfall == TRUE) {
+      g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
+        ggplot2::geom_bar(stat = "identity", color = "black")
+    } else {
+      g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
+        ggplot2::geom_point()
+    }
+    
   }
   
   g <- g +
