@@ -51,7 +51,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field optimize_score If TRUE, test all combinations of signs for the most important loadings, and choose the combination being the best fit
     optimize_score = TRUE,
     #' @field optimize_PCs If TRUE, test if principal components have to be re-ordered during validation
-    optimize_PCs = TRUE,
+    optimize_PCs = FALSE,
     #' @field validate If TRUE, validate the model
     validate = FALSE,
     #' @field validate_regression If TRUE, validate get marginal means

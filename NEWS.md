@@ -1,7 +1,7 @@
 # ALASCA 1.0.11
 
 * New features:
-  * `optimize_PCs = TRUE` (default) will check if significant principal components have to be re-ordered during bootstrapping. This may happen if PCs are close in explanatory value so that they are shuffled during bootstrap. If this happens, it will trigger a warning
+  * `optimize_PCs = TRUE` (default: `FALSE`) will check if significant principal components have to be re-ordered during bootstrapping. This may happen if PCs are close in explanatory value so that they are shuffled during bootstrap. If this happens, it will trigger a warning
   * `waterfall = TRUE` (default: `FALSE`) in `plot()` will replace points with bars for loadings. This can be very nice in combination with `loading_group_column`
 
 # ALASCA 1.0.10
