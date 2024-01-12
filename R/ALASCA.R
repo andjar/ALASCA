@@ -1463,7 +1463,7 @@ plot_prediction <- function() {
     variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])
   } else {
     variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])
-    variables_to_plot <- variables_to_plot[covars %in% self$variable]
+    variables_to_plot <- variables_to_plot[variables_to_plot$covars %in% self$variable]
   }
   
   effect_terms <- self$model$effect_list$terms[[self$effect_i[[1]]]]
@@ -2472,7 +2472,7 @@ plot_participants <- function(effect_i = 1, component = 1) {
     variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])
   } else {
     variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])
-    variables_to_plot <- variables_to_plot[covars %in% self$variable]
+    variables_to_plot <- variables_to_plot[variables_to_plot$covars %in% self$variable]
   }
   
   data_to_plot <- self$model$df_raw$df
