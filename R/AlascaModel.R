@@ -19,9 +19,9 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field ignore_missing_covars If TRUE, ignore missing covariate values
     ignore_missing_covars = FALSE,
     #' @field version Version number
-    version = "1.0.11",
+    version = "1.0.12",
     #' @field update_date Date of latest update
-    update_date = "2023-06-19",
+    update_date = "2024-01-12",
 
     # Effect matrices
     #' @field separate_effects If TRUE, try to separate the effects
@@ -551,7 +551,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
       } else {
         if (length(effect_i) == 1) {
           if (effect_i < 1) {
-            effect_i <- length(self$ALASCA$loading)
+            effect_i <- seq_along(self$ALASCA$loading)
             lapply(effect_i, function(i) self$ALASCA$loading[[i]][PC %in% component])
           } else {
             list(self$ALASCA$loading[[effect_i]][PC %in% component])

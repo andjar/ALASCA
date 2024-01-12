@@ -1460,10 +1460,10 @@ plot_prediction <- function() {
     self$model$log(paste0("Selecting the ",round(self$n_limit/2)," variables with highest/lowest loading on `", self$model$effect_list$expr[[self$effect_i[[1]]]], "` (PC",self$component[[1]],"). Use `variable` to specify variables to plot"))
     variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]], n_limit = round(self$n_limit/2))[[1]]
   } else if (length(self$variable) == 0) {
-    variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])
+    variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])[[1]]
   } else {
-    variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])
-    variables_to_plot <- variables_to_plot[variables_to_plot$covars %in% self$variable, ]
+    variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])[[1]]
+    variables_to_plot <- variables_to_plot[covars %in% self$variable, ]
   }
   
   effect_terms <- self$model$effect_list$terms[[self$effect_i[[1]]]]
@@ -2469,10 +2469,10 @@ plot_participants <- function(effect_i = 1, component = 1) {
     self$model$log(paste0("Selecting the ",round(self$n_limit/2)," variables with highest/lowest loading on `", self$model$effect_list$expr[[self$effect_i[[1]]]], "` (PC",self$component[[1]],"). Use `variable` to specify variables to plot"))
     variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]], n_limit = round(self$n_limit/2))[[1]]
   } else if (self$variable == 0) {
-    variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])
+    variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])[[1]]
   } else {
-    variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])
-    variables_to_plot <- variables_to_plot[variables_to_plot$covars %in% self$variable, ]
+    variables_to_plot <- self$model$get_loadings(effect_i = self$effect_i[[1]], component = self$component[[1]])[[1]]
+    variables_to_plot <- variables_to_plot[covars %in% self$variable, ]
   }
   
   data_to_plot <- self$model$df_raw$df
