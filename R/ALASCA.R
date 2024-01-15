@@ -786,7 +786,8 @@ do_reduce_dimensions <- function(){
     
     # Check if the pca model needs reflection to better fit the main model
     
-    for (i in seq(2, ncol(temp_pca_values$rotation))) {
+    cols_to_check <- min(ncol(temp_pca_values$rotation), ncol(self$df_raw$reduced_df$loading))
+    for (i in seq(2, cols_to_check)) {
       V1 <- sum((temp_pca_values$rotation[self$df_raw$reduced_df$loading$covars, ..i] - self$df_raw$reduced_df$loading[, ..i])^2)
       V2 <- sum((-temp_pca_values$rotation[self$df_raw$reduced_df$loading$covars, ..i] - self$df_raw$reduced_df$loading[, ..i])^2)
       if(V2 < V1){
