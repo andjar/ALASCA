@@ -216,9 +216,10 @@ remove_embedded_data <- function() {
 get_default_scaling_function <- function() {
   
   if (length(self$effect_terms) < 2) {
-    if (self$scale_function %in% c("sdref", "sdreft1"))
-    self$log(paste0("The scaling `", self$scale_function, "` has been replaced by `sdt1` as there is only one effect term. This corresponds to the column `", self$effect_terms[[1]], "`"), level = "WARN")
-    self$scale_function <- "sdt1"
+    if (self$scale_function %in% c("sdref", "sdreft1")) {
+      self$log(paste0("The scaling `", self$scale_function, "` has been replaced by `sdt1` as there is only one effect term. This corresponds to the column `", self$effect_terms[[1]], "`"), level = "WARN")
+      self$scale_function <- "sdt1"
+    }
   }
   
   scale_function_string <- self$scale_function
