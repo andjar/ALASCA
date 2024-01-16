@@ -112,6 +112,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field participant_column String. The column used for IDs. If not provided, it will guess based on random effect or `ID`
     participant_column = NULL,
     scale_function.center = FALSE,
+    scale_function.value = NA,
     #' @field stratification_column String. Name of the column to use for stratification during validation
     stratification_column = NULL,
     stratification_vector = NA,
@@ -815,7 +816,8 @@ AlascaModel <- R6::R6Class("AlascaModel",
       target$log("Completed rotation", level = "DEBUG")
 
       # invisible(self)
-    }
+    },
+    predict_scores = predict_scores
   ),
   active = list(
     #' @field get_plot_group Name of the grouping factor (used for plotting)

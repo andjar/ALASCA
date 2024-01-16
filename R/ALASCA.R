@@ -237,6 +237,9 @@ get_default_scaling_function <- function() {
         df[, value := as.double(value)][, value := value / sd(value), by = variable]
       }
     }
+    if (!self$minimize_object) {
+      self$scale_function.value <- df[, sd(value), by = variable]
+    }
   } else if (scale_function_string == "sdref") {
     if (scale_function.center) {
       self$scale_function <- function(df) {
@@ -248,6 +251,9 @@ get_default_scaling_function <- function() {
         # Scale by the SD of all rows in the refence group
         df[, value := as.double(value)][, value := value / sd(value[get(self$effect_terms[[2]]) == self$get_ref(self$effect_terms[[2]])]), by = variable]
       }
+    }
+    if (!self$minimize_object) {
+      self$scale_function.value <- df[, sd(value[get(self$effect_terms[[2]]) == self$get_ref(self$effect_terms[[2]])]), by = variable]
     }
   } else if (scale_function_string == "sdt1") {
     if (scale_function.center) {
@@ -261,6 +267,9 @@ get_default_scaling_function <- function() {
         df[, value := as.double(value)][, value := value / sd(value[get(self$effect_terms[[1]]) == self$get_ref(self$effect_terms[[1]])]), by = variable]
       }
     }
+    if (!self$minimize_object) {
+      self$scale_function.value <- df[, sd(value[get(self$effect_terms[[1]]) == self$get_ref(self$effect_terms[[1]])]), by = variable]
+    }
   } else if (scale_function_string == "sdreft1") {
     if (scale_function.center) {
       self$scale_function <- function(df) {
@@ -272,6 +281,9 @@ get_default_scaling_function <- function() {
         # Scale by the SD of all baseline rows in the reference group
         df[, value := as.double(value)][, value := value / sd(value[get(self$effect_terms[[1]]) == self$get_ref(self$effect_terms[[1]]) & get(self$effect_terms[[2]]) == self$get_ref(self$effect_terms[[2]])]), by = variable]
       }
+    }
+    if (!self$minimize_object) {
+      self$scale_function.value <- df[, sd(value[get(self$effect_terms[[1]]) == self$get_ref(self$effect_terms[[1]]) & get(self$effect_terms[[2]]) == self$get_ref(self$effect_terms[[2]])]), by = variable]
     }
   } else {
     self$log("Unknown scaling method. Please use of one the following: `none`, `sdall`, `sdref`, `sdreft1`, `sdt1`", level = "ERROR")
@@ -2524,4 +2536,28 @@ plot_participants <- function(effect_i = 1, component = 1) {
     self$my_theme + 
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = self$x_angle, vjust = self$x_v_just, hjust = self$x_h_just))
   
+}
+
+
+#' Calculate scores for a new data set
+#' 
+#' @param data A new data set
+#' @param effect_i The effect to look at
+#' @param component The PCA components to look at
+#' 
+#' @return A data table with new scores
+#' 
+#' @export
+predict_scores <- function(data, effect_i = 1, component = 1) {
+  model_loadings <- self$get_loadings(effect_i = effect_i,
+                                      component = component,
+                                      n_limit = 0)[[1]]
+  scaling_factors <- self$scale_function.value
+  colnames(scaling_factors) <- c("variable", "ALASCA_scaling_factor")
+  data <- merge(data, scaling_factors)
+  data[, value := value / ALASCA_scaling_factor]
+  data[, ALASCA_scaling_factor := NULL]
+  data <- merge(data, model_loadings, by.x = "variable", by.y = "covars", allow.cartesian = TRUE)
+  by_columns <- colnames(data)[!colnames(data) %in% c("variable", "value", "loading")]
+  data[, .(score = sum(value * loading)), by = by_columns]
 }
