@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.14</span>
       </span>
     </div>
 
@@ -54,6 +54,9 @@
   <ul class="dropdown-menu" role="menu">
 <li>
       <a href="../articles/plot.html">Plotting</a>
+    </li>
+    <li>
+      <a href="../articles/prediction.html">Prediction</a>
     </li>
     <li>
       <a href="../articles/regression.html">Regression models</a>
@@ -88,7 +91,7 @@
                         <h4 data-toc-skip class="author">Anders H.
 Jarmund</h4>
             
-            <h4 data-toc-skip class="date">2022-11-12</h4>
+            <h4 data-toc-skip class="date">2024-01-18</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/andjar/ALASCA/blob/HEAD/vignettes/articles/regression.Rmd" class="external-link"><code>vignettes/articles/regression.Rmd</code></a></small>
       <div class="hidden name"><code>regression.Rmd</code></div>
@@ -192,8 +195,9 @@ this:</p>
 <code class="sourceCode R"><span><span class="fu">ggplot</span><span class="op">(</span><span class="va">df</span><span class="op">[</span><span class="va">variable</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"variable_1"</span>, <span class="st">"variable_2"</span>, <span class="st">"variable_3"</span>, <span class="st">"variable_4"</span><span class="op">)</span>,<span class="op">]</span>,</span>
 <span>       <span class="fu">aes</span><span class="op">(</span><span class="va">time</span>, <span class="va">value</span>, color <span class="op">=</span> <span class="va">group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_smooth</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">facet_wrap</span><span class="op">(</span><span class="op">~</span><span class="va">variable</span>, scales <span class="op">=</span> <span class="st">"free_y"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; `geom_smooth()` using method = 'loess' and formula 'y ~ x'</span></span></code></pre></div>
+<span>  <span class="fu">facet_wrap</span><span class="op">(</span><span class="op">~</span><span class="va">variable</span>, scales <span class="op">=</span> <span class="st">"free_y"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">scale_color_viridis_d</span><span class="op">(</span>end <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span></span>
+<span><span class="co">#&gt; `geom_smooth()` using method = 'loess' and formula = 'y ~ x'</span></span></code></pre></div>
 <p><img src="regression_files/figure-html/unnamed-chunk-4-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>We want time to be a categorical variable:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -219,20 +223,20 @@ trial below).</p>
 <span>  <span class="va">df</span>,</span>
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:22] Initializing ALASCA (v1.0.5, 2022-08-16)</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:22] Guessing effects: `time+time:group+group`</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:22] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:22] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:22] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:22] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:22] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:22] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:22] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:22] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:12:56] Initializing ALASCA (v1.0.14, 2024-01-17)</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:12:56] Guessing effects: `time+time:group+group`</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:12:56] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:12:56] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:12:56] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:12:56] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:12:56] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:12:56] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:12:56] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:12:56] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:22] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1 and 2.</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:22] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:23] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:12:56] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1 and 2.</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:12:56] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:12:57] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
 <p><img src="regression_files/figure-html/unnamed-chunk-6-1.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
@@ -242,17 +246,17 @@ trial below).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span><span class="op">$</span><span class="va">regression_coefficients</span></span>
 <span><span class="co">#&gt;                  variable      covar    estimate pvalue</span></span>
-<span><span class="co">#&gt;   1:          (Intercept) variable_1  0.01910986     NA</span></span>
-<span><span class="co">#&gt;   2:              timet_1 variable_1 -0.45836173     NA</span></span>
-<span><span class="co">#&gt;   3:              timet_2 variable_1 -0.95312663     NA</span></span>
-<span><span class="co">#&gt;   4:              timet_3 variable_1 -1.39374392     NA</span></span>
-<span><span class="co">#&gt;   5:              timet_4 variable_1 -1.86712221     NA</span></span>
+<span><span class="co">#&gt;   1:          (Intercept) variable_1 -0.09819976     NA</span></span>
+<span><span class="co">#&gt;   2:              timet_1 variable_1 -0.43222093     NA</span></span>
+<span><span class="co">#&gt;   3:              timet_2 variable_1 -0.87063213     NA</span></span>
+<span><span class="co">#&gt;   4:              timet_3 variable_1 -1.30384490     NA</span></span>
+<span><span class="co">#&gt;   5:              timet_4 variable_1 -1.72053720     NA</span></span>
 <span><span class="co">#&gt;  ---                                                   </span></span>
-<span><span class="co">#&gt; 196:         groupgroup_1 variable_9  0.19520092     NA</span></span>
-<span><span class="co">#&gt; 197: timet_1:groupgroup_1 variable_9  0.16210711     NA</span></span>
-<span><span class="co">#&gt; 198: timet_2:groupgroup_1 variable_9  0.38404784     NA</span></span>
-<span><span class="co">#&gt; 199: timet_3:groupgroup_1 variable_9  0.50033057     NA</span></span>
-<span><span class="co">#&gt; 200: timet_4:groupgroup_1 variable_9  0.68273693     NA</span></span></code></pre></div>
+<span><span class="co">#&gt; 196:         groupgroup_1 variable_9 -0.11165057     NA</span></span>
+<span><span class="co">#&gt; 197: timet_1:groupgroup_1 variable_9  0.17672850     NA</span></span>
+<span><span class="co">#&gt; 198: timet_2:groupgroup_1 variable_9  0.37078767     NA</span></span>
+<span><span class="co">#&gt; 199: timet_3:groupgroup_1 variable_9  0.52418274     NA</span></span>
+<span><span class="co">#&gt; 200: timet_4:groupgroup_1 variable_9  0.67359275     NA</span></span></code></pre></div>
 <p>P-values are not available when you use hte <a href="https://cran.r-project.org/web/packages/Rfast/index.html" class="external-link">Rfast
 package</a>. If you choose to use the <a href="https://cran.r-project.org/web/packages/lme4/index.html" class="external-link">lme4
 package</a> instead, p-values will be estimated with the <a href="https://cran.r-project.org/web/packages/lmerTest/index.html" class="external-link">lmerTest
@@ -263,13 +267,13 @@ package</a>:</p>
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span>,</span>
 <span>  use_Rfast <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:25] Initializing ALASCA (v1.0.5, 2022-08-16)</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:25] Guessing effects: `time+time:group+group`</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:25] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:25] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:25] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:25] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:25] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:02] Initializing ALASCA (v1.0.14, 2024-01-17)</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:02] Guessing effects: `time+time:group+group`</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:02] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:02] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:02] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:02] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:02] Calculating LMM coefficients</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
@@ -290,21 +294,21 @@ package</a>:</p>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:27] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:27] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:05] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:05] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
 <span><span class="va">res</span><span class="op">$</span><span class="va">regression_coefficients</span></span>
-<span><span class="co">#&gt;         estimate        pvalue      covar             variable</span></span>
-<span><span class="co">#&gt;   1:  0.01910986  8.728096e-01 variable_1          (Intercept)</span></span>
-<span><span class="co">#&gt;   2: -0.45836173  1.198029e-18 variable_1              timet_1</span></span>
-<span><span class="co">#&gt;   3: -0.95312663  8.820760e-59 variable_1              timet_2</span></span>
-<span><span class="co">#&gt;   4: -1.39374392  2.160635e-96 variable_1              timet_3</span></span>
-<span><span class="co">#&gt;   5: -1.86712221 9.315638e-133 variable_1              timet_4</span></span>
-<span><span class="co">#&gt;  ---                                                          </span></span>
-<span><span class="co">#&gt; 196:  0.19520092  2.130442e-01 variable_9         groupgroup_1</span></span>
-<span><span class="co">#&gt; 197:  0.16210711  5.871099e-02 variable_9 timet_1:groupgroup_1</span></span>
-<span><span class="co">#&gt; 198:  0.38404784  9.315382e-06 variable_9 timet_2:groupgroup_1</span></span>
-<span><span class="co">#&gt; 199:  0.50033057  1.029525e-08 variable_9 timet_3:groupgroup_1</span></span>
-<span><span class="co">#&gt; 200:  0.68273693  1.577647e-14 variable_9 timet_4:groupgroup_1</span></span></code></pre></div>
+<span><span class="co">#&gt;         estimate       pvalue      covar             variable</span></span>
+<span><span class="co">#&gt;   1: -0.09819976 3.972508e-01 variable_1          (Intercept)</span></span>
+<span><span class="co">#&gt;   2: -0.43222093 2.100655e-12 variable_1              timet_1</span></span>
+<span><span class="co">#&gt;   3: -0.87063213 5.888032e-39 variable_1              timet_2</span></span>
+<span><span class="co">#&gt;   4: -1.30384490 5.186381e-70 variable_1              timet_3</span></span>
+<span><span class="co">#&gt;   5: -1.72053720 3.534521e-99 variable_1              timet_4</span></span>
+<span><span class="co">#&gt;  ---                                                         </span></span>
+<span><span class="co">#&gt; 196: -0.11165057 5.141791e-01 variable_9         groupgroup_1</span></span>
+<span><span class="co">#&gt; 197:  0.17672850 2.949644e-02 variable_9 timet_1:groupgroup_1</span></span>
+<span><span class="co">#&gt; 198:  0.37078767 6.147895e-06 variable_9 timet_2:groupgroup_1</span></span>
+<span><span class="co">#&gt; 199:  0.52418274 2.754532e-10 variable_9 timet_3:groupgroup_1</span></span>
+<span><span class="co">#&gt; 200:  0.67359275 1.399679e-15 variable_9 timet_4:groupgroup_1</span></span></code></pre></div>
 <p>You can also specify a method to adjust for multiple testing (by
 default, unadjusted p-values are provided). Here, Benjamini-Hochberg is
 used (alternative:
@@ -316,13 +320,13 @@ used (alternative:
 <span>  use_Rfast <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  p_adjust_method <span class="op">=</span> <span class="st">"BH"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:27] Initializing ALASCA (v1.0.5, 2022-08-16)</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:27] Guessing effects: `time+time:group+group`</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:27] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:27] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:27] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:27] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:27] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:06] Initializing ALASCA (v1.0.14, 2024-01-17)</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:06] Guessing effects: `time+time:group+group`</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:06] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:06] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:06] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:06] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:06] Calculating LMM coefficients</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
@@ -343,22 +347,22 @@ used (alternative:
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:29] Adjusting p values</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:29] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:29] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:09] Adjusting p values</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:10] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:10] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
 <span><span class="va">res</span><span class="op">$</span><span class="va">regression_coefficients</span></span>
-<span><span class="co">#&gt;         estimate        pvalue      covar             variable  pvalue_unadj</span></span>
-<span><span class="co">#&gt;   1:  0.01910986  9.187470e-01 variable_1          (Intercept)  8.728096e-01</span></span>
-<span><span class="co">#&gt;   2: -0.45836173  2.178235e-18 variable_1              timet_1  1.198029e-18</span></span>
-<span><span class="co">#&gt;   3: -0.95312663  1.764152e-58 variable_1              timet_2  8.820760e-59</span></span>
-<span><span class="co">#&gt;   4: -1.39374392  4.321270e-95 variable_1              timet_3  2.160635e-96</span></span>
-<span><span class="co">#&gt;   5: -1.86712221 1.863128e-131 variable_1              timet_4 9.315638e-133</span></span>
-<span><span class="co">#&gt;  ---                                                                        </span></span>
-<span><span class="co">#&gt; 196:  0.19520092  3.873531e-01 variable_9         groupgroup_1  2.130442e-01</span></span>
-<span><span class="co">#&gt; 197:  0.16210711  7.623813e-02 variable_9 timet_1:groupgroup_1  5.871099e-02</span></span>
-<span><span class="co">#&gt; 198:  0.38404784  1.326835e-05 variable_9 timet_2:groupgroup_1  9.315382e-06</span></span>
-<span><span class="co">#&gt; 199:  0.50033057  1.583884e-08 variable_9 timet_3:groupgroup_1  1.029525e-08</span></span>
-<span><span class="co">#&gt; 200:  0.68273693  4.507563e-14 variable_9 timet_4:groupgroup_1  1.577647e-14</span></span></code></pre></div>
+<span><span class="co">#&gt;         estimate       pvalue      covar             variable pvalue_unadj</span></span>
+<span><span class="co">#&gt;   1: -0.09819976 5.296677e-01 variable_1          (Intercept) 3.972508e-01</span></span>
+<span><span class="co">#&gt;   2: -0.43222093 2.471358e-12 variable_1              timet_1 2.100655e-12</span></span>
+<span><span class="co">#&gt;   3: -0.87063213 6.542257e-39 variable_1              timet_2 5.888032e-39</span></span>
+<span><span class="co">#&gt;   4: -1.30384490 6.482977e-70 variable_1              timet_3 5.186381e-70</span></span>
+<span><span class="co">#&gt;   5: -1.72053720 7.854491e-99 variable_1              timet_4 3.534521e-99</span></span>
+<span><span class="co">#&gt;  ---                                                                      </span></span>
+<span><span class="co">#&gt; 196: -0.11165057 8.569651e-01 variable_9         groupgroup_1 5.141791e-01</span></span>
+<span><span class="co">#&gt; 197:  0.17672850 5.362989e-02 variable_9 timet_1:groupgroup_1 2.949644e-02</span></span>
+<span><span class="co">#&gt; 198:  0.37078767 1.366199e-05 variable_9 timet_2:groupgroup_1 6.147895e-06</span></span>
+<span><span class="co">#&gt; 199:  0.52418274 9.608426e-10 variable_9 timet_3:groupgroup_1 2.754532e-10</span></span>
+<span><span class="co">#&gt; 200:  0.67359275 9.331191e-15 variable_9 timet_4:groupgroup_1 1.399679e-15</span></span></code></pre></div>
 <p>The values are then adjusted within each variable level (e.g.,
 adjusted within time point 1).</p>
 </div>
@@ -374,32 +378,32 @@ time. To do this, we will separate the time and group effect:
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span>,</span>
 <span>  separate_effects <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:29] Initializing ALASCA (v1.0.5, 2022-08-16)</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:29] Guessing effects: `time` and `time:group+group`</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:29] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:29] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:29] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:29] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:29] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:29] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:29] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:29] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:10] Initializing ALASCA (v1.0.14, 2024-01-17)</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:10] Guessing effects: `time` and `time:group+group`</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:10] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:10] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:10] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:10] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:10] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:10] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:10] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:10] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span></code></pre></div>
 <p>Importantly, we must plot the two effects separately. We begin with
 the time effect of the reference group:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, effect <span class="op">=</span> <span class="fl">2</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:29] Effect plot. Selected effect (nr 2): `time:group+group`. Component: 1 and 2.</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:30] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:30] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:11] Effect plot. Selected effect (nr 2): `time:group+group`. Component: 1 and 2.</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:11] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:11] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
 <p><img src="regression_files/figure-html/unnamed-chunk-11-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>Next, we will look at the effect of group and how the two groups
 <em>differ</em>:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/flip.html">flip</a></span><span class="op">(</span><span class="va">res</span>, effect <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="co"># We flip the model to simplify the comparison with the previous model</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, effect <span class="op">=</span> <span class="fl">2</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:32] Effect plot. Selected effect (nr 2): `time:group+group`. Component: 1 and 2.</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:32] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:32] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:14] Effect plot. Selected effect (nr 2): `time:group+group`. Component: 1 and 2.</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:14] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:15] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
 <p><img src="regression_files/figure-html/unnamed-chunk-12-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>In short, we can see that the difference between the two groups
 increases for some variables (e.g., <code>variable_13</code> and
@@ -411,7 +415,7 @@ marginal means. For example, <code>variable_8</code>,
 like this:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, type <span class="op">=</span> <span class="st">'prediction'</span>, variable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"variable_8"</span>, <span class="st">"variable_13"</span>, <span class="st">"variable_15"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:34] Prediction plot. Selected effect (nr 1): `time`. Component: 1.</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:19] Prediction plot. Selected effect (nr 1): `time`. Component: 1.</span></span></code></pre></div>
 <p><img src="regression_files/figure-html/unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>See <a href="articles/plot.html">the vignette on plotting the
 model</a> for more visualizations.</p>
@@ -479,8 +483,9 @@ this:</p>
 <code class="sourceCode R"><span><span class="fu">ggplot</span><span class="op">(</span><span class="va">df</span><span class="op">[</span><span class="va">variable</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"variable_1"</span>, <span class="st">"variable_2"</span>, <span class="st">"variable_3"</span>, <span class="st">"variable_4"</span><span class="op">)</span>,<span class="op">]</span>,</span>
 <span>       <span class="fu">aes</span><span class="op">(</span><span class="va">time</span>, <span class="va">value</span>, color <span class="op">=</span> <span class="va">group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_smooth</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">facet_wrap</span><span class="op">(</span><span class="op">~</span><span class="va">variable</span>, scales <span class="op">=</span> <span class="st">"free_y"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; `geom_smooth()` using method = 'loess' and formula 'y ~ x'</span></span></code></pre></div>
+<span>  <span class="fu">facet_wrap</span><span class="op">(</span><span class="op">~</span><span class="va">variable</span>, scales <span class="op">=</span> <span class="st">"free_y"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">scale_color_viridis_d</span><span class="op">(</span>end <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span></span>
+<span><span class="co">#&gt; `geom_smooth()` using method = 'loess' and formula = 'y ~ x'</span></span></code></pre></div>
 <p><img src="regression_files/figure-html/unnamed-chunk-15-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>We want time to be a categorical variable:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
@@ -497,21 +502,21 @@ can be defined as:</p>
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span>,</span>
 <span>  equal_baseline <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:40] Initializing ALASCA (v1.0.5, 2022-08-16)</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:40] Guessing effects: `time+time:group`</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:40] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:40] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:40] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:40] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:40] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:40] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:40] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:40] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:35] Initializing ALASCA (v1.0.14, 2024-01-17)</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:35] Guessing effects: `time+time:group`</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:35] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:35] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:35] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:35] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:35] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:35] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:36] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:36] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:40] Effect plot. Selected effect (nr 1): `time+time:group`. Component: 1 and 2.</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:40] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:41] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:36] Effect plot. Selected effect (nr 1): `time+time:group`. Component: 1 and 2.</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:36] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:37] Showing 20 of 20 variables. Adjust the number with `n_limit`</span></span></code></pre></div>
 <p><img src="regression_files/figure-html/unnamed-chunk-17-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>Why is <code>equal_baseline = TRUE</code> necessary? Well, it is due
 to how the model matrices are made by r - by default, there is an
@@ -523,16 +528,16 @@ these two model matrices:</p>
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span>,</span>
 <span>  equal_baseline <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:43] Initializing ALASCA (v1.0.5, 2022-08-16)</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:43] Guessing effects: `time+time:group`</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:43] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:43] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:43] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2022-11-12 16:28:43] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:43] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:43] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:43] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2022-11-12 16:28:43] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:42] Initializing ALASCA (v1.0.14, 2024-01-17)</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:42] Guessing effects: `time+time:group`</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:42] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:42] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:42] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2024-01-18 00:13:42] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:42] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:42] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:42] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2024-01-18 00:13:42] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
 <span></span>
 <span><span class="va">res</span><span class="op">$</span><span class="va">effect_list</span><span class="op">$</span><span class="va">model_matrix</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt;   timet_1 timet_2 timet_3 timet_4 timet_1:groupgroup_1 timet_2:groupgroup_1</span></span>
@@ -574,7 +579,7 @@ these two model matrices:</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

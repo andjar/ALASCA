@@ -2554,7 +2554,7 @@ predict_scores <- function(data, effect_i = 1, component = 1) {
                                       n_limit = 0)[[1]]
   scaling_factors <- self$scale_function.value
   colnames(scaling_factors) <- c("variable", "ALASCA_scaling_factor")
-  data <- merge(data, scaling_factors)
+  data <- merge(data, scaling_factors, by = "variable")
   data[, value := value / ALASCA_scaling_factor]
   data[, ALASCA_scaling_factor := NULL]
   data <- merge(data, model_loadings, by.x = "variable", by.y = "covars", allow.cartesian = TRUE)

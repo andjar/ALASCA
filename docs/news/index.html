@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.14</span>
       </span>
     </div>
 
@@ -36,6 +36,9 @@
   </a>
   <ul class="dropdown-menu" role="menu"><li>
       <a href="../articles/plot.html">Plotting</a>
+    </li>
+    <li>
+      <a href="../articles/prediction.html">Prediction</a>
     </li>
     <li>
       <a href="../articles/regression.html">Regression models</a>
@@ -63,6 +66,45 @@
       <small>Source: <a href="https://github.com/andjar/ALASCA/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.0.14" id="alasca-1014">ALASCA 1.0.14<a class="anchor" aria-label="anchor" href="#alasca-1014"></a></h2>
+<ul><li>New function: <code>predict_scores()</code>. It accepts a data table with columns <code>variable</code> and <code>value</code>, and returns a new data table with a score column</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.0.11" id="alasca-1011">ALASCA 1.0.11<a class="anchor" aria-label="anchor" href="#alasca-1011"></a></h2>
+<ul><li>New features:
+<ul><li>
+<code>optimize_PCs = TRUE</code> (default: <code>FALSE</code>) will check if significant principal components have to be re-ordered during bootstrapping. This may happen if PCs are close in explanatory value so that they are shuffled during bootstrap. If this happens, it will trigger a warning</li>
+<li>
+<code>waterfall = TRUE</code> (default: <code>FALSE</code>) in <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> will replace points with bars for loadings. This can be very nice in combination with <code>loading_group_column</code>
+</li>
+</ul></li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.0.10" id="alasca-1010">ALASCA 1.0.10<a class="anchor" aria-label="anchor" href="#alasca-1010"></a></h2>
+<ul><li>New feature: <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> now accepts the argument <code>sort_loadings</code> to control the order of the loading variables
+<ul><li>
+<code>sort_loadings = "loading"</code> sorts the variables by loading (default)</li>
+<li>
+<code>sort_loadings = "alpha"</code> sorts the variables alphabetically</li>
+<li>
+<code>sort_loadings = c(...)</code> sorts the variables in the same order as <code>c(...)</code>, where <code>...</code> is the variables of interest. Note that it may be required to increase <code>n_limit</code> (or use <code>n_limit = 0</code>) to ensure that all variables are shown. It is recommended to use <code>n_limit = 0</code>, i.e., <code>plot(..., sort_loadings = c(...), n_limit = 0)</code>
+</li>
+</ul></li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.0.9" id="alasca-109">ALASCA 1.0.9<a class="anchor" aria-label="anchor" href="#alasca-109"></a></h2>
+<ul><li>Fix: Error when running LMMs without scaling</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.0.8" id="alasca-108">ALASCA 1.0.8<a class="anchor" aria-label="anchor" href="#alasca-108"></a></h2>
+<ul><li>Fix: Error when running linear models with Rfast (<code>Error in crossprod(x, y) : requires numeric/complex matrix/vector arguments</code>)</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.0.7" id="alasca-107">ALASCA 1.0.7<a class="anchor" aria-label="anchor" href="#alasca-107"></a></h2>
+<ul><li>Fix: Error for small datasets</li>
+<li>Fix: Error for custom stratification columns</li>
+</ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.0.5" id="alasca-105">ALASCA 1.0.5<a class="anchor" aria-label="anchor" href="#alasca-105"></a></h2>
 <ul><li>New feature: Black-and-white mode for more plot types</li>
@@ -113,7 +155,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

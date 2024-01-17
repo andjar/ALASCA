@@ -142,7 +142,8 @@ Overall (ignoring the random effects), the four patterns look like this:
 ggplot(df[variable %in% c("variable_1", "variable_2", "variable_3", "variable_4"),],
        aes(time, value)) +
   geom_smooth() +
-  facet_wrap(~variable, scales = "free_y")
+  facet_wrap(~variable, scales = "free_y") +
+  scale_color_viridis_d(end = 0.8)
 ```
 
 ### Data format

@@ -1,3 +1,7 @@
+# ALASCA 1.0.14
+
+* New function: `predict_scores()`. It accepts a data table with columns `variable` and `value`, and returns a new data table with a score column
+
 # ALASCA 1.0.11
 
 * New features:

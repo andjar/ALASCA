@@ -1,0 +1,274 @@
+---
+title: "Prediction"
+author: "Anders H. Jarmund"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Prediction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  out.width = "100%", 
+  fig.asp = 0.7,
+  fig.width = 12,
+  fig.align = "center",
+  cache = FALSE,
+  external = FALSE
+)
+library("ALASCA")
+library("data.table")
+library("ggplot2")
+theme_set(
+  theme_bw() + theme(legend.position = "bottom")
+  )
+```
+
+# Using ALASCA for classification or prediction
+
+<script src="js/hideOutput.js"></script>
+<style>
+.showopt {
+  background-color: #004c93;
+  color: #FFFFFF; 
+  width: 150px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle !important;
+  float: left;
+  font-family: sans-serif;
+  border-radius: 8px;
+}
+
+.showopt:hover {
+    background-color: #dfe4f2;
+    color: #004c93;
+}
+
+.showopttext::before{
+  content: "Show/Hide Source"
+}
+
+pre.plot {
+  background-color: white !important;
+}
+</style>
+
+We will use the same code to simulate data sets here as in the [Regression vignette](articles/regression.html). In brief, we generate a training and test data set, and use ALASCA and PLS-DA to test group classification.
+
+## Generate a data set
+
+We will start by creating an artificial data set with 100 participants, 5 time points, 2 groups, and 20 variables. The variables follow four patterns
+
+* Linear increase
+* Linear decrease
+* A v-shape
+* An inverted v-shape
+
+The two groups are different at baseline and one of the groups have larger changes throughout the study.
+
+<div class="fold s o">
+```{r}
+n_time     <- 5
+n_id       <- 100
+n_variable <- 20
+
+df <- rbindlist(lapply(seq(1,n_id), function(i_id) {
+  rbindlist(lapply(seq(1,n_variable), function(i_variable) {
+    
+    r_intercept <- rnorm(1, sd = 5)
+    i_group <- i_id %% 2
+    if (i_group == 1) {
+      beta <- 2 + rnorm(1)
+    } else {
+      beta <- 3 + rnorm(1)
+    }
+    
+    temp_data <- data.table(
+                  id = paste0("id_", i_id),
+                  group = paste0("group_", i_group),
+                  time = seq(1, n_time) - 1,
+                  variable = paste0("variable_", i_variable)
+                )
+    if ((i_variable %% 4) == 0) {
+      temp_data[, value := r_intercept + beta * time]
+    } else if ((i_variable %% 4) == 1) {
+      temp_data[, value := r_intercept - beta * time]
+    } else if ((i_variable %% 4) == 2) {
+      temp_data[, value := r_intercept + beta * abs(time - n_time/2)]
+    } else {
+      temp_data[, value := r_intercept - beta * abs(time - n_time/2)]
+    }
+    
+    temp_data[, value := value + rnorm(n_time)]
+    temp_data[, value := value * i_variable/2]
+    temp_data
+  }))
+}))
+```
+</div>
+
+Overall (ignoring the random effects), the four patterns look like this:
+
+```{r}
+ggplot(df[variable %in% c("variable_1", "variable_2", "variable_3", "variable_4"),],
+       aes(time, value, color = group)) +
+  geom_smooth() +
+  facet_wrap(~variable, scales = "free_y") +
+  scale_color_viridis_d(end = 0.8)
+```
+
+We want time to be a categorical variable:
+
+```{r}
+df[, time := paste0("t_", time)]
+```
+
+## Generate a second data set
+
+We now generate a second data set using the same code as above. We will do classification on these data.
+
+<div class="fold s o">
+```{r}
+dfn <- rbindlist(lapply(seq(1,n_id), function(i_id) {
+  rbindlist(lapply(seq(1,n_variable), function(i_variable) {
+    
+    r_intercept <- rnorm(1, sd = 5)
+    i_group <- i_id %% 2
+    if (i_group == 1) {
+      beta <- 2 + rnorm(1)
+    } else {
+      beta <- 3 + rnorm(1)
+    }
+    
+    temp_data <- data.table(
+                  id = paste0("id_", i_id),
+                  group = paste0("group_", i_group),
+                  time = seq(1, n_time) - 1,
+                  variable = paste0("variable_", i_variable)
+                )
+    if ((i_variable %% 4) == 0) {
+      temp_data[, value := r_intercept + beta * time]
+    } else if ((i_variable %% 4) == 1) {
+      temp_data[, value := r_intercept - beta * time]
+    } else if ((i_variable %% 4) == 2) {
+      temp_data[, value := r_intercept + beta * abs(time - n_time/2)]
+    } else {
+      temp_data[, value := r_intercept - beta * abs(time - n_time/2)]
+    }
+    
+    temp_data[, value := value + rnorm(n_time)]
+    temp_data[, value := value * i_variable/2]
+    temp_data
+  }))
+}))
+dfn[, time := paste0("t_", time)]
+```
+</div>
+
+## Subtract baseline
+
+Later on, we will do classification on the test data set. But, as we would like to take individual differences into account, we create copies of the data sets and subtract the baseline for each participant.
+
+<div class="fold s o">
+```{r}
+subtract_baseline <- function(data) {
+  bsl <- data[time == "t_0", ]
+  colnames(bsl)[ncol(bsl)] <- "intercept"
+  data <- merge(data, bsl[, .SD, .SDcols = colnames(bsl)[colnames(bsl) != "time"]])
+  data[, value := value - intercept]
+  return(data[, .SD, .SDcols = colnames(data)[colnames(data) != "intercept"]])
+}
+
+dt_0 <- subtract_baseline(df)
+dt_1 <- subtract_baseline(dfn)
+```
+</div>
+
+## Run ALASCA and calculate scores
+
+We now use the first data set to create an ALASCA model
+
+<div class="fold s o">
+```{r}
+res <- ALASCA(
+  df,
+  value ~ time*group + (1|id),
+  scale_function = "sdt1"
+)
+```
+</div>
+
+Next, we use the `ALASCA::predict_scores()` function introduced in version 1.0.14 to get a score for each data point. Note that the number of ASCA components can be specified. For simplicity, we only use three here, but increasing the number of components may improve the classification model.
+
+<div class="fold s o">
+```{r}
+k_0 <- res$predict_scores(dt_0, component = c(1,2,3))
+k_1 <- res$predict_scores(dt_1, component = c(1,2,3))
+```
+</div>
+
+Just for illustration, here is the first three PC scores of training set (on which we built the ALASCA model, without removing baseline):
+
+<div class="fold s o">
+```{r}
+ggplot(k_0, aes(time, score, color = group, group = id)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~paste0("PC", PC), scales = "free_y") +
+  scale_color_viridis_d(end = 0.8)
+```
+</div>
+
+And here is the test data set:
+
+<div class="fold s o">
+```{r}
+ggplot(k_1, aes(time, score, color = group, group = id)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~paste0("PC", PC), scales = "free_y") +
+  scale_color_viridis_d(end = 0.8)
+```
+</div>
+
+## Using PLS-DA for classification
+
+Since ASCA is **not** intended to be used for classification, we will construct a PLS-DA model using ASCA scores. Note that the number of components must be specified. In this example, we use four components as illustration.
+
+<div class="fold s o">
+```{r}
+kk_0 <- dcast(data = k_0, id + group ~ PC + time, value.var = "score")
+kk_1 <- dcast(data = k_1, id ~ PC + time, value.var = "score")
+plsFit <- caret::plsda(
+  kk_0[, .SD, .SDcols = colnames(kk_0)[!colnames(kk_0) %in% c("id", "group")]], factor(kk_0$group),
+  ncomp = 4)
+```
+</div>
+
+Next, we do prediction on the test data set using the PLS-DA model above.
+
+<div class="fold s o">
+```{r}
+m <- predict(plsFit, kk_1[, .SD, .SDcols = colnames(kk_1)[!colnames(kk_1) %in% c("id", "group")]], type = "prob")
+
+kkk <- data.table(
+  id = unique(k_1$id),
+  prob_0 = m[ , 1, 1],
+  prob_1 = m[ , 2, 1]
+)
+kkk[, pred := ifelse(prob_0 > prob_1, "group_0", "group_1")]
+kkk <- merge(kkk, k_1[, .(id, group)])
+kkk <- kkk[!duplicated(kkk$id), ]
+```
+</div>
+
+And, as we can see, the model does quite well:
+
+```{r}
+caret::confusionMatrix(table(kkk[, .(pred, group)]))
+```
