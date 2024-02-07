@@ -238,7 +238,7 @@ get_default_scaling_function <- function() {
       }
     }
     if (!self$minimize_object) {
-      self$scale_function.value <- df[, sd(value), by = variable]
+      self$scale_function.value <- self$df_raw$df[, sd(value), by = variable]
     }
   } else if (scale_function_string == "sdref") {
     if (scale_function.center) {
@@ -253,7 +253,7 @@ get_default_scaling_function <- function() {
       }
     }
     if (!self$minimize_object) {
-      self$scale_function.value <- df[, sd(value[get(self$effect_terms[[2]]) == self$get_ref(self$effect_terms[[2]])]), by = variable]
+      self$scale_function.value <- self$df_raw$df[, sd(value[get(self$effect_terms[[2]]) == self$get_ref(self$effect_terms[[2]])]), by = variable]
     }
   } else if (scale_function_string == "sdt1") {
     if (scale_function.center) {
@@ -268,7 +268,7 @@ get_default_scaling_function <- function() {
       }
     }
     if (!self$minimize_object) {
-      self$scale_function.value <- df[, sd(value[get(self$effect_terms[[1]]) == self$get_ref(self$effect_terms[[1]])]), by = variable]
+      self$scale_function.value <- self$df_raw$df[, sd(value[get(self$effect_terms[[1]]) == self$get_ref(self$effect_terms[[1]])]), by = variable]
     }
   } else if (scale_function_string == "sdreft1") {
     if (scale_function.center) {
@@ -283,7 +283,7 @@ get_default_scaling_function <- function() {
       }
     }
     if (!self$minimize_object) {
-      self$scale_function.value <- df[, sd(value[get(self$effect_terms[[1]]) == self$get_ref(self$effect_terms[[1]]) & get(self$effect_terms[[2]]) == self$get_ref(self$effect_terms[[2]])]), by = variable]
+      self$scale_function.value <- self$df_raw$df[, sd(value[get(self$effect_terms[[1]]) == self$get_ref(self$effect_terms[[1]]) & get(self$effect_terms[[2]]) == self$get_ref(self$effect_terms[[2]])]), by = variable]
     }
   } else {
     self$log("Unknown scaling method. Please use of one the following: `none`, `sdall`, `sdref`, `sdreft1`, `sdt1`", level = "ERROR")
