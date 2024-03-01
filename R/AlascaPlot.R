@@ -225,13 +225,13 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
       data_to_plot <- self$model$get_covars(n_limit = self$n_limit)
       
       if (length(self$sort_loadings) > 1) {
-        data_to_plot <- data_to_plot[covars %in% self$sort_loadings, ]
-        data_to_plot[, covars := factor(covars, levels = rev(self$sort_loadings))]
+        data_to_plot <- data_to_plot[covar %in% self$sort_loadings, ]
+        data_to_plot[, covars := factor(covar, levels = rev(self$sort_loadings))]
         self$model$log(paste("Note the above warning; some of the selected variables may not be shown. Adjust the number with `n_limit`"), level = "WARN")
       } else if (self$sort_loadings == "alpha") {
-        data_to_plot[, covars := factor(covars)][, covars := factor(covars, levels = rev(levels(covars)))]
+        data_to_plot[, covars := factor(covar)][, covars := factor(covar, levels = rev(levels(covar)))]
       } else {
-        data_to_plot[, covars := factor(covars, levels = data_to_plot[order(loading), covars])]
+        data_to_plot[, covars := factor(covar, levels = data_to_plot[order(estimate), covar])]
       }
 
       # Prettify terms
