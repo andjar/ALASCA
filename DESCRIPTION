@@ -35,5 +35,6 @@ Imports:
 Suggests: 
     knitr,
     rmarkdown,
-    RSQLite
+    RSQLite,
+    caret
 VignetteBuilder: knitr
