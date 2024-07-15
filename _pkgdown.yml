@@ -1,8 +1,10 @@
+url: https://andjar.github.io/ALASCA/
 template:
   params:
     bootswatch: flatly
 development:
   mode: auto
 home:
-  title: "Assorted, Linear ASCA Functions"
-  description: "Multivariate analysis of data with ASCA-based methods"
+  title: Assorted, Linear ASCA Functions
+  description: Multivariate analysis of data with ASCA-based methods
+

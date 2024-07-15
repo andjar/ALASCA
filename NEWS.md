@@ -1,3 +1,8 @@
+# ALASCA 1.0.16
+
+* Bug fix: Plots show wrong number of variables when compared to `n_limit` for odd numbers
+  * Solves issue [https://github.com/andjar/ALASCA/issues/12](Plot function prnts output as showing x number of variables, but not actually)
+
 # ALASCA 1.0.14
 
 * New function: `predict_scores()`. It accepts a data table with columns `variable` and `value`, and returns a new data table with a score column

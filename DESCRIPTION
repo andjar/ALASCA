@@ -1,6 +1,6 @@
 Package: ALASCA
 Title: Assorted, Linear ASCA Functions
-Version: 1.0.14
+Version: 1.0.16
 Authors@R: 
     person(given = "Anders H.",
            family = "Jarmund",
@@ -8,7 +8,7 @@ Authors@R:
            email = "anders.h.jarmund@ntnu.no",
            comment = c(ORCID = "0000-0002-3923-1637"))
 Description: ASCA-based methods for longitudinal and cross-sectional data
-URL: https://github.com/andjar/ALASCA
+URL: https://github.com/andjar/ALASCA, https://andjar.github.io/ALASCA/
 BugReports: https://github.com/andjar/ALASCA
 License: GPL-3
 Encoding: UTF-8

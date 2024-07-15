@@ -79,13 +79,14 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
     x_angle = 45,
     x_v_just = 1,
     x_h_just = 1,
-    n_limit = 12,
+    n_limit = 14,
     #' @field labels Figure labels, see [ggpubr::ggarrange()]
     labels = "AUTO",
     #' @field type Plot type
     type = "effect",
     initialize = function(model) {
       self$model <- model
+      self$n_limit <- min(self$n_limit, floor(length(self$model$get_levels("variable")) / 2))
     },
     call_plot = function(...) {
       inputs <- list(...)
@@ -359,7 +360,9 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
         self$model$log("The effect you wanted to plot does not exist!", level = "ERROR")
         stop()
       }
-      self$n_limit <- min(self$n_limit, length(self$model$get_levels("variable")) / 2)
+      if (2 * self$n_limit > length(self$model$get_levels("variable"))) {
+        self$n_limit <- 0
+      }
     },
     post_process = function(g) {
       if (self$save || self$model$save) {
