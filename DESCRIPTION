@@ -31,10 +31,11 @@ Imports:
 	Rfast,
 	data.table,
 	scales,
-	clue,
-	caret
+	clue
 Suggests: 
     knitr,
     rmarkdown,
-    RSQLite
+    RSQLite,
+	  caret,
+  	pls
 VignetteBuilder: knitr
