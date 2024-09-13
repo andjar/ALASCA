@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.16</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.17</span>
       </span>
     </div>
 
@@ -90,7 +90,7 @@
                         <h4 data-toc-skip class="author">Anders H.
 Jarmund</h4>
             
-            <h4 data-toc-skip class="date">2024-07-15</h4>
+            <h4 data-toc-skip class="date">2024-09-13</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/andjar/ALASCA/blob/main/vignettes/articles/prediction.Rmd" class="external-link"><code>vignettes/articles/prediction.Rmd</code></a></small>
       <div class="hidden name"><code>prediction.Rmd</code></div>
@@ -271,16 +271,16 @@ of the data sets and subtract the baseline for each participant.</p>
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span>,</span>
 <span>  scale_function <span class="op">=</span> <span class="st">"sdt1"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:20:48] Initializing ALASCA (v1.0.16, 2024-02-15)</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:20:48] Guessing effects: `time+time:group+group`</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:20:48] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:20:48] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:20:48] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:20:48] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:20:48] Scaling data with sdt1 ...</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:20:48] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:20:48] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:20:48] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:15] Initializing ALASCA (v1.0.17, 2024-09-13)</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:15] Guessing effects: `time+time:group+group`</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:15] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:15] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:15] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:15] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:15] Scaling data with sdt1 ...</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:15] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:15] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:15] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span></code></pre></div>
 </div>
 <p>Next, we use the <code>ALASCA::predict_scores()</code> function
 introduced in version 1.0.14 to get a score for each data point. Note

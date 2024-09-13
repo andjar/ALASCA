@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.16</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.17</span>
       </span>
     </div>
 
@@ -90,7 +90,7 @@
                         <h4 data-toc-skip class="author">Anders H.
 Jarmund</h4>
             
-            <h4 data-toc-skip class="date">2024-07-15</h4>
+            <h4 data-toc-skip class="date">2024-09-13</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/andjar/ALASCA/blob/main/vignettes/articles/regression.Rmd" class="external-link"><code>vignettes/articles/regression.Rmd</code></a></small>
       <div class="hidden name"><code>regression.Rmd</code></div>
@@ -222,18 +222,18 @@ trial below).</p>
 <span>  <span class="va">df</span>,</span>
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:00] Initializing ALASCA (v1.0.16, 2024-02-15)</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:00] Guessing effects: `time+time:group+group`</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:00] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:00] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:00] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:00] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:00] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:00] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:00] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:00] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:26] Initializing ALASCA (v1.0.17, 2024-09-13)</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:26] Guessing effects: `time+time:group+group`</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:26] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:26] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:26] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:26] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:26] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:26] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:27] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:27] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:00] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1 and 2.</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:27] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1 and 2.</span></span></code></pre></div>
 <p><img src="regression_files/figure-html/unnamed-chunk-6-1.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
@@ -265,13 +265,13 @@ package</a>:</p>
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span>,</span>
 <span>  use_Rfast <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:02] Initializing ALASCA (v1.0.16, 2024-02-15)</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:02] Guessing effects: `time+time:group+group`</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:02] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:02] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:02] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:02] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:02] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:29] Initializing ALASCA (v1.0.17, 2024-09-13)</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:29] Guessing effects: `time+time:group+group`</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:29] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:29] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:29] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:29] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:29] Calculating LMM coefficients</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
@@ -292,8 +292,8 @@ package</a>:</p>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:03] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:03] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:30] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:30] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
 <span><span class="va">res</span><span class="op">$</span><span class="va">regression_coefficients</span></span>
 <span><span class="co">#&gt;         estimate        pvalue      covar             variable</span></span>
 <span><span class="co">#&gt;            &lt;num&gt;         &lt;num&gt;     &lt;char&gt;               &lt;char&gt;</span></span>
@@ -319,13 +319,13 @@ used (alternative:
 <span>  use_Rfast <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  p_adjust_method <span class="op">=</span> <span class="st">"BH"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:03] Initializing ALASCA (v1.0.16, 2024-02-15)</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:03] Guessing effects: `time+time:group+group`</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:03] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:04] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:04] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:04] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:04] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:30] Initializing ALASCA (v1.0.17, 2024-09-13)</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:30] Guessing effects: `time+time:group+group`</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:30] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:30] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:30] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:30] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:30] Calculating LMM coefficients</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
@@ -346,9 +346,9 @@ used (alternative:
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
 <span><span class="co">#&gt; fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:04] Adjusting p values</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:04] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:04] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:31] Adjusting p values</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:31] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:31] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
 <span><span class="va">res</span><span class="op">$</span><span class="va">regression_coefficients</span></span>
 <span><span class="co">#&gt;         estimate        pvalue      covar             variable  pvalue_unadj</span></span>
 <span><span class="co">#&gt;            &lt;num&gt;         &lt;num&gt;     &lt;char&gt;               &lt;char&gt;         &lt;num&gt;</span></span>
@@ -378,28 +378,28 @@ time. To do this, we will separate the time and group effect:
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span>,</span>
 <span>  separate_effects <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:05] Initializing ALASCA (v1.0.16, 2024-02-15)</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:05] Guessing effects: `time` and `time:group+group`</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:05] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:05] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:05] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:05] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:05] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:05] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:05] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:05] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:32] Initializing ALASCA (v1.0.17, 2024-09-13)</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:32] Guessing effects: `time` and `time:group+group`</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:32] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:32] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:32] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:32] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:32] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:32] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:32] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:32] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span></code></pre></div>
 <p>Importantly, we must plot the two effects separately. We begin with
 the time effect of the reference group:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, effect <span class="op">=</span> <span class="fl">2</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:05] Effect plot. Selected effect (nr 2): `time:group+group`. Component: 1 and 2.</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:32] Effect plot. Selected effect (nr 2): `time:group+group`. Component: 1 and 2.</span></span></code></pre></div>
 <p><img src="regression_files/figure-html/unnamed-chunk-11-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>Next, we will look at the effect of group and how the two groups
 <em>differ</em>:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/flip.html">flip</a></span><span class="op">(</span><span class="va">res</span>, effect <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="co"># We flip the model to simplify the comparison with the previous model</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, effect <span class="op">=</span> <span class="fl">2</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:06] Effect plot. Selected effect (nr 2): `time:group+group`. Component: 1 and 2.</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:33] Effect plot. Selected effect (nr 2): `time:group+group`. Component: 1 and 2.</span></span></code></pre></div>
 <p><img src="regression_files/figure-html/unnamed-chunk-12-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>In short, we can see that the difference between the two groups
 increases for some variables (e.g., <code>variable_13</code> and
@@ -411,7 +411,7 @@ marginal means. For example, <code>variable_8</code>,
 like this:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, type <span class="op">=</span> <span class="st">'prediction'</span>, variable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"variable_8"</span>, <span class="st">"variable_13"</span>, <span class="st">"variable_15"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:08] Prediction plot. Selected effect (nr 1): `time`. Component: 1.</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:35] Prediction plot. Selected effect (nr 1): `time`. Component: 1.</span></span></code></pre></div>
 <p><img src="regression_files/figure-html/unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>See <a href="articles/plot.html">the vignette on plotting the
 model</a> for more visualizations.</p>
@@ -498,19 +498,19 @@ can be defined as:</p>
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span>,</span>
 <span>  equal_baseline <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:12] Initializing ALASCA (v1.0.16, 2024-02-15)</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:12] Guessing effects: `time+time:group`</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:12] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:12] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:12] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:12] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:12] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:12] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:12] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:12] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:39] Initializing ALASCA (v1.0.17, 2024-09-13)</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:39] Guessing effects: `time+time:group`</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:39] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:39] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:39] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:39] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:39] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:39] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:39] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:39] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:12] Effect plot. Selected effect (nr 1): `time+time:group`. Component: 1 and 2.</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:39] Effect plot. Selected effect (nr 1): `time+time:group`. Component: 1 and 2.</span></span></code></pre></div>
 <p><img src="regression_files/figure-html/unnamed-chunk-17-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>Why is <code>equal_baseline = TRUE</code> necessary? Well, it is due
 to how the model matrices are made by r - by default, there is an
@@ -522,16 +522,16 @@ these two model matrices:</p>
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span>,</span>
 <span>  equal_baseline <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:13] Initializing ALASCA (v1.0.16, 2024-02-15)</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:13] Guessing effects: `time+time:group`</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:13] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:13] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:13] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2024-07-15 10:21:13] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:13] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:13] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:13] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2024-07-15 10:21:13] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:40] Initializing ALASCA (v1.0.17, 2024-09-13)</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:40] Guessing effects: `time+time:group`</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:40] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:40] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:40] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2024-09-13 12:52:40] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:40] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:40] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:40] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2024-09-13 12:52:40] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
 <span></span>
 <span><span class="va">res</span><span class="op">$</span><span class="va">effect_list</span><span class="op">$</span><span class="va">model_matrix</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt;   timet_1 timet_2 timet_3 timet_4 timet_1:groupgroup_1 timet_2:groupgroup_1</span></span>
