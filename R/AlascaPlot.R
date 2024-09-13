@@ -86,7 +86,7 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
     type = "effect",
     initialize = function(model) {
       self$model <- model
-      self$n_limit <- min(self$n_limit, floor(length(self$model$get_levels("variable")) / 2))
+      self$n_limit <- min(self$n_limit / 2, floor(length(self$model$get_levels("variable")) / 2))
     },
     call_plot = function(...) {
       inputs <- list(...)

@@ -1,3 +1,7 @@
+# ALASCA 1.0.17
+
+* Minor bug fix related to 1.0.16
+
 # ALASCA 1.0.16
 
 * Bug fix: Plots show wrong number of variables when compared to `n_limit` for odd numbers
