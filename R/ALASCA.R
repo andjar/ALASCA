@@ -1215,7 +1215,7 @@ get_validation_percentiles_score <- function(objectlist) {
 #'
 #' @param object An ALASCA object
 #' @return An ALASCA object
-get_regression_predictions <- function() {
+get_regression_predictions_standard <- function() {
   if (!self$minimize_object) {
     # This is not a validation run
     self$log("Calculating predictions from regression models", level = "DEBUG")
@@ -1245,6 +1245,42 @@ get_regression_predictions <- function() {
   #invisible(self)
 }
 
+get_regression_predictions <- function() {
+  if (!self$minimize_object) {
+    # This is not a validation run
+    self$log("Calculating predictions from regression models", level = "DEBUG")
+  }
+  
+  #not which variable are not main effects of or interaction effects of the 
+  #effect terms for plotting
+  othervars<-colnames(self$df)[which(! colnames(self$df) %in% self$effect_terms)]
+  
+  #get tibble of regression coefficients and vector of desired coefficients for 
+  #plotting trend
+  regcoeff_tb <- dcast(data = self[["regression_coefficients"]], variable~covar, value.var = "estimate")%>%
+    as_tibble()%>%
+    filter(grepl(paste0(self$effect_terms, collapse = "|"), variable),
+           !grepl(paste0(othervars, collapse = "|"),variable))
+  
+  effects_selected<-pull(regcoeff_tb,variable)
+  regModel <- unique(model.matrix(self$formula$formula_wo_random, 
+                                  data = self$df))
+  regModel <- unique(regModel[,colnames(regModel) %in% effects_selected])
+  
+  self$model_prediction<-melt(
+    cbind(
+      regModel %*% as.matrix(regcoeff_tb[, -1]),
+      self$df[as.numeric(rownames(regModel)), .SD, .SDcols = c(self$effect_terms)]
+    ),
+    id.vars = c(self$effect_terms), value.name = "pred"
+  )
+  
+  if (!self$minimize_object) {
+    # This is not a validation run
+    self$log("-> Finished calculating predictions from regression models!", level = "DEBUG")
+  }
+  #invisible(self)
+}
 get_validation_ids <- function() {
   if (self$validation_method %in% c("bootstrap", "loo", "jack-knife", "jackknife")) {
     if (is.null(self$validation_ids)) {
