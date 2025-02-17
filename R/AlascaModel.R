@@ -446,7 +446,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
       
       if (self$equal_baseline) {
         # Must add baselines for missing interactions (baseline x group)
-        baseline_to_add <- self$model_prediction[get(self$effect_terms) %in% self$get_ref(self$effect_terms)]
+        baseline_to_add <- self$model_prediction[get(self$effect_terms[1]) %in% self$get_ref(self$effect_terms)]
         
         if (length(self$effect_terms) == 2) {
           # In this case, there are no main effects except time
