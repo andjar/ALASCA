@@ -25,6 +25,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 \item{\code{n_bins}}{Number of bins for histograms}
 
+\item{\code{sort_loadings}}{String: loading, alpha, vector}
+
 \item{\code{ribbon}}{Boolean. Plot ribbons for uncertainties}
 
 \item{\code{bw}}{Boolean. Plot in gray scale}
@@ -47,7 +49,7 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 \item{\code{sort_by_loading_group}}{Boolean. Sort loadings within loading group}
 
-\item{\code{palette_end}}{Improve contrast by not using the full color space. See \code{\link[scales:viridis_pal]{scales::viridis_pal()}}}
+\item{\code{palette_end}}{Improve contrast by not using the full color space. See \code{\link[scales:pal_viridis]{scales::viridis_pal()}}}
 
 \item{\code{effect_i}}{Effect(s) to plot}
 
@@ -72,42 +74,42 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-plot_prediction}{\code{AlascaPlot$plot_prediction()}}
-\item \href{#method-plot_effect}{\code{AlascaPlot$plot_effect()}}
-\item \href{#method-plot_effect_score}{\code{AlascaPlot$plot_effect_score()}}
-\item \href{#method-plot_effect_loading}{\code{AlascaPlot$plot_effect_loading()}}
-\item \href{#method-plot_effect_validation}{\code{AlascaPlot$plot_effect_validation()}}
-\item \href{#method-plot_effect_validation_score}{\code{AlascaPlot$plot_effect_validation_score()}}
-\item \href{#method-plot_effect_validation_loading}{\code{AlascaPlot$plot_effect_validation_loading()}}
-\item \href{#method-plot_2D_advanced}{\code{AlascaPlot$plot_2D_advanced()}}
-\item \href{#method-plot_2D}{\code{AlascaPlot$plot_2D()}}
-\item \href{#method-plot_2D_score}{\code{AlascaPlot$plot_2D_score()}}
-\item \href{#method-plot_2D_loading_1}{\code{AlascaPlot$plot_2D_loading_1()}}
-\item \href{#method-plot_2D_loading_2}{\code{AlascaPlot$plot_2D_loading_2()}}
-\item \href{#method-plot_histogram_score}{\code{AlascaPlot$plot_histogram_score()}}
-\item \href{#method-plot_histogram_loading}{\code{AlascaPlot$plot_histogram_loading()}}
-\item \href{#method-plot_histogram}{\code{AlascaPlot$plot_histogram()}}
-\item \href{#method-plot_participants}{\code{AlascaPlot$plot_participants()}}
-\item \href{#method-new}{\code{AlascaPlot$new()}}
-\item \href{#method-call_plot}{\code{AlascaPlot$call_plot()}}
-\item \href{#method-plot_scree}{\code{AlascaPlot$plot_scree()}}
-\item \href{#method-plot_residuals}{\code{AlascaPlot$plot_residuals()}}
-\item \href{#method-plot_covars}{\code{AlascaPlot$plot_covars()}}
-\item \href{#method-capitalize}{\code{AlascaPlot$capitalize()}}
-\item \href{#method-prettify_covar}{\code{AlascaPlot$prettify_covar()}}
-\item \href{#method-get_plot_linetypes}{\code{AlascaPlot$get_plot_linetypes()}}
-\item \href{#method-get_plot_shapes}{\code{AlascaPlot$get_plot_shapes()}}
-\item \href{#method-get_plot_palette}{\code{AlascaPlot$get_plot_palette()}}
-\item \href{#method-get_explained_label}{\code{AlascaPlot$get_explained_label()}}
-\item \href{#method-get_levels}{\code{AlascaPlot$get_levels()}}
-\item \href{#method-get_ref}{\code{AlascaPlot$get_ref()}}
-\item \href{#method-xflip}{\code{AlascaPlot$xflip()}}
-\item \href{#method-clone}{\code{AlascaPlot$clone()}}
+\item \href{#method-AlascaPlot-plot_prediction}{\code{AlascaPlot$plot_prediction()}}
+\item \href{#method-AlascaPlot-plot_effect}{\code{AlascaPlot$plot_effect()}}
+\item \href{#method-AlascaPlot-plot_effect_score}{\code{AlascaPlot$plot_effect_score()}}
+\item \href{#method-AlascaPlot-plot_effect_loading}{\code{AlascaPlot$plot_effect_loading()}}
+\item \href{#method-AlascaPlot-plot_effect_validation}{\code{AlascaPlot$plot_effect_validation()}}
+\item \href{#method-AlascaPlot-plot_effect_validation_score}{\code{AlascaPlot$plot_effect_validation_score()}}
+\item \href{#method-AlascaPlot-plot_effect_validation_loading}{\code{AlascaPlot$plot_effect_validation_loading()}}
+\item \href{#method-AlascaPlot-plot_2D_advanced}{\code{AlascaPlot$plot_2D_advanced()}}
+\item \href{#method-AlascaPlot-plot_2D}{\code{AlascaPlot$plot_2D()}}
+\item \href{#method-AlascaPlot-plot_2D_score}{\code{AlascaPlot$plot_2D_score()}}
+\item \href{#method-AlascaPlot-plot_2D_loading_1}{\code{AlascaPlot$plot_2D_loading_1()}}
+\item \href{#method-AlascaPlot-plot_2D_loading_2}{\code{AlascaPlot$plot_2D_loading_2()}}
+\item \href{#method-AlascaPlot-plot_histogram_score}{\code{AlascaPlot$plot_histogram_score()}}
+\item \href{#method-AlascaPlot-plot_histogram_loading}{\code{AlascaPlot$plot_histogram_loading()}}
+\item \href{#method-AlascaPlot-plot_histogram}{\code{AlascaPlot$plot_histogram()}}
+\item \href{#method-AlascaPlot-plot_participants}{\code{AlascaPlot$plot_participants()}}
+\item \href{#method-AlascaPlot-new}{\code{AlascaPlot$new()}}
+\item \href{#method-AlascaPlot-call_plot}{\code{AlascaPlot$call_plot()}}
+\item \href{#method-AlascaPlot-plot_scree}{\code{AlascaPlot$plot_scree()}}
+\item \href{#method-AlascaPlot-plot_residuals}{\code{AlascaPlot$plot_residuals()}}
+\item \href{#method-AlascaPlot-plot_covars}{\code{AlascaPlot$plot_covars()}}
+\item \href{#method-AlascaPlot-capitalize}{\code{AlascaPlot$capitalize()}}
+\item \href{#method-AlascaPlot-prettify_covar}{\code{AlascaPlot$prettify_covar()}}
+\item \href{#method-AlascaPlot-get_plot_linetypes}{\code{AlascaPlot$get_plot_linetypes()}}
+\item \href{#method-AlascaPlot-get_plot_shapes}{\code{AlascaPlot$get_plot_shapes()}}
+\item \href{#method-AlascaPlot-get_plot_palette}{\code{AlascaPlot$get_plot_palette()}}
+\item \href{#method-AlascaPlot-get_explained_label}{\code{AlascaPlot$get_explained_label()}}
+\item \href{#method-AlascaPlot-get_levels}{\code{AlascaPlot$get_levels()}}
+\item \href{#method-AlascaPlot-get_ref}{\code{AlascaPlot$get_ref()}}
+\item \href{#method-AlascaPlot-xflip}{\code{AlascaPlot$xflip()}}
+\item \href{#method-AlascaPlot-clone}{\code{AlascaPlot$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_prediction"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_prediction}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_prediction"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_prediction}{}}}
 \subsection{Method \code{plot_prediction()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_prediction()}\if{html}{\out{</div>}}
@@ -115,8 +117,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_effect"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_effect}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_effect"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_effect}{}}}
 \subsection{Method \code{plot_effect()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_effect()}\if{html}{\out{</div>}}
@@ -124,8 +126,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_effect_score"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_effect_score}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_effect_score"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_effect_score}{}}}
 \subsection{Method \code{plot_effect_score()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_effect_score(effect_i = 1, component = 1)}\if{html}{\out{</div>}}
@@ -133,8 +135,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_effect_loading"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_effect_loading}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_effect_loading"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_effect_loading}{}}}
 \subsection{Method \code{plot_effect_loading()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_effect_loading(effect_i = 1, component = 1)}\if{html}{\out{</div>}}
@@ -142,8 +144,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_effect_validation"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_effect_validation}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_effect_validation"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_effect_validation}{}}}
 \subsection{Method \code{plot_effect_validation()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_effect_validation()}\if{html}{\out{</div>}}
@@ -151,8 +153,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_effect_validation_score"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_effect_validation_score}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_effect_validation_score"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_effect_validation_score}{}}}
 \subsection{Method \code{plot_effect_validation_score()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_effect_validation_score(effect_i = 1, component = 1)}\if{html}{\out{</div>}}
@@ -160,8 +162,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_effect_validation_loading"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_effect_validation_loading}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_effect_validation_loading"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_effect_validation_loading}{}}}
 \subsection{Method \code{plot_effect_validation_loading()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_effect_validation_loading(effect_i = 1, component = 1)}\if{html}{\out{</div>}}
@@ -169,8 +171,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_2D_advanced"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_2D_advanced}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_2D_advanced"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_2D_advanced}{}}}
 \subsection{Method \code{plot_2D_advanced()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_2D_advanced()}\if{html}{\out{</div>}}
@@ -178,8 +180,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_2D"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_2D}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_2D"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_2D}{}}}
 \subsection{Method \code{plot_2D()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_2D()}\if{html}{\out{</div>}}
@@ -187,8 +189,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_2D_score"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_2D_score}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_2D_score"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_2D_score}{}}}
 \subsection{Method \code{plot_2D_score()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_2D_score()}\if{html}{\out{</div>}}
@@ -196,8 +198,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_2D_loading_1"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_2D_loading_1}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_2D_loading_1"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_2D_loading_1}{}}}
 \subsection{Method \code{plot_2D_loading_1()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_2D_loading_1()}\if{html}{\out{</div>}}
@@ -205,8 +207,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_2D_loading_2"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_2D_loading_2}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_2D_loading_2"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_2D_loading_2}{}}}
 \subsection{Method \code{plot_2D_loading_2()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_2D_loading_2()}\if{html}{\out{</div>}}
@@ -214,8 +216,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_histogram_score"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_histogram_score}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_histogram_score"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_histogram_score}{}}}
 \subsection{Method \code{plot_histogram_score()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_histogram_score()}\if{html}{\out{</div>}}
@@ -223,8 +225,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_histogram_loading"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_histogram_loading}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_histogram_loading"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_histogram_loading}{}}}
 \subsection{Method \code{plot_histogram_loading()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_histogram_loading()}\if{html}{\out{</div>}}
@@ -232,8 +234,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_histogram"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_histogram}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_histogram"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_histogram}{}}}
 \subsection{Method \code{plot_histogram()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_histogram()}\if{html}{\out{</div>}}
@@ -241,8 +243,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_participants"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_participants}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_participants"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_participants}{}}}
 \subsection{Method \code{plot_participants()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_participants(effect_i = 1, component = 1)}\if{html}{\out{</div>}}
@@ -250,8 +252,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-new"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$new(model)}\if{html}{\out{</div>}}
@@ -259,8 +261,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-call_plot"></a>}}
-\if{latex}{\out{\hypertarget{method-call_plot}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-call_plot"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-call_plot}{}}}
 \subsection{Method \code{call_plot()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$call_plot(...)}\if{html}{\out{</div>}}
@@ -268,8 +270,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_scree"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_scree}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_scree"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_scree}{}}}
 \subsection{Method \code{plot_scree()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_scree()}\if{html}{\out{</div>}}
@@ -277,8 +279,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_residuals"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_residuals}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_residuals"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_residuals}{}}}
 \subsection{Method \code{plot_residuals()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_residuals()}\if{html}{\out{</div>}}
@@ -286,8 +288,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot_covars"></a>}}
-\if{latex}{\out{\hypertarget{method-plot_covars}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-plot_covars"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-plot_covars}{}}}
 \subsection{Method \code{plot_covars()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$plot_covars()}\if{html}{\out{</div>}}
@@ -295,8 +297,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-capitalize"></a>}}
-\if{latex}{\out{\hypertarget{method-capitalize}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-capitalize"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-capitalize}{}}}
 \subsection{Method \code{capitalize()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$capitalize(txt)}\if{html}{\out{</div>}}
@@ -304,8 +306,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-prettify_covar"></a>}}
-\if{latex}{\out{\hypertarget{method-prettify_covar}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-prettify_covar"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-prettify_covar}{}}}
 \subsection{Method \code{prettify_covar()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$prettify_covar(effect, txt)}\if{html}{\out{</div>}}
@@ -313,8 +315,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_plot_linetypes"></a>}}
-\if{latex}{\out{\hypertarget{method-get_plot_linetypes}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-get_plot_linetypes"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-get_plot_linetypes}{}}}
 \subsection{Method \code{get_plot_linetypes()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$get_plot_linetypes()}\if{html}{\out{</div>}}
@@ -322,8 +324,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_plot_shapes"></a>}}
-\if{latex}{\out{\hypertarget{method-get_plot_shapes}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-get_plot_shapes"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-get_plot_shapes}{}}}
 \subsection{Method \code{get_plot_shapes()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$get_plot_shapes()}\if{html}{\out{</div>}}
@@ -331,8 +333,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_plot_palette"></a>}}
-\if{latex}{\out{\hypertarget{method-get_plot_palette}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-get_plot_palette"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-get_plot_palette}{}}}
 \subsection{Method \code{get_plot_palette()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$get_plot_palette()}\if{html}{\out{</div>}}
@@ -340,8 +342,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_explained_label"></a>}}
-\if{latex}{\out{\hypertarget{method-get_explained_label}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-get_explained_label"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-get_explained_label}{}}}
 \subsection{Method \code{get_explained_label()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$get_explained_label(effect_i = 1, component = 1, type = "Score")}\if{html}{\out{</div>}}
@@ -349,8 +351,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_levels"></a>}}
-\if{latex}{\out{\hypertarget{method-get_levels}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-get_levels"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-get_levels}{}}}
 \subsection{Method \code{get_levels()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$get_levels(x)}\if{html}{\out{</div>}}
@@ -358,8 +360,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_ref"></a>}}
-\if{latex}{\out{\hypertarget{method-get_ref}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-get_ref"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-get_ref}{}}}
 \subsection{Method \code{get_ref()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$get_ref(x)}\if{html}{\out{</div>}}
@@ -367,8 +369,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-xflip"></a>}}
-\if{latex}{\out{\hypertarget{method-xflip}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-xflip"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-xflip}{}}}
 \subsection{Method \code{xflip()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaPlot$xflip(flip = TRUE)}\if{html}{\out{</div>}}
@@ -376,8 +378,8 @@ Note: The object is typically accessed by \code{plot(obj, ...)} where the argume
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-AlascaPlot-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaPlot-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

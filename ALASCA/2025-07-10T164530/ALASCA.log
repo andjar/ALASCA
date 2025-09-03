@@ -1,0 +1,2 @@
+INFO  [2025-07-10 16:45:35] Initializing ALASCA (v1.0.17, 2024-09-13)
+WARN  [2025-07-10 16:45:38] The `timepoint` column is used for stratification
