@@ -1,0 +1,11 @@
+INFO  [2025-07-10 20:16:52] Initializing ALASCA (v1.0.17, 2024-09-13)
+WARN  [2025-07-10 20:16:52] The `timepoint` column is used for stratification
+WARN  [2025-07-10 20:16:52] Converting `character` columns to factors
+INFO  [2025-07-10 20:16:52] Scaling data with sdall ...
+INFO  [2025-07-10 20:16:52] Calculating LMM coefficients
+INFO  [2025-07-10 20:16:55] Adjusting p values
+WARN  [2025-07-10 20:16:55] Keeping 20 of 75 components. Change `max_PC` if necessary.
+WARN  [2025-07-10 20:16:55] Keeping 20 of 75 components. Change `max_PC` if necessary.
+WARN  [2025-07-10 20:16:55] Keeping 20 of 75 components. Change `max_PC` if necessary.
+INFO  [2025-07-10 20:16:55] ==== ALASCA has finished ====
+INFO  [2025-07-10 20:16:55] To visualize the model, try `plot(<object>, effect = 1, component = 1, type = 'effect')`

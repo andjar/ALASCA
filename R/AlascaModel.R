@@ -331,6 +331,15 @@ AlascaModel <- R6::R6Class("AlascaModel",
         self$effect_list$model_matrix <- lapply(self$effect_list$expr, function(x) {
           mm <- model.matrix(as.formula(paste0("value ~ ", x)), data = self$df)
           mm <- mm[, colnames(mm) %in% self$cnames_modmat]
+          if(length(ncol(mm))==0){
+            stop(
+              paste0("Due to a bug, three-way interactions passed to the ",
+                     " effects argument have to be specified the order of ",
+                     " their first appearances in the formula. Otherwise no ",
+                     "variable names in the formula match those passed to the ",
+                     "effects argument")
+            )
+          }
           if (ncol(mm) > 2) {
             mm[, -1]
           } else {
@@ -437,7 +446,7 @@ AlascaModel <- R6::R6Class("AlascaModel",
       
       if (self$equal_baseline) {
         # Must add baselines for missing interactions (baseline x group)
-        baseline_to_add <- self$model_prediction[get(self$effect_terms) %in% self$get_ref(self$effect_terms)]
+        baseline_to_add <- self$model_prediction[get(self$effect_terms[1]) %in% self$get_ref(self$effect_terms)]
         
         if (length(self$effect_terms) == 2) {
           # In this case, there are no main effects except time

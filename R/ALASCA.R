@@ -6,7 +6,7 @@
 #'
 #' @param df Data frame to be analyzed
 #' @param formula Regression formula
-#' @param effects Vector with effect terms. If `NULL`, ALASCA will guess (default)
+#' @param effects Vector with effect terms. If `NULL`, ALASCA will guess (default). To avoid bugs for complex models, it is crucial to specify effect terms in the order that they appear in formula!
 #' @param scale_function Either a custom function or string to define scaling function: `sdall`, `sdref`, `sdt1`, `sdreft1`
 #' @param separate_effects Boolean. Separate effects?
 #' @param equal_baseline Set to `TRUE` to remove interaction between effects
@@ -583,7 +583,7 @@ run_regression <- function() {
     formula_wo_random <- self$formula$formula_wo_random
     self$regression_model <- lapply(self$get_levels("variable"), function(x) {
       modmat <- model.matrix(formula_wo_random, data = self$df[ rows_by_variable[[x]] ])
-      #odmat <- modmat[, -1] # Remove intercept
+      #modmat <- modmat[, -1] # Remove intercept
       if (self[["equal_baseline"]]) {
         # Remove interaction between group and first time point
         modmat <- modmat[, !grepl(
@@ -593,7 +593,13 @@ run_regression <- function() {
           fixed = TRUE)]
         # Remove interaction between reference groups in three-way interaction
         # TODO: Improve this temporary solution
-        if (lengths(regmatches(self$formula$rhs, gregexpr(":", self$formula$rhs))) == 2) {
+        # Fix SDC: only do this if any of the modmat columns contains a three
+        # way interaction, to avoid triggering this when there are multiple 
+        # two-way interactions in the formula
+        if (any(sapply(colnames(modmat),
+                       function(x) length(gregexpr(":",x,fixed=T)[[1]])>1
+                       ))) {
+        # if (lengths(regmatches(self$formula$rhs, gregexpr(":", self$formula$rhs))) == 2) {
           modmat <- modmat[, !(grepl(
             paste0(self$effect_terms[[2]],
                    self$get_ref(self$effect_terms[[2]])),
@@ -705,7 +711,14 @@ get_effect_matrix <- function() {
   rownames(reg_coefs) <- reg_coefs$variable
   #stop()
   self$effect_list$effect_matrix <- lapply(self$set_design_matrices(), function(mm) {
-    mm[self$df[variable == self$get_ref("variable"), which = TRUE ], ] %*% as.matrix(reg_coefs[colnames(mm), -1])
+    
+    #the designmatrices will contain reference levels of interactions that are 
+    #not in the coefficient matrices, and the coefficient matrices can contain
+    #interactions other than the time:group interaction the effect might call
+    #for. Only common variables are kept.
+    commonvars<-colnames(mm)[colnames(mm) %in% reg_coefs$variable]
+    mm[self$df[variable == self$get_ref("variable"), which = TRUE ],commonvars] %*%
+      as.matrix(reg_coefs[commonvars, -1])
   }
   )
   
@@ -1215,7 +1228,7 @@ get_validation_percentiles_score <- function(objectlist) {
 #'
 #' @param object An ALASCA object
 #' @return An ALASCA object
-get_regression_predictions <- function() {
+get_regression_predictions_standard <- function() {
   if (!self$minimize_object) {
     # This is not a validation run
     self$log("Calculating predictions from regression models", level = "DEBUG")
@@ -1245,6 +1258,42 @@ get_regression_predictions <- function() {
   #invisible(self)
 }
 
+get_regression_predictions <- function() {
+  if (!self$minimize_object) {
+    # This is not a validation run
+    self$log("Calculating predictions from regression models", level = "DEBUG")
+  }
+  
+  #note which variable are not main effects of or interaction effects of the 
+  #effect terms for plotting
+  othervars<-colnames(self$df)[which(! colnames(self$df) %in% self$effect_terms)]
+  
+  #get tibble of regression coefficients and vector of desired coefficients for 
+  #plotting trend
+  regcoeff_tb <- dcast(data = self[["regression_coefficients"]], variable~covar, value.var = "estimate")%>%
+    as_tibble()%>%
+    filter(grepl(paste0(self$effect_terms, collapse = "|"), variable),
+           !grepl(paste0(othervars, collapse = "|"),variable))
+  
+  effects_selected<-pull(regcoeff_tb,variable)
+  regModel <- unique(model.matrix(self$formula$formula_wo_random, 
+                                  data = self$df))
+  regModel <- unique(regModel[,colnames(regModel) %in% effects_selected])
+  
+  self$model_prediction<-melt(
+    cbind(
+      regModel %*% as.matrix(regcoeff_tb[, -1]),
+      self$df[as.numeric(rownames(regModel)), .SD, .SDcols = c(self$effect_terms)]
+    ),
+    id.vars = c(self$effect_terms), value.name = "pred"
+  )
+  
+  if (!self$minimize_object) {
+    # This is not a validation run
+    self$log("-> Finished calculating predictions from regression models!", level = "DEBUG")
+  }
+  #invisible(self)
+}
 get_validation_ids <- function() {
   if (self$validation_method %in% c("bootstrap", "loo", "jack-knife", "jackknife")) {
     if (is.null(self$validation_ids)) {

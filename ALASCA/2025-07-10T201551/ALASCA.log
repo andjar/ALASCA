@@ -1,0 +1,6 @@
+INFO  [2025-07-10 20:15:51] Initializing ALASCA (v1.0.17, 2024-09-13)
+WARN  [2025-07-10 20:15:51] The `timepoint` column is used for stratification
+WARN  [2025-07-10 20:15:51] Converting `character` columns to factors
+INFO  [2025-07-10 20:15:51] Scaling data with sdall ...
+INFO  [2025-07-10 20:15:51] Calculating LMM coefficients
+INFO  [2025-07-10 20:15:53] Adjusting p values

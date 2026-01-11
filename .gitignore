@@ -4,3 +4,5 @@
 .Ruserdata
 inst/doc
 docs
+test generalisation for complex model.R
+test dataset/testdata.csv

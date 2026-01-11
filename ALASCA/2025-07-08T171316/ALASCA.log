@@ -1,0 +1,4 @@
+INFO  [2025-07-08 17:13:16] Initializing ALASCA (v1.0.17, 2024-09-13)
+WARN  [2025-07-08 17:13:16] The `timepoint` column is used for stratification
+WARN  [2025-07-08 17:13:16] Converting `character` columns to factors
+ERROR [2025-07-08 17:13:16] Predictor variables missing for some samples! To ignore this, use `ignore_missing_covars = TRUE`
