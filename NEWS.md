@@ -1,3 +1,9 @@
+# ALASCA 1.0.18
+
+* Replacing `aes_string()` due to changes in the `ggplot2` package
+* Moved `finalize()` from public to private re changes in the `R6` package
+* Bug fix: Plots all variables instead of subset
+
 # ALASCA 1.0.17
 
 * Minor bug fix related to 1.0.16

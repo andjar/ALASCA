@@ -19,9 +19,9 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field ignore_missing_covars If TRUE, ignore missing covariate values
     ignore_missing_covars = FALSE,
     #' @field version Version number
-    version = "1.0.17",
+    version = "1.0.18",
     #' @field update_date Date of latest update
-    update_date = "2024-09-13",
+    update_date = "2026-01-11",
 
     # Effect matrices
     #' @field separate_effects If TRUE, try to separate the effects
@@ -255,15 +255,6 @@ AlascaModel <- R6::R6Class("AlascaModel",
 
       # Build the ALASCA model ----
       self$build_model()
-    },
-    finalize = function() {
-      if (self$save_to_disk && !self$minimize_object) {
-        if (self$db_method == "SQLite") {
-          DBI::dbDisconnect(self$db_con)
-        } else {
-          DBI::dbDisconnect(self$db_con, shutdown = TRUE)
-        }
-      }
     },
     #' @description
     #' Update the current model (used for validation)
@@ -844,5 +835,15 @@ AlascaModel <- R6::R6Class("AlascaModel",
       unique(unlist(self$effect_list$terms))
     }
   ),
-  private = list()
+  private = list(
+    finalize = function() {
+      if (self$save_to_disk && !self$minimize_object) {
+        if (self$db_method == "SQLite") {
+          DBI::dbDisconnect(self$db_con)
+        } else {
+          DBI::dbDisconnect(self$db_con, shutdown = TRUE)
+        }
+      }
+    }
+  )
 )

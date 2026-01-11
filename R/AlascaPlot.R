@@ -85,8 +85,7 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
     #' @field type Plot type
     type = "effect",
     initialize = function(model) {
-      self$model <- model
-      self$n_limit <- min(self$n_limit / 2, floor(length(self$model$get_levels("variable")) / 2))
+      self$model   <- model
     },
     call_plot = function(...) {
       inputs <- list(...)
@@ -253,10 +252,10 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
 
       if (is.null(self$loading_group_column)) {
         if (self$model$validate) {
-          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covar", y = "estimate", ymin = "low", ymax = "high")) +
+          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = .data[["covar"]], y = .data[["estimate"]], ymin = .data[["low"]], ymax = .data[["high"]])) +
             ggplot2::geom_pointrange()
         } else {
-          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covar", y = "estimate")) +
+          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = .data[["covar"]], y = .data[["estimate"]])) +
             ggplot2::geom_point()
         }
       } else {
@@ -266,16 +265,16 @@ AlascaPlot <- R6::R6Class("AlascaPlot",
         }
         if (self$model$validate) {
           if (self$black_and_white) {
-            g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covar", y = "estimate", ymin = "low", ymax = "high", shape = "covargroup"))
+            g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = .data[["covar"]], y = .data[["estimate"]], ymin = .data[["low"]], ymax = .data[["high"]], shape = .data[["covargroup"]]))
           } else {
-            g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covar", y = "estimate", ymin = "low", ymax = "high", shape = "covargroup", color = "covargroup"))
+            g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = .data[["covar"]], y = .data[["estimate"]], ymin = .data[["low"]], ymax = .data[["high"]], shape = .data[["covargroup"]], color = .data[["covargroup"]]))
           }
           g <- g + ggplot2::geom_pointrange()
         } else {
           if (self$black_and_white) {
-            g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covar", y = "estimate", shape = "covargroup"))
+            g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = .data[["covar"]], y = .data[["estimate"]], shape = .data[["covargroup"]]))
           } else {
-            g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covar", y = "estimate", shape = "covargroup", color = "covargroup"))
+            g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = .data[["covar"]], y = .data[["estimate"]], shape = .data[["covargroup"]], color = .data[["covargroup"]]))
           }
           
           g <- g + ggplot2::geom_point()
