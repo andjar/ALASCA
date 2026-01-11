@@ -90,7 +90,7 @@
                         <h4 data-toc-skip class="author">Anders H.
 Jarmund</h4>
             
-            <h4 data-toc-skip class="date">2024-09-13</h4>
+            <h4 data-toc-skip class="date">2026-01-11</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/andjar/ALASCA/blob/main/vignettes/articles/plot.Rmd" class="external-link"><code>vignettes/articles/plot.Rmd</code></a></small>
       <div class="hidden name"><code>plot.Rmd</code></div>
@@ -143,8 +143,8 @@ objects and can be saved with <code>ggsave()</code>.</p>
 e.g. specifying <code>palette</code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fl">1</span>, effect <span class="op">=</span> <span class="fl">1</span>, type <span class="op">=</span> <span class="st">'effect'</span>, palette <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"red"</span>, <span class="st">"blue"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:29] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-3-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:42] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <div class="section level3">
 <h3 id="the-effect-plot">The effect plot<a class="anchor" aria-label="anchor" href="#the-effect-plot"></a>
 </h3>
@@ -153,24 +153,24 @@ e.g. specifying <code>palette</code>:</p>
 one effect and one component:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fl">1</span>, effect <span class="op">=</span> <span class="fl">1</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:30] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-4-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:43] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>Or two components:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, effect <span class="op">=</span> <span class="fl">1</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:31] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1 and 2.</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-5-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:45] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1 and 2.</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>Or two effects (note: this requires a model with multiple
 effects):</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res_2</span>, component <span class="op">=</span> <span class="fl">1</span>, effect <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:32] Effect plot. Selected effect (nr 1 and 2): `time` and `time:group+group`. Component: 1.</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-6-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:47] Effect plot. Selected effect (nr 1 and 2): `time` and `time:group+group`. Component: 1.</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>Or even a combination of multiple components and effects:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res_2</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, effect <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:34] Effect plot. Selected effect (nr 1 and 2): `time` and `time:group+group`. Component: 1 and 2.</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-7-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:48] Effect plot. Selected effect (nr 1 and 2): `time` and `time:group+group`. Component: 1 and 2.</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <div class="section level4">
 <h4 id="plotting-scores-or-loadings">Plotting scores or loadings<a class="anchor" aria-label="anchor" href="#plotting-scores-or-loadings"></a>
 </h4>
@@ -178,13 +178,13 @@ effects):</p>
 get those components directly:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fl">1</span>, effect <span class="op">=</span> <span class="fl">1</span>, type <span class="op">=</span> <span class="st">'score'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:36] Score plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:51] Score plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>And similarly for loadings:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fl">1</span>, effect <span class="op">=</span> <span class="fl">1</span>, type <span class="op">=</span> <span class="st">'loading'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:36] Loading plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-9-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:52] Loading plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div class="section level3">
@@ -198,19 +198,19 @@ colors). You can therefore ask for grayscale figures in ALASCA:</p>
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span>,</span>
 <span>  plot.grayscale <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:37] Initializing ALASCA (v1.0.17, 2024-09-13)</span></span>
-<span><span class="co">#&gt; WARN  [2024-09-13 12:51:37] Guessing effects: `time+time:group+group`</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:37] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:37] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2024-09-13 12:51:37] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2024-09-13 12:51:37] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:37] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:37] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:37] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:37] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:52] Initializing ALASCA (v1.0.18, 2026-01-11)</span></span>
+<span><span class="co">#&gt; WARN  [2026-01-11 20:28:52] Guessing effects: `time+time:group+group`</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:52] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:52] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2026-01-11 20:28:52] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2026-01-11 20:28:52] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:52] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:52] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:52] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:52] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res_3</span>, component <span class="op">=</span> <span class="fl">1</span>, effect <span class="op">=</span> <span class="fl">1</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:37] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-10-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:52] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="adapting-the-theme">Adapting the theme<a class="anchor" aria-label="anchor" href="#adapting-the-theme"></a>
@@ -224,19 +224,19 @@ ALASCA model:</p>
 <span>  plot.my_theme <span class="op">=</span> <span class="fu">theme_linedraw</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  plot.palette <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"red"</span>, <span class="st">"blue"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:38] Initializing ALASCA (v1.0.17, 2024-09-13)</span></span>
-<span><span class="co">#&gt; WARN  [2024-09-13 12:51:38] Guessing effects: `time+time:group+group`</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:38] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:38] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2024-09-13 12:51:38] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2024-09-13 12:51:38] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:38] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:38] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:38] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:38] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:53] Initializing ALASCA (v1.0.18, 2026-01-11)</span></span>
+<span><span class="co">#&gt; WARN  [2026-01-11 20:28:53] Guessing effects: `time+time:group+group`</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:53] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:53] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2026-01-11 20:28:53] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2026-01-11 20:28:53] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:53] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:53] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:54] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:54] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res_4</span>, component <span class="op">=</span> <span class="fl">1</span>, effect <span class="op">=</span> <span class="fl">1</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:38] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-11-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:54] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>The color palette is by default made from the viridis palette, ending
 at 0.8: <code>scales::viridis_pal(end = 0.8)(2)</code>. You can of
 course use the colors you want;</p>
@@ -250,7 +250,7 @@ course use the colors you want;</p>
 <span>  plot.palette <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/pal_brewer.html" class="external-link">brewer_pal</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"qual"</span><span class="op">)</span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res_5</span>, component <span class="op">=</span> <span class="fl">1</span>, effect <span class="op">=</span> <span class="fl">1</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-12-1.png" width="100%" style="display: block; margin: auto;"></p>
+<p><img src="plot_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>To remove the ribbon, you can set
 <code>plot.ribbon = FALSE</code>:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
@@ -263,41 +263,41 @@ course use the colors you want;</p>
 <span>  plot.palette <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/pal_brewer.html" class="external-link">brewer_pal</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"qual"</span><span class="op">)</span><span class="op">(</span><span class="fl">2</span><span class="op">)</span>,</span>
 <span>  plot.ribbon <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:42] Initializing ALASCA (v1.0.17, 2024-09-13)</span></span>
-<span><span class="co">#&gt; WARN  [2024-09-13 12:51:42] Guessing effects: `time+time:group+group`</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:42] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:42] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2024-09-13 12:51:42] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2024-09-13 12:51:42] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:42] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:42] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:42] Starting validation: bootstrap</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:42] - Run 1 of 10</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:42] --- Used 0.22 seconds. Est. time remaining: 2.02 seconds</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:42] - Run 2 of 10</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:42] --- Used 0.12 seconds. Est. time remaining: 1.37 seconds</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:42] - Run 3 of 10</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:42] --- Used 0.11 seconds. Est. time remaining: 1.07 seconds</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:42] - Run 4 of 10</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:42] --- Used 0.12 seconds. Est. time remaining: 0.87 seconds</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:42] - Run 5 of 10</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:43] --- Used 0.12 seconds. Est. time remaining: 0.7 seconds</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:43] - Run 6 of 10</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:43] --- Used 0.12 seconds. Est. time remaining: 0.55 seconds</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:43] - Run 7 of 10</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:43] --- Used 0.12 seconds. Est. time remaining: 0.4 seconds</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:43] - Run 8 of 10</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:43] --- Used 0.13 seconds. Est. time remaining: 0.27 seconds</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:43] - Run 9 of 10</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:43] --- Used 0.16 seconds. Est. time remaining: 0.14 seconds</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:43] - Run 10 of 10</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:43] --- Used 0.14 seconds. Est. time remaining: 0 seconds</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:43] Calculating percentiles for score and loading</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:43] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:43] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:58] Initializing ALASCA (v1.0.18, 2026-01-11)</span></span>
+<span><span class="co">#&gt; WARN  [2026-01-11 20:28:58] Guessing effects: `time+time:group+group`</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:58] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:58] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2026-01-11 20:28:58] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2026-01-11 20:28:58] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:58] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:58] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:58] Starting validation: bootstrap</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:58] - Run 1 of 10</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:58] --- Used 0.11 seconds. Est. time remaining: 0.98 seconds</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:58] - Run 2 of 10</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:58] --- Used 0.26 seconds. Est. time remaining: 1.46 seconds</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:58] - Run 3 of 10</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:58] --- Used 0.11 seconds. Est. time remaining: 1.1 seconds</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:58] - Run 4 of 10</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:58] --- Used 0.11 seconds. Est. time remaining: 0.87 seconds</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:58] - Run 5 of 10</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:59] --- Used 0.1 seconds. Est. time remaining: 0.69 seconds</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:59] - Run 6 of 10</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:59] --- Used 0.11 seconds. Est. time remaining: 0.53 seconds</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:59] - Run 7 of 10</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:59] --- Used 0.15 seconds. Est. time remaining: 0.41 seconds</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:59] - Run 8 of 10</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:59] --- Used 0.11 seconds. Est. time remaining: 0.26 seconds</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:59] - Run 9 of 10</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:59] --- Used 0.12 seconds. Est. time remaining: 0.13 seconds</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:59] - Run 10 of 10</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:59] --- Used 0.11 seconds. Est. time remaining: 0 seconds</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:59] Calculating percentiles for score and loading</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:59] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:59] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res_5</span>, component <span class="op">=</span> <span class="fl">1</span>, effect <span class="op">=</span> <span class="fl">1</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:43] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:28:59] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>You can also change these properties directly in the
 <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> function:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -308,8 +308,8 @@ course use the colors you want;</p>
 <span>     ribbon <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>     palette <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/pal_hue.html" class="external-link">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">2</span><span class="op">)</span>,</span>
 <span>     my_theme <span class="op">=</span> <span class="fu">theme_classic</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:44] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-14-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:29:00] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>or (<code>x_angle</code> controls the rotation of the x axis labels,
 and <code>x_h_just</code> is used to center them horizontally)</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
@@ -320,8 +320,8 @@ and <code>x_h_just</code> is used to center them horizontally)</p>
 <span>     grayscale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>     x_angle <span class="op">=</span> <span class="fl">0</span>, x_h_just<span class="op">=</span> <span class="fl">0.5</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:45] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-15-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:29:01] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-15-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>Some even prefer to have loadings along the x axis:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res_5</span>,</span>
@@ -331,8 +331,8 @@ and <code>x_h_just</code> is used to center them horizontally)</p>
 <span>     x_angle <span class="op">=</span> <span class="fl">90</span>, x_h_just <span class="op">=</span> <span class="fl">1</span>, x_v_just <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>     flip_axis<span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:46] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-16-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:29:03] Effect plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="screeplot">Screeplot<a class="anchor" aria-label="anchor" href="#screeplot"></a>
@@ -342,8 +342,8 @@ plotted component 1 in the previous plot, you have to specify which
 components to plot:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">10</span><span class="op">)</span>, effect <span class="op">=</span> <span class="fl">1</span>, type <span class="op">=</span> <span class="st">'scree'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:47] Scree plot. Selected effect (nr 1): `time+time:group+group`. Component: 1 and 2 and 3 and 4 and 5 and 6 and 7 and 8 and 9 and 10.</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-17-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:29:04] Scree plot. Selected effect (nr 1): `time+time:group+group`. Component: 1 and 2 and 3 and 4 and 5 and 6 and 7 and 8 and 9 and 10.</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="predictions-marginal-means">Predictions / Marginal means<a class="anchor" aria-label="anchor" href="#predictions-marginal-means"></a>
@@ -352,22 +352,22 @@ components to plot:</p>
 loadings:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fl">1</span>, effect <span class="op">=</span> <span class="fl">1</span>, type <span class="op">=</span> <span class="st">'prediction'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:47] Prediction plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:47] Selecting the 0 variables with highest/lowest loading on `time+time:group+group` (PC1). Use `variable` to specify variables to plot</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-18-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:29:04] Prediction plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:29:04] Selecting the 0 variables with highest/lowest loading on `time+time:group+group` (PC1). Use `variable` to specify variables to plot</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-18-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>You can ask for specific variables:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fl">1</span>, effect <span class="op">=</span> <span class="fl">1</span>, type <span class="op">=</span> <span class="st">'prediction'</span>, variable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"variable_8"</span>, <span class="st">"variable_13"</span>, <span class="st">"variable_15"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:49] Prediction plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-19-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:29:06] Prediction plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-19-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>Or adjust the number of retrieved variables (note that we have to set
 <code>variable = c()</code> for the plot function to forget the previous
 setting):</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fl">1</span>, effect <span class="op">=</span> <span class="fl">1</span>, type <span class="op">=</span> <span class="st">'prediction'</span>, n_limit <span class="op">=</span> <span class="fl">4</span>, variable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:50] Prediction plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span>
-<span><span class="co">#&gt; INFO  [2024-09-13 12:51:50] Selecting the 2 variables with highest/lowest loading on `time+time:group+group` (PC1). Use `variable` to specify variables to plot</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-20-1.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:29:07] Prediction plot. Selected effect (nr 1): `time+time:group+group`. Component: 1.</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-11 20:29:07] Selecting the 2 variables with highest/lowest loading on `time+time:group+group` (PC1). Use `variable` to specify variables to plot</span></span></code></pre></div>
+<p><img src="plot_files/figure-html/unnamed-chunk-20-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="histogram">Histogram<a class="anchor" aria-label="anchor" href="#histogram"></a>
@@ -381,7 +381,7 @@ setting):</p>
 <span>  n_validation_runs <span class="op">=</span> <span class="fl">100</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res_6</span>, component <span class="op">=</span> <span class="fl">1</span>, effect <span class="op">=</span> <span class="fl">1</span>, type <span class="op">=</span> <span class="st">'histogram'</span>, n_bins <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plot_files/figure-html/unnamed-chunk-21-1.png" width="100%" style="display: block; margin: auto;"></p>
+<p><img src="plot_files/figure-html/unnamed-chunk-21-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 </div>
 </div>
   </div>
@@ -401,7 +401,7 @@ setting):</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
       </footer>
