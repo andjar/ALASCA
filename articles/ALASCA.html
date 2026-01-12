@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.17</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.18</span>
       </span>
     </div>
 
@@ -90,7 +90,7 @@
                         <h4 data-toc-skip class="author">Anders H.
 Jarmund</h4>
             
-            <h4 data-toc-skip class="date">2026-01-11</h4>
+            <h4 data-toc-skip class="date">2026-01-12</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/andjar/ALASCA/blob/main/vignettes/ALASCA.Rmd" class="external-link"><code>vignettes/ALASCA.Rmd</code></a></small>
       <div class="hidden name"><code>ALASCA.Rmd</code></div>
@@ -300,16 +300,16 @@ variable separately.</p>
 <span>  <span class="va">df</span>,</span>
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2026-01-11 20:28:34] Initializing ALASCA (v1.0.18, 2026-01-11)</span></span>
-<span><span class="co">#&gt; WARN  [2026-01-11 20:28:34] Guessing effects: `time`</span></span>
-<span><span class="co">#&gt; INFO  [2026-01-11 20:28:34] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2026-01-11 20:28:34] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2026-01-11 20:28:34] The `time` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2026-01-11 20:28:34] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2026-01-11 20:28:34] Scaling data with sdall ...</span></span>
-<span><span class="co">#&gt; INFO  [2026-01-11 20:28:34] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2026-01-11 20:28:34] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2026-01-11 20:28:34] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2026-01-12 10:42:12] Initializing ALASCA (v1.0.18, 2026-01-11)</span></span>
+<span><span class="co">#&gt; WARN  [2026-01-12 10:42:12] Guessing effects: `time`</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-12 10:42:12] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-12 10:42:12] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2026-01-12 10:42:12] The `time` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2026-01-12 10:42:12] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-12 10:42:12] Scaling data with sdall ...</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-12 10:42:13] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-12 10:42:13] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-12 10:42:13] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span></code></pre></div>
 <p>The ALASCA function will provide output with important
 information:</p>
 <ul>
@@ -353,7 +353,7 @@ the regression is ongoing as this may take some time</li>
 <p>To see the resulting model:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">'effect'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2026-01-11 20:28:35] Effect plot. Selected effect (nr 1): `time`. Component: 1 and 2.</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2026-01-12 10:42:13] Effect plot. Selected effect (nr 1): `time`. Component: 1 and 2.</span></span></code></pre></div>
 <p><img src="ALASCA_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>See <a href="articles/plot.html">the vignette on plotting the
 model</a> for more visualizations.</p>

@@ -18,7 +18,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.17</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.18</span>
       </span>
     </div>
 
@@ -102,6 +102,10 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 
 <dt><code>n_bins</code></dt>
 <dd><p>Number of bins for histograms</p></dd>
+
+
+<dt><code>sort_loadings</code></dt>
+<dd><p>String: loading, alpha, vector</p></dd>
 
 
 <dt><code>ribbon</code></dt>
@@ -196,38 +200,38 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 <div class="section">
 <h3 id="public-methods">Public methods<a class="anchor" aria-label="anchor" href="#public-methods"></a></h3>
 
-<ul><li><p><a href="#method-plot_prediction"><code>AlascaPlot$plot_prediction()</code></a></p></li>
-<li><p><a href="#method-plot_effect"><code>AlascaPlot$plot_effect()</code></a></p></li>
-<li><p><a href="#method-plot_effect_score"><code>AlascaPlot$plot_effect_score()</code></a></p></li>
-<li><p><a href="#method-plot_effect_loading"><code>AlascaPlot$plot_effect_loading()</code></a></p></li>
-<li><p><a href="#method-plot_effect_validation"><code>AlascaPlot$plot_effect_validation()</code></a></p></li>
-<li><p><a href="#method-plot_effect_validation_score"><code>AlascaPlot$plot_effect_validation_score()</code></a></p></li>
-<li><p><a href="#method-plot_effect_validation_loading"><code>AlascaPlot$plot_effect_validation_loading()</code></a></p></li>
-<li><p><a href="#method-plot_2D_advanced"><code>AlascaPlot$plot_2D_advanced()</code></a></p></li>
-<li><p><a href="#method-plot_2D"><code>AlascaPlot$plot_2D()</code></a></p></li>
-<li><p><a href="#method-plot_2D_score"><code>AlascaPlot$plot_2D_score()</code></a></p></li>
-<li><p><a href="#method-plot_2D_loading_1"><code>AlascaPlot$plot_2D_loading_1()</code></a></p></li>
-<li><p><a href="#method-plot_2D_loading_2"><code>AlascaPlot$plot_2D_loading_2()</code></a></p></li>
-<li><p><a href="#method-plot_histogram_score"><code>AlascaPlot$plot_histogram_score()</code></a></p></li>
-<li><p><a href="#method-plot_histogram_loading"><code>AlascaPlot$plot_histogram_loading()</code></a></p></li>
-<li><p><a href="#method-plot_histogram"><code>AlascaPlot$plot_histogram()</code></a></p></li>
-<li><p><a href="#method-plot_participants"><code>AlascaPlot$plot_participants()</code></a></p></li>
-<li><p><a href="#method-new"><code>AlascaPlot$new()</code></a></p></li>
-<li><p><a href="#method-call_plot"><code>AlascaPlot$call_plot()</code></a></p></li>
-<li><p><a href="#method-plot_scree"><code>AlascaPlot$plot_scree()</code></a></p></li>
-<li><p><a href="#method-plot_residuals"><code>AlascaPlot$plot_residuals()</code></a></p></li>
-<li><p><a href="#method-plot_covars"><code>AlascaPlot$plot_covars()</code></a></p></li>
-<li><p><a href="#method-capitalize"><code>AlascaPlot$capitalize()</code></a></p></li>
-<li><p><a href="#method-prettify_covar"><code>AlascaPlot$prettify_covar()</code></a></p></li>
-<li><p><a href="#method-get_plot_linetypes"><code>AlascaPlot$get_plot_linetypes()</code></a></p></li>
-<li><p><a href="#method-get_plot_shapes"><code>AlascaPlot$get_plot_shapes()</code></a></p></li>
-<li><p><a href="#method-get_plot_palette"><code>AlascaPlot$get_plot_palette()</code></a></p></li>
-<li><p><a href="#method-get_explained_label"><code>AlascaPlot$get_explained_label()</code></a></p></li>
-<li><p><a href="#method-get_levels"><code>AlascaPlot$get_levels()</code></a></p></li>
-<li><p><a href="#method-get_ref"><code>AlascaPlot$get_ref()</code></a></p></li>
-<li><p><a href="#method-xflip"><code>AlascaPlot$xflip()</code></a></p></li>
-<li><p><a href="#method-clone"><code>AlascaPlot$clone()</code></a></p></li>
-</ul></div><p></p><hr><a id="method-plot_prediction"></a><div class="section">
+<ul><li><p><a href="#method-AlascaPlot-plot_prediction"><code>AlascaPlot$plot_prediction()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_effect"><code>AlascaPlot$plot_effect()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_effect_score"><code>AlascaPlot$plot_effect_score()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_effect_loading"><code>AlascaPlot$plot_effect_loading()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_effect_validation"><code>AlascaPlot$plot_effect_validation()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_effect_validation_score"><code>AlascaPlot$plot_effect_validation_score()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_effect_validation_loading"><code>AlascaPlot$plot_effect_validation_loading()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_2D_advanced"><code>AlascaPlot$plot_2D_advanced()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_2D"><code>AlascaPlot$plot_2D()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_2D_score"><code>AlascaPlot$plot_2D_score()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_2D_loading_1"><code>AlascaPlot$plot_2D_loading_1()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_2D_loading_2"><code>AlascaPlot$plot_2D_loading_2()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_histogram_score"><code>AlascaPlot$plot_histogram_score()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_histogram_loading"><code>AlascaPlot$plot_histogram_loading()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_histogram"><code>AlascaPlot$plot_histogram()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_participants"><code>AlascaPlot$plot_participants()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-new"><code>AlascaPlot$new()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-call_plot"><code>AlascaPlot$call_plot()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_scree"><code>AlascaPlot$plot_scree()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_residuals"><code>AlascaPlot$plot_residuals()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-plot_covars"><code>AlascaPlot$plot_covars()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-capitalize"><code>AlascaPlot$capitalize()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-prettify_covar"><code>AlascaPlot$prettify_covar()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-get_plot_linetypes"><code>AlascaPlot$get_plot_linetypes()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-get_plot_shapes"><code>AlascaPlot$get_plot_shapes()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-get_plot_palette"><code>AlascaPlot$get_plot_palette()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-get_explained_label"><code>AlascaPlot$get_explained_label()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-get_levels"><code>AlascaPlot$get_levels()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-get_ref"><code>AlascaPlot$get_ref()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-xflip"><code>AlascaPlot$xflip()</code></a></p></li>
+<li><p><a href="#method-AlascaPlot-clone"><code>AlascaPlot$clone()</code></a></p></li>
+</ul></div><p></p><hr><a id="method-AlascaPlot-plot_prediction"></a><div class="section">
 <h3 id="method-plot-prediction-">Method <code>plot_prediction()</code><a class="anchor" aria-label="anchor" href="#method-plot-prediction-"></a></h3>
 
 <div class="section">
@@ -236,7 +240,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_effect"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_effect"></a><div class="section">
 <h3 id="method-plot-effect-">Method <code>plot_effect()</code><a class="anchor" aria-label="anchor" href="#method-plot-effect-"></a></h3>
 
 <div class="section">
@@ -245,7 +249,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_effect_score"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_effect_score"></a><div class="section">
 <h3 id="method-plot-effect-score-">Method <code>plot_effect_score()</code><a class="anchor" aria-label="anchor" href="#method-plot-effect-score-"></a></h3>
 
 <div class="section">
@@ -254,7 +258,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_effect_loading"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_effect_loading"></a><div class="section">
 <h3 id="method-plot-effect-loading-">Method <code>plot_effect_loading()</code><a class="anchor" aria-label="anchor" href="#method-plot-effect-loading-"></a></h3>
 
 <div class="section">
@@ -263,7 +267,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_effect_validation"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_effect_validation"></a><div class="section">
 <h3 id="method-plot-effect-validation-">Method <code>plot_effect_validation()</code><a class="anchor" aria-label="anchor" href="#method-plot-effect-validation-"></a></h3>
 
 <div class="section">
@@ -272,7 +276,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_effect_validation_score"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_effect_validation_score"></a><div class="section">
 <h3 id="method-plot-effect-validation-score-">Method <code>plot_effect_validation_score()</code><a class="anchor" aria-label="anchor" href="#method-plot-effect-validation-score-"></a></h3>
 
 <div class="section">
@@ -281,7 +285,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_effect_validation_loading"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_effect_validation_loading"></a><div class="section">
 <h3 id="method-plot-effect-validation-loading-">Method <code>plot_effect_validation_loading()</code><a class="anchor" aria-label="anchor" href="#method-plot-effect-validation-loading-"></a></h3>
 
 <div class="section">
@@ -290,7 +294,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_2D_advanced"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_2D_advanced"></a><div class="section">
 <h3 id="method-plot-d-advanced-">Method <code>plot_2D_advanced()</code><a class="anchor" aria-label="anchor" href="#method-plot-d-advanced-"></a></h3>
 
 <div class="section">
@@ -299,7 +303,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_2D"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_2D"></a><div class="section">
 <h3 id="method-plot-d-">Method <code>plot_2D()</code><a class="anchor" aria-label="anchor" href="#method-plot-d-"></a></h3>
 
 <div class="section">
@@ -308,7 +312,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_2D_score"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_2D_score"></a><div class="section">
 <h3 id="method-plot-d-score-">Method <code>plot_2D_score()</code><a class="anchor" aria-label="anchor" href="#method-plot-d-score-"></a></h3>
 
 <div class="section">
@@ -317,7 +321,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_2D_loading_1"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_2D_loading_1"></a><div class="section">
 <h3 id="method-plot-d-loading-">Method <code>plot_2D_loading_1()</code><a class="anchor" aria-label="anchor" href="#method-plot-d-loading-"></a></h3>
 
 <div class="section">
@@ -326,7 +330,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_2D_loading_2"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_2D_loading_2"></a><div class="section">
 <h3 id="method-plot-d-loading--1">Method <code>plot_2D_loading_2()</code><a class="anchor" aria-label="anchor" href="#method-plot-d-loading--1"></a></h3>
 
 <div class="section">
@@ -335,7 +339,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_histogram_score"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_histogram_score"></a><div class="section">
 <h3 id="method-plot-histogram-score-">Method <code>plot_histogram_score()</code><a class="anchor" aria-label="anchor" href="#method-plot-histogram-score-"></a></h3>
 
 <div class="section">
@@ -344,7 +348,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_histogram_loading"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_histogram_loading"></a><div class="section">
 <h3 id="method-plot-histogram-loading-">Method <code>plot_histogram_loading()</code><a class="anchor" aria-label="anchor" href="#method-plot-histogram-loading-"></a></h3>
 
 <div class="section">
@@ -353,7 +357,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_histogram"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_histogram"></a><div class="section">
 <h3 id="method-plot-histogram-">Method <code>plot_histogram()</code><a class="anchor" aria-label="anchor" href="#method-plot-histogram-"></a></h3>
 
 <div class="section">
@@ -362,7 +366,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_participants"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_participants"></a><div class="section">
 <h3 id="method-plot-participants-">Method <code>plot_participants()</code><a class="anchor" aria-label="anchor" href="#method-plot-participants-"></a></h3>
 
 <div class="section">
@@ -371,7 +375,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-new"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-new"></a><div class="section">
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
 
 <div class="section">
@@ -380,7 +384,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-call_plot"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-call_plot"></a><div class="section">
 <h3 id="method-call-plot-">Method <code>call_plot()</code><a class="anchor" aria-label="anchor" href="#method-call-plot-"></a></h3>
 
 <div class="section">
@@ -389,7 +393,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_scree"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_scree"></a><div class="section">
 <h3 id="method-plot-scree-">Method <code>plot_scree()</code><a class="anchor" aria-label="anchor" href="#method-plot-scree-"></a></h3>
 
 <div class="section">
@@ -398,7 +402,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_residuals"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_residuals"></a><div class="section">
 <h3 id="method-plot-residuals-">Method <code>plot_residuals()</code><a class="anchor" aria-label="anchor" href="#method-plot-residuals-"></a></h3>
 
 <div class="section">
@@ -407,7 +411,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-plot_covars"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-plot_covars"></a><div class="section">
 <h3 id="method-plot-covars-">Method <code>plot_covars()</code><a class="anchor" aria-label="anchor" href="#method-plot-covars-"></a></h3>
 
 <div class="section">
@@ -416,7 +420,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-capitalize"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-capitalize"></a><div class="section">
 <h3 id="method-capitalize-">Method <code>capitalize()</code><a class="anchor" aria-label="anchor" href="#method-capitalize-"></a></h3>
 
 <div class="section">
@@ -425,7 +429,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-prettify_covar"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-prettify_covar"></a><div class="section">
 <h3 id="method-prettify-covar-">Method <code>prettify_covar()</code><a class="anchor" aria-label="anchor" href="#method-prettify-covar-"></a></h3>
 
 <div class="section">
@@ -434,7 +438,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-get_plot_linetypes"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-get_plot_linetypes"></a><div class="section">
 <h3 id="method-get-plot-linetypes-">Method <code>get_plot_linetypes()</code><a class="anchor" aria-label="anchor" href="#method-get-plot-linetypes-"></a></h3>
 
 <div class="section">
@@ -443,7 +447,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-get_plot_shapes"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-get_plot_shapes"></a><div class="section">
 <h3 id="method-get-plot-shapes-">Method <code>get_plot_shapes()</code><a class="anchor" aria-label="anchor" href="#method-get-plot-shapes-"></a></h3>
 
 <div class="section">
@@ -452,7 +456,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-get_plot_palette"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-get_plot_palette"></a><div class="section">
 <h3 id="method-get-plot-palette-">Method <code>get_plot_palette()</code><a class="anchor" aria-label="anchor" href="#method-get-plot-palette-"></a></h3>
 
 <div class="section">
@@ -461,7 +465,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-get_explained_label"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-get_explained_label"></a><div class="section">
 <h3 id="method-get-explained-label-">Method <code>get_explained_label()</code><a class="anchor" aria-label="anchor" href="#method-get-explained-label-"></a></h3>
 
 <div class="section">
@@ -470,7 +474,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-get_levels"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-get_levels"></a><div class="section">
 <h3 id="method-get-levels-">Method <code>get_levels()</code><a class="anchor" aria-label="anchor" href="#method-get-levels-"></a></h3>
 
 <div class="section">
@@ -479,7 +483,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-get_ref"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-get_ref"></a><div class="section">
 <h3 id="method-get-ref-">Method <code>get_ref()</code><a class="anchor" aria-label="anchor" href="#method-get-ref-"></a></h3>
 
 <div class="section">
@@ -488,7 +492,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-xflip"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-xflip"></a><div class="section">
 <h3 id="method-xflip-">Method <code>xflip()</code><a class="anchor" aria-label="anchor" href="#method-xflip-"></a></h3>
 
 <div class="section">
@@ -497,7 +501,7 @@ Note: The object is typically accessed by plot(obj, ...) where the arguments are
 </div>
 
 
-</div><p></p><hr><a id="method-clone"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaPlot-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
 <h4 id="usage-30">Usage<a class="anchor" aria-label="anchor" href="#usage-30"></a></h4>

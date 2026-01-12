@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.17</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.18</span>
       </span>
     </div>
 
@@ -90,7 +90,7 @@
                         <h4 data-toc-skip class="author">Anders H.
 Jarmund</h4>
             
-            <h4 data-toc-skip class="date">2026-01-11</h4>
+            <h4 data-toc-skip class="date">2026-01-12</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/andjar/ALASCA/blob/main/vignettes/articles/prediction.Rmd" class="external-link"><code>vignettes/articles/prediction.Rmd</code></a></small>
       <div class="hidden name"><code>prediction.Rmd</code></div>
@@ -271,18 +271,18 @@ of the data sets and subtract the baseline for each participant.</p>
 <span>  <span class="va">value</span> <span class="op">~</span> <span class="va">time</span><span class="op">*</span><span class="va">group</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">id</span><span class="op">)</span>,</span>
 <span>  scale_function <span class="op">=</span> <span class="st">"sdt1"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO  [2026-01-11 20:29:33] Initializing ALASCA (v1.0.18, 2026-01-11)</span></span>
-<span><span class="co">#&gt; WARN  [2026-01-11 20:29:33] Guessing effects: `time+time:group+group`</span></span>
-<span><span class="co">#&gt; INFO  [2026-01-11 20:29:33] Will use linear mixed models!</span></span>
-<span><span class="co">#&gt; INFO  [2026-01-11 20:29:33] Will use Rfast!</span></span>
-<span><span class="co">#&gt; WARN  [2026-01-11 20:29:33] The `group` column is used for stratification</span></span>
-<span><span class="co">#&gt; WARN  [2026-01-11 20:29:33] Converting `character` columns to factors</span></span>
-<span><span class="co">#&gt; INFO  [2026-01-11 20:29:33] Scaling data with sdt1 ...</span></span>
-<span><span class="co">#&gt; INFO  [2026-01-11 20:29:33] Calculating LMM coefficients</span></span>
-<span><span class="co">#&gt; INFO  [2026-01-11 20:29:33] ==== ALASCA has finished ====</span></span>
-<span><span class="co">#&gt; INFO  [2026-01-11 20:29:33] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO  [2026-01-12 10:43:07] Initializing ALASCA (v1.0.18, 2026-01-11)</span></span>
+<span><span class="co">#&gt; WARN  [2026-01-12 10:43:07] Guessing effects: `time+time:group+group`</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-12 10:43:07] Will use linear mixed models!</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-12 10:43:07] Will use Rfast!</span></span>
+<span><span class="co">#&gt; WARN  [2026-01-12 10:43:07] The `group` column is used for stratification</span></span>
+<span><span class="co">#&gt; WARN  [2026-01-12 10:43:07] Converting `character` columns to factors</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-12 10:43:07] Scaling data with sdt1 ...</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-12 10:43:07] Calculating LMM coefficients</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-12 10:43:07] ==== ALASCA has finished ====</span></span>
+<span><span class="co">#&gt; INFO  [2026-01-12 10:43:07] To visualize the model, try `plot(&lt;object&gt;, effect = 1, component = 1, type = 'effect')`</span></span></code></pre></div>
 </div>
-<p>Next, we use the <code>ALASCA::predict_scores()</code> function
+<p>Next, we use the <code><a href="../reference/predict_scores.html">ALASCA::predict_scores()</a></code> function
 introduced in version 1.0.14 to get a score for each data point. Note
 that the number of ASCA components can be specified. For simplicity, we
 only use three here, but increasing the number of components may improve

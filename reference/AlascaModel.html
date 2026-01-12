@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ALASCA</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.17</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.18</span>
       </span>
     </div>
 
@@ -136,6 +136,10 @@
 
 <dt><code>optimize_score</code></dt>
 <dd><p>If TRUE, test all combinations of signs for the most important loadings, and choose the combination being the best fit</p></dd>
+
+
+<dt><code>optimize_PCs</code></dt>
+<dd><p>If TRUE, test if principal components have to be re-ordered during validation</p></dd>
 
 
 <dt><code>validate</code></dt>
@@ -270,55 +274,56 @@
 <div class="section">
 <h3 id="public-methods">Public methods<a class="anchor" aria-label="anchor" href="#public-methods"></a></h3>
 
-<ul><li><p><a href="#method-remove_embedded_data"><code>AlascaModel$remove_embedded_data()</code></a></p></li>
-<li><p><a href="#method-get_default_scaling_function"><code>AlascaModel$get_default_scaling_function()</code></a></p></li>
-<li><p><a href="#method-get_scaling_function"><code>AlascaModel$get_scaling_function()</code></a></p></li>
-<li><p><a href="#method-get_pca_function"><code>AlascaModel$get_pca_function()</code></a></p></li>
-<li><p><a href="#method-build_model"><code>AlascaModel$build_model()</code></a></p></li>
-<li><p><a href="#method-run_regression"><code>AlascaModel$run_regression()</code></a></p></li>
-<li><p><a href="#method-get_regression_coefficients"><code>AlascaModel$get_regression_coefficients()</code></a></p></li>
-<li><p><a href="#method-remove_covars"><code>AlascaModel$remove_covars()</code></a></p></li>
-<li><p><a href="#method-get_effect_matrix"><code>AlascaModel$get_effect_matrix()</code></a></p></li>
-<li><p><a href="#method-do_pca"><code>AlascaModel$do_pca()</code></a></p></li>
-<li><p><a href="#method-do_reduce_dimensions"><code>AlascaModel$do_reduce_dimensions()</code></a></p></li>
-<li><p><a href="#method-clean_pca"><code>AlascaModel$clean_pca()</code></a></p></li>
-<li><p><a href="#method-clean_alasca"><code>AlascaModel$clean_alasca()</code></a></p></li>
-<li><p><a href="#method-do_validate"><code>AlascaModel$do_validate()</code></a></p></li>
-<li><p><a href="#method-get_validation_percentiles"><code>AlascaModel$get_validation_percentiles()</code></a></p></li>
-<li><p><a href="#method-get_validation_percentiles_regression"><code>AlascaModel$get_validation_percentiles_regression()</code></a></p></li>
-<li><p><a href="#method-get_validation_percentiles_covars"><code>AlascaModel$get_validation_percentiles_covars()</code></a></p></li>
-<li><p><a href="#method-get_validation_percentiles_loading"><code>AlascaModel$get_validation_percentiles_loading()</code></a></p></li>
-<li><p><a href="#method-get_validation_scores"><code>AlascaModel$get_validation_scores()</code></a></p></li>
-<li><p><a href="#method-get_validation_loadings"><code>AlascaModel$get_validation_loadings()</code></a></p></li>
-<li><p><a href="#method-get_validation_percentiles_score"><code>AlascaModel$get_validation_percentiles_score()</code></a></p></li>
-<li><p><a href="#method-get_regression_predictions"><code>AlascaModel$get_regression_predictions()</code></a></p></li>
-<li><p><a href="#method-get_validation_ids"><code>AlascaModel$get_validation_ids()</code></a></p></li>
-<li><p><a href="#method-prepare_validation_run"><code>AlascaModel$prepare_validation_run()</code></a></p></li>
-<li><p><a href="#method-get_bootstrap_data"><code>AlascaModel$get_bootstrap_data()</code></a></p></li>
-<li><p><a href="#method-new"><code>AlascaModel$new()</code></a></p></li>
-<li><p><a href="#method-finalize"><code>AlascaModel$finalize()</code></a></p></li>
-<li><p><a href="#method-update"><code>AlascaModel$update()</code></a></p></li>
-<li><p><a href="#method-log"><code>AlascaModel$log()</code></a></p></li>
-<li><p><a href="#method-plot"><code>AlascaModel$plot()</code></a></p></li>
-<li><p><a href="#method-get_residuals"><code>AlascaModel$get_residuals()</code></a></p></li>
-<li><p><a href="#method-set_effect_terms"><code>AlascaModel$set_effect_terms()</code></a></p></li>
-<li><p><a href="#method-set_design_matrices"><code>AlascaModel$set_design_matrices()</code></a></p></li>
-<li><p><a href="#method-flip"><code>AlascaModel$flip()</code></a></p></li>
-<li><p><a href="#method-get_ref"><code>AlascaModel$get_ref()</code></a></p></li>
-<li><p><a href="#method-get_levels"><code>AlascaModel$get_levels()</code></a></p></li>
-<li><p><a href="#method-get_PCs"><code>AlascaModel$get_PCs()</code></a></p></li>
-<li><p><a href="#method-get_predictions"><code>AlascaModel$get_predictions()</code></a></p></li>
-<li><p><a href="#method-get_scores"><code>AlascaModel$get_scores()</code></a></p></li>
-<li><p><a href="#method-get_loadings"><code>AlascaModel$get_loadings()</code></a></p></li>
-<li><p><a href="#method-get_covars"><code>AlascaModel$get_covars()</code></a></p></li>
-<li><p><a href="#method-print_version"><code>AlascaModel$print_version()</code></a></p></li>
-<li><p><a href="#method-save_validation"><code>AlascaModel$save_validation()</code></a></p></li>
-<li><p><a href="#method-save_to_csv"><code>AlascaModel$save_to_csv()</code></a></p></li>
-<li><p><a href="#method-save_model"><code>AlascaModel$save_model()</code></a></p></li>
-<li><p><a href="#method-rotate_matrix_optimize_score"><code>AlascaModel$rotate_matrix_optimize_score()</code></a></p></li>
-<li><p><a href="#method-rotate_matrix"><code>AlascaModel$rotate_matrix()</code></a></p></li>
-<li><p><a href="#method-clone"><code>AlascaModel$clone()</code></a></p></li>
-</ul></div><p></p><hr><a id="method-remove_embedded_data"></a><div class="section">
+<ul><li><p><a href="#method-AlascaModel-remove_embedded_data"><code>AlascaModel$remove_embedded_data()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_default_scaling_function"><code>AlascaModel$get_default_scaling_function()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_scaling_function"><code>AlascaModel$get_scaling_function()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_pca_function"><code>AlascaModel$get_pca_function()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-build_model"><code>AlascaModel$build_model()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-run_regression"><code>AlascaModel$run_regression()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_regression_coefficients"><code>AlascaModel$get_regression_coefficients()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-remove_covars"><code>AlascaModel$remove_covars()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_effect_matrix"><code>AlascaModel$get_effect_matrix()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-do_pca"><code>AlascaModel$do_pca()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-do_reduce_dimensions"><code>AlascaModel$do_reduce_dimensions()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-clean_pca"><code>AlascaModel$clean_pca()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-clean_alasca"><code>AlascaModel$clean_alasca()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-do_validate"><code>AlascaModel$do_validate()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_validation_percentiles"><code>AlascaModel$get_validation_percentiles()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_validation_percentiles_regression"><code>AlascaModel$get_validation_percentiles_regression()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_validation_percentiles_covars"><code>AlascaModel$get_validation_percentiles_covars()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_validation_percentiles_loading"><code>AlascaModel$get_validation_percentiles_loading()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_validation_scores"><code>AlascaModel$get_validation_scores()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_validation_loadings"><code>AlascaModel$get_validation_loadings()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_validation_percentiles_score"><code>AlascaModel$get_validation_percentiles_score()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_regression_predictions"><code>AlascaModel$get_regression_predictions()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_validation_ids"><code>AlascaModel$get_validation_ids()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-prepare_validation_run"><code>AlascaModel$prepare_validation_run()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_bootstrap_data"><code>AlascaModel$get_bootstrap_data()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-predict_scores"><code>AlascaModel$predict_scores()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-new"><code>AlascaModel$new()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-update"><code>AlascaModel$update()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-log"><code>AlascaModel$log()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-plot"><code>AlascaModel$plot()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_residuals"><code>AlascaModel$get_residuals()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-set_effect_terms"><code>AlascaModel$set_effect_terms()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-set_design_matrices"><code>AlascaModel$set_design_matrices()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-flip"><code>AlascaModel$flip()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_ref"><code>AlascaModel$get_ref()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_levels"><code>AlascaModel$get_levels()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_PCs"><code>AlascaModel$get_PCs()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_predictions"><code>AlascaModel$get_predictions()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_scores"><code>AlascaModel$get_scores()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_loadings"><code>AlascaModel$get_loadings()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-get_covars"><code>AlascaModel$get_covars()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-print_version"><code>AlascaModel$print_version()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-save_validation"><code>AlascaModel$save_validation()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-save_to_csv"><code>AlascaModel$save_to_csv()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-save_model"><code>AlascaModel$save_model()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-rotate_matrix_optimize_score"><code>AlascaModel$rotate_matrix_optimize_score()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-optimize_components"><code>AlascaModel$optimize_components()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-rotate_matrix"><code>AlascaModel$rotate_matrix()</code></a></p></li>
+<li><p><a href="#method-AlascaModel-clone"><code>AlascaModel$clone()</code></a></p></li>
+</ul></div><p></p><hr><a id="method-AlascaModel-remove_embedded_data"></a><div class="section">
 <h3 id="method-remove-embedded-data-">Method <code><a href="remove_embedded_data.html">remove_embedded_data()</a></code><a class="anchor" aria-label="anchor" href="#method-remove-embedded-data-"></a></h3>
 
 <div class="section">
@@ -327,7 +332,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_default_scaling_function"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_default_scaling_function"></a><div class="section">
 <h3 id="method-get-default-scaling-function-">Method <code><a href="get_default_scaling_function.html">get_default_scaling_function()</a></code><a class="anchor" aria-label="anchor" href="#method-get-default-scaling-function-"></a></h3>
 
 <div class="section">
@@ -336,7 +341,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_scaling_function"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_scaling_function"></a><div class="section">
 <h3 id="method-get-scaling-function-">Method <code><a href="get_scaling_function.html">get_scaling_function()</a></code><a class="anchor" aria-label="anchor" href="#method-get-scaling-function-"></a></h3>
 
 <div class="section">
@@ -345,7 +350,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_pca_function"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_pca_function"></a><div class="section">
 <h3 id="method-get-pca-function-">Method <code><a href="get_pca_function.html">get_pca_function()</a></code><a class="anchor" aria-label="anchor" href="#method-get-pca-function-"></a></h3>
 
 <div class="section">
@@ -354,7 +359,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-build_model"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-build_model"></a><div class="section">
 <h3 id="method-build-model-">Method <code><a href="build_model.html">build_model()</a></code><a class="anchor" aria-label="anchor" href="#method-build-model-"></a></h3>
 
 <div class="section">
@@ -363,7 +368,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-run_regression"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-run_regression"></a><div class="section">
 <h3 id="method-run-regression-">Method <code><a href="run_regression.html">run_regression()</a></code><a class="anchor" aria-label="anchor" href="#method-run-regression-"></a></h3>
 
 <div class="section">
@@ -372,7 +377,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_regression_coefficients"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_regression_coefficients"></a><div class="section">
 <h3 id="method-get-regression-coefficients-">Method <code><a href="get_regression_coefficients.html">get_regression_coefficients()</a></code><a class="anchor" aria-label="anchor" href="#method-get-regression-coefficients-"></a></h3>
 
 <div class="section">
@@ -381,7 +386,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-remove_covars"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-remove_covars"></a><div class="section">
 <h3 id="method-remove-covars-">Method <code><a href="remove_covars.html">remove_covars()</a></code><a class="anchor" aria-label="anchor" href="#method-remove-covars-"></a></h3>
 
 <div class="section">
@@ -390,7 +395,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_effect_matrix"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_effect_matrix"></a><div class="section">
 <h3 id="method-get-effect-matrix-">Method <code><a href="get_effect_matrix.html">get_effect_matrix()</a></code><a class="anchor" aria-label="anchor" href="#method-get-effect-matrix-"></a></h3>
 
 <div class="section">
@@ -399,7 +404,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-do_pca"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-do_pca"></a><div class="section">
 <h3 id="method-do-pca-">Method <code><a href="do_pca.html">do_pca()</a></code><a class="anchor" aria-label="anchor" href="#method-do-pca-"></a></h3>
 
 <div class="section">
@@ -408,7 +413,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-do_reduce_dimensions"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-do_reduce_dimensions"></a><div class="section">
 <h3 id="method-do-reduce-dimensions-">Method <code><a href="do_reduce_dimensions.html">do_reduce_dimensions()</a></code><a class="anchor" aria-label="anchor" href="#method-do-reduce-dimensions-"></a></h3>
 
 <div class="section">
@@ -417,7 +422,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-clean_pca"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-clean_pca"></a><div class="section">
 <h3 id="method-clean-pca-">Method <code><a href="clean_pca.html">clean_pca()</a></code><a class="anchor" aria-label="anchor" href="#method-clean-pca-"></a></h3>
 
 <div class="section">
@@ -426,7 +431,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-clean_alasca"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-clean_alasca"></a><div class="section">
 <h3 id="method-clean-alasca-">Method <code><a href="clean_alasca.html">clean_alasca()</a></code><a class="anchor" aria-label="anchor" href="#method-clean-alasca-"></a></h3>
 
 <div class="section">
@@ -435,7 +440,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-do_validate"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-do_validate"></a><div class="section">
 <h3 id="method-do-validate-">Method <code><a href="do_validate.html">do_validate()</a></code><a class="anchor" aria-label="anchor" href="#method-do-validate-"></a></h3>
 
 <div class="section">
@@ -444,7 +449,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_validation_percentiles"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_validation_percentiles"></a><div class="section">
 <h3 id="method-get-validation-percentiles-">Method <code><a href="get_validation_percentiles.html">get_validation_percentiles()</a></code><a class="anchor" aria-label="anchor" href="#method-get-validation-percentiles-"></a></h3>
 
 <div class="section">
@@ -453,7 +458,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_validation_percentiles_regression"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_validation_percentiles_regression"></a><div class="section">
 <h3 id="method-get-validation-percentiles-regression-">Method <code><a href="get_validation_percentiles_regression.html">get_validation_percentiles_regression()</a></code><a class="anchor" aria-label="anchor" href="#method-get-validation-percentiles-regression-"></a></h3>
 
 <div class="section">
@@ -462,7 +467,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_validation_percentiles_covars"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_validation_percentiles_covars"></a><div class="section">
 <h3 id="method-get-validation-percentiles-covars-">Method <code><a href="get_validation_percentiles_covars.html">get_validation_percentiles_covars()</a></code><a class="anchor" aria-label="anchor" href="#method-get-validation-percentiles-covars-"></a></h3>
 
 <div class="section">
@@ -471,7 +476,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_validation_percentiles_loading"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_validation_percentiles_loading"></a><div class="section">
 <h3 id="method-get-validation-percentiles-loading-">Method <code><a href="get_validation_percentiles_loading.html">get_validation_percentiles_loading()</a></code><a class="anchor" aria-label="anchor" href="#method-get-validation-percentiles-loading-"></a></h3>
 
 <div class="section">
@@ -480,7 +485,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_validation_scores"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_validation_scores"></a><div class="section">
 <h3 id="method-get-validation-scores-">Method <code>get_validation_scores()</code><a class="anchor" aria-label="anchor" href="#method-get-validation-scores-"></a></h3>
 
 <div class="section">
@@ -489,7 +494,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_validation_loadings"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_validation_loadings"></a><div class="section">
 <h3 id="method-get-validation-loadings-">Method <code>get_validation_loadings()</code><a class="anchor" aria-label="anchor" href="#method-get-validation-loadings-"></a></h3>
 
 <div class="section">
@@ -498,7 +503,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_validation_percentiles_score"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_validation_percentiles_score"></a><div class="section">
 <h3 id="method-get-validation-percentiles-score-">Method <code><a href="get_validation_percentiles_score.html">get_validation_percentiles_score()</a></code><a class="anchor" aria-label="anchor" href="#method-get-validation-percentiles-score-"></a></h3>
 
 <div class="section">
@@ -507,7 +512,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_regression_predictions"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_regression_predictions"></a><div class="section">
 <h3 id="method-get-regression-predictions-">Method <code><a href="get_regression_predictions.html">get_regression_predictions()</a></code><a class="anchor" aria-label="anchor" href="#method-get-regression-predictions-"></a></h3>
 
 <div class="section">
@@ -516,7 +521,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_validation_ids"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_validation_ids"></a><div class="section">
 <h3 id="method-get-validation-ids-">Method <code>get_validation_ids()</code><a class="anchor" aria-label="anchor" href="#method-get-validation-ids-"></a></h3>
 
 <div class="section">
@@ -525,7 +530,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-prepare_validation_run"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-prepare_validation_run"></a><div class="section">
 <h3 id="method-prepare-validation-run-">Method <code><a href="prepare_validation_run.html">prepare_validation_run()</a></code><a class="anchor" aria-label="anchor" href="#method-prepare-validation-run-"></a></h3>
 
 <div class="section">
@@ -534,7 +539,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_bootstrap_data"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_bootstrap_data"></a><div class="section">
 <h3 id="method-get-bootstrap-data-">Method <code><a href="get_bootstrap_data.html">get_bootstrap_data()</a></code><a class="anchor" aria-label="anchor" href="#method-get-bootstrap-data-"></a></h3>
 
 <div class="section">
@@ -543,25 +548,25 @@
 </div>
 
 
-</div><p></p><hr><a id="method-new"></a><div class="section">
-<h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
+</div><p></p><hr><a id="method-AlascaModel-predict_scores"></a><div class="section">
+<h3 id="method-predict-scores-">Method <code><a href="predict_scores.html">predict_scores()</a></code><a class="anchor" aria-label="anchor" href="#method-predict-scores-"></a></h3>
 
 <div class="section">
 <h4 id="usage-25">Usage<a class="anchor" aria-label="anchor" href="#usage-25"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">AlascaModel</span><span class="op">$</span><span class="fu">predict_scores</span><span class="op">(</span><span class="va">data</span>, effect_i <span class="op">=</span> <span class="fl">1</span>, component <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+
+</div><p></p><hr><a id="method-AlascaModel-new"></a><div class="section">
+<h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
+
+<div class="section">
+<h4 id="usage-26">Usage<a class="anchor" aria-label="anchor" href="#usage-26"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/AlascaModel.html">AlascaModel</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">df</span>, <span class="va">formula</span>, <span class="va">effects</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 
-</div><p></p><hr><a id="method-finalize"></a><div class="section">
-<h3 id="method-finalize-">Method <code>finalize()</code><a class="anchor" aria-label="anchor" href="#method-finalize-"></a></h3>
-
-<div class="section">
-<h4 id="usage-26">Usage<a class="anchor" aria-label="anchor" href="#usage-26"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">AlascaModel</span><span class="op">$</span><span class="fu">finalize</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-
-</div><p></p><hr><a id="method-update"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-update"></a><div class="section">
 <h3 id="method-update-">Method <code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update()</a></code><a class="anchor" aria-label="anchor" href="#method-update-"></a></h3>
 <p>Update the current model (used for validation)</p><div class="section">
 <h4 id="usage-27">Usage<a class="anchor" aria-label="anchor" href="#usage-27"></a></h4>
@@ -569,7 +574,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-log"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-log"></a><div class="section">
 <h3 id="method-log-">Method <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code><a class="anchor" aria-label="anchor" href="#method-log-"></a></h3>
 <p>Function for logging messages using the log4r package</p><div class="section">
 <h4 id="usage-28">Usage<a class="anchor" aria-label="anchor" href="#usage-28"></a></h4>
@@ -589,7 +594,7 @@
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-plot"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-plot"></a><div class="section">
 <h3 id="method-plot-">Method <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code><a class="anchor" aria-label="anchor" href="#method-plot-"></a></h3>
 <p>Main function for plots</p><div class="section">
 <h4 id="usage-29">Usage<a class="anchor" aria-label="anchor" href="#usage-29"></a></h4>
@@ -609,15 +614,16 @@
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-get_residuals"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_residuals"></a><div class="section">
 <h3 id="method-get-residuals-">Method <code>get_residuals()</code><a class="anchor" aria-label="anchor" href="#method-get-residuals-"></a></h3>
-<p>Resample participants for validation</p><div class="section">
+<p>Resample participants for validation
+TODO: There is a bug when the order of the terms in <code>self$effect_list$expr</code> differs from <code>t1:t2:t3</code> in  a three-way interaction</p><div class="section">
 <h4 id="usage-30">Usage<a class="anchor" aria-label="anchor" href="#usage-30"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">AlascaModel</span><span class="op">$</span><span class="fu">get_residuals</span><span class="op">(</span>variable <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 
-</div><p></p><hr><a id="method-set_effect_terms"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-set_effect_terms"></a><div class="section">
 <h3 id="method-set-effect-terms-">Method <code>set_effect_terms()</code><a class="anchor" aria-label="anchor" href="#method-set-effect-terms-"></a></h3>
 
 <div class="section">
@@ -626,7 +632,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-set_design_matrices"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-set_design_matrices"></a><div class="section">
 <h3 id="method-set-design-matrices-">Method <code>set_design_matrices()</code><a class="anchor" aria-label="anchor" href="#method-set-design-matrices-"></a></h3>
 
 <div class="section">
@@ -635,7 +641,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-flip"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-flip"></a><div class="section">
 <h3 id="method-flip-">Method <code><a href="flip.html">flip()</a></code><a class="anchor" aria-label="anchor" href="#method-flip-"></a></h3>
 <p>Switch the sign of scores and loadings</p><div class="section">
 <h4 id="usage-33">Usage<a class="anchor" aria-label="anchor" href="#usage-33"></a></h4>
@@ -655,7 +661,7 @@
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-get_ref"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_ref"></a><div class="section">
 <h3 id="method-get-ref-">Method <code>get_ref()</code><a class="anchor" aria-label="anchor" href="#method-get-ref-"></a></h3>
 <p>Returns the reference level of a given column</p><div class="section">
 <h4 id="usage-34">Usage<a class="anchor" aria-label="anchor" href="#usage-34"></a></h4>
@@ -675,7 +681,7 @@
 <p>The reference level</p>
 </div>
 
-</div><p></p><hr><a id="method-get_levels"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_levels"></a><div class="section">
 <h3 id="method-get-levels-">Method <code>get_levels()</code><a class="anchor" aria-label="anchor" href="#method-get-levels-"></a></h3>
 <p>Returns all the levels of a given column</p><div class="section">
 <h4 id="usage-35">Usage<a class="anchor" aria-label="anchor" href="#usage-35"></a></h4>
@@ -699,7 +705,7 @@
 <p>A vector with factor levels</p>
 </div>
 
-</div><p></p><hr><a id="method-get_PCs"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_PCs"></a><div class="section">
 <h3 id="method-get-pcs-">Method <code>get_PCs()</code><a class="anchor" aria-label="anchor" href="#method-get-pcs-"></a></h3>
 <p>Returns the most interesting principal components (i.e., components explaining more than a given limit of variance: <code>explanatory_limit</code>)</p><div class="section">
 <h4 id="usage-36">Usage<a class="anchor" aria-label="anchor" href="#usage-36"></a></h4>
@@ -719,7 +725,7 @@
 <p>A vector with principal components</p>
 </div>
 
-</div><p></p><hr><a id="method-get_predictions"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_predictions"></a><div class="section">
 <h3 id="method-get-predictions-">Method <code><a href="get_predictions.html">get_predictions()</a></code><a class="anchor" aria-label="anchor" href="#method-get-predictions-"></a></h3>
 
 <div class="section">
@@ -728,7 +734,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-get_scores"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_scores"></a><div class="section">
 <h3 id="method-get-scores-">Method <code><a href="get_scores.html">get_scores()</a></code><a class="anchor" aria-label="anchor" href="#method-get-scores-"></a></h3>
 <p>Return scores</p><div class="section">
 <h4 id="usage-38">Usage<a class="anchor" aria-label="anchor" href="#usage-38"></a></h4>
@@ -748,7 +754,7 @@
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-get_loadings"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_loadings"></a><div class="section">
 <h3 id="method-get-loadings-">Method <code><a href="get_loadings.html">get_loadings()</a></code><a class="anchor" aria-label="anchor" href="#method-get-loadings-"></a></h3>
 <p>Return loadings</p><div class="section">
 <h4 id="usage-39">Usage<a class="anchor" aria-label="anchor" href="#usage-39"></a></h4>
@@ -772,7 +778,7 @@
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-get_covars"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-get_covars"></a><div class="section">
 <h3 id="method-get-covars-">Method <code><a href="get_covars.html">get_covars()</a></code><a class="anchor" aria-label="anchor" href="#method-get-covars-"></a></h3>
 
 <div class="section">
@@ -789,7 +795,7 @@
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-print_version"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-print_version"></a><div class="section">
 <h3 id="method-print-version-">Method <code>print_version()</code><a class="anchor" aria-label="anchor" href="#method-print-version-"></a></h3>
 <p>Print ALASCA version</p><div class="section">
 <h4 id="usage-41">Usage<a class="anchor" aria-label="anchor" href="#usage-41"></a></h4>
@@ -801,7 +807,7 @@
 <p>String with version number and date of latest update</p>
 </div>
 
-</div><p></p><hr><a id="method-save_validation"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-save_validation"></a><div class="section">
 <h3 id="method-save-validation-">Method <code>save_validation()</code><a class="anchor" aria-label="anchor" href="#method-save-validation-"></a></h3>
 <p>Write scores, loadings, covars and predictions from validation run to database and remove data from memory</p><div class="section">
 <h4 id="usage-42">Usage<a class="anchor" aria-label="anchor" href="#usage-42"></a></h4>
@@ -817,7 +823,7 @@
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-save_to_csv"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-save_to_csv"></a><div class="section">
 <h3 id="method-save-to-csv-">Method <code>save_to_csv()</code><a class="anchor" aria-label="anchor" href="#method-save-to-csv-"></a></h3>
 <p>Save scores, loading, covars, and predictions to csv files</p><div class="section">
 <h4 id="usage-43">Usage<a class="anchor" aria-label="anchor" href="#usage-43"></a></h4>
@@ -825,7 +831,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-save_model"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-save_model"></a><div class="section">
 <h3 id="method-save-model-">Method <code>save_model()</code><a class="anchor" aria-label="anchor" href="#method-save-model-"></a></h3>
 <p>Save model to RDS and scores, loading, covars, and predictions to csv files</p><div class="section">
 <h4 id="usage-44">Usage<a class="anchor" aria-label="anchor" href="#usage-44"></a></h4>
@@ -833,7 +839,7 @@
 </div>
 
 
-</div><p></p><hr><a id="method-rotate_matrix_optimize_score"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-rotate_matrix_optimize_score"></a><div class="section">
 <h3 id="method-rotate-matrix-optimize-score-">Method <code>rotate_matrix_optimize_score()</code><a class="anchor" aria-label="anchor" href="#method-rotate-matrix-optimize-score-"></a></h3>
 <p>Rotate model loadings and scores with procrustes. This function checks all combinations of signs to minimize variation</p><div class="section">
 <h4 id="usage-45">Usage<a class="anchor" aria-label="anchor" href="#usage-45"></a></h4>
@@ -849,15 +855,31 @@
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-rotate_matrix"></a><div class="section">
-<h3 id="method-rotate-matrix-">Method <code>rotate_matrix()</code><a class="anchor" aria-label="anchor" href="#method-rotate-matrix-"></a></h3>
-<p>Rotate model loadings and scores with procrustes</p><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-optimize_components"></a><div class="section">
+<h3 id="method-optimize-components-">Method <code>optimize_components()</code><a class="anchor" aria-label="anchor" href="#method-optimize-components-"></a></h3>
+<p>Check if components have to be re-ordered to better match the target</p><div class="section">
 <h4 id="usage-46">Usage<a class="anchor" aria-label="anchor" href="#usage-46"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">AlascaModel</span><span class="op">$</span><span class="fu">rotate_matrix</span><span class="op">(</span><span class="va">target</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">AlascaModel</span><span class="op">$</span><span class="fu">optimize_components</span><span class="op">(</span><span class="va">target</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-11">Arguments<a class="anchor" aria-label="anchor" href="#arguments-11"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>target</code></dt>
+<dd><p>Compare components of the model (<code>self</code>) with this as target</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-AlascaModel-rotate_matrix"></a><div class="section">
+<h3 id="method-rotate-matrix-">Method <code>rotate_matrix()</code><a class="anchor" aria-label="anchor" href="#method-rotate-matrix-"></a></h3>
+<p>Rotate model loadings and scores with procrustes</p><div class="section">
+<h4 id="usage-47">Usage<a class="anchor" aria-label="anchor" href="#usage-47"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">AlascaModel</span><span class="op">$</span><span class="fu">rotate_matrix</span><span class="op">(</span><span class="va">target</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-12">Arguments<a class="anchor" aria-label="anchor" href="#arguments-12"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>target</code></dt>
 <dd><p>Rotate model (<code>self</code>) with this as target</p></dd>
 
@@ -865,15 +887,15 @@
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-clone"></a><div class="section">
+</div><p></p><hr><a id="method-AlascaModel-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-47">Usage<a class="anchor" aria-label="anchor" href="#usage-47"></a></h4>
+<h4 id="usage-48">Usage<a class="anchor" aria-label="anchor" href="#usage-48"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">AlascaModel</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-12">Arguments<a class="anchor" aria-label="anchor" href="#arguments-12"></a></h4>
+<h4 id="arguments-13">Arguments<a class="anchor" aria-label="anchor" href="#arguments-13"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
