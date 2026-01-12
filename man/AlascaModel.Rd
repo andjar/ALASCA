@@ -41,6 +41,8 @@ The object builds the ALASCA model and contains the data
 
 \item{\code{optimize_score}}{If TRUE, test all combinations of signs for the most important loadings, and choose the combination being the best fit}
 
+\item{\code{optimize_PCs}}{If TRUE, test if principal components have to be re-ordered during validation}
+
 \item{\code{validate}}{If TRUE, validate the model}
 
 \item{\code{validate_regression}}{If TRUE, validate get marginal means}
@@ -111,59 +113,60 @@ The object builds the ALASCA model and contains the data
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-remove_embedded_data}{\code{AlascaModel$remove_embedded_data()}}
-\item \href{#method-get_default_scaling_function}{\code{AlascaModel$get_default_scaling_function()}}
-\item \href{#method-get_scaling_function}{\code{AlascaModel$get_scaling_function()}}
-\item \href{#method-get_pca_function}{\code{AlascaModel$get_pca_function()}}
-\item \href{#method-build_model}{\code{AlascaModel$build_model()}}
-\item \href{#method-run_regression}{\code{AlascaModel$run_regression()}}
-\item \href{#method-get_regression_coefficients}{\code{AlascaModel$get_regression_coefficients()}}
-\item \href{#method-remove_covars}{\code{AlascaModel$remove_covars()}}
-\item \href{#method-get_effect_matrix}{\code{AlascaModel$get_effect_matrix()}}
-\item \href{#method-do_pca}{\code{AlascaModel$do_pca()}}
-\item \href{#method-do_reduce_dimensions}{\code{AlascaModel$do_reduce_dimensions()}}
-\item \href{#method-clean_pca}{\code{AlascaModel$clean_pca()}}
-\item \href{#method-clean_alasca}{\code{AlascaModel$clean_alasca()}}
-\item \href{#method-do_validate}{\code{AlascaModel$do_validate()}}
-\item \href{#method-get_validation_percentiles}{\code{AlascaModel$get_validation_percentiles()}}
-\item \href{#method-get_validation_percentiles_regression}{\code{AlascaModel$get_validation_percentiles_regression()}}
-\item \href{#method-get_validation_percentiles_covars}{\code{AlascaModel$get_validation_percentiles_covars()}}
-\item \href{#method-get_validation_percentiles_loading}{\code{AlascaModel$get_validation_percentiles_loading()}}
-\item \href{#method-get_validation_scores}{\code{AlascaModel$get_validation_scores()}}
-\item \href{#method-get_validation_loadings}{\code{AlascaModel$get_validation_loadings()}}
-\item \href{#method-get_validation_percentiles_score}{\code{AlascaModel$get_validation_percentiles_score()}}
-\item \href{#method-get_regression_predictions}{\code{AlascaModel$get_regression_predictions()}}
-\item \href{#method-get_validation_ids}{\code{AlascaModel$get_validation_ids()}}
-\item \href{#method-prepare_validation_run}{\code{AlascaModel$prepare_validation_run()}}
-\item \href{#method-get_bootstrap_data}{\code{AlascaModel$get_bootstrap_data()}}
-\item \href{#method-new}{\code{AlascaModel$new()}}
-\item \href{#method-finalize}{\code{AlascaModel$finalize()}}
-\item \href{#method-update}{\code{AlascaModel$update()}}
-\item \href{#method-log}{\code{AlascaModel$log()}}
-\item \href{#method-plot}{\code{AlascaModel$plot()}}
-\item \href{#method-get_residuals}{\code{AlascaModel$get_residuals()}}
-\item \href{#method-set_effect_terms}{\code{AlascaModel$set_effect_terms()}}
-\item \href{#method-set_design_matrices}{\code{AlascaModel$set_design_matrices()}}
-\item \href{#method-flip}{\code{AlascaModel$flip()}}
-\item \href{#method-get_ref}{\code{AlascaModel$get_ref()}}
-\item \href{#method-get_levels}{\code{AlascaModel$get_levels()}}
-\item \href{#method-get_PCs}{\code{AlascaModel$get_PCs()}}
-\item \href{#method-get_predictions}{\code{AlascaModel$get_predictions()}}
-\item \href{#method-get_scores}{\code{AlascaModel$get_scores()}}
-\item \href{#method-get_loadings}{\code{AlascaModel$get_loadings()}}
-\item \href{#method-get_covars}{\code{AlascaModel$get_covars()}}
-\item \href{#method-print_version}{\code{AlascaModel$print_version()}}
-\item \href{#method-save_validation}{\code{AlascaModel$save_validation()}}
-\item \href{#method-save_to_csv}{\code{AlascaModel$save_to_csv()}}
-\item \href{#method-save_model}{\code{AlascaModel$save_model()}}
-\item \href{#method-rotate_matrix_optimize_score}{\code{AlascaModel$rotate_matrix_optimize_score()}}
-\item \href{#method-rotate_matrix}{\code{AlascaModel$rotate_matrix()}}
-\item \href{#method-clone}{\code{AlascaModel$clone()}}
+\item \href{#method-AlascaModel-remove_embedded_data}{\code{AlascaModel$remove_embedded_data()}}
+\item \href{#method-AlascaModel-get_default_scaling_function}{\code{AlascaModel$get_default_scaling_function()}}
+\item \href{#method-AlascaModel-get_scaling_function}{\code{AlascaModel$get_scaling_function()}}
+\item \href{#method-AlascaModel-get_pca_function}{\code{AlascaModel$get_pca_function()}}
+\item \href{#method-AlascaModel-build_model}{\code{AlascaModel$build_model()}}
+\item \href{#method-AlascaModel-run_regression}{\code{AlascaModel$run_regression()}}
+\item \href{#method-AlascaModel-get_regression_coefficients}{\code{AlascaModel$get_regression_coefficients()}}
+\item \href{#method-AlascaModel-remove_covars}{\code{AlascaModel$remove_covars()}}
+\item \href{#method-AlascaModel-get_effect_matrix}{\code{AlascaModel$get_effect_matrix()}}
+\item \href{#method-AlascaModel-do_pca}{\code{AlascaModel$do_pca()}}
+\item \href{#method-AlascaModel-do_reduce_dimensions}{\code{AlascaModel$do_reduce_dimensions()}}
+\item \href{#method-AlascaModel-clean_pca}{\code{AlascaModel$clean_pca()}}
+\item \href{#method-AlascaModel-clean_alasca}{\code{AlascaModel$clean_alasca()}}
+\item \href{#method-AlascaModel-do_validate}{\code{AlascaModel$do_validate()}}
+\item \href{#method-AlascaModel-get_validation_percentiles}{\code{AlascaModel$get_validation_percentiles()}}
+\item \href{#method-AlascaModel-get_validation_percentiles_regression}{\code{AlascaModel$get_validation_percentiles_regression()}}
+\item \href{#method-AlascaModel-get_validation_percentiles_covars}{\code{AlascaModel$get_validation_percentiles_covars()}}
+\item \href{#method-AlascaModel-get_validation_percentiles_loading}{\code{AlascaModel$get_validation_percentiles_loading()}}
+\item \href{#method-AlascaModel-get_validation_scores}{\code{AlascaModel$get_validation_scores()}}
+\item \href{#method-AlascaModel-get_validation_loadings}{\code{AlascaModel$get_validation_loadings()}}
+\item \href{#method-AlascaModel-get_validation_percentiles_score}{\code{AlascaModel$get_validation_percentiles_score()}}
+\item \href{#method-AlascaModel-get_regression_predictions}{\code{AlascaModel$get_regression_predictions()}}
+\item \href{#method-AlascaModel-get_validation_ids}{\code{AlascaModel$get_validation_ids()}}
+\item \href{#method-AlascaModel-prepare_validation_run}{\code{AlascaModel$prepare_validation_run()}}
+\item \href{#method-AlascaModel-get_bootstrap_data}{\code{AlascaModel$get_bootstrap_data()}}
+\item \href{#method-AlascaModel-predict_scores}{\code{AlascaModel$predict_scores()}}
+\item \href{#method-AlascaModel-new}{\code{AlascaModel$new()}}
+\item \href{#method-AlascaModel-update}{\code{AlascaModel$update()}}
+\item \href{#method-AlascaModel-log}{\code{AlascaModel$log()}}
+\item \href{#method-AlascaModel-plot}{\code{AlascaModel$plot()}}
+\item \href{#method-AlascaModel-get_residuals}{\code{AlascaModel$get_residuals()}}
+\item \href{#method-AlascaModel-set_effect_terms}{\code{AlascaModel$set_effect_terms()}}
+\item \href{#method-AlascaModel-set_design_matrices}{\code{AlascaModel$set_design_matrices()}}
+\item \href{#method-AlascaModel-flip}{\code{AlascaModel$flip()}}
+\item \href{#method-AlascaModel-get_ref}{\code{AlascaModel$get_ref()}}
+\item \href{#method-AlascaModel-get_levels}{\code{AlascaModel$get_levels()}}
+\item \href{#method-AlascaModel-get_PCs}{\code{AlascaModel$get_PCs()}}
+\item \href{#method-AlascaModel-get_predictions}{\code{AlascaModel$get_predictions()}}
+\item \href{#method-AlascaModel-get_scores}{\code{AlascaModel$get_scores()}}
+\item \href{#method-AlascaModel-get_loadings}{\code{AlascaModel$get_loadings()}}
+\item \href{#method-AlascaModel-get_covars}{\code{AlascaModel$get_covars()}}
+\item \href{#method-AlascaModel-print_version}{\code{AlascaModel$print_version()}}
+\item \href{#method-AlascaModel-save_validation}{\code{AlascaModel$save_validation()}}
+\item \href{#method-AlascaModel-save_to_csv}{\code{AlascaModel$save_to_csv()}}
+\item \href{#method-AlascaModel-save_model}{\code{AlascaModel$save_model()}}
+\item \href{#method-AlascaModel-rotate_matrix_optimize_score}{\code{AlascaModel$rotate_matrix_optimize_score()}}
+\item \href{#method-AlascaModel-optimize_components}{\code{AlascaModel$optimize_components()}}
+\item \href{#method-AlascaModel-rotate_matrix}{\code{AlascaModel$rotate_matrix()}}
+\item \href{#method-AlascaModel-clone}{\code{AlascaModel$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-remove_embedded_data"></a>}}
-\if{latex}{\out{\hypertarget{method-remove_embedded_data}{}}}
+\if{html}{\out{<a id="method-AlascaModel-remove_embedded_data"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-remove_embedded_data}{}}}
 \subsection{Method \code{remove_embedded_data()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$remove_embedded_data()}\if{html}{\out{</div>}}
@@ -171,8 +174,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_default_scaling_function"></a>}}
-\if{latex}{\out{\hypertarget{method-get_default_scaling_function}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_default_scaling_function"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_default_scaling_function}{}}}
 \subsection{Method \code{get_default_scaling_function()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_default_scaling_function()}\if{html}{\out{</div>}}
@@ -180,8 +183,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_scaling_function"></a>}}
-\if{latex}{\out{\hypertarget{method-get_scaling_function}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_scaling_function"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_scaling_function}{}}}
 \subsection{Method \code{get_scaling_function()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_scaling_function()}\if{html}{\out{</div>}}
@@ -189,8 +192,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_pca_function"></a>}}
-\if{latex}{\out{\hypertarget{method-get_pca_function}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_pca_function"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_pca_function}{}}}
 \subsection{Method \code{get_pca_function()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_pca_function()}\if{html}{\out{</div>}}
@@ -198,8 +201,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-build_model"></a>}}
-\if{latex}{\out{\hypertarget{method-build_model}{}}}
+\if{html}{\out{<a id="method-AlascaModel-build_model"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-build_model}{}}}
 \subsection{Method \code{build_model()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$build_model()}\if{html}{\out{</div>}}
@@ -207,8 +210,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-run_regression"></a>}}
-\if{latex}{\out{\hypertarget{method-run_regression}{}}}
+\if{html}{\out{<a id="method-AlascaModel-run_regression"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-run_regression}{}}}
 \subsection{Method \code{run_regression()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$run_regression()}\if{html}{\out{</div>}}
@@ -216,8 +219,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_regression_coefficients"></a>}}
-\if{latex}{\out{\hypertarget{method-get_regression_coefficients}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_regression_coefficients"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_regression_coefficients}{}}}
 \subsection{Method \code{get_regression_coefficients()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_regression_coefficients()}\if{html}{\out{</div>}}
@@ -225,8 +228,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-remove_covars"></a>}}
-\if{latex}{\out{\hypertarget{method-remove_covars}{}}}
+\if{html}{\out{<a id="method-AlascaModel-remove_covars"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-remove_covars}{}}}
 \subsection{Method \code{remove_covars()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$remove_covars()}\if{html}{\out{</div>}}
@@ -234,8 +237,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_effect_matrix"></a>}}
-\if{latex}{\out{\hypertarget{method-get_effect_matrix}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_effect_matrix"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_effect_matrix}{}}}
 \subsection{Method \code{get_effect_matrix()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_effect_matrix()}\if{html}{\out{</div>}}
@@ -243,8 +246,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-do_pca"></a>}}
-\if{latex}{\out{\hypertarget{method-do_pca}{}}}
+\if{html}{\out{<a id="method-AlascaModel-do_pca"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-do_pca}{}}}
 \subsection{Method \code{do_pca()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$do_pca()}\if{html}{\out{</div>}}
@@ -252,8 +255,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-do_reduce_dimensions"></a>}}
-\if{latex}{\out{\hypertarget{method-do_reduce_dimensions}{}}}
+\if{html}{\out{<a id="method-AlascaModel-do_reduce_dimensions"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-do_reduce_dimensions}{}}}
 \subsection{Method \code{do_reduce_dimensions()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$do_reduce_dimensions()}\if{html}{\out{</div>}}
@@ -261,8 +264,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clean_pca"></a>}}
-\if{latex}{\out{\hypertarget{method-clean_pca}{}}}
+\if{html}{\out{<a id="method-AlascaModel-clean_pca"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-clean_pca}{}}}
 \subsection{Method \code{clean_pca()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$clean_pca()}\if{html}{\out{</div>}}
@@ -270,8 +273,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clean_alasca"></a>}}
-\if{latex}{\out{\hypertarget{method-clean_alasca}{}}}
+\if{html}{\out{<a id="method-AlascaModel-clean_alasca"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-clean_alasca}{}}}
 \subsection{Method \code{clean_alasca()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$clean_alasca()}\if{html}{\out{</div>}}
@@ -279,8 +282,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-do_validate"></a>}}
-\if{latex}{\out{\hypertarget{method-do_validate}{}}}
+\if{html}{\out{<a id="method-AlascaModel-do_validate"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-do_validate}{}}}
 \subsection{Method \code{do_validate()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$do_validate()}\if{html}{\out{</div>}}
@@ -288,8 +291,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_validation_percentiles"></a>}}
-\if{latex}{\out{\hypertarget{method-get_validation_percentiles}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_validation_percentiles"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_validation_percentiles}{}}}
 \subsection{Method \code{get_validation_percentiles()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_validation_percentiles(objectlist)}\if{html}{\out{</div>}}
@@ -297,8 +300,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_validation_percentiles_regression"></a>}}
-\if{latex}{\out{\hypertarget{method-get_validation_percentiles_regression}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_validation_percentiles_regression"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_validation_percentiles_regression}{}}}
 \subsection{Method \code{get_validation_percentiles_regression()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_validation_percentiles_regression(objectlist)}\if{html}{\out{</div>}}
@@ -306,8 +309,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_validation_percentiles_covars"></a>}}
-\if{latex}{\out{\hypertarget{method-get_validation_percentiles_covars}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_validation_percentiles_covars"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_validation_percentiles_covars}{}}}
 \subsection{Method \code{get_validation_percentiles_covars()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_validation_percentiles_covars(objectlist)}\if{html}{\out{</div>}}
@@ -315,8 +318,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_validation_percentiles_loading"></a>}}
-\if{latex}{\out{\hypertarget{method-get_validation_percentiles_loading}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_validation_percentiles_loading"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_validation_percentiles_loading}{}}}
 \subsection{Method \code{get_validation_percentiles_loading()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_validation_percentiles_loading(objectlist)}\if{html}{\out{</div>}}
@@ -324,8 +327,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_validation_scores"></a>}}
-\if{latex}{\out{\hypertarget{method-get_validation_scores}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_validation_scores"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_validation_scores}{}}}
 \subsection{Method \code{get_validation_scores()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_validation_scores(objectlist = NULL, effect_i = 1)}\if{html}{\out{</div>}}
@@ -333,8 +336,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_validation_loadings"></a>}}
-\if{latex}{\out{\hypertarget{method-get_validation_loadings}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_validation_loadings"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_validation_loadings}{}}}
 \subsection{Method \code{get_validation_loadings()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_validation_loadings(objectlist = NULL, effect_i = 1)}\if{html}{\out{</div>}}
@@ -342,8 +345,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_validation_percentiles_score"></a>}}
-\if{latex}{\out{\hypertarget{method-get_validation_percentiles_score}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_validation_percentiles_score"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_validation_percentiles_score}{}}}
 \subsection{Method \code{get_validation_percentiles_score()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_validation_percentiles_score(objectlist)}\if{html}{\out{</div>}}
@@ -351,8 +354,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_regression_predictions"></a>}}
-\if{latex}{\out{\hypertarget{method-get_regression_predictions}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_regression_predictions"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_regression_predictions}{}}}
 \subsection{Method \code{get_regression_predictions()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_regression_predictions()}\if{html}{\out{</div>}}
@@ -360,8 +363,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_validation_ids"></a>}}
-\if{latex}{\out{\hypertarget{method-get_validation_ids}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_validation_ids"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_validation_ids}{}}}
 \subsection{Method \code{get_validation_ids()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_validation_ids()}\if{html}{\out{</div>}}
@@ -369,8 +372,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-prepare_validation_run"></a>}}
-\if{latex}{\out{\hypertarget{method-prepare_validation_run}{}}}
+\if{html}{\out{<a id="method-AlascaModel-prepare_validation_run"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-prepare_validation_run}{}}}
 \subsection{Method \code{prepare_validation_run()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$prepare_validation_run(runN)}\if{html}{\out{</div>}}
@@ -378,8 +381,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_bootstrap_data"></a>}}
-\if{latex}{\out{\hypertarget{method-get_bootstrap_data}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_bootstrap_data"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_bootstrap_data}{}}}
 \subsection{Method \code{get_bootstrap_data()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_bootstrap_data(df_raw, participants_in_bootstrap, modmat)}\if{html}{\out{</div>}}
@@ -387,8 +390,17 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-AlascaModel-predict_scores"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-predict_scores}{}}}
+\subsection{Method \code{predict_scores()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$predict_scores(data, effect_i = 1, component = 1)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AlascaModel-new"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$new(df, formula, effects, ...)}\if{html}{\out{</div>}}
@@ -396,17 +408,8 @@ The object builds the ALASCA model and contains the data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-finalize"></a>}}
-\if{latex}{\out{\hypertarget{method-finalize}{}}}
-\subsection{Method \code{finalize()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$finalize()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-update"></a>}}
-\if{latex}{\out{\hypertarget{method-update}{}}}
+\if{html}{\out{<a id="method-AlascaModel-update"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-update}{}}}
 \subsection{Method \code{update()}}{
 Update the current model (used for validation)
 \subsection{Usage}{
@@ -415,8 +418,8 @@ Update the current model (used for validation)
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-log"></a>}}
-\if{latex}{\out{\hypertarget{method-log}{}}}
+\if{html}{\out{<a id="method-AlascaModel-log"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-log}{}}}
 \subsection{Method \code{log()}}{
 Function for logging messages using the log4r package
 \subsection{Usage}{
@@ -434,8 +437,8 @@ Function for logging messages using the log4r package
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot"></a>}}
-\if{latex}{\out{\hypertarget{method-plot}{}}}
+\if{html}{\out{<a id="method-AlascaModel-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-plot}{}}}
 \subsection{Method \code{plot()}}{
 Main function for plots
 \subsection{Usage}{
@@ -453,18 +456,19 @@ Main function for plots
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_residuals"></a>}}
-\if{latex}{\out{\hypertarget{method-get_residuals}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_residuals"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_residuals}{}}}
 \subsection{Method \code{get_residuals()}}{
 Resample participants for validation
+TODO: There is a bug when the order of the terms in \code{self$effect_list$expr} differs from \code{t1:t2:t3} in  a three-way interaction
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_residuals(variable = NULL)}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-set_effect_terms"></a>}}
-\if{latex}{\out{\hypertarget{method-set_effect_terms}{}}}
+\if{html}{\out{<a id="method-AlascaModel-set_effect_terms"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-set_effect_terms}{}}}
 \subsection{Method \code{set_effect_terms()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$set_effect_terms()}\if{html}{\out{</div>}}
@@ -472,8 +476,8 @@ Resample participants for validation
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-set_design_matrices"></a>}}
-\if{latex}{\out{\hypertarget{method-set_design_matrices}{}}}
+\if{html}{\out{<a id="method-AlascaModel-set_design_matrices"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-set_design_matrices}{}}}
 \subsection{Method \code{set_design_matrices()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$set_design_matrices()}\if{html}{\out{</div>}}
@@ -481,8 +485,8 @@ Resample participants for validation
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-flip"></a>}}
-\if{latex}{\out{\hypertarget{method-flip}{}}}
+\if{html}{\out{<a id="method-AlascaModel-flip"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-flip}{}}}
 \subsection{Method \code{flip()}}{
 Switch the sign of scores and loadings
 \subsection{Usage}{
@@ -500,8 +504,8 @@ Switch the sign of scores and loadings
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_ref"></a>}}
-\if{latex}{\out{\hypertarget{method-get_ref}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_ref"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_ref}{}}}
 \subsection{Method \code{get_ref()}}{
 Returns the reference level of a given column
 \subsection{Usage}{
@@ -520,8 +524,8 @@ The reference level
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_levels"></a>}}
-\if{latex}{\out{\hypertarget{method-get_levels}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_levels"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_levels}{}}}
 \subsection{Method \code{get_levels()}}{
 Returns all the levels of a given column
 \subsection{Usage}{
@@ -542,8 +546,8 @@ A vector with factor levels
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_PCs"></a>}}
-\if{latex}{\out{\hypertarget{method-get_PCs}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_PCs"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_PCs}{}}}
 \subsection{Method \code{get_PCs()}}{
 Returns the most interesting principal components (i.e., components explaining more than a given limit of variance: \code{explanatory_limit})
 \subsection{Usage}{
@@ -562,8 +566,8 @@ A vector with principal components
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_predictions"></a>}}
-\if{latex}{\out{\hypertarget{method-get_predictions}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_predictions"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_predictions}{}}}
 \subsection{Method \code{get_predictions()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_predictions()}\if{html}{\out{</div>}}
@@ -571,8 +575,8 @@ A vector with principal components
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_scores"></a>}}
-\if{latex}{\out{\hypertarget{method-get_scores}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_scores"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_scores}{}}}
 \subsection{Method \code{get_scores()}}{
 Return scores
 \subsection{Usage}{
@@ -590,8 +594,8 @@ Return scores
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_loadings"></a>}}
-\if{latex}{\out{\hypertarget{method-get_loadings}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_loadings"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_loadings}{}}}
 \subsection{Method \code{get_loadings()}}{
 Return loadings
 \subsection{Usage}{
@@ -611,8 +615,8 @@ Return loadings
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_covars"></a>}}
-\if{latex}{\out{\hypertarget{method-get_covars}{}}}
+\if{html}{\out{<a id="method-AlascaModel-get_covars"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-get_covars}{}}}
 \subsection{Method \code{get_covars()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$get_covars(n_limit = 0)}\if{html}{\out{</div>}}
@@ -627,8 +631,8 @@ Return loadings
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print_version"></a>}}
-\if{latex}{\out{\hypertarget{method-print_version}{}}}
+\if{html}{\out{<a id="method-AlascaModel-print_version"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-print_version}{}}}
 \subsection{Method \code{print_version()}}{
 Print ALASCA version
 \subsection{Usage}{
@@ -640,8 +644,8 @@ String with version number and date of latest update
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-save_validation"></a>}}
-\if{latex}{\out{\hypertarget{method-save_validation}{}}}
+\if{html}{\out{<a id="method-AlascaModel-save_validation"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-save_validation}{}}}
 \subsection{Method \code{save_validation()}}{
 Write scores, loadings, covars and predictions from validation run to database and remove data from memory
 \subsection{Usage}{
@@ -657,8 +661,8 @@ Write scores, loadings, covars and predictions from validation run to database a
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-save_to_csv"></a>}}
-\if{latex}{\out{\hypertarget{method-save_to_csv}{}}}
+\if{html}{\out{<a id="method-AlascaModel-save_to_csv"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-save_to_csv}{}}}
 \subsection{Method \code{save_to_csv()}}{
 Save scores, loading, covars, and predictions to csv files
 \subsection{Usage}{
@@ -667,8 +671,8 @@ Save scores, loading, covars, and predictions to csv files
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-save_model"></a>}}
-\if{latex}{\out{\hypertarget{method-save_model}{}}}
+\if{html}{\out{<a id="method-AlascaModel-save_model"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-save_model}{}}}
 \subsection{Method \code{save_model()}}{
 Save model to RDS and scores, loading, covars, and predictions to csv files
 \subsection{Usage}{
@@ -677,8 +681,8 @@ Save model to RDS and scores, loading, covars, and predictions to csv files
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-rotate_matrix_optimize_score"></a>}}
-\if{latex}{\out{\hypertarget{method-rotate_matrix_optimize_score}{}}}
+\if{html}{\out{<a id="method-AlascaModel-rotate_matrix_optimize_score"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-rotate_matrix_optimize_score}{}}}
 \subsection{Method \code{rotate_matrix_optimize_score()}}{
 Rotate model loadings and scores with procrustes. This function checks all combinations of signs to minimize variation
 \subsection{Usage}{
@@ -694,8 +698,25 @@ Rotate model loadings and scores with procrustes. This function checks all combi
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-rotate_matrix"></a>}}
-\if{latex}{\out{\hypertarget{method-rotate_matrix}{}}}
+\if{html}{\out{<a id="method-AlascaModel-optimize_components"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-optimize_components}{}}}
+\subsection{Method \code{optimize_components()}}{
+Check if components have to be re-ordered to better match the target
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$optimize_components(target)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{target}}{Compare components of the model (\code{self}) with this as target}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AlascaModel-rotate_matrix"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-rotate_matrix}{}}}
 \subsection{Method \code{rotate_matrix()}}{
 Rotate model loadings and scores with procrustes
 \subsection{Usage}{
@@ -711,8 +732,8 @@ Rotate model loadings and scores with procrustes
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-AlascaModel-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-AlascaModel-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

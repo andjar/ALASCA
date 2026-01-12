@@ -13,5 +13,5 @@ get_regression_predictions()
 An ALASCA object
 }
 \description{
-This function calcuates predictions from each regression model
+This function calculates predictions from each regression model
 }
