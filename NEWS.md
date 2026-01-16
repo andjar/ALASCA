@@ -1,3 +1,7 @@
+# ALASCA 1.0.19
+
+* Bug fix: The prediction plots should now work for models with separated effects too
+
 # ALASCA 1.0.18
 
 * Replacing `aes_string()` due to changes in the `ggplot2` package
