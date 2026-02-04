@@ -1028,13 +1028,13 @@ do_validate_parallel <- function() {
   start_time_all <- Sys.time()
   
   # Progress bar (nice on Windows / RStudio too)
-  handlers(global = TRUE)
+  progressr::handlers(global = TRUE)
   
-  with_progress({
-    p <- progressor(along = seq_len(self$n_validation_runs))
+  progressr::with_progress({
+    p <- progressr::progressor(along = seq_len(self$n_validation_runs))
     
     # Run in parallel
-    out <- future_lapply(
+    out <- future.apply::future_lapply(
       X = seq_len(self$n_validation_runs),
       future.packages = c(
         "data.table",
