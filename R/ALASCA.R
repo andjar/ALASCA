@@ -16,6 +16,7 @@
 #' @param validate Boolean. If `TRUE`, give estimates for robustness
 #' @param n_validation_runs number of validation runs
 #' @param validation_method Choose between `bootstrap` (default) and "jack-knife"
+#' @param time_column The column containing time information of the repeated measures
 #' @param stratification_column The column to stratify participants by
 #' @param save Save models and plots automatically (default: `FALSE`)
 #' @param filename File name to save model and plots (when `save = TRUE`)
@@ -1436,13 +1437,33 @@ get_validation_ids <- function() {
     if (is.null(self$validation_ids)) {
       self$log("Generating random validation sample", level = "DEBUG")
       
-      original_IDs <- unique(self$df_raw$df[, .SD, .SDcols = c(self$formula$ID, self$stratification_column)])
-      colnames(original_IDs) <- c("ID", "group")
+      original_IDs <- 
+        unique(self$df_raw$df[, .SD,.SDcols = 
+                                c(self$formula$ID,
+                                  self$stratification_column,
+                                  self$time_column)
+        ])
+      
+      
+      colnames(original_IDs) <- c("ID", "group","time")
+      
+      smallgroups<-count(original_IDs,group,time)%>%
+        filter(n<10)%>%
+        mutate(group_int=paste0(time,":",group,"=",n))%>%
+        pull(group_int)
+      if (length(smallgroups)>0){
+        warning(
+          paste0(
+            "Following groups have less than 10 entries, can cause confidence to be ",
+            "overestimated:\n",
+            paste0(smallgroups,collapse = "\n")
+          )
+        )
+      }
       
       if (self$validation_method == "bootstrap") {
         
         tmp <- lapply(unique(self$stratification_vector), function(strat_group) {
-          IDs_to_choose_from <- original_IDs[group == strat_group, ID]
           t(
             vapply(
               seq_len(self$n_validation_runs),

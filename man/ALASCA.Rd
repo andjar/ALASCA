@@ -25,6 +25,8 @@ ALASCA(df, formula, effects = NULL, ...)
 
 \item{validation_method}{Choose between \code{bootstrap} (default) and "jack-knife"}
 
+\item{time_column}{The column containing time information of the repeated measures}
+
 \item{stratification_column}{The column to stratify participants by}
 
 \item{save}{Save models and plots automatically (default: \code{FALSE})}

@@ -8,3 +8,5 @@ test generalisation for complex model.R
 test dataset/testdata.csv
 notes memory leak alasca prediction.docx
 test parallellisation validation.R
+*.fst
+*.log

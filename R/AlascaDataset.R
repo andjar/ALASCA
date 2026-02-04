@@ -57,6 +57,9 @@ AlascaDataset <- R6::R6Class("AlascaDataset",
       # Find stratification column from formula
       private$guess_stratification_column()
       self$model$stratification_vector <- self$data_df[, get(self$model$stratification_column)]
+      
+      # Find time inndication column from formula
+      private$guess_time_column()
 
       # Keep variable labels
       if (!is.null(self$model$splot$loading_group_column)) {
@@ -188,6 +191,23 @@ AlascaDataset <- R6::R6Class("AlascaDataset",
       } else if (is.null(self$model$stratification_column)) {
         self$model$stratification_column <- self$model$formula$all_fixed_terms[[1]]
         self$model$log(paste0("The `", self$model$formula$all_fixed_terms[[1]], "` column is used for stratification"), level = "WARN")
+      }
+    },
+    guess_time_column = function() {
+      # Check or guess time indication column
+      if (!is.null(self$model$time_column) && !self$model$time_column %in% self$model$formula$all_fixed_terms) {
+        self$model$formula$add(self$model$time_column)
+        self$model$log(paste0("The `", self$model$time_column, "` column is used for time indication"))
+      } else if (is.null(self$model$time_column) && "time" %in% colnames(self$data_df)) {
+        self$model$formula$add("time")
+        self$model$time_column <- "time"
+        self$model$log("The `group` column is used for time indication", level = "WARN")
+      } else if (is.null(self$model$time_column)) {
+        self$model$time_column <- 
+          self$model$formula$all_fixed_terms[
+            !self$model$formula$all_fixed_terms==
+              self$model$stratification_column][[1]]
+        self$model$log(paste0("The `", self$model$time_column, "` column is used for time indication"), level = "WARN")
       }
     },
     find_missing_response_variables = find_missing_response_variables,

@@ -117,6 +117,8 @@ AlascaModel <- R6::R6Class("AlascaModel",
     participant_column = NULL,
     scale_function.center = FALSE,
     scale_function.value = NA,
+    #' @field time_column String. Name of the column to use for stratification during validation
+    time_column = NULL,
     #' @field stratification_column String. Name of the column to use for stratification during validation
     stratification_column = NULL,
     stratification_vector = NA,

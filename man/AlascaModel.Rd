@@ -87,6 +87,8 @@ The object builds the ALASCA model and contains the data
 
 \item{\code{participant_column}}{String. The column used for IDs. If not provided, it will guess based on random effect or \code{ID}}
 
+\item{\code{time_column}}{String. Name of the column to use for stratification during validation}
+
 \item{\code{stratification_column}}{String. Name of the column to use for stratification during validation}
 
 \item{\code{explanatory_limit}}{Only validate components explaining more than \code{explanatory_limit} of the variance}
@@ -145,7 +147,6 @@ The object builds the ALASCA model and contains the data
 \item \href{#method-AlascaModel-get_bootstrap_data}{\code{AlascaModel$get_bootstrap_data()}}
 \item \href{#method-AlascaModel-predict_scores}{\code{AlascaModel$predict_scores()}}
 \item \href{#method-AlascaModel-new}{\code{AlascaModel$new()}}
-\item \href{#method-AlascaModel-finalize}{\code{AlascaModel$finalize()}}
 \item \href{#method-AlascaModel-update}{\code{AlascaModel$update()}}
 \item \href{#method-AlascaModel-log}{\code{AlascaModel$log()}}
 \item \href{#method-AlascaModel-plot}{\code{AlascaModel$plot()}}
@@ -419,15 +420,6 @@ The object builds the ALASCA model and contains the data
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AlascaModel$new(df, formula, effects, ...)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-AlascaModel-finalize"></a>}}
-\if{latex}{\out{\hypertarget{method-AlascaModel-finalize}{}}}
-\subsection{Method \code{finalize()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AlascaModel$finalize()}\if{html}{\out{</div>}}
 }
 
 }
