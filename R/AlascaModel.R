@@ -19,9 +19,9 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field ignore_missing_covars If TRUE, ignore missing covariate values
     ignore_missing_covars = FALSE,
     #' @field version Version number
-    version = "1.0.17",
+    version = "1.0.19",
     #' @field update_date Date of latest update
-    update_date = "2024-09-13",
+    update_date = "2026-01-16",
 
     # Effect matrices
     #' @field separate_effects If TRUE, try to separate the effects
@@ -262,15 +262,6 @@ AlascaModel <- R6::R6Class("AlascaModel",
       # Build the ALASCA model ----
       self$build_model()
     },
-    finalize = function() {
-      if (self$save_to_disk && !self$minimize_object) {
-        if (self$db_method == "SQLite") {
-          DBI::dbDisconnect(self$db_con)
-        } else {
-          DBI::dbDisconnect(self$db_con, shutdown = TRUE)
-        }
-      }
-    },
     #' @description
     #' Update the current model (used for validation)
     update = function() {
@@ -461,8 +452,13 @@ AlascaModel <- R6::R6Class("AlascaModel",
       
       if (self$equal_baseline) {
         # Must add baselines for missing interactions (baseline x group)
+        
+        #Test, updated code Andjar in v1.0.19 adds a nonsense row using my data
+        #Kept own solution, 
+        # baseline_to_add <- self$model_prediction[self$get_ref(self$effect_terms)]
         baseline_to_add <- self$model_prediction[get(self$effect_terms[1]) %in% self$get_ref(self$effect_terms)]
         
+
         if (length(self$effect_terms) == 2) {
           # In this case, there are no main effects except time
           baseline_to_add <- rbindlist(lapply(self$get_levels(self$get_plot_group)[-1], function(gr) {
@@ -860,5 +856,15 @@ AlascaModel <- R6::R6Class("AlascaModel",
       unique(unlist(self$effect_list$terms))
     }
   ),
-  private = list()
+  private = list(
+    finalize = function() {
+      if (self$save_to_disk && !self$minimize_object) {
+        if (self$db_method == "SQLite") {
+          DBI::dbDisconnect(self$db_con)
+        } else {
+          DBI::dbDisconnect(self$db_con, shutdown = TRUE)
+        }
+      }
+    }
+  )
 )

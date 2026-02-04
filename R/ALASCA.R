@@ -40,8 +40,13 @@ ALASCA <- function(df,
   # Validate the model ----
   if (object$validate) {
     object$log("Starting validation", level = "DEBUG")
-    # object$do_validate()
-    object$do_validate_parallel()
+
+    if(object$n_cores>1) {
+      object$do_validate_parallel()
+    } else {
+      object$do_validate()
+    }
+    
     
     object$log("Completing validation", level = "DEBUG")
   } else {
@@ -1736,43 +1741,43 @@ plot_prediction <- function() {
   
   if(self$model$validate) {
     if (self$black_and_white) {
-      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "x_data",
-                                                             y = "pred",
-                                                             group = "group_data",
-                                                             linetype = "group_data",
-                                                             ymin = "low",
-                                                             ymax = "high"))
+      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = .data[["x_data"]],
+                                                      y = .data[["pred"]],
+                                                      group = .data[["group_data"]],
+                                                      linetype = .data[["group_data"]],
+                                                      ymin = .data[["low"]],
+                                                      ymax = .data[["high"]]))
     } else {
-      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "x_data",
-                                                             y = "pred",
-                                                             group = "group_data",
-                                                             color = "group_data",
-                                                             linetype = "group_data",
-                                                             ymin = "low",
-                                                             ymax = "high"))
-    }
+      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = .data[["x_data"]],
+                                                      y = .data[["pred"]],
+                                                      group = .data[["group_data"]],
+                                                      color = .data[["group_data"]],
+                                                      linetype = .data[["group_data"]],
+                                                      ymin = .data[["low"]],
+                                                      ymax = .data[["high"]]))
     
     g <- g + ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = self$dodgewidth)) +
       ggplot2::geom_line(position = ggplot2::position_dodge(width = self$dodgewidth))
+    }
     
     if (self$ribbon && self$black_and_white) {
-      g <- g + ggplot2::geom_ribbon(ggplot2::aes_string(fill = "group_data"),
+      g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = .data[["group_data"]]),
                                     alpha = .1,
                                     position = ggplot2::position_dodge(width = self$dodgewidth), color = NA
       ) + ggplot2::scale_fill_manual(values = self$get_plot_palette()) + ggplot2::labs(fill = self$group_label)
     }
   } else {
     if (self$black_and_white) {
-      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "x_data",
-                                                             y = "pred",
-                                                             group = "group_data",
-                                                             linetype = "group_data"))
+      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = .data[["x_data"]],
+                                                      y = .data[["pred"]],
+                                                      group = .data[["group_data"]],
+                                                      linetype = .data[["group_data"]]))
     } else {
-      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "x_data",
-                                                             y = "pred",
-                                                             group = "group_data",
-                                                             color = "group_data",
-                                                             linetype = "group_data"))
+      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = .data[["x_data"]],
+                                                      y = .data[["pred"]],
+                                                      group = .data[["group_data"]],
+                                                      color = .data[["group_data"]],
+                                                      linetype = .data[["group_data"]]))
     }
     g <- g + ggplot2::geom_point() + ggplot2::geom_line()
   }
@@ -1929,7 +1934,7 @@ plot_effect <- function() {
     }
   } else {
     # Return only a single effect/component
-    gs <- self$plot_effect_score(effect_i = effect_i, component = component)
+    gs <- self$plot_effect_score(effect_i   = effect_i, component = component)
     gl <- self$plot_effect_loading(effect_i = effect_i, component = component)
     if (is.null(self$loading_group_column)) {
       ggpubr::ggarrange(gs, gl, widths = c(2,3), common.legend = TRUE, legend = "bottom", align = "h", labels = self$labels)
@@ -1966,48 +1971,48 @@ plot_effect_score <- function(effect_i = 1, component = 1) {
     if (self$model$method == "LMM") {
       if (self$black_and_white) {
         g <- ggplot2::ggplot(data_to_plot,
-                             ggplot2::aes_string(x = "x_data",
-                                                 y = "score",
-                                                 group = "group_data",
-                                                 shape = "group_data",
-                                                 linetype = "group_data",
-                                                 ymin = "low",
-                                                 ymax = "high"))
+                             ggplot2::aes(x        = .data[["x_data"]],
+                                          y        = .data[["score"]],
+                                          group    = .data[["group_data"]],
+                                          shape    = .data[["group_data"]],
+                                          linetype = .data[["group_data"]],
+                                          ymin     = .data[["low"]],
+                                          ymax     = .data[["high"]]))
       } else {
         g <- ggplot2::ggplot(data_to_plot,
-                             ggplot2::aes_string(x = "x_data",
-                                                 y = "score",
-                                                 group = "group_data",
-                                                 color = "group_data",
-                                                 linetype = "group_data",
-                                                 ymin = "low",
-                                                 ymax = "high"))
+                             ggplot2::aes(x        = .data[["x_data"]],
+                                          y        = .data[["score"]],
+                                          group    = .data[["group_data"]],
+                                          color    = .data[["group_data"]],
+                                          linetype = .data[["group_data"]],
+                                          ymin     = .data[["low"]],
+                                          ymax     = .data[["high"]]))
       }
       g <- g + ggplot2::geom_line(position = ggplot2::position_dodge(width = self$dodgewidth))
     } else {
       if (self$black_and_white) {
         g <- ggplot2::ggplot(data_to_plot,
-                             ggplot2::aes_string(x = "x_data",
-                                                 y = "score",
-                                                 shape = "group_data",
-                                                 ymin = "low",
-                                                 ymax = "high"))
+                             ggplot2::aes(x     = .data[["x_data"]],
+                                          y     = .data[["score"]],
+                                          shape = .data[["group_data"]],
+                                          ymin  = .data[["low"]],
+                                          ymax  = .data[["high"]]))
       } else {
         g <- ggplot2::ggplot(data_to_plot,
-                             ggplot2::aes_string(x = "x_data",
-                                                 y = "score",
-                                                 color = "group_data",
-                                                 ymin = "low",
-                                                 ymax = "high"))
+                             ggplot2::aes(x     = .data[["x_data"]],
+                                          y     = .data[["score"]],
+                                          color = .data[["group_data"]],
+                                          ymin  = .data[["low"]],
+                                          ymax  = .data[["high"]]))
       }
     }
     g <- g + ggplot2::geom_pointrange(position = ggplot2::position_dodge(width = self$dodgewidth))
 
     if (self$ribbon && !self$black_and_white && self$model$method == "LMM") {
-      g <- g + ggplot2::geom_ribbon(ggplot2::aes_string(fill = "group_data"),
+      g <- g + ggplot2::geom_ribbon(ggplot2::aes(fill = .data[["group_data"]]),
                                     alpha = .1,
                                     position = ggplot2::position_dodge(width = self$dodgewidth), color = NA
-      ) + ggplot2::scale_fill_manual(values = self$get_plot_palette()) + ggplot2::labs(fill = self$group_label)
+      ) + ggplot2::scale_fill_manual(values  = self$get_plot_palette()) + ggplot2::labs(fill = self$group_label)
     }
     
   } else {
@@ -2016,31 +2021,35 @@ plot_effect_score <- function(effect_i = 1, component = 1) {
     if (self$model$method == "LMM") {
       if (self$black_and_white) {
         g <- ggplot2::ggplot(data_to_plot,
-                             ggplot2::aes_string(x = "x_data",
-                                                 y = "score",
-                                                 linetype = "group_data",
-                                                 group = "group_data",
-                                                 shape = "group_data"))
+                             ggplot2::aes(x        = .data[["x_data"]],
+                                          y        = .data[["score"]],
+                                          linetype = .data[["group_data"]],
+                                          group    = .data[["group_data"]],
+                                          shape    = .data[["group_data"]])
+        )
       } else {
         g <- ggplot2::ggplot(data_to_plot,
-                             ggplot2::aes_string(x = "x_data",
-                                                 y = "score",
-                                                 linetype = "group_data",
-                                                 group = "group_data",
-                                                 color = "group_data"))
+                             ggplot2::aes(x        = .data[["x_data"]],
+                                          y        = .data[["score"]],
+                                          linetype = .data[["group_data"]],
+                                          group    = .data[["group_data"]],
+                                          color    = .data[["group_data"]])
+        )
       }
       g <- g + ggplot2::geom_line()
     } else {
       if (self$black_and_white) {
         g <- ggplot2::ggplot(data_to_plot,
-                             ggplot2::aes_string(x = "x_data",
-                                                 y = "score",
-                                                 shape = "group_data"))
+                             ggplot2::aes(x     = .data[["x_data"]],
+                                          y     = .data[["score"]],
+                                          shape = .data[["group_data"]])
+        )
       } else {
         g <- ggplot2::ggplot(data_to_plot,
-                             ggplot2::aes_string(x = "x_data",
-                                                 y = "score",
-                                                 color = "group_data"))
+                             ggplot2::aes(x     = .data[["x_data"]],
+                                          y     = .data[["score"]],
+                                          color = .data[["group_data"]])
+        )
       }
     }
     g <- g + ggplot2::geom_point()
@@ -2096,15 +2105,15 @@ plot_effect_loading <- function(effect_i = 1, component = 1) {
     # Validated model
     
     if (is.null(self$loading_group_column)) {
-      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", ymin = "low", ymax = "high"))
+      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = .data[["covars"]], y = .data[["loading"]], ymin = .data[["low"]], ymax = .data[["high"]]))
     } else {
       if (self$black_and_white) {
-        g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", ymin = "low", ymax = "high", shape = "covargroup"))
+        g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = .data[["covars"]], y = .data[["loading"]], ymin = .data[["low"]], ymax = .data[["high"]], shape = .data[["covargroup"]]))
       } else {
         if (self$waterfall == TRUE) {
-          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", ymin = "low", ymax = "high", shape = "covargroup", fill = "covargroup"))
+          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = .data[["covars"]], y = .data[["loading"]], ymin = .data[["low"]], ymax = .data[["high"]], shape = .data[["covargroup"]], fill = .data[["covargroup"]]))
         } else {
-          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", ymin = "low", ymax = "high", shape = "covargroup", color = "covargroup"))
+          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes(x = .data[["covars"]], y = .data[["loading"]], ymin = .data[["low"]], ymax = .data[["high"]], shape = .data[["covargroup"]], color = .data[["covargroup"]]))
         }
       }
     }
@@ -2122,15 +2131,32 @@ plot_effect_loading <- function(effect_i = 1, component = 1) {
     # Unvalidated model
     
     if (is.null(self$loading_group_column)) {
-      g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading"))
+      g <- ggplot2::ggplot(data_to_plot,
+                           ggplot2::aes(x = .data[["covars"]],
+                                        y = .data[["loading"]])
+      )
     } else {
       if (self$black_and_white) {
-        g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", shape = "covargroup"))
+        g <- ggplot2::ggplot(data_to_plot,
+                             ggplot2::aes(x     = .data[["covars"]],
+                                          y     = .data[["loading"]],
+                                          shape = .data[["covargroup"]])
+        )
       } else {
         if (self$waterfall == TRUE) {
-          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", shape = "covargroup", fill = "covargroup"))
+          g <- ggplot2::ggplot(data_to_plot,
+                               ggplot2::aes(x     = .data[["covars"]],
+                                            y     = .data[["loading"]],
+                                            shape = .data[["covargroup"]],
+                                            fill  = .data[["covargroup"]])
+          )
         } else {
-          g <- ggplot2::ggplot(data_to_plot, ggplot2::aes_string(x = "covars", y = "loading", shape = "covargroup", color = "covargroup"))
+          g <- ggplot2::ggplot(data_to_plot,
+                               ggplot2::aes(x     = .data[["covars"]],
+                                            y     = .data[["loading"]],
+                                            shape = .data[["covargroup"]],
+                                            color = .data[["covargroup"]])
+          )
         }
       }
     }
@@ -2280,11 +2306,12 @@ plot_effect_validation_score <- function(effect_i = 1, component = 1) {
   
   # Validated model
   g <- ggplot2::ggplot(data_to_plot[model != 0],
-                       ggplot2::aes_string(x = "x_data",
-                                           y = "score",
-                                           group = "grouping",
-                                           color = "group_data",
-                                           linetype = "group_data")) +
+                       ggplot2::aes(x        = .data[["x_data"]],
+                                    y        = .data[["score"]],
+                                    group    = .data[["grouping"]],
+                                    color    = .data[["group_data"]],
+                                    linetype = .data[["group_data"]])
+  ) +
     ggplot2::geom_point(alpha = 0.5) +
     ggplot2::geom_line(alpha = 0.5) +
     ggplot2::geom_point(data = data_to_plot[model == 0], color = "black") +
@@ -2292,10 +2319,10 @@ plot_effect_validation_score <- function(effect_i = 1, component = 1) {
     ggplot2::scale_alpha(range = c(0.1, 1), guide = "none") +
     ggplot2::scale_color_manual(values = self$get_plot_palette()) +
     ggplot2::scale_linetype_manual(values = self$get_plot_linetypes()) +
-    ggplot2::labs(color = self$group_label,
+    ggplot2::labs(color    = self$group_label,
                   linetype = self$group_label,
-                  x = self$x_label,
-                  y = self$get_explained_label(effect_i = effect_i, component = component, type= "Score")) +
+                  x        = self$x_label,
+                  y        = self$get_explained_label(effect_i = effect_i, component = component, type= "Score")) +
     self$my_theme + self$xflip(flip = FALSE)
   return(g)
 }
@@ -2325,20 +2352,30 @@ plot_effect_validation_loading <- function(effect_i = 1, component = 1) {
   }
   data_to_plot[, nval := as.numeric(covars)]
   
-    if (is.null(self$loading_group_column)) {
-      g <- ggplot2::ggplot(data_to_plot[model != 0], ggplot2::aes_string(x = "covars", y = "loading", group = "model"))
-    } else {
-      g <- ggplot2::ggplot(data_to_plot[model != 0], ggplot2::aes_string(x = "covars", y = "loading", group = "model", shape = "covargroup", color = "covargroup"))
-    }
-    
-    g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
-      ggplot2::geom_point(alpha = 0.3) +
-      ggplot2::geom_pointrange(data = data_to_plot[model == 0], ggplot2::aes(ymin = low, ymax = high), alpha = 1) +
-      ggplot2::geom_errorbarh(data = data_to_plot[model == 0], ggplot2::aes(xmin = nval-0.6, xmax = nval+0.6), alpha = 1) +
-      ggplot2::labs(x = self$variable_label,
-                    y = self$get_explained_label(effect_i = effect_i, component = component, type= "Loading")) +
-      ggplot2::scale_alpha(range = c(0, 1)) +
-      self$my_theme + self$xflip()
+  if (is.null(self$loading_group_column)) {
+    g <- ggplot2::ggplot(data_to_plot[model != 0],
+                         ggplot2::aes(x     = .data[["covars"]],
+                                      y     = .data[["loading"]],
+                                      group = .data[["model"]])
+    )
+  } else {
+    g <- ggplot2::ggplot(data_to_plot[model != 0],
+                         ggplot2::aes(x     = .data[["covars"]],
+                                      y     = .data[["loading"]],
+                                      group = .data[["model"]],
+                                      shape = .data[["covargroup"]],
+                                      color = .data[["covargroup"]])
+    )
+  }
+  
+  g <- g + ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
+    ggplot2::geom_point(alpha = 0.3) +
+    ggplot2::geom_pointrange(data = data_to_plot[model == 0], ggplot2::aes(ymin = low, ymax = high), alpha = 1) +
+    ggplot2::geom_errorbarh(data = data_to_plot[model == 0], ggplot2::aes(xmin = nval-0.6, xmax = nval+0.6), alpha = 1) +
+    ggplot2::labs(x = self$variable_label,
+                  y = self$get_explained_label(effect_i = effect_i, component = component, type= "Loading")) +
+    ggplot2::scale_alpha(range = c(0, 1)) +
+    self$my_theme + self$xflip()
   
   if (!is.null(self$loading_group_column)) {
     g <- g + ggplot2::scale_color_viridis_d(option = "A", end = 0.85) +
@@ -2551,20 +2588,21 @@ plot_2D_score <- function() {
   data_to_plot <- dcast(data = data_to_plot, ...~PC, value.var = "score")
   
   g <- ggplot2::ggplot(data_to_plot,
-                       ggplot2::aes_string(x = "PC_1",
-                                           y = "PC_2",
-                                           shape = "x_data",
-                                           color = "group_data")) +
+                       ggplot2::aes(x     = .data[["PC_1"]],
+                                    y     = .data[["PC_2"]],
+                                    shape = .data[["x_data"]],
+                                    color = .data[["group_data"]])
+  ) +
     ggplot2::geom_point(alpha = 0.8) +
     ggplot2::geom_line(ggplot2::aes(group = paste(group_data, model)), alpha = 0.3) +
     ggplot2::stat_ellipse(ggplot2::aes(linetype = x_data)) +
     ggplot2::scale_color_manual(values = self$get_plot_palette()) +
     ggplot2::scale_alpha(range = c(0, 1)) +
-    ggplot2::labs(color = self$group_label,
+    ggplot2::labs(color    = self$group_label,
                   linetype = self$x_label,
-                  shape = self$x_label,
-                  x = self$get_explained_label(effect_i = self$effect_i, component = self$component[[1]], type= "Score"),
-                  y = self$get_explained_label(effect_i = self$effect_i, component = self$component[[2]], type= "Score")) +
+                  shape    = self$x_label,
+                  x        = self$get_explained_label(effect_i = self$effect_i, component = self$component[[1]], type= "Score"),
+                  y        = self$get_explained_label(effect_i = self$effect_i, component = self$component[[2]], type= "Score")) +
     self$my_theme
 }
 
@@ -2749,18 +2787,20 @@ plot_participants <- function(effect_i = 1, component = 1) {
   
   if(self$model$method == "LMM") {
     g <- ggplot2::ggplot(data_to_plot,
-                         ggplot2::aes_string(x = "x_data",
-                                             y = self$model$formula$lhs,
-                                             group = self$model$formula$ID,
-                                             color = "group_data",
-                                             linetype = "group_data")) +
+                         ggplot2::aes(x = .data[["x_data"]],
+                                      y = .data[[self$model$formula$lhs]],
+                                      group = .data[[self$model$formula$ID]],
+                                      color = .data[["group_data"]],
+                                      linetype = .data[["group_data"]])
+    ) +
       ggplot2::geom_point(position = ggplot2::position_dodge(width = self$dodgewidth)) +
       ggplot2::geom_line(position = ggplot2::position_dodge(width = self$dodgewidth))
   } else {
     g <- ggplot2::ggplot(data_to_plot,
-                         ggplot2::aes_string(x = "x_data",
-                                             y = self$model$formula$lhs,
-                                             color = "group_data")) +
+                         ggplot2::aes(x = .data[["x_data"]],
+                                      y = .data[[self$model$formula$lhs]],
+                                      color = .data[["group_data"]])
+    ) +
       ggplot2::geom_point(position = ggplot2::position_dodge(width = self$dodgewidth))
   }
   g <- g + ggplot2::scale_color_manual(values = self$get_plot_palette()) +
