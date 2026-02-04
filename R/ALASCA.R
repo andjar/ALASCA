@@ -1464,13 +1464,43 @@ get_validation_ids <- function() {
       if (self$validation_method == "bootstrap") {
         
         tmp <- lapply(unique(self$stratification_vector), function(strat_group) {
-          t(
-            vapply(
-              seq_len(self$n_validation_runs),
-              function(x) sample(IDs_to_choose_from, replace = TRUE),
-              FUN.VALUE = integer(length(sample(IDs_to_choose_from, replace = TRUE)))
-              )
-            )
+          original_IDs_group<-original_IDs[group == strat_group, ]
+          ngroups_total<-nrow(unique(original_IDs_group[,c("group","time")]))
+          IDs_valruns<-matrix(nrow=self$n_validation_runs,
+                              ncol=nrow(original_IDs_group))
+          
+
+          for(i in seq_len(self$n_validation_runs)) {
+            #for each validation set, check if amount of groups with at least 2 entries 
+            #needed for CI estimation equals total groups in this level of the 
+            #stratification variable. If not, CI for missing groups will not be NA
+            #or inf and cause the validation to stop with an error.
+            #abort if more than 10 attempts are needed to get a validation set
+            #which means groups are likely too small
+            attempt<-1
+            repeat {
+              rows_run<-sample(1:nrow(original_IDs_group), replace = TRUE)
+              
+              ngroups<-nrow(unique(
+                original_IDs_group[rows_run,c("group","time")][
+                  duplicated(original_IDs_group[rows_run,c("group","time")])
+                ]
+              ))
+              
+              if(ngroups==ngroups_total) {
+                IDs_run<-original_IDs_group[rows_run]$ID
+                break
+              }
+              
+              attempt<-attempt+1
+              if(attempt>10) stop("Cannot generate a validation set containing at least two entries of each group:time combination after 10 attempts")
+            }
+            
+            
+            IDs_valruns[i,]<-t(matrix(IDs_run))
+          }
+          
+          IDs_valruns
         })
         
         self$validation_ids <- do.call(cbind, tmp)
