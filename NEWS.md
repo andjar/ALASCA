@@ -1,3 +1,7 @@
+# ALASCA 1.0.20
+
+* Move `data.table` from Depends to Imports as suggested by https://rdatatable.gitlab.io/data.table/articles/datatable-importing.html
+
 # ALASCA 1.0.19
 
 * Bug fix: The prediction plots should now work for models with separated effects too

@@ -1,6 +1,6 @@
 Package: ALASCA
 Title: Assorted, Linear ASCA Functions
-Version: 1.0.19
+Version: 1.0.20
 Authors@R: 
     person(given = "Anders H.",
            family = "Jarmund",
@@ -16,8 +16,6 @@ LazyData: true
 ByteCompile: true
 Roxygen: list(markdown = TRUE, r6 = TRUE)
 RoxygenNote: 7.3.2
-Depends:
-  data.table
 Imports:
 	ggplot2,
 	DBI,

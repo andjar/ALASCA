@@ -22,7 +22,7 @@
 #' @param n_validation_folds Partitions when validating
 #' 
 #' @return An ALASCA object
-#'
+#' @import data.table
 #' @export
 ALASCA <- function(df,
                    formula,
