@@ -1016,16 +1016,8 @@ do_validate_parallel <- function() {
                    self$n_cores)
   
   # Windows: multisession creates separate R sessions and reuses them as
-  #much as possible for time efficiency. CallR closes each
-  #session after it delivered a result and opens a new one as it is hard to free
-  #up memory in parallel sessions apparently and consumption keeps increasing.
-  # if (self$save_RAM) {
-  #   future::plan(future.callr::callr, workers = n_workers)
-  #   
-  # } else {
+  #much as possible for time efficiency.
     future::plan(future::multisession, workers = n_workers)
-    
-  # }
   
   # If 'self' is large, you may need a bigger globals cap (default ~500MB)
   # Adjust upward only if you get "future.globals.maxSize" errors.
@@ -1058,9 +1050,11 @@ do_validate_parallel <- function() {
         log_lines <- character()
         log_lines <- c(log_lines, sprintf("- Run %d of %d", ii, self$n_validation_runs))
         
-        # --- Your original work ---
-        if (self$save_RAM & exists("temp_object")) {
-          rm(temp_object)
+        #If memory efficiency is desired and this is not the first iteration
+        #remove the previous instance of the temporary object. This strongly
+        # limited increasing memory usage over time
+        if (self$save_RAM & exists("obj")) {
+          rm(obj)
           gc()
         }
         
@@ -1129,8 +1123,8 @@ do_validate_parallel <- function() {
   
   #close workers to save memory
   future::plan("sequential")
-  # temp_object is your output list (as before)
   
+  # objectlist is your output list
   
   self$clean_alasca()
   
@@ -1170,7 +1164,10 @@ do_validate <- function() {
     self$log(paste0("- Run ", ii, " of ", self$n_validation_runs))
     start.time.this <- Sys.time()
       
-    if (self$save_RAM & exists(temp_object)) {
+    #If memory efficiency is desired and this is not the first iteration
+    #remove the previous instance of the temporary object. This strongly
+    # limited increasing memory usage over time
+    if (self$save_RAM & exists("temp_object")) {
       rm(temp_object)
       gc()
     }

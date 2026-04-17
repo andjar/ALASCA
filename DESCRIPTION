@@ -34,7 +34,6 @@ Imports:
 	clue,
 	future,
 	future.apply,
-	future.callr,
 	progressr,
 	dplyr
 Suggests: 
