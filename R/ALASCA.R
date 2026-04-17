@@ -1,5 +1,5 @@
-#Set data.table aware, otherwise issues arrise in using it in 
-# future.apply paralellisation
+#Set data.table aware, otherwise issues arise in using it in 
+# future.apply parallelisation
 .datatable.aware <- TRUE
 #' Create an ALASCA model
 #'
@@ -23,6 +23,7 @@
 #' @param use_Rfast Boolean. Defaults to `TRUE`
 #' @param p_adjust_method Method for correcting p values for multiple testing, see p.adjust.methods
 #' @param participant_column String. Name of the column containing participant identification
+#' @param save_RAM Boolean. If true, bootstrap objects saved for validations are minimal lists instead of copies of the alasca R6 object
 #' @param n_validation_folds Partitions when validating
 #' @param n_cores amount of cores to use for validation runs
 #' @param maxmem_GB max amount of memory in GB to use for validation runs
@@ -1014,8 +1015,17 @@ do_validate_parallel <- function() {
   n_workers <- min(self$n_validation_runs, future::availableCores(),
                    self$n_cores)
   
-  # Windows: multisession creates separate R sessions
-  future::plan(future::multisession, workers = n_workers)
+  # Windows: multisession creates separate R sessions and reuses them as
+  #much as possible for time efficiency. CallR closes each
+  #session after it delivered a result and opens a new one as it is hard to free
+  #up memory in parallel sessions apparently and consumption keeps increasing.
+  # if (self$save_RAM) {
+  #   future::plan(future.callr::callr, workers = n_workers)
+  #   
+  # } else {
+    future::plan(future::multisession, workers = n_workers)
+    
+  # }
   
   # If 'self' is large, you may need a bigger globals cap (default ~500MB)
   # Adjust upward only if you get "future.globals.maxSize" errors.
@@ -1023,7 +1033,7 @@ do_validate_parallel <- function() {
   
   # Optional: make parallel RNG reproducible (recommended if any randomness occurs)
   # (You can also pass future.seed = TRUE in future_lapply)
-  set.seed(1)
+  # set.seed(1)
   
   start_time_all <- Sys.time()
   
@@ -1049,6 +1059,11 @@ do_validate_parallel <- function() {
         log_lines <- c(log_lines, sprintf("- Run %d of %d", ii, self$n_validation_runs))
         
         # --- Your original work ---
+        if (self$save_RAM & exists("temp_object")) {
+          rm(temp_object)
+          gc()
+        }
+        
         obj <- self$prepare_validation_run(runN = ii)
         if (nrow(self$df) > 100000) gc()
         
@@ -1067,6 +1082,19 @@ do_validate_parallel <- function() {
         
         elapsed <- as.numeric(difftime(Sys.time(), start.time.this, units = "secs"))
         log_lines <- c(log_lines, sprintf("--- Used %.2f seconds.", elapsed))
+        
+        #return minimal memory bootstrap result object if memory efficient mode is
+        #selected
+        if (self$save_RAM) {
+          obj<-list(
+            ALASCA=list(
+              loading=obj$ALASCA$loading,
+              score=obj$ALASCA$score
+            ),
+            model_prediction=obj$model_prediction,
+            covar_coefficients=obj$covar_coefficients
+          )
+        } 
         
         # Return both object + logs + timing + run index
         list(
@@ -1096,16 +1124,18 @@ do_validate_parallel <- function() {
     ))
     
     # Return list of objects (same shape as original lapply)
-    temp_object <- lapply(out, `[[`, "result")
+    objectlist <- lapply(out, `[[`, "result")
   })
   
+  #close workers to save memory
+  future::plan("sequential")
   # temp_object is your output list (as before)
   
   
   self$clean_alasca()
   
   self$log("Calculating percentiles for score and loading")
-  self$get_validation_percentiles(objectlist = temp_object)
+  self$get_validation_percentiles(objectlist = objectlist)
   
   #invisible(object)
 }
@@ -1132,13 +1162,19 @@ do_validate <- function() {
   self$log(paste("Starting validation:", self$validation_method))
   
   start_time_all <- Sys.time()
+    
   self$get_validation_ids()
   
-  temp_object <- lapply(seq_len(self$n_validation_runs), FUN = function(ii) {
+  objectlist <- lapply(seq_len(self$n_validation_runs), FUN = function(ii) {
     
     self$log(paste0("- Run ", ii, " of ", self$n_validation_runs))
     start.time.this <- Sys.time()
-    
+      
+    if (self$save_RAM & exists(temp_object)) {
+      rm(temp_object)
+      gc()
+    }
+      
     # Make resampled model
     temp_object <- self$prepare_validation_run(runN = ii)
     if (nrow(self$df) > 100000) gc()
@@ -1163,13 +1199,29 @@ do_validate <- function() {
     
     time_all <- difftime(Sys.time(), start_time_all, units = c("secs")) / ii
     self$log(paste0("--- Used ", round(difftime(Sys.time(), start.time.this, units = c("secs")), 2), " seconds. Est. time remaining: ", round((self$n_validation_runs - ii) * time_all, 2), " seconds"))
-    temp_object
+    
+    
+    #return minimal memory bootstrap result object if memory efficient mode is
+    #selected
+    if (self$save_RAM) {
+      list(
+        ALASCA=list(
+          loading=temp_object$ALASCA$loading,
+          score=temp_object$ALASCA$score
+        ),
+        model_prediction=temp_object$model_prediction,
+        covar_coefficients=temp_object$covar_coefficients
+      )
+    } else {
+      temp_object
+    }
+    
   })
   
   self$clean_alasca()
   
   self$log("Calculating percentiles for score and loading")
-  self$get_validation_percentiles(objectlist = temp_object)
+  self$get_validation_percentiles(objectlist = objectlist)
   
   #invisible(object)
 }

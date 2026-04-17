@@ -39,6 +39,8 @@ ALASCA(df, formula, effects = NULL, ...)
 
 \item{participant_column}{String. Name of the column containing participant identification}
 
+\item{save_RAM}{Boolean. If true, bootstrap objects saved for validations are minimal lists instead of copies of the alasca R6 object}
+
 \item{n_validation_folds}{Partitions when validating}
 
 \item{n_cores}{amount of cores to use for validation runs}

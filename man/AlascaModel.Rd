@@ -35,6 +35,8 @@ The object builds the ALASCA model and contains the data
 
 \item{\code{maxmem_GB}}{Integer. Specifies the maximum amount of memory to be used for parallel validation runs (note that each run adds a copy of the data object)}
 
+\item{\code{save_RAM}}{Boolean. If true, bootstrap objects saved for validations are minimal lists instead of copies of the alasca R6 object}
+
 \item{\code{n_validation_folds}}{Integer. If using jack-knife validation, exclude 1/n_validation_folds of the participants at each iteration}
 
 \item{\code{n_validation_runs}}{Integer. Number of iterations to use for validation}

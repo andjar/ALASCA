@@ -44,6 +44,8 @@ AlascaModel <- R6::R6Class("AlascaModel",
     n_cores = 10L,
     #' @field maxmem_GB Integer. Specifies the maximum amount of memory to be used for parallel validation runs (note that each run adds a copy of the data object)
     maxmem_GB = 4L,
+    #' @field save_RAM Boolean. If true, bootstrap objects saved for validations are minimal lists instead of copies of the alasca R6 object
+    save_RAM=T,
     #' @field n_validation_folds Integer. If using jack-knife validation, exclude 1/n_validation_folds of the participants at each iteration
     n_validation_folds = 7L,
     #' @field n_validation_runs Integer. Number of iterations to use for validation
