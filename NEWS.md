@@ -1,3 +1,7 @@
+# ALASCA 1.0.21
+
+* Bug fix: In three-way interactions, level order was not respected for plotting
+
 # ALASCA 1.0.20
 
 * Move `data.table` from Depends to Imports as suggested by https://rdatatable.gitlab.io/data.table/articles/datatable-importing.html

@@ -19,9 +19,9 @@ AlascaModel <- R6::R6Class("AlascaModel",
     #' @field ignore_missing_covars If TRUE, ignore missing covariate values
     ignore_missing_covars = FALSE,
     #' @field version Version number
-    version = "1.0.20",
+    version = "1.0.21",
     #' @field update_date Date of latest update
-    update_date = "2026-03-14",
+    update_date = "2026-11-15",
 
     # Effect matrices
     #' @field separate_effects If TRUE, try to separate the effects
@@ -824,7 +824,11 @@ AlascaModel <- R6::R6Class("AlascaModel",
           self$splot$palette <- NULL
           self$splot$linetypes <- NULL
           self$splot$group <- paste(self$effect_terms[-1], collapse = "-")
-          self$df_raw$level_list[[self$splot$group]] <- self$df[, unique(do.call(paste, c(.SD, sep = "-"))), .SDcols = self$effect_terms[-1]]
+          self$df_raw$level_list[[self$splot$group]] <- self$df[, {
+                                                                u <- unique(.SD)
+                                                                setorderv(u, names(u))
+                                                                do.call(paste, c(u, sep = "-"))
+                                                              }, .SDcols = self$effect_terms[-1]]
         }
         self$splot$group_label <- self$splot$capitalize(self$splot$group)
       }
